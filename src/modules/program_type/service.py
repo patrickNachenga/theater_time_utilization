@@ -1,8 +1,9 @@
 from typing import List
+
 from sqlalchemy import select
-from src.models.program_category import ProgramCategory
+
 from src.db.session import session_scope
-from src.models import program_category
+from src.models.program_category import ProgramCategory
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCategoryInput, ProgramCategoryNode
@@ -58,7 +59,7 @@ class ProgramCategoryService(object):
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_category_list,
                                 message="Program Category Already Exists")
 
-            # create new program category
+            # create new program categories
             for item in inputs:
                 program_category = ProgramCategory(id=item.id)
                 program_category_list.append(program_category)

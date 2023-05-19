@@ -23,7 +23,6 @@ class ProgramCategoryQuery:
             message="Successfully Retrieve Program Category",
             data=result)
 
-
 @strawberry.type
 class ProgramCategoryMutation:
     @strawberry.field

@@ -9,7 +9,7 @@ class StudentInput:
     reg_no: str
 
 
-@strawberry.type(description="User")
+@strawberry.type(description="Student")
 class StudentNode:
     id: int
     uid: str
@@ -29,7 +29,7 @@ class StaffNode:
     pf_number: str
 
 
-@strawberry.input(description="Program Category")
+@strawberry.input(description="Program Category Input")
 class ProgramCategoryInput:
     uid: Optional[str] = None
     name: str
@@ -40,6 +40,18 @@ class ProgramCategoryNode:
     id: int
     uid: str
     name: str
+
+@strawberry.input(description="Course Input")
+class CourseInput:
+    id: Optional[str] = None
+    code: str
+
+
+@strawberry.type(description="Course")
+class CourseNode:
+    id: int
+    uid: str
+    code: str
 
 
 @strawberry.type(description="User Token")

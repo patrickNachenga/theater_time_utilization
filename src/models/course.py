@@ -1,12 +1,11 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
 
-from src.models import BaseModel
+Base = declarative_base()
 
-class Course(BaseModel):
+class Course(Base):
     __tablename__ = "course"
     id: int = Column(Integer, primary_key=True, index=True)
     description: str = Column(String, nullable=True, unique=True)
-    name: str = Column(String, nullable=True)
-    code: str = Column(String, nullable=False, unique=True)
-
-
+    name: str = Column(String, nullable=False, unique=False)
+    code: str = Column(String, nullable=False, unique=False)
