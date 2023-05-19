@@ -29,6 +29,19 @@ class StaffNode:
     pf_number: str
 
 
+@strawberry.input(description="Program Category")
+class ProgramCategoryInput:
+    uid: Optional[str] = None
+    name: str
+
+
+@strawberry.type(description="Program Category")
+class ProgramCategoryNode:
+    id: int
+    uid: str
+    name: str
+
+
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str

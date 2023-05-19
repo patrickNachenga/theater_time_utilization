@@ -21,3 +21,4 @@ class BaseModel(Base):
 
 from .staff import Staff
 from .student import Student
+from .program_category import ProgramCategory
