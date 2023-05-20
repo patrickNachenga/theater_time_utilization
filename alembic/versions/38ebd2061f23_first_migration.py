@@ -1,8 +1,8 @@
-"""Adding Staff
+"""first migration
 
-Revision ID: 8f9187eec891
+Revision ID: 38ebd2061f23
 Revises: 
-Create Date: 2023-05-19 14:22:03.505866
+Create Date: 2023-05-20 15:42:15.150640
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '8f9187eec891'
+revision = '38ebd2061f23'
 down_revision = None
 branch_labels = None
 depends_on = None
