@@ -33,3 +33,28 @@ class StudentMutation:
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register students", data=[])
+
+    #Delete student function
+    @strawberry.mutation
+    async def remove_student(self, uid: str) -> Response[None]:
+        """
+        Remove student By UID
+        :param uid:
+        :return:
+        """
+        try:
+            StudentService().remove_student(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Student Removed Successfully",
+                data=None
+            )
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Remove Student",
+                data=None
+            )
