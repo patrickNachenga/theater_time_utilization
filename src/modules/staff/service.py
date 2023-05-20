@@ -33,6 +33,17 @@ class StaffService(object):
             return result.all()
 
     @staticmethod
+    def get_staffs_by_uids(uids: List[str]) -> List[Staff]:
+        """
+            Get Staffs by uids
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(Staff).where((Staff.uid.in_(uids)) & (Staff.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
     def get_staff_by_pf_number(pf_number: str) -> Staff:
         """
         Get Staff by pf_number
@@ -44,27 +55,34 @@ class StaffService(object):
             result = session.scalars(stmt)
             return result.first()
 
-    def register_students(self, inputs: List[StaffInput]) -> Response[List[StaffNode]]:
+    def register_staffs(self, inputs: List[StaffInput]) -> Response[List[StaffNode]]:
         """
         Register Staff
         :param inputs:
         :return:
         """
-        student_list = []
+        staff_list = []
         with session_scope() as session:
             # Check if staff already exist using pf_number
             existed_staff_list = self.get_staffs_by_pf_numbers(
                 [staff.pf_number for staff in inputs if staff.uid is None])
             if existed_staff_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_staff_list,
-                                message="Staff Already exist")
+                                message="Staff Already Exists")
+            # check for existing Users using uid
+            existed_staff = self.get_staffs_by_uids([input.uid for input in inputs])
+            for inputItem in inputs:
+                if inputItem.uid is None:
+                    staff = Staff(pf_number=inputItem.pf_number)
+                    staff_list.append(staff)
+                else:
+                    staff = next(filter(lambda staff: str(staff.uid) == str(inputItem.uid),
+                                        existed_staff), None)
 
-            # create new staffs
-            for item in inputs:
-                staff = Staff(pf_number=item.reg_no)
-                student_list.append(staff)
-
-            session.add_all(student_list)
+                    if staff:
+                        staff.pf_number = inputItem.pf_number
+                        staff_list.append(staff)
+            session.add_all(staff_list)
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=student_list,
+            return Response(status=True, code=ResponseCode.SUCCESS, data=staff_list,
                             message="Successfully Submitted")

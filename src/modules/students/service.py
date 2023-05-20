@@ -22,7 +22,7 @@ class StudentService(object):
     @staticmethod
     def get_students_by_reg_nos(reg_nos: List[str]) -> List[Student]:
         """
-            Get Students by reg_nos
+        Get Students by reg_nos
         :return:
         """
         with session_scope() as session:
@@ -31,9 +31,20 @@ class StudentService(object):
             return result.all()
 
     @staticmethod
+    def get_students_by_uids(uids: List[str]) -> List[Student]:
+        """
+        Get students by uids
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(Student).where((Student.uid.in_(uids)) & (Student.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
     def get_student_by_reg_no(reg_no: str) -> Student:
         """
-            Get User by reg_no
+        Get student by reg_no
         :param reg_no:
         :return:
         """
@@ -55,13 +66,21 @@ class StudentService(object):
                 [student.reg_no for student in inputs if student.uid is None])
             if existed_student_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_student_list,
-                                message="Student Already exist")
-
-            # create new students
-            for item in inputs:
-                student = Student(reg_no=item.reg_no)
-                student_list.append(student)
-
+                                message="Staff Already Exists")
+            # check for existing staff using uid
+            existed_student = self.get_students_by_uids([inputItem.uid for inputItem in inputs])
+            for inputItem in inputs:
+                if inputItem.uid is None:
+                    student = Student(reg_no=inputItem.reg_no)
+                    student_list.append(student)
+                else:
+                    student = next(filter(lambda student: str(student.uid) == str(inputItem.uid),
+                                          existed_student), None)
+                    print("##########################################################")
+                    print(existed_student)
+                    if student:
+                        student.reg_no = inputItem.reg_no
+                        student_list.append(student)
             session.add_all(student_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=student_list,

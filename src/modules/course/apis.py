@@ -5,7 +5,7 @@ import strawberry
 from src.modules.course.service import CourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-
+from src.types import CourseInput, CourseNode
 
 @strawberry.type
 class CourseQuery:
@@ -19,18 +19,16 @@ class CourseQuery:
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Students",
+            message="Students retrieved successfully",
             data=result)
 
-
 @strawberry.type
-class StudentMutation:
+class CourseMutation:
     @strawberry.field
-    def register_students(self, inputs: List[CourseInput]) -> Response[List[CourseNode]]:
+    def register_courses(self, inputs: List[CourseInput]) -> Response[List[CourseNode]]:
         try:
-            result = CourseService().register_courses(inputs)
-            return Response(status=True, message="Course registered successfully", code=ResponseCode.SUCCESS,
-                            data=result)
+            return CourseService().register_courses(inputs)
+
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register course", data=[])

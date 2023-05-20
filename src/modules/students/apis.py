@@ -29,9 +29,7 @@ class StudentMutation:
     @strawberry.field
     def register_students(self, inputs: List[StudentInput]) -> Response[List[StudentNode]]:
         try:
-            result = StudentService().register_students(inputs)
-            return Response(status=True, message="Student registration successfully", code=ResponseCode.SUCCESS,
-                            data=result)
+            return StudentService().register_students(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register students", data=[])

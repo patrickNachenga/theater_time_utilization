@@ -11,7 +11,7 @@ from src.types import CourseInput, CourseNode
 
 class CourseService(object):
     @staticmethod
-    def get_course() -> List[Course]:
+    def get_courses() -> List[Course]:
         with session_scope() as session:
             result = session.query(
                 Course.id,

@@ -23,14 +23,15 @@ class ProgramCategoryQuery:
             message="Successfully Retrieve Program Category",
             data=result)
 
+
 @strawberry.type
 class ProgramCategoryMutation:
     @strawberry.field
     def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[List[ProgramCategoryNode]]:
         try:
-            result = ProgramCategoryService().register_program_categories(inputs)
-            return Response(status=True, message="Student registration successfully", code=ResponseCode.SUCCESS,
-                            data=result)
+            return ProgramCategoryService().register_program_categories(inputs)
+
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register students", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
+                            data=[])

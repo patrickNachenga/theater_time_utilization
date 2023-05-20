@@ -20,7 +20,7 @@ class StaffQuery:
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Students",
+            message="Staff retrieved successfully",
             data=result)
 
 
@@ -29,9 +29,7 @@ class StaffMutation:
     @strawberry.field
     def register_staff(self, inputs: List[StaffInput]) -> Response[List[StaffNode]]:
         try:
-            result = StaffService().register_staffs(inputs)
-            return Response(status=True, message="Student registration successfully", code=ResponseCode.SUCCESS,
-                            data=result)
+            return StaffService().register_staffs(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register students", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register staff", data=[])

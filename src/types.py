@@ -41,6 +41,7 @@ class ProgramCategoryNode:
     uid: str
     name: str
 
+
 @strawberry.input(description="Course Input")
 class CourseInput:
     id: Optional[str] = None
