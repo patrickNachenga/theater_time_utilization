@@ -35,3 +35,5 @@ uvicorn==0.22.0
 #uvloop
 watchfiles==0.19.0
 websockets==11.0.3
+
+pendulum~=2.1.2

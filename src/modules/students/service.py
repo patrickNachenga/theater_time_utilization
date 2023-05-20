@@ -5,7 +5,7 @@ from src.models.student import Student
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentInput, StudentNode
-
+import pendulum
 
 class StudentService(object):
     @staticmethod
@@ -66,7 +66,7 @@ class StudentService(object):
                 [student.reg_no for student in inputs if student.uid is None])
             if existed_student_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_student_list,
-                                message="Staff Already Exists")
+                                message="Student Already Exists")
             # check for existing staff using uid
             existed_student = self.get_students_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
@@ -76,8 +76,7 @@ class StudentService(object):
                 else:
                     student = next(filter(lambda student: str(student.uid) == str(inputItem.uid),
                                           existed_student), None)
-                    print("##########################################################")
-                    print(existed_student)
+
                     if student:
                         student.reg_no = inputItem.reg_no
                         student_list.append(student)
@@ -85,3 +84,15 @@ class StudentService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=student_list,
                             message="Successfully Submitted")
+
+    # Delete FUnction
+    @staticmethod
+    def remove_student(uid: str):
+        """
+        Remove Service by UID
+        :param uid:
+        :return:
+        """
+        with session_scope() as session:
+            session.query(Student).filter_by(uid=uid).update({Student.deleted_at: pendulum.now()})
+            session.commit()
