@@ -28,6 +28,20 @@ class StaffNode:
     uid: str
     pf_number: str
 
+@strawberry.input(description="Staff Input")
+class GroupInput:
+    uid: Optional[str] = None
+    name: str
+    code: str
+
+
+@strawberry.type(description="Staff")
+class GroupNode:
+    id: int
+    uid: str
+    name: str
+    code: str
+
 
 @strawberry.input(description="Program Category Input")
 class ProgramCategoryInput:
@@ -40,6 +54,43 @@ class ProgramCategoryNode:
     id: int
     uid: str
     name: str
+
+
+@strawberry.input(description="Programme Input")
+class ProgrammeInput:
+    uid: Optional[str] = None
+    programme_number: int
+    code: int
+    name: str
+    short_name: str
+    tcu_code: Optional[str] = None
+    duration: Optional[int] = 0
+    qualification: Optional[int] = 0
+    max_student: Optional[int] = 0
+    action: Optional[int] = 0
+    # list of keys/relational attribute
+    created_by: Optional[int] = 0
+    programme_type_id: Optional[int] = 0
+    specialization_area_id: Optional[int] = 0
+    institute_unit_id: Optional[int] = 0
+
+
+@strawberry.type(description="Programme outputs")
+class ProgrammeNode:
+    uid: str
+    programme_number: int
+    code: int
+    name: str
+    short_name: str
+    tcu_code: str
+    duration: int
+    qualification: str
+    max_student: int
+    action: int
+    created_by: int
+    programme_type_id: int
+    specialization_area_id: int
+    institute_unit_id: int
 
 
 @strawberry.input(description="Course Input")
