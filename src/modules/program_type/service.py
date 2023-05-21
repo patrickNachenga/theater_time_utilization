@@ -1,7 +1,7 @@
 from typing import List
 
+import pendulum
 from sqlalchemy import select
-
 from src.db.session import session_scope
 from src.models import ProgramCategory
 from src.shared.response import Response
@@ -77,3 +77,14 @@ class ProgramCategoryService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=program_category_list,
                             message="Successfully Submitted")
+    # Delete FUnction
+    @staticmethod
+    def remove_program_category(uid: str):
+        """
+        Remove Program Category by UID
+        :param uid:
+        :return:
+        """
+        with session_scope() as session:
+            session.query(ProgramCategory).filter_by(uid=uid).update({ProgramCategory.deleted_at: pendulum.now()})
+            session.commit()

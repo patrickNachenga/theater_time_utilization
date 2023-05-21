@@ -35,3 +35,28 @@ class ProgramCategoryMutation:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
                             data=[])
+
+    #Delete program type function
+    @strawberry.mutation
+    async def remove_program_category(self, uid: str) -> Response[None]:
+        """
+        Remove student By UID
+        :param uid:
+        :return:
+        """
+        try:
+            ProgramCategoryService().remove_program_category(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Category Removed Successfully",
+                data=None
+            )
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Remove Program Category",
+                data=None
+            )
