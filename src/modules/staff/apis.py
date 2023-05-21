@@ -20,7 +20,7 @@ class StaffQuery:
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Staff retrieved successfully",
+            message="Staff Retrieved successfully",
             data=result)
 
 
@@ -32,4 +32,4 @@ class StaffMutation:
             return StaffService().register_staffs(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register staff", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Staff Registration Failed", data=[])

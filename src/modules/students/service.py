@@ -86,7 +86,7 @@ class StudentService(object):
             return Response(status=True, code=ResponseCode.SUCCESS, data=student_list,
                             message="Successfully Submitted")
 
-    # Delete FUnction
+    # Delete Function
     @staticmethod
     def remove_student(uid: str):
         """
