@@ -77,6 +77,7 @@ class ProgrammeInput:
 
 @strawberry.type(description="Programme outputs")
 class ProgrammeNode:
+    id: int
     uid: str
     programme_number: int
     code: int

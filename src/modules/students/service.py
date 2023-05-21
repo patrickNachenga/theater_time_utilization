@@ -7,6 +7,7 @@ from src.shared.response_code import ResponseCode
 from src.types import StudentInput, StudentNode
 import pendulum
 
+
 class StudentService(object):
     @staticmethod
     def get_students() -> List[Student]:

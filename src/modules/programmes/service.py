@@ -1,5 +1,6 @@
 from typing import List
 
+import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
@@ -126,3 +127,14 @@ class ProgrammeService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=programme_list,
                             message="Successfully Submitted")
+
+    @staticmethod
+    def remove_programme(uid: str):
+        """
+        Remove Programme by UID
+        :param uid:
+        :return:
+        """
+        with session_scope() as session:
+            session.query(Programme).filter_by(uid=uid).update({Programme.deleted_at: pendulum.now()})
+            session.commit()
