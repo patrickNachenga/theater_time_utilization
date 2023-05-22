@@ -107,10 +107,10 @@ class ProgrammeService(object):
                 else:
                     programme = next(filter(lambda programme: str(programme.uid) == str(inputItem.uid),
                                             existed_programme), None)
+                    programme.code = inputItem.code,
 
                     if programme:
                         programme.programme_number = inputItem.programme_number,
-                        programme.code = inputItem.code,
                         programme.name = inputItem.name,
                         programme.short_name = inputItem.short_name,
                         programme.tcu_code = inputItem.tcu_code,

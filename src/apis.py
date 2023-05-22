@@ -6,13 +6,20 @@ from src.modules.program_type.apis import ProgramCategoryQuery, ProgramCategoryM
 from src.modules.programmes.apis import ProgrammeQuery, ProgrammeMutation
 from src.modules.staff.apis import StaffQuery, StaffMutation
 from src.modules.students.apis import StudentQuery, StudentMutation
-
+from src.modules.exam_results.apis import ExamResultsQuery, ExamResultsMutation
+from src.modules.exam_summary.apis import ExamSummaryQuery, ExamSummaryMutation
+from src.modules.exam_cats.apis import ExamCatsQuery, ExamCatsMutation
+from src.modules.exam_cat_groups.apis import ExamCatGroupsQuery, ExamCatGroupsMutation
 
 @strawberry.type
-class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, GroupQuery, ProgrammeQuery):
+class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, GroupQuery, ProgrammeQuery,
+               ExamCatGroupsQuery,ExamCatsQuery,ExamResultsQuery,
+               ExamSummaryQuery):
     pass
 
 
 @strawberry.type
-class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, CourseMutation, GroupMutation, ProgrammeMutation):
+class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, CourseMutation, GroupMutation,
+                  ProgrammeMutation,ExamCatGroupsMutation, ExamCatsMutation,
+                  ExamResultsMutation, ExamSummaryMutation):
     pass
