@@ -36,7 +36,7 @@ class ProgramCategoryMutation:
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
                             data=[])
 
-    #Delete program type function
+    #Delete programs type function
     @strawberry.mutation
     async def remove_program_category(self, uid: str) -> Response[None]:
         """

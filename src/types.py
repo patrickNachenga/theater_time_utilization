@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 import strawberry
@@ -28,11 +29,15 @@ class StaffNode:
     uid: str
     pf_number: str
 
+
 @strawberry.input(description="Staff Input")
 class GroupInput:
     uid: Optional[str] = None
     name: str
     code: str
+
+
+int
 
 
 @strawberry.type(description="Staff")
@@ -59,39 +64,59 @@ class ProgramCategoryNode:
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
-    program_number: int
-    code: int
+    code: str
+    tcu_code: Optional[str] = None
+    nacte_code: Optional[str] = None
     name: str
     short_name: str
-    tcu_code: Optional[str] = None
     duration: Optional[int] = 0
-    qualification: Optional[int] = 0
-    max_student: Optional[int] = 0
-    action: Optional[int] = 0
-    # list of keys/relational attribute
-    created_by: Optional[int] = 0
-    program_type_id: Optional[int] = 0
-    specialization_area_id: Optional[int] = 0
-    institute_unit_id: Optional[int] = 0
+    reg_code: Optional[str] = None
+    program_category_id: Optional[int] = 0
+    department_id: Optional[int] = 0
+    campus_id: Optional[int] = 0
 
 
 @strawberry.type(description="Program outputs")
 class ProgramNode:
     id: int
     uid: str
-    program_number: int
-    code: int
+    code: str
     name: str
     short_name: str
     tcu_code: str
+    nacte_code: str
     duration: int
-    qualification: str
-    max_student: int
-    action: int
-    created_by: int
-    program_type_id: int
-    specialization_area_id: int
-    institute_unit_id: int
+    reg_code: str
+    program_category_id: int
+    department_id: int
+    campus_id: int
+
+
+@strawberry.input(description="program_sem_unit Input")
+class ProgramSemester:
+    uid: Optional[str] = None
+    program_code: str
+    ac_year: int
+    study_year: int
+    semester: Optional[int] = 0
+    core_cwt: Optional[float] = 0
+    opt_cwt: Optional[float] = 0
+    created_by: str
+
+
+@strawberry.type(description="program_sem_unit output")
+class ProgramSemesterNode:
+    id: str
+    uid: str
+    program_code: str
+    ac_year: int
+    study_year: int
+    semester: int
+    core_cwt: int
+    opt_cwt: int
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
 
 
 @strawberry.input(description="Course Input")

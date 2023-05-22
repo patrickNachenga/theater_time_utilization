@@ -2,7 +2,7 @@ from typing import List
 
 import strawberry
 
-from src.modules.program.service import ProgramService
+from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramNode, ProgramInput
@@ -32,9 +32,9 @@ class ProgramMutation:
             return ProgramService().register_get_program(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register program", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register programs", data=[])
 
-    # delete program
+    # delete programs
     @strawberry.mutation
     async def remove_program(self, uid: str) -> Response[None]:
         """

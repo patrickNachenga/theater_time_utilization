@@ -13,6 +13,10 @@ from src.types import ProgramInput, ProgramNode
 class ProgramService(object):
     @staticmethod
     def get_programs() -> List[Program]:
+        """
+            Get all programs by program
+        :return:List[Program]
+        """
         with session_scope() as session:
             result = session.query(
                 Program.id,
@@ -20,29 +24,26 @@ class ProgramService(object):
                 Program.code,
                 Program.name,
                 Program.short_name,
-                Program.max_student,
                 Program.tcu_code,
-                Program.program_number,
-                Program.program_type_id,
-                Program.created_by,
-                Program.specialization_area_id,
-                Program.institute_unit_id,
-                Program.qualification,
-                Program.action,
-                Program.created_at,
-                Program.updated_at,
+                Program.reg_code,
+                Program.nacte_code,
+                Program.program_category_id,
+                Program.department_id,
+                Program.campus_id,
+                Program.duration,
             ).filter(Program.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
-    def get_program_by_program_numbers(program_numbers: List[str]) -> List[Program]:
+    def get_program_by_ids(ids: List[str]) -> List[Program]:
         """
-            Get program by program_number
-        :return:
+            Get programs by program ids
+        :param:ids
+        :return:List[Program]
         """
         with session_scope() as session:
             stmt = select(Program).where(
-                (Program.program_number.in_(program_numbers)) & (Program.deleted_at.is_(None)))
+                (Program.id.in_(ids)) & (Program.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -50,7 +51,8 @@ class ProgramService(object):
     def get_program_by_uids(uids: List[str]) -> List[Program]:
         """
             Get programs by uids
-        :return:
+        :param:uids
+        :return:List[Program]
         """
         with session_scope() as session:
             stmt = select(Program).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
@@ -58,15 +60,15 @@ class ProgramService(object):
             return result.all()
 
     @staticmethod
-    def get_program_by_program_number(program_number: str) -> Program:
+    def get_program_by_id(id: str) -> Program:
         """
-        Get Program by program_numbers
-        :param:
-        :return:
+        Get Program by id
+        :param:id
+        :return:Program
         """
         with session_scope() as session:
             stmt = select(Program).where(
-                (Program.program_number == program_number) & (Program.deleted_at.is_(None)))
+                (Program.id == id) & (Program.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
@@ -78,9 +80,9 @@ class ProgramService(object):
         """
         program_list = []
         with session_scope() as session:
-            # Check if program already exist using program_number
-            existed_program_list = self.get_program_by_program_numbers(
-                [Program.program_number for program in inputs if program.uid is None])
+            # Check if programs already exist using program_number
+            existed_program_list = self.get_program_by_uids(
+                [Program.uid for program in inputs if program.uid is None])
             if existed_program_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_list,
                                 message="Program Already Exists")
@@ -89,39 +91,33 @@ class ProgramService(object):
             for inputItem in inputs:
                 if inputItem.uid is None:
                     program = Program(
-                        program_number=inputItem.program_number,
                         code=inputItem.code,
                         name=inputItem.name,
                         short_name=inputItem.short_name,
                         tcu_code=inputItem.tcu_code,
+                        reg_code=inputItem.reg_code,
+                        nacte_code=inputItem.nacte_code,
+                        program_category_id=inputItem.program_category_id,
+                        department_id=inputItem.department_id,
+                        campus_id=inputItem.campus_id,
                         duration=inputItem.duration,
-                        qualification=inputItem.qualification,
-                        max_student=inputItem.max_student,
-                        action=inputItem.action,
-                        created_by=inputItem.created_by,
-                        program_type_id=inputItem.program_type_id,
-                        specialization_area_id=inputItem.specialization_area_id,
-                        institute_unit_id=inputItem.institute_unit_id,
                     )
                     program_list.append(program)
                 else:
                     program = next(filter(lambda program: str(program.uid) == str(inputItem.uid),
-                                            existed_program), None)
+                                          existed_program), None)
 
                     if program:
-                        program.program_number = inputItem.program_number,
-                        program.code = inputItem.code,
-                        program.name = inputItem.name,
-                        program.short_name = inputItem.short_name,
-                        program.tcu_code = inputItem.tcu_code,
-                        program.duration = inputItem.duration,
-                        program.qualification = inputItem.qualification,
-                        program.max_student = inputItem.max_student,
-                        program.action = inputItem.action,
-                        program.created_by = inputItem.created_by,
-                        program.program_type_id = inputItem.program_type_id,
-                        program.specialization_area_id = inputItem.specialization_area_id,
-                        program.institute_unit_id = inputItem.institute_unit_id,
+                        Program.code = inputItem.department_id,
+                        Program.name = inputItem.name,
+                        Program.short_name = inputItem.short_name,
+                        Program.tcu_code = inputItem.tcu_code,
+                        Program.reg_code = inputItem.reg_code,
+                        Program.nacte_code = inputItem.nacte_code,
+                        Program.program_category_id = inputItem.program_category_id,
+                        Program.department_id = inputItem.department_id,
+                        Program.campus_id = inputItem.campus_id,
+                        Program.duration = inputItem.duration,
                         program_list.append(program)
             session.add_all(program_list)
             session.commit()
