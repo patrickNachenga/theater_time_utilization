@@ -4,6 +4,90 @@ from typing import Optional
 import strawberry
 
 
+@strawberry.input(description="Examcat Groups Input")
+class ExamCatGroupsInput:
+    uid: Optional[str] = None
+    id: int
+    name: str
+
+
+@strawberry.type(description="Exam category Groups Node")
+class ExamCatGroupsNode:
+    id: int
+    name: str
+
+
+@strawberry.input(description="Exam Category Input")
+class ExamCatsInput:
+    uid: Optional[str] = None
+    id: int
+    name: str
+    code: str
+    exam_group_id: int
+
+
+@strawberry.type(description="Exam Category Node")
+class ExamCatsNode:
+    id: int
+    name: str
+    code: str
+    exam_group_id: int
+
+
+@strawberry.input(description="Exam cat Groups Input")
+class ExamResultsInput:
+    uid: Optional[str] = None
+    id: int
+    student_id: int
+    program_course_id: int
+    exam_cat_id: int
+    assess_no: int
+    score: float
+    out_of: float
+    weight: int
+    status: int
+    publish: int
+
+
+@strawberry.type(description="Exam cat Groups Node")
+class ExamResultsNode:
+    id: int
+    student_id: int
+    program_course_id: int
+    exam_cat_id: int
+    assess_no: int
+    score: float
+    out_of: float
+    weight: int
+    status: int
+    publish: int
+
+
+@strawberry.input(description="Exam cat Groups Input")
+class ExamSummaryInput:
+    uid: Optional[str] = None
+    id: int
+    student_id: int
+    program_course_id: int
+    marks: float
+    gp: float
+    grade: str
+    remarks: str
+    status: int
+
+
+@strawberry.type(description="Exam Summary Node")
+class ExamSummaryNode:
+    id: int
+    student_id: int
+    program_course_id: int
+    marks: float
+    gp: float
+    grade: str
+    remarks: str
+    status: int
+
+
 @strawberry.input(description="Student Input")
 class StudentInput:
     uid: Optional[str] = None
