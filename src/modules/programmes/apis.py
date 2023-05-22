@@ -5,7 +5,7 @@ import strawberry
 from src.modules.programmes.service import ProgrammeService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StaffNode, StaffInput, ProgrammeNode, ProgrammeInput
+from src.types import ProgrammeNode, ProgrammeInput
 
 
 @strawberry.type

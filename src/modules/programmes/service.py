@@ -80,7 +80,7 @@ class ProgrammeService(object):
         with session_scope() as session:
             # Check if programme already exist using programme_number
             existed_programme_list = self.get_programme_by_programme_numbers(
-                [Programme.programme_numbers for programme in inputs if programme.uid is None])
+                [Programme.programme_number for programme in inputs if programme.uid is None])
             if existed_programme_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_programme_list,
                                 message="Programme Already Exists")
