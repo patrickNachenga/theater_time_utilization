@@ -56,10 +56,10 @@ class ProgramCategoryNode:
     name: str
 
 
-@strawberry.input(description="Programme Input")
-class ProgrammeInput:
+@strawberry.input(description="Program Input")
+class ProgramInput:
     uid: Optional[str] = None
-    programme_number: int
+    program_number: int
     code: int
     name: str
     short_name: str
@@ -70,16 +70,16 @@ class ProgrammeInput:
     action: Optional[int] = 0
     # list of keys/relational attribute
     created_by: Optional[int] = 0
-    programme_type_id: Optional[int] = 0
+    program_type_id: Optional[int] = 0
     specialization_area_id: Optional[int] = 0
     institute_unit_id: Optional[int] = 0
 
 
-@strawberry.type(description="Programme outputs")
-class ProgrammeNode:
+@strawberry.type(description="Program outputs")
+class ProgramNode:
     id: int
     uid: str
-    programme_number: int
+    program_number: int
     code: int
     name: str
     short_name: str
@@ -89,7 +89,7 @@ class ProgrammeNode:
     max_student: int
     action: int
     created_by: int
-    programme_type_id: int
+    program_type_id: int
     specialization_area_id: int
     institute_unit_id: int
 

@@ -23,5 +23,5 @@ from .staff import Staff
 from .student import Student
 from .program_category import ProgramCategory
 from .course import Course
-from .programme import Programme
+from .program import Program
 from .group import Group

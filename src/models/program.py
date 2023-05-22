@@ -3,10 +3,10 @@ from sqlalchemy import Column, Integer, String
 from src.models import BaseModel
 
 
-class Programme(BaseModel):
-    __tablename__ = "programme"
+class Program(BaseModel):
+    __tablename__ = "program"
     id: int = Column(Integer, primary_key=True, index=True)
-    programme_number: int = Column(Integer, nullable=False, unique=True)
+    program_number: int = Column(Integer, nullable=False, unique=True)
     code: int = Column(Integer, nullable=False, unique=False)
     name: str = Column(String, nullable=False, unique=True)
     short_name: str = Column(String, nullable=False, unique=False)
@@ -17,7 +17,7 @@ class Programme(BaseModel):
     action: int = Column(Integer, nullable=True, index=True)
     # list of keys/relational attribute
     created_by: int = Column(Integer, nullable=True, index=True)
-    programme_type_id: int = Column(Integer, nullable=True, index=True)
+    program_type_id: int = Column(Integer, nullable=True, index=True)
     specialization_area_id: int = Column(Integer, nullable=True, index=True)
     institute_unit_id: int = Column(String, nullable=True, unique=True)
 

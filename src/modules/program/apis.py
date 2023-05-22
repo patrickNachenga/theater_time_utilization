@@ -2,52 +2,52 @@ from typing import List
 
 import strawberry
 
-from src.modules.programmes.service import ProgrammeService
+from src.modules.program.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgrammeNode, ProgrammeInput
+from src.types import ProgramNode, ProgramInput
 
 
 @strawberry.type
-class ProgrammeQuery:
+class ProgramQuery:
     @strawberry.field
-    def get_programmes(self) -> Response[List[ProgrammeNode]]:
+    def get_programs(self) -> Response[List[ProgramNode]]:
         try:
-            result = ProgrammeService.get_programmes()
+            result = ProgramService.get_programs()
         except Exception as e:
             print(e)
             result = []
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Programme retrieved successfully",
+            message="Program retrieved successfully",
             data=result)
 
 
 @strawberry.type
-class ProgrammeMutation:
+class ProgramMutation:
     @strawberry.field
-    def register_programme(self, inputs: List[ProgrammeInput]) -> Response[List[ProgrammeNode]]:
+    def register_program(self, inputs: List[ProgramInput]) -> Response[List[ProgramNode]]:
         try:
-            return ProgrammeService().register_get_programme(inputs)
+            return ProgramService().register_get_program(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register programme", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register program", data=[])
 
-    # delete programme
+    # delete program
     @strawberry.mutation
-    async def remove_programme(self, uid: str) -> Response[None]:
+    async def remove_program(self, uid: str) -> Response[None]:
         """
         Remove student By UID
         :param uid:
         :return:
         """
         try:
-            ProgrammeService.remove_programme(uid)
+            ProgramService.remove_program(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Programme Removed Successfully",
+                message="Program Removed Successfully",
                 data=None
             )
         except Exception as e:
@@ -55,6 +55,6 @@ class ProgrammeMutation:
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,
-                message="Failed to Remove Programme",
+                message="Failed to Remove Program",
                 data=None
             )
