@@ -24,7 +24,7 @@ class ProgramCategoryService(object):
     @staticmethod
     def get_program_categories_by_ids(ids: List[str]) -> List[ProgramCategory]:
         """
-        Get program categories by ids
+        Get programs categories by ids
         :return:
         """
         with session_scope() as session:
@@ -35,7 +35,7 @@ class ProgramCategoryService(object):
     @staticmethod
     def get_program_categories_by_uids(uids: List[str]) -> List[ProgramCategory]:
         """
-        Get program category by uids
+        Get programs category by uids
         :return:
         """
         with session_scope() as session:
@@ -46,7 +46,7 @@ class ProgramCategoryService(object):
 
     def register_program_categories(self, inputs: List[ProgramCategoryInput]) -> Response[List[ProgramCategoryNode]]:
         """
-        Register program categories
+        Register programs categories
         :param inputs:
         :return:
 
@@ -60,8 +60,10 @@ class ProgramCategoryService(object):
             if existed_program_category_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_category_list,
                                 message="Program Category Already Exists")
+
             # check for existing program categories using uid
             existed_program_category = self.get_program_categories_by_uids([input.uid for input in inputs])
+
             for inputItem in inputs:
                 if inputItem.uid is None:
                     program_category = ProgramCategory(uid=inputItem.uid)

@@ -6,7 +6,7 @@ from src.models import Group
 from src.modules.groups.service import GroupService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, CourseNode, GroupNode, GroupInput
+from src.types import GroupNode, GroupInput
 
 
 @strawberry.type
@@ -33,3 +33,28 @@ class GroupMutation:
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register Groups", data=[])
+
+    # delete Group
+    @strawberry.mutation
+    async def remove_group(self, uid: str) -> Response[None]:
+        """
+        Remove Group By UID
+        :param uid:
+        :return:
+        """
+        try:
+            GroupService.remove_group(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Group Removed Successfully",
+                data=None
+            )
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Remove Group",
+                data=None
+            )
