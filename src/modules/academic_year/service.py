@@ -109,3 +109,5 @@ class AcademicYearService(object):
         with session_scope() as session:
             session.query(AcademicYear).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
             session.commit()
+
+

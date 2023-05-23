@@ -226,6 +226,49 @@ class CourseNode:
     department_uid: str
 
 
+@strawberry.input(description="Academic Year Input")
+class AcademicYearInput:
+    uid: Optional[str] = None
+    id:int
+    name: str
+    status: Optional[int]=1
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+@strawberry.type(description="Academic Year")
+class AcademicYearNode:
+    id: int
+    uid: str
+    name: str
+    status: Optional[int]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+
+
+@strawberry.type(description="Course Assessment")
+class CourseAssessmentNode:
+    id: int
+    uid: str
+    program_course_id: int
+    exam_category_id: int
+    minimum_exams: int
+    can_exceed_minimum: Optional[int]=0
+    maximum_score: int
+
+
+@strawberry.input(description="Course Assessment Input")
+class CourseAssessmentInput:
+    uid: Optional[str] = None
+    id:int
+    program_course_id: int
+    exam_category_id: int
+    minimum_exams: int
+    can_exceed_minimum: Optional[int]=0
+    maximum_score: int
+
+
+
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str
