@@ -25,7 +25,7 @@ from .program_category import ProgramCategory
 from .course import Course
 from .program import Program
 from .group import Group
-from .program_sem_unit import ProgramSemester
+from .program_semester import ProgramSemester
 from .program_course import ProgramCourse
 from .exam_cat_groups import ExamCatGroups
 from .exam_cats import ExamCats

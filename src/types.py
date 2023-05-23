@@ -136,6 +136,7 @@ class GroupNode:
 class ProgramCategoryInput:
     uid: Optional[str] = None
     name: str
+    description: Optional[str] = None
 
 
 @strawberry.type(description="Program Category")
@@ -143,6 +144,10 @@ class ProgramCategoryNode:
     id: int
     uid: str
     name: str
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
 
 
 @strawberry.input(description="Program Input")

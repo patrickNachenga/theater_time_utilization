@@ -2,7 +2,7 @@ from typing import List
 
 import strawberry
 
-from src.modules.program_semister.service import ProgramSemesterService
+from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramSemesterNode, ProgramSemester

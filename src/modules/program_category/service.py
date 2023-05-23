@@ -15,7 +15,9 @@ class ProgramCategoryService(object):
         with session_scope() as session:
             result = session.query(
                 ProgramCategory.id,
-                ProgramCategory.pf_number,
+                ProgramCategory.uid,
+                ProgramCategory.name,
+                ProgramCategory.created_by,
                 ProgramCategory.created_at,
                 ProgramCategory.updated_at,
             ).filter(ProgramCategory.deleted_at.is_(None)).all()
