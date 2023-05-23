@@ -36,7 +36,7 @@ class ProgramCategoryService(object):
             return result.all()
 
     @staticmethod
-    def get_program_category_by_uids(uids: List[str]) -> List[ProgramCategory]:
+    def get_program_categories_by_uids(uids: List[str]) -> List[ProgramCategory]:
         """
         Get programs category by uids
         :return:
@@ -55,14 +55,14 @@ class ProgramCategoryService(object):
         """
         program_category_list = []
         with session_scope() as session:
-            # Check if the programs category already exist using uid
-            existed_program_category_list = self.get_program_category_by_uids(
+            # Check if the program category already exist using uid
+            existed_program_category_list = self.get_program_categories_by_uids(
                 [program_category.uid for program_category in inputs if program_category.uid is None])
             if existed_program_category_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_category_list,
                                 message="Program Category Already Exists")
             # check for existing programs categories using uid
-            existed_program_category = self.get_program_category_by_uids([inputItem.uid for inputItem in inputs])
+            existed_program_category = self.get_program_categories_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
                     program_category = ProgramCategory(
