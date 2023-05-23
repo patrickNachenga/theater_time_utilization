@@ -13,7 +13,7 @@ class ProgramCategoryQuery:
     @strawberry.field
     def get_program_category(self) -> Response[List[ProgramCategoryNode]]:
         try:
-            result = ProgramCategoryService.get_program_category()
+            result = ProgramCategoryService.get_program_categories()
         except Exception as e:
             print(e)
             result = []
