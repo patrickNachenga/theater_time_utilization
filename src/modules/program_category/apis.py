@@ -30,7 +30,6 @@ class ProgramCategoryMutation:
     def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[List[ProgramCategoryNode]]:
         try:
             return ProgramCategoryService().register_program_categories(inputs)
-
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",

@@ -62,7 +62,7 @@ class ProgramCategoryService(object):
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_category_list,
                                 message="Program Category Already Exists")
             # check for existing programs categories using uid
-            existed_program_category = self.get_program_category_by_uids([input.uid for input in inputs])
+            existed_program_category = self.get_program_category_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
                     program_category = ProgramCategory(

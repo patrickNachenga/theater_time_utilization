@@ -150,6 +150,33 @@ class ProgramCategoryNode:
     updated_at: datetime
 
 
+@strawberry.input(description="Program Semester Input")
+class ProgramSemesterInput:
+    uid: Optional[str] = None
+    program_id: str
+    academic_year_id: str
+    study_year: int
+    semester: int
+    core_credits: float
+    elective_credits: float
+    created_by: Optional[str] = None
+
+
+@strawberry.type(description="Program Semester output")
+class ProgramSemesterNode:
+    id: int
+    uid: str
+    program_id: str
+    academic_year_id: str
+    study_year: int
+    semester: int
+    core_credits: float
+    elective_credits: float
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -184,12 +211,12 @@ class ProgramNode:
 @strawberry.input(description="program_sem_unit Input")
 class ProgramSemester:
     uid: Optional[str] = None
-    program_code: str
-    ac_year: int
+    program_id: str
+    academic_year_id: str
     study_year: int
-    semester: Optional[int] = 0
-    core_cwt: Optional[float] = 0
-    opt_cwt: Optional[float] = 0
+    semester: int
+    core_credits: float
+    elective_credits: float
     created_by: str
 
 
@@ -197,15 +224,13 @@ class ProgramSemester:
 class ProgramSemesterNode:
     id: str
     uid: str
-    program_code: str
-    ac_year: int
+    program_id: str
+    academic_year_id: str
     study_year: int
     semester: int
-    core_cwt: int
-    opt_cwt: int
+    core_credits: float
+    elective_credits: float
     created_by: str
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.input(description="Course Input")
