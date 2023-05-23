@@ -39,18 +39,16 @@ class ProgramCategoryService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCategory).where((ProgramCategory.uid.in_(uids)) & (ProgramCategory.deleted_at.is_(None)))
+            stmt = select(ProgramCategory).where(
+                (ProgramCategory.uid.in_(uids)) & (ProgramCategory.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
-
 
     def register_program_categories(self, inputs: List[ProgramCategoryInput]) -> Response[List[ProgramCategoryNode]]:
         """
         Register programs categories
         :param inputs:
         :return:
-
-
         """
         program_category_list = []
         with session_scope() as session:
@@ -67,8 +65,9 @@ class ProgramCategoryService(object):
                     program_category = ProgramCategory(uid=inputItem.uid)
                     program_category_list.append(program_category)
                 else:
-                    program_category = next(filter(lambda program_category: str(program_category.uid) == str(inputItem.uid),
-                                        existed_program_category), None)
+                    program_category = next(
+                        filter(lambda program_category: str(program_category.uid) == str(inputItem.uid),
+                               existed_program_category), None)
 
                     if program_category:
                         program_category.uid = inputItem.uid
@@ -77,6 +76,7 @@ class ProgramCategoryService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=program_category_list,
                             message="Successfully Submitted")
+
     # Delete FUnction
     @staticmethod
     def remove_program_category(uid: str):

@@ -2,7 +2,7 @@ from typing import List
 
 import strawberry
 
-from src.modules.program_type.service import ProgramCategoryService
+from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCategoryInput, ProgramCategoryNode
@@ -36,7 +36,7 @@ class ProgramCategoryMutation:
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
                             data=[])
 
-    #Delete programs type function
+    # Delete programs type function
     @strawberry.mutation
     async def remove_program_category(self, uid: str) -> Response[None]:
         """

@@ -6,8 +6,9 @@ from src.models import BaseModel
 class ProgramCourse(BaseModel):
     __tablename__ = "program_course"
     id: int = Column(Integer, primary_key=True, index=True, unique=False)
-    sem_units_id: int = Column(Integer, nullable=True)
-    course_code: str = Column(String, nullable=False)
+    program_semester_id: str = Column(String, nullable=False)
+    course_id: str = Column(String, nullable=False)
+    course_category_id: str = Column(String, nullable=False)
     crelid: int = Column(Integer, nullable=False)
     cwt: int = Column(Integer, nullable=False)
     lhr: int = Column(Integer, nullable=False)
@@ -18,6 +19,11 @@ class ProgramCourse(BaseModel):
     created_by: int = Column(Integer, nullable=True, index=True)
     passmark: float = Column(Float(precision=4), nullable=True, index=True)
     action: str = Column(String[1], nullable=True, unique=True)
+
+
+
+
+
 
 
 

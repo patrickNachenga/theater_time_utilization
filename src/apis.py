@@ -2,7 +2,7 @@ import strawberry
 
 from src.modules.course.apis import CourseQuery, CourseMutation
 from src.modules.groups.apis import GroupQuery, GroupMutation
-from src.modules.program_type.apis import ProgramCategoryQuery, ProgramCategoryMutation
+from src.modules.program_category.apis import ProgramCategoryQuery, ProgramCategoryMutation
 from src.modules.programs.apis import ProgramQuery, ProgramMutation
 from src.modules.staff.apis import StaffQuery, StaffMutation
 from src.modules.students.apis import StudentQuery, StudentMutation

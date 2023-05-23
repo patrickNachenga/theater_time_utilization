@@ -236,5 +236,12 @@ class LoginError:
     status: bool
     message: str | None = None
 
+@strawberry.input
+class Pagination:
+    page: int
+    limit: int
+    search: Optional[str] = None
+
+
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))

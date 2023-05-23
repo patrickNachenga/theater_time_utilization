@@ -29,7 +29,7 @@ class ProgramMutation:
     @strawberry.field
     def register_program(self, inputs: List[ProgramInput]) -> Response[List[ProgramNode]]:
         try:
-            return ProgramService().register_get_program(inputs)
+            return ProgramService().register_program(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register programs", data=[])
