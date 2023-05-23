@@ -45,7 +45,7 @@ class ProgramCategoryMutation:
         :return:
         """
         try:
-            ProgramCategoryService().(uid)
+            ProgramCategoryService().remove_program_category(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

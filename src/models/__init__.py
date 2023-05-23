@@ -31,3 +31,4 @@ from .exam_cat_groups import ExamCatGroups
 from .exam_cats import ExamCats
 from .exam_results import ExamResults
 from .exam_summary import ExamSummary
+from .academic_year import AcademicYear
