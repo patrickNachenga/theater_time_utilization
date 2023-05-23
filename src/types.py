@@ -96,8 +96,13 @@ class ProgrammeNode:
 
 @strawberry.input(description="Course Input")
 class CourseInput:
-    id: Optional[str] = None
+    uid: Optional[str] = None
     code: str
+    description: Optional[str] = None
+    name: str
+    short_name: Optional[str] = None
+    offered: Optional[int] = 1
+    department_uid: str
 
 
 @strawberry.type(description="Course")
@@ -105,6 +110,11 @@ class CourseNode:
     id: int
     uid: str
     code: str
+    description: str
+    name: str
+    short_name: str
+    offered: int
+    department_uid: str
 
 
 @strawberry.type(description="User Token")

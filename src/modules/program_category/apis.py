@@ -2,7 +2,7 @@ from typing import List
 
 import strawberry
 
-from src.modules.program_type.service import ProgramCategoryService
+from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCategoryInput, ProgramCategoryNode
@@ -13,7 +13,7 @@ class ProgramCategoryQuery:
     @strawberry.field
     def get_program_category(self) -> Response[List[ProgramCategoryNode]]:
         try:
-            result = ProgramCategoryService.get_program_category()
+            result = ProgramCategoryService.get_program_categories()
         except Exception as e:
             print(e)
             result = []

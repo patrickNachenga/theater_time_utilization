@@ -1,12 +1,14 @@
 from typing import List
+
+import pendulum
 from sqlalchemy import select
+
 from src.db.session import session_scope
 from src.models import Course
 from src.models.student import Student
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentInput, StudentNode, CourseInput, CourseNode
-import pendulum
+from src.types import CourseInput, CourseNode
 
 
 class CourseService(object):
@@ -22,9 +24,9 @@ class CourseService(object):
             return result
 
     @staticmethod
-    def get_courses_by_code(codes: List[str]) -> List[Course]:
+    def get_courses_by_codes(codes: List[str]) -> List[Course]:
         """
-        Get Students by reg_nos
+        Get courses by code
         :return:
         """
         with session_scope() as session:
@@ -63,24 +65,35 @@ class CourseService(object):
         """
         course_list = []
         with session_scope() as session:
-            # Check if course already exist using uid
-            existed_course_list = self.get_courses_by_uids(
-                [course.uid for course in inputs if course.uid is None])
+            # Check if the course already exist using uid
+            existed_course_list = self.get_courses_by_codes(
+                [course.code for course in inputs if course.uid is None])
             if existed_course_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_list,
                                 message="Student Already Exists")
             # check for existing course using uid
-            existed_course = self.get_courses_by_uids([inputItem.uid for inputItem in inputs])
+            existed_course = self.get_courses_by_codes([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
-                    course = Course(uid=inputItem.uid)
+                    course = Course(
+                        code=inputItem.code,
+                        description=inputItem.description,
+                        name=inputItem.name,
+                        short_name=inputItem.short_name,
+                        offered=inputItem.offered,
+                        department_uid=inputItem.department_uid
+                    )
                     course_list.append(course)
                 else:
                     course = next(filter(lambda course: str(course.uid) == str(inputItem.uid),
                                          existed_course), None)
-
                     if course:
-                        course.reg_no = inputItem.uid
+                        course.code = inputItem.code,
+                        course.description = inputItem.description,
+                        course.name = inputItem.name,
+                        course.short_name = inputItem.short_name,
+                        course.offered = inputItem.offered,
+                        course.department_uid = inputItem.department_uid
                         course_list.append(course)
             session.add_all(course_list)
             session.commit()
@@ -91,7 +104,7 @@ class CourseService(object):
     @staticmethod
     def remove_course(uid: str):
         """
-        Remove Service by UID
+        Remove course by UID
         :param uid:
         :return:
         """
