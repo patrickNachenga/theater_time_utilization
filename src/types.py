@@ -209,9 +209,8 @@ class CourseInput:
     code: str
     description: Optional[str] = None
     name: str
-    short_name: Optional[str] = None
     offered: Optional[int] = 1
-    department_uid: str
+    department_id: str
 
 
 @strawberry.type(description="Course")
@@ -221,9 +220,8 @@ class CourseNode:
     code: str
     description: str
     name: str
-    short_name: str
     offered: int
-    department_uid: str
+    department_id: str
 
 
 @strawberry.type(description="User Token")

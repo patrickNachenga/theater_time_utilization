@@ -17,9 +17,14 @@ class CourseService(object):
         with session_scope() as session:
             result = session.query(
                 Course.id,
-                Course.reg_no,
-                Course.created_at,
-                Course.updated_at,
+                Course.uid,
+                Course.code,
+                Course.department_id,
+                Course.description,
+                Course.name,
+
+                Course.offered,
+                Course.department_id
             ).filter(Course.deleted_at.is_(None)).all()
             return result
 
@@ -79,9 +84,8 @@ class CourseService(object):
                         code=inputItem.code,
                         description=inputItem.description,
                         name=inputItem.name,
-                        short_name=inputItem.short_name,
                         offered=inputItem.offered,
-                        department_uid=inputItem.department_uid
+                        department_id=inputItem.department_id
                     )
                     course_list.append(course)
                 else:
@@ -91,9 +95,8 @@ class CourseService(object):
                         course.code = inputItem.code,
                         course.description = inputItem.description,
                         course.name = inputItem.name,
-                        course.short_name = inputItem.short_name,
                         course.offered = inputItem.offered,
-                        course.department_uid = inputItem.department_uid
+                        course.department_id = inputItem.department_id
                         course_list.append(course)
             session.add_all(course_list)
             session.commit()
