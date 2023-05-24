@@ -34,7 +34,7 @@ class StudentMutation:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register students", data=[])
 
-    #Delete student function
+    # Delete student function
     @strawberry.mutation
     async def remove_student(self, uid: str) -> Response[None]:
         """

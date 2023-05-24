@@ -136,6 +136,7 @@ class GroupNode:
 class ProgramCategoryInput:
     uid: Optional[str] = None
     name: str
+    short_name: Optional[str] = None
 
 
 @strawberry.type(description="Program Category")
@@ -143,6 +144,56 @@ class ProgramCategoryNode:
     id: int
     uid: str
     name: str
+    short_name: str
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@strawberry.input(description="Program Semester Input")
+class ProgramSemesterInput:
+    uid: Optional[str] = None
+    program_id: str
+    academic_year_id: str
+    study_year: int
+    semester: int
+    core_credits: float
+    elective_credits: float
+    created_by: Optional[str] = None
+
+
+@strawberry.type(description="Program Semester output")
+class ProgramSemesterNode:
+    id: int
+    uid: str
+    program_id: str
+    academic_year_id: str
+    study_year: int
+    semester: int
+    core_credits: float
+    elective_credits: float
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@strawberry.input(description="Course Learn Outcome Input")
+class CourseLearnOutcomeInput:
+    uid: Optional[str] = None
+    staff_id: str
+    program_course_id: str
+    learning_outcome: str
+
+
+@strawberry.type(description="Course Learn outcome")
+class CourseLearnOutcomeNode:
+    id: int
+    uid: str
+    staff_id: str
+    program_course_id: str
+    learning_outcome: str
+    created_at: datetime
+    updated_at: datetime
 
 
 @strawberry.input(description="Program Input")
@@ -179,12 +230,12 @@ class ProgramNode:
 @strawberry.input(description="program_sem_unit Input")
 class ProgramSemester:
     uid: Optional[str] = None
-    program_code: str
-    ac_year: int
+    program_id: str
+    academic_year_id: str
     study_year: int
-    semester: Optional[int] = 0
-    core_cwt: Optional[float] = 0
-    opt_cwt: Optional[float] = 0
+    semester: int
+    core_credits: float
+    elective_credits: float
     created_by: str
 
 
@@ -192,15 +243,13 @@ class ProgramSemester:
 class ProgramSemesterNode:
     id: str
     uid: str
-    program_code: str
-    ac_year: int
+    program_id: str
+    academic_year_id: str
     study_year: int
     semester: int
-    core_cwt: int
-    opt_cwt: int
+    core_credits: float
+    elective_credits: float
     created_by: str
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.input(description="Course Input")
@@ -209,8 +258,9 @@ class CourseInput:
     code: str
     description: Optional[str] = None
     name: str
+    short_name: Optional[str] = None
     offered: Optional[int] = 1
-    department_id: str
+    department_uid: str
 
 
 @strawberry.type(description="Course")
@@ -220,8 +270,51 @@ class CourseNode:
     code: str
     description: str
     name: str
+    short_name: str
     offered: int
-    department_id: str
+    department_uid: str
+
+
+@strawberry.input(description="Academic Year Input")
+class AcademicYearInput:
+    uid: Optional[str] = None
+    id: int
+    name: str
+    status: Optional[int] = 1
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+@strawberry.type(description="Academic Year")
+class AcademicYearNode:
+    id: int
+    uid: str
+    name: str
+    status: Optional[int]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+
+
+@strawberry.type(description="Course Assessment")
+class CourseAssessmentNode:
+    id: int
+    uid: str
+    program_course_id: int
+    exam_category_id: int
+    minimum_exams: int
+    can_exceed_minimum: Optional[int] = 0
+    maximum_score: int
+
+
+@strawberry.input(description="Course Assessment Input")
+class CourseAssessmentInput:
+    uid: Optional[str] = None
+    id: int
+    program_course_id: int
+    exam_category_id: int
+    minimum_exams: int
+    can_exceed_minimum: Optional[int] = 0
+    maximum_score: int
 
 @strawberry.input(description="Course Category Input")
 class CourseCategoryInput:
@@ -274,6 +367,13 @@ class LoginSuccess:
 class LoginError:
     status: bool
     message: str | None = None
+
+
+@strawberry.input
+class Pagination:
+    page: int
+    limit: int
+    search: Optional[str] = None
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
