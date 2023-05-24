@@ -177,6 +177,25 @@ class ProgramSemesterNode:
     updated_at: datetime
 
 
+@strawberry.input(description="Course Learn Outcome Input")
+class CourseLearnOutcomeInput:
+    uid: Optional[str] = None
+    staff_id: str
+    program_course_id: str
+    learning_outcome: str
+
+
+@strawberry.type(description="Course Learn outcome")
+class CourseLearnOutcomeNode:
+    id: int
+    uid: str
+    staff_id: str
+    program_course_id: str
+    learning_outcome: str
+    created_at: datetime
+    updated_at: datetime
+
+
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -259,9 +278,9 @@ class CourseNode:
 @strawberry.input(description="Academic Year Input")
 class AcademicYearInput:
     uid: Optional[str] = None
-    id:int
+    id: int
     name: str
-    status: Optional[int]=1
+    status: Optional[int] = 1
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
 
@@ -283,20 +302,19 @@ class CourseAssessmentNode:
     program_course_id: int
     exam_category_id: int
     minimum_exams: int
-    can_exceed_minimum: Optional[int]=0
+    can_exceed_minimum: Optional[int] = 0
     maximum_score: int
 
 
 @strawberry.input(description="Course Assessment Input")
 class CourseAssessmentInput:
     uid: Optional[str] = None
-    id:int
+    id: int
     program_course_id: int
     exam_category_id: int
     minimum_exams: int
-    can_exceed_minimum: Optional[int]=0
+    can_exceed_minimum: Optional[int] = 0
     maximum_score: int
-
 
 
 @strawberry.type(description="User Token")

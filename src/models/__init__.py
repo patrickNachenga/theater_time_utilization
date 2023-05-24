@@ -19,17 +19,24 @@ class BaseModel(Base):
     created_by = Column(Integer, nullable=True)
 
 
-from .staff import Staff
-from .student import Student
-from .program_category import ProgramCategory
+from .academic_year import AcademicYear
+
+
 from .course import Course
-from .program import Program
-from .group import Group
-from .program_semester import ProgramSemester
-from .program_course import ProgramCourse
+from .course_assessment import CourseAssessment
+from .course_learn_outcome import CourseLearnOutcome
+
 from .exam_cat_groups import ExamCatGroups
 from .exam_cats import ExamCats
 from .exam_results import ExamResults
 from .exam_summary import ExamSummary
-from .academic_year import AcademicYear
-from .course_assessment import CourseAssessment
+
+from .group import Group
+
+from .program import Program
+from .program_course import ProgramCourse
+from .program_category import ProgramCategory
+from .program_semester import ProgramSemester
+
+from .staff import Staff
+from .student import Student
