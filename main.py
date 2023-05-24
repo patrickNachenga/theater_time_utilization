@@ -1,7 +1,6 @@
 from starlette.middleware.cors import CORSMiddleware
 
 from src.app import RegistrationApp
-from src.core.redis import redis_dependency
 from src.db.session import database
 
 app = RegistrationApp()
@@ -24,7 +23,7 @@ async def startup():
     await database.connect()
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
-    await redis_dependency.init()
+    # await redis_dependency.init()
 
 
 @app.on_event("shutdown")
