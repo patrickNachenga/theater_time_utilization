@@ -31,6 +31,11 @@ from .exam_cats import ExamCats
 from .exam_results import ExamResults
 from .exam_summary import ExamSummary
 
+from .course_category import CourseCategory
+from .course_allocation import CourseAllocation
+
+
+
 from .group import Group
 
 from .program import Program
@@ -40,3 +45,4 @@ from .program_semester import ProgramSemester
 
 from .staff import Staff
 from .student import Student
+

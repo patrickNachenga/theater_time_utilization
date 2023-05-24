@@ -75,7 +75,7 @@ class CourseService(object):
                 [course.code for course in inputs if course.uid is None])
             if existed_course_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_list,
-                                message="Student Already Exists")
+                                message="Course Already Exists")
             # check for existing course using uid
             existed_course = self.get_courses_by_codes([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
