@@ -37,6 +37,18 @@ class AcademicYearService(object):
             return result.all()
 
     @staticmethod
+    def get_academic_year_by_id(id: List[int]) -> List[AcademicYear]:
+        """
+        Get AcademicYear by code
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(AcademicYear).where(
+                (AcademicYear.id.in_(id)) & (AcademicYear.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
     def get_academic_year_by_uids(uids: List[str]) -> List[AcademicYear]:
         """
         Get Academic Year by uids
@@ -74,7 +86,7 @@ class AcademicYearService(object):
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_academic_year_list,
                                 message="Academic Year Already Exists")
             # check for existing course using uid
-            existed_academic_year = self.get_academic_year_by_name([inputItem.uid for inputItem in inputs])
+            existed_academic_year = self.get_academic_year_by_id([inputItem.id for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
                     academic_year = AcademicYear(

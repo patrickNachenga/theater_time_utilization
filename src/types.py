@@ -331,6 +331,58 @@ class CourseAssessmentInput:
     maximum_score: int
 
 
+@strawberry.input(description="Course Category Input")
+class CourseCategoryInput:
+    uid: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+
+
+@strawberry.type(description="Course Category")
+class CourseCategoryNode:
+    id: int
+    uid: str
+    description: str
+    name: str
+
+
+@strawberry.input(description="Course Allocation Input")
+class CourseAllocationInput:
+    uid: Optional[str] = None
+    program_course_id: str
+    staff_id: Optional[str] = None
+
+
+@strawberry.type(description="Course Allocation")
+class CourseAllocationNode:
+    id: int
+    uid: str
+    program_course_id: str
+    staff_id: str
+
+
+@strawberry.type(description="Program Course Assessment Input")
+class ProgramCourseAssessmentNode:
+    id: int
+    uid: str
+    program_course_id: int
+    exam_category_id: int
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
+@strawberry.input(description="Course Assessment Input")
+class ProgramCourseAssessmentInput:
+    uid: Optional[str] = None
+    id: int
+    program_course_id: int
+    exam_category_id: int
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str

@@ -8,7 +8,9 @@ from strawberry.fastapi import GraphQLRouter
 from src.apis import ApiQuery, ApiMutation
 from src.core.config import settings
 from src.core.logger import CustomFormatter
-#from src.core.security import get_context
+
+
+# from src.core.security import get_context
 
 
 class RegistrationApp(FastAPI):

@@ -3,7 +3,7 @@ from typing import List
 import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
-from src.models import ProgramSemester
+from src.models.program_semester import ProgramSemester
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramSemesterInput, ProgramSemesterNode
@@ -59,8 +59,6 @@ class ProgramSemesterService(object):
             existed_program_semester = self.get_program_semester_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
-                    print("===========================================================")
-                    print(inputItem)
                     program_semester = ProgramSemester(
                         study_year=inputItem.study_year,
                         semester=inputItem.semester,
