@@ -14,20 +14,16 @@ from src.modules.exam_cats.apis import ExamCatsQuery, ExamCatsMutation
 from src.modules.exam_cat_groups.apis import ExamCatGroupsQuery, ExamCatGroupsMutation
 from src.modules.academic_year.apis import AcademicYearQuery, AcademicYearMutation
 from src.modules.course_assessment.apis import CourseAssessmentQuery, CourseAssessmentMutation
-from src.modules.program_course_assessment.apis import ProgramCourseAssessmentQuery,ProgramCourseAssessmentMutation
 
 @strawberry.type
 class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, GroupQuery, ProgramQuery,
                ExamCatGroupsQuery,ExamCatsQuery,ExamResultsQuery,
-               ExamSummaryQuery,AcademicYearQuery,CourseAssessmentQuery,ProgramCourseAssessmentQuery
-               ):
+               ExamSummaryQuery,AcademicYearQuery,CourseAssessmentQuery):
     pass
 
 
 @strawberry.type
 class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, CourseMutation, GroupMutation,
                   ProgramMutation, ExamCatGroupsMutation, ExamCatsMutation,
-                  ExamResultsMutation, ExamSummaryMutation,AcademicYearMutation,CourseAssessmentMutation,
-                  ProgramCourseAssessmentMutation
-                  ):
+                  ExamResultsMutation, ExamSummaryMutation,AcademicYearMutation,CourseAssessmentMutation):
     pass
