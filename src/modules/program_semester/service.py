@@ -13,18 +13,7 @@ class ProgramSemesterService(object):
     @staticmethod
     def get_program_semesters() -> List[ProgramSemester]:
         with session_scope() as session:
-            result = session.query(
-                ProgramSemester.id,
-                ProgramSemester.uid,
-                ProgramSemester.program_id,
-                ProgramSemester.created_at,
-                ProgramSemester.updated_at,
-                ProgramSemester.academic_year_id,
-                ProgramSemester.study_year,
-                ProgramSemester.semester,
-                ProgramSemester.core_credits,
-                ProgramSemester.elective_credits
-            ).filter(ProgramSemester.deleted_at.is_(None)).all()
+            result = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -70,6 +59,8 @@ class ProgramSemesterService(object):
             existed_program_semester = self.get_program_semester_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
+                    print("===========================================================")
+                    print(inputItem)
                     program_semester = ProgramSemester(
                         study_year=inputItem.study_year,
                         semester=inputItem.semester,

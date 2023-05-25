@@ -26,9 +26,9 @@ from .course import Course
 from .course_assessment import CourseAssessment
 from .course_learn_outcome import CourseLearnOutcome
 
-from .exam_cat_groups import ExamCatGroups
+from .exam_cat_group import ExamCatGroups
 from .exam_cats import ExamCats
-from .exam_results import ExamResults
+from .exam_result import ExamResults
 from .exam_summary import ExamSummary
 
 from .group import Group

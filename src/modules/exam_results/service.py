@@ -4,7 +4,7 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models.exam_results import ExamResults
+from src.models.exam_result import ExamResults
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamResultsInput, ExamResultsNode

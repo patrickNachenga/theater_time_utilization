@@ -121,9 +121,6 @@ class GroupInput:
     code: str
 
 
-int
-
-
 @strawberry.type(description="Staff")
 class GroupNode:
     id: int
@@ -132,11 +129,27 @@ class GroupNode:
     code: str
 
 
-@strawberry.input(description="Program Category Input")
-class ProgramCategoryInput:
+@strawberry.input(description="Course Input")
+class CourseInput:
     uid: Optional[str] = None
+    code: str
+    description: Optional[str] = None
     name: str
     short_name: Optional[str] = None
+    offered: Optional[int] = 1
+    department_uid: str
+
+
+@strawberry.type(description="Course")
+class CourseNode:
+    id: int
+    uid: str
+    code: str
+    description: str
+    name: str
+    short_name: str
+    offered: int
+    department_uid: str
 
 
 @strawberry.type(description="Program Category")
@@ -145,55 +158,24 @@ class ProgramCategoryNode:
     uid: str
     name: str
     short_name: str
-    created_by: str
+    created_by: int
     created_at: datetime
     updated_at: datetime
 
 
-@strawberry.input(description="Program Semester Input")
-class ProgramSemesterInput:
+@strawberry.input(description="Program Course Input")
+class ProgramCourseInput:
     uid: Optional[str] = None
-    program_id: str
-    academic_year_id: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-    created_by: Optional[str] = None
-
-
-@strawberry.type(description="Program Semester output")
-class ProgramSemesterNode:
-    id: int
-    uid: str
-    program_id: str
-    academic_year_id: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-    created_by: str
-    created_at: datetime
-    updated_at: datetime
-
-
-@strawberry.input(description="Course Learn Outcome Input")
-class CourseLearnOutcomeInput:
-    uid: Optional[str] = None
-    staff_id: str
-    program_course_id: str
-    learning_outcome: str
-
-
-@strawberry.type(description="Course Learn outcome")
-class CourseLearnOutcomeNode:
-    id: int
-    uid: str
-    staff_id: str
-    program_course_id: str
-    learning_outcome: str
-    created_at: datetime
-    updated_at: datetime
+    program_semester_id: int
+    course_id: int
+    course_category_id: int
+    credit: Optional[float] = 0.0
+    lecture_hours: Optional[float] = 0.0
+    seminar_hours: Optional[float] = 0.0
+    practical_hours: Optional[float] = 0.0
+    assignment_hours: Optional[float] = 0.0
+    independent_study_hours: Optional[float] = 0
+    pass_hours: Optional[float] = 0.0
 
 
 @strawberry.input(description="Program Input")
@@ -223,56 +205,88 @@ class ProgramNode:
     duration: int
     reg_code: str
     program_category_id: int
+    program_category: ProgramCategoryNode
     department_id: int
     campus_id: int
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
 
 
-@strawberry.input(description="program_sem_unit Input")
-class ProgramSemester:
+@strawberry.input(description="Program Semester Input")
+class ProgramSemesterInput:
     uid: Optional[str] = None
-    program_id: str
-    academic_year_id: str
+    program_id: int
+    academic_year_id: int
     study_year: int
     semester: int
     core_credits: float
     elective_credits: float
-    created_by: str
+    created_by: Optional[str] = None
 
 
-@strawberry.type(description="program_sem_unit output")
+@strawberry.type(description="Program Semester output")
 class ProgramSemesterNode:
-    id: str
-    uid: str
-    program_id: str
-    academic_year_id: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-    created_by: str
-
-
-@strawberry.input(description="Course Input")
-class CourseInput:
-    uid: Optional[str] = None
-    code: str
-    description: Optional[str] = None
-    name: str
-    short_name: Optional[str] = None
-    offered: Optional[int] = 1
-    department_uid: str
-
-
-@strawberry.type(description="Course")
-class CourseNode:
     id: int
     uid: str
-    code: str
-    description: str
+    program_id: int
+    program: ProgramNode
+    academic_year_id: int
+    study_year: int
+    semester: int
+    core_credits: float
+    elective_credits: float
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@strawberry.type(description="Program Course outputs")
+class ProgramCourseNode:
+    id: int
+    uid: str
+    program_semester_id: int
+    program_semester: ProgramSemesterNode
+    course_id: int
+    course_category_id: int
+    credit: float
+    lecture_hours: float
+    seminar_hours: float
+    practical_hours: float
+    assignment_hours: float
+    independent_study_hours: float
+    pass_hours: float
+    course: CourseNode
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+
+
+@strawberry.input(description="Program Category Input")
+class ProgramCategoryInput:
+    uid: Optional[str] = None
     name: str
-    short_name: str
-    offered: int
-    department_uid: str
+    short_name: Optional[str] = None
+
+
+@strawberry.input(description="Course Learn Outcome Input")
+class CourseLearnOutcomeInput:
+    uid: Optional[str] = None
+    staff_id: str
+    program_course_id: str
+    learning_outcome: str
+
+
+@strawberry.type(description="Course Learn outcome")
+class CourseLearnOutcomeNode:
+    id: int
+    uid: str
+    staff_id: str
+    program_course_id: str
+    learning_outcome: str
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
 
 
 @strawberry.input(description="Academic Year Input")
