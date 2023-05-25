@@ -163,21 +163,6 @@ class ProgramCategoryNode:
     updated_at: datetime
 
 
-@strawberry.input(description="Program Course Input")
-class ProgramCourseInput:
-    uid: Optional[str] = None
-    program_semester_id: int
-    course_id: int
-    course_category_id: int
-    credit: Optional[float] = 0.0
-    lecture_hours: Optional[float] = 0.0
-    seminar_hours: Optional[float] = 0.0
-    practical_hours: Optional[float] = 0.0
-    assignment_hours: Optional[float] = 0.0
-    independent_study_hours: Optional[float] = 0
-    pass_hours: Optional[float] = 0.0
-
-
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -241,6 +226,21 @@ class ProgramSemesterNode:
     updated_at: datetime
 
 
+@strawberry.input(description="Program Course Input")
+class ProgramCourseInput:
+    uid: Optional[str] = None
+    program_semester_id: int
+    course_id: int
+    course_category_id: int
+    credit: Optional[float] = 0.0
+    lecture_hours: Optional[float] = 0.0
+    seminar_hours: Optional[float] = 0.0
+    practical_hours: Optional[float] = 0.0
+    assignment_hours: Optional[float] = 0.0
+    independent_study_hours: Optional[float] = 0
+    pass_hours: Optional[float] = 0.0
+
+
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
     id: int
@@ -248,6 +248,7 @@ class ProgramCourseNode:
     program_semester_id: int
     program_semester: ProgramSemesterNode
     course_id: int
+    course: CourseNode
     course_category_id: int
     credit: float
     lecture_hours: float
@@ -256,7 +257,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
-    course: CourseNode
+
     created_by: int
     created_at: datetime
     updated_at: datetime

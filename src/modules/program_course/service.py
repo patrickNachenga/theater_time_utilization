@@ -3,41 +3,23 @@ from typing import List
 import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
-from src.models import  ProgramCourse
+from src.models import ProgramCourse
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import  ProgramCourseInput, ProgramCourseNode
+from src.types import ProgramCourseInput, ProgramCourseNode
 
 
 class ProgramCourseService(object):
     @staticmethod
     def get_program_courses() -> List[ProgramCourse]:
         with session_scope() as session:
-            result = session.query(
-                ProgramCourse.id,
-                ProgramCourse.uid,
-                ProgramCourse.program_semester_id,
-                ProgramCourse.course_id,
-                ProgramCourse.course_category_id,
-                ProgramCourse.credit,
-                ProgramCourse.lecture_hours,
-                ProgramCourse.seminar_hours,
-                ProgramCourse.practical_hours,
-                ProgramCourse.assignment_hours,
-                ProgramCourse.independent_study_hours,
-                ProgramCourse.pass_hours,
-                ProgramCourse.program_semester,
-                ProgramCourse.course,
-                ProgramCourse.created_by,
-                ProgramCourse.created_at,
-                ProgramCourse.updated_at
-            ).filter(ProgramCourse.deleted_at.is_(None)).all()
+            result = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
     def get_program_courses_by_ids(ids: List[str]) -> List[ProgramCourse]:
         """
-        Get programs categories by ids
+        Get programs Course by ids
         :return:
         """
         with session_scope() as session:
@@ -48,7 +30,7 @@ class ProgramCourseService(object):
     @staticmethod
     def get_program_courses_by_uids(uids: List[str]) -> List[ProgramCourse]:
         """
-        Get programs category by uids
+        Get programs course by uids
         :return:
         """
         with session_scope() as session:
@@ -61,10 +43,10 @@ class ProgramCourseService(object):
         """
         Register programs Course
         :param inputs:
-        :return:
+        :return Response[List[ProgramCourseNode]]:
         """
         program_course_list = []
-        action_type = "Update"
+        action_type = "Register"
         with session_scope() as session:
             # Check if the program courses already exist using uid
             existed_program_course_list = self.get_program_courses_by_uids(
@@ -79,14 +61,13 @@ class ProgramCourseService(object):
                     program_course = ProgramCourse(
                         program_semester_id=inputItem.program_semester_id,
                         course_id=inputItem.course_id,
-                        course_category_id=inputItem.course_category_id,
                         credit=inputItem.credit,
                         lecture_hours=inputItem.lecture_hours,
                         seminar_hours=inputItem.seminar_hours,
                         practical_hours=inputItem.practical_hours,
                         assignment_hours=inputItem.assignment_hours,
                         independent_study_hours=inputItem.independent_study_hours,
-                        pass_hours=inputItem.pass_hours,
+                        pass_hours=inputItem.pass_hours
                     )
                     program_course_list.append(program_course)
                 else:
@@ -104,6 +85,7 @@ class ProgramCourseService(object):
                         program_course.practical_hours = inputItem.practical_hours,
                         program_course.assignment_hours = inputItem.assignment_hours,
                         program_course.independent_study_hours = inputItem.independent_study_hours,
+                        program_course.pass_hours = inputItem.pass_hours
             session.add_all(program_course_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=program_course_list,
