@@ -33,3 +33,4 @@ from .exam_results import ExamResults
 from .exam_summary import ExamSummary
 from .academic_year import AcademicYear
 from .course_assessment import CourseAssessment
+from .program_course_assessment import ProgramCourseAssessment
