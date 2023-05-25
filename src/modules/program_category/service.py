@@ -15,7 +15,10 @@ class ProgramCategoryService(object):
         with session_scope() as session:
             result = session.query(
                 ProgramCategory.id,
-                ProgramCategory.pf_number,
+                ProgramCategory.uid,
+                ProgramCategory.name,
+                ProgramCategory.short_name,
+                ProgramCategory.created_by,
                 ProgramCategory.created_at,
                 ProgramCategory.updated_at,
             ).filter(ProgramCategory.deleted_at.is_(None)).all()
@@ -49,8 +52,6 @@ class ProgramCategoryService(object):
         Register programs categories
         :param inputs:
         :return:
-
-
         """
         program_category_list = []
         with session_scope() as session:
@@ -60,13 +61,14 @@ class ProgramCategoryService(object):
             if existed_program_category_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_category_list,
                                 message="Program Category Already Exists")
-
-            # check for existing program categories using uid
-            existed_program_category = self.get_program_categories_by_uids([input.uid for input in inputs])
-
+            # check for existing programs categories using uid
+            existed_program_category = self.get_program_categories_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
-                    program_category = ProgramCategory(uid=inputItem.uid)
+                    program_category = ProgramCategory(
+                        name=inputItem.name,
+                        short_name=inputItem.short_name
+                    )
                     program_category_list.append(program_category)
                 else:
                     program_category = next(
@@ -74,7 +76,8 @@ class ProgramCategoryService(object):
                                existed_program_category), None)
 
                     if program_category:
-                        program_category.uid = inputItem.uid
+                        program_category.name = inputItem.name
+                        program_category.short_name = inputItem.short_name
                         program_category_list.append(program_category)
             session.add_all(program_category_list)
             session.commit()
