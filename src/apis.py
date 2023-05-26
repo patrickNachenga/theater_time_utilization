@@ -1,6 +1,7 @@
 import strawberry
 
 from src.modules.course.apis import CourseQuery, CourseMutation
+from src.modules.course_allocation.apis import CourseAllocationQuery, CourseAllocationMutation
 from src.modules.course_category.apis import CourseCategoryQuery, CourseCategoryMutation
 from src.modules.course_learn_outcome.apis import CourseLearnOutcomeQuery, CourseLearnOutcomeMutation
 from src.modules.groups.apis import GroupQuery, GroupMutation
@@ -24,7 +25,7 @@ from src.modules.program_course_assessment.apis import ProgramCourseAssessmentQu
 class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, GroupQuery, ProgramQuery,
                ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery, ExamCatGroupsQuery,
                ExamCatsQuery, ExamResultsQuery, ExamSummaryQuery, AcademicYearQuery, ProgramCourseAssessmentQuery,
-               CourseCategoryQuery):
+               CourseCategoryQuery, CourseAllocationQuery):
     pass
 
 
@@ -32,5 +33,6 @@ class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, Grou
 class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, CourseMutation, GroupMutation,
                   ProgramSemesterMutation, ProgramMutation, CourseLearnOutcomeMutation, ProgramCourseMutation,
                   ExamCatGroupsMutation, ExamCatsMutation, ExamResultsMutation, ExamSummaryMutation,
-                  AcademicYearMutation, ProgramCourseAssessmentMutation, CourseCategoryMutation):
+                  AcademicYearMutation, ProgramCourseAssessmentMutation, CourseCategoryMutation,
+                  CourseAllocationMutation):
     pass

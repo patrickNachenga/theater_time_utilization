@@ -26,3 +26,5 @@ class ProgramCourse(BaseModel):
     course = relationship('Course', lazy='subquery', back_populates="program_courses")
 
     # ---------------Referenced Columns ---------------------
+    course_assessments = relationship('CourseAssessment', lazy='subquery', back_populates="program_course")
+    course_allocations = relationship("CourseAllocation", lazy="subquery", back_populates="program_course")

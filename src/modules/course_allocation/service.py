@@ -67,9 +67,9 @@ class CourseAllocationService(object):
                     )
                     course_allocation_list.append(course_allocation)
                 else:
-                    course_allocation = next \
-                        (filter(lambda course_allocation: str(course_allocation.uid) == str(inputItem.uid),
-                                existed_course_allocation), None)
+                    course_allocation = next(
+                        filter(lambda course_allocation: str(course_allocation.uid) == str(inputItem.uid),
+                               existed_course_allocation), None)
                     if course_allocation:
                         course_allocation.program_course_id = inputItem.program_course_id,
                         course_allocation.staff_uid = inputItem.staff_uid,

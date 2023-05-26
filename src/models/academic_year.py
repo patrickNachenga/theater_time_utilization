@@ -12,5 +12,6 @@ class AcademicYear(BaseModel):
     start_date: DateTime = Column(DateTime, nullable=True, unique=False)
     end_date: DateTime = Column(DateTime, nullable=True, unique=False)
 
-    program_semesters = relationship('AcademicYear', lazy='subquery', back_populates="academic_year")
+    program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="academic_year")
+
 

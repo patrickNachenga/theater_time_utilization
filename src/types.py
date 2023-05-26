@@ -2,6 +2,14 @@ from datetime import datetime
 from typing import Optional
 
 import strawberry
+from pendulum import DateTime
+
+
+@strawberry.input
+class PaginationInput:
+    offset: int = 0
+    limit: int = 10
+    search: Optional[str] = None
 
 
 @strawberry.input(description="Examcat Groups Input")
@@ -313,8 +321,8 @@ class AcademicYearInput:
     uid: Optional[str] = None
     name: str
     status: Optional[int] = 1
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: datetime
+    end_date: datetime
 
 
 @strawberry.type(description="Academic Year")
@@ -323,8 +331,8 @@ class AcademicYearNode:
     uid: str
     name: str
     status: Optional[int]
-    start_date: Optional[datetime]
-    end_date: Optional[datetime]
+    start_date: str
+    end_date: str
 
 
 @strawberry.type(description="Course Assessment")
@@ -343,6 +351,7 @@ class CourseAssessmentInput:
     uid: Optional[str] = None
     id: int
     program_course_id: int
+    program_course: ProgramCourseNode
     exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
@@ -361,6 +370,7 @@ class CourseAllocationNode:
     id: int
     uid: str
     program_course_id: str
+    program_course: ProgramCourseNode
     staff_uid: str
 
 
