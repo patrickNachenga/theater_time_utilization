@@ -15,17 +15,7 @@ class CourseService(object):
     @staticmethod
     def get_courses() -> List[Course]:
         with session_scope() as session:
-            result = session.query(
-                Course.id,
-                Course.uid,
-                Course.code,
-                Course.department_id,
-                Course.description,
-                Course.name,
-
-                Course.offered,
-                Course.department_id
-            ).filter(Course.deleted_at.is_(None)).all()
+            result = session.query(Course).filter(Course.deleted_at.is_(None)).all()
             return result
 
     @staticmethod

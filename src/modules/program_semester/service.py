@@ -3,7 +3,7 @@ from typing import List
 import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
-from src.models import ProgramSemester
+from src.models.program_semester import ProgramSemester
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramSemesterInput, ProgramSemesterNode
@@ -13,18 +13,7 @@ class ProgramSemesterService(object):
     @staticmethod
     def get_program_semesters() -> List[ProgramSemester]:
         with session_scope() as session:
-            result = session.query(
-                ProgramSemester.id,
-                ProgramSemester.uid,
-                ProgramSemester.program_id,
-                ProgramSemester.created_at,
-                ProgramSemester.updated_at,
-                ProgramSemester.academic_year_id,
-                ProgramSemester.study_year,
-                ProgramSemester.semester,
-                ProgramSemester.core_credits,
-                ProgramSemester.elective_credits
-            ).filter(ProgramSemester.deleted_at.is_(None)).all()
+            result = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).all()
             return result
 
     @staticmethod

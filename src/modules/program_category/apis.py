@@ -39,7 +39,7 @@ class ProgramCategoryMutation:
     @strawberry.mutation
     async def remove_program_category(self, uid: str) -> Response[None]:
         """
-        Remove student By UID
+        Remove Program Category By UID
         :param uid:
         :return:
         """

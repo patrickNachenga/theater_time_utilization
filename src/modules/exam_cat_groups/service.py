@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models.exam_cat_groups import ExamCatGroups
+from src.models.exam_cat_group import ExamCatGroups
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamCatGroupsInput, ExamCatGroupsNode

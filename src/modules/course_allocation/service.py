@@ -17,14 +17,10 @@ class CourseAllocationService(object):
             result = session.query(
                 CourseAllocation.id,
                 CourseAllocation.uid,
-
                 CourseAllocation.program_course_id,
                 CourseAllocation.staff_id,
-
             ).filter(CourseAllocation.deleted_at.is_(None)).all()
             return result
-
-
 
     @staticmethod
     def get_course_allocations_by_uids(uids: List[str]) -> List[CourseAllocation]:
@@ -90,7 +86,7 @@ class CourseAllocationService(object):
     @staticmethod
     def remove_course_allocation(uid: str):
         """
-        Remove course category by UID
+        Remove course allocation by UID
         :param uid:
         :return:
         """

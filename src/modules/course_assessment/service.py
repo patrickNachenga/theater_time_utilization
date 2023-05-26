@@ -73,7 +73,7 @@ class CourseAssessmentService(object):
                 [course_assessment.id for course_assessment in inputs if course_assessment.uid is None])
             if existed_course_assessment_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_assessment_list,
-                                message="Academic Year Already Exists")
+                                message="Course Assessment Already Exists")
             # check for existing course using uid
             existed_course_assessment = self.get_course_assessment_by_id([inputItem.id for inputItem in inputs])
             for inputItem in inputs:
@@ -90,9 +90,9 @@ class CourseAssessmentService(object):
                     course_assessment = next(filter(lambda course_assessment: str(course_assessment.uid) == str(inputItem.uid),
                                          existed_course_assessment), None)
                     if course_assessment:
-                        course_assessment.end_date = inputItem.program_course_id,
-                        course_assessment.name = inputItem.exam_category_id,
-                        course_assessment.status = inputItem.minimum_exams,
+                        course_assessment.program_course_id = inputItem.program_course_id,
+                        course_assessment.exam_category_id = inputItem.exam_category_id,
+                        course_assessment.minimum_exams = inputItem.minimum_exams,
                         course_assessment.can_exceed_minimum = inputItem.can_exceed_minimum,
                         course_assessment.maximum_score = inputItem.maximum_score
                         course_assessment_list.append(course_assessment)

@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-
 from sqlalchemy import Column, DateTime, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,30 +18,22 @@ class BaseModel(Base):
     created_by = Column(Integer, nullable=True)
 
 
-from .academic_year import AcademicYear
-
-
+from .staff import Staff
+from .student import Student
+from .program_category import ProgramCategory
 from .course import Course
 from .course_assessment import CourseAssessment
 from .course_learn_outcome import CourseLearnOutcome
-
-from .exam_cat_groups import ExamCatGroups
-from .exam_cats import ExamCats
-from .exam_results import ExamResults
-from .exam_summary import ExamSummary
-
-from .course_category import CourseCategory
-from .course_allocation import CourseAllocation
-
-
-
-from .group import Group
-
+from .exam_cat_group import ExamCatGroups
 from .program import Program
-from .program_course import ProgramCourse
-from .program_category import ProgramCategory
+from .group import Group
 from .program_semester import ProgramSemester
-
-from .staff import Staff
-from .student import Student
-
+from .course_category import CourseCategory
+from .program_course import ProgramCourse
+from .exam_cats import ExamCats
+from .exam_result import ExamResults
+from .exam_summary import ExamSummary
+from .academic_year import AcademicYear
+from .course_assessment import CourseAssessment
+from .program_course_assessment import ProgramCourseAssessment
+from .course_allocation import CourseAllocation
