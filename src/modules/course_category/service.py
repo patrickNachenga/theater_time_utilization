@@ -4,7 +4,7 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models import CourseCategory
+from src.models.course_category import CourseCategory
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseCategoryInput, CourseCategoryNode
@@ -14,14 +14,7 @@ class CourseCategoryService(object):
     @staticmethod
     def get_course_categories() -> List[CourseCategory]:
         with session_scope() as session:
-            result = session.query(
-                CourseCategory.id,
-                CourseCategory.uid,
-
-                CourseCategory.description,
-                CourseCategory.name,
-
-            ).filter(CourseCategory.deleted_at.is_(None)).all()
+            result = session.query(CourseCategory).filter(CourseCategory.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -31,7 +24,8 @@ class CourseCategoryService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseCategory).where((CourseCategory.name.in_(names)) & (CourseCategory.deleted_at.is_(None)))
+            stmt = select(CourseCategory).where(
+                (CourseCategory.name.in_(names)) & (CourseCategory.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -85,9 +79,9 @@ class CourseCategoryService(object):
                     course_category_list.append(course_category)
                 else:
                     action_name = "Update"
-                    course_category = next \
-                        (filter(lambda course_category: str(course_category.uid) == str(inputItem.uid),
-                                existed_course_category), None)
+                    course_category = next(
+                        filter(lambda course_category: str(course_category.uid) == str(inputItem.uid),
+                               existed_course_category), None)
                     if course_category:
                         course_category.description = inputItem.description,
                         course_category.name = inputItem.name,

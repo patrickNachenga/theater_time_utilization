@@ -18,27 +18,14 @@ class ProgramService(object):
         :return:
         """
         with session_scope() as session:
-            result = session.query(
-                Program.id,
-                Program.uid,
-                Program.code,
-                Program.name,
-                Program.short_name,
-                Program.tcu_code,
-                Program.reg_code,
-                Program.nacte_code,
-                Program.program_category_id,
-                Program.department_id,
-                Program.campus_id,
-                Program.duration,
-            ).filter(Program.deleted_at.is_(None)).all()
+            result = session.query(Program).filter(Program.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
     def get_program_by_ids(ids: List[str]) -> List[Program]:
         """
             Get programs by program ids
-        :param:ids
+        :param ids:
         :return:List[Program]
         """
         with session_scope() as session:
