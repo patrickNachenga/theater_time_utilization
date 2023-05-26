@@ -50,7 +50,7 @@ class ProgramCourseService(object):
         with session_scope() as session:
             # Check if the program courses already exist using uid
             existed_program_course_list = self.get_program_courses_by_uids(
-                [f"{program_course.program_semester_id}" for program_course in inputs if program_course.uid is None])
+                [program_course.uid for program_course in inputs if program_course.uid is None])
             if existed_program_course_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_course_list,
                                 message="Program Course Already Exists")
@@ -58,6 +58,8 @@ class ProgramCourseService(object):
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
+                    print("0000000000000000000000000000000000000000000000000000000000")
+                    print(inputItem)
                     program_course = ProgramCourse(
                         program_semester_id=inputItem.program_semester_id,
                         course_id=inputItem.course_id,

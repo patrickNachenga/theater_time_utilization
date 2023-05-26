@@ -28,6 +28,8 @@ from .course_learn_outcome import CourseLearnOutcome
 from .exam_cat_group import ExamCatGroups
 from .program import Program
 from .group import Group
+from .program_semester import ProgramSemester
+from .course_category import CourseCategory
 from .program_course import ProgramCourse
 from .exam_cats import ExamCats
 from .exam_result import ExamResults

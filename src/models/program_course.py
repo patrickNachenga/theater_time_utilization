@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -7,7 +7,6 @@ from src.models import BaseModel
 class ProgramCourse(BaseModel):
     __tablename__ = "program_courses"
     id: int = Column(Integer, primary_key=True, index=True, unique=False)
-    course_category_id: int = Column(Integer, nullable=False, index=True)
     credit: float = Column(Float(4), nullable=True)
     lecture_hours: float = Column(Float(4), nullable=True)
     seminar_hours: float = Column(Float(4), nullable=True)
@@ -17,6 +16,9 @@ class ProgramCourse(BaseModel):
     pass_hours: float = Column(Float(4), nullable=True)
 
     # ---------------Mapped Columns ---------------------
+    course_category_id: int = Column(Integer, ForeignKey("course_categories.id"), nullable=False, index=True)
+    course_category = relationship('CourseCategory', lazy='subquery', back_populates="program_courses")
+
     program_semester_id: int = Column(Integer, ForeignKey("program_semesters.id"), nullable=False, index=True)
     program_semester = relationship('ProgramSemester', lazy='subquery', back_populates="program_courses")
 

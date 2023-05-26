@@ -135,9 +135,8 @@ class CourseInput:
     code: str
     description: Optional[str] = None
     name: str
-    short_name: Optional[str] = None
     offered: Optional[int] = 1
-    department_uid: str
+    department_id: int
 
 
 @strawberry.type(description="Course")
@@ -147,9 +146,8 @@ class CourseNode:
     code: str
     description: str
     name: str
-    short_name: str
     offered: int
-    department_uid: str
+    department_id: int
 
 
 @strawberry.type(description="Program Category")
@@ -226,6 +224,21 @@ class ProgramSemesterNode:
     updated_at: datetime
 
 
+@strawberry.input(description="Course Category Input")
+class CourseCategoryInput:
+    uid: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+
+
+@strawberry.type(description="Course Category")
+class CourseCategoryNode:
+    id: int
+    uid: str
+    description: str
+    name: str
+
+
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -250,6 +263,7 @@ class ProgramCourseNode:
     course_id: int
     course: CourseNode
     course_category_id: int
+    course_category: CourseCategoryNode
     credit: float
     lecture_hours: float
     seminar_hours: float
@@ -330,21 +344,6 @@ class CourseAssessmentInput:
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
     maximum_score: int
-
-
-@strawberry.input(description="Course Category Input")
-class CourseCategoryInput:
-    uid: Optional[str] = None
-    name: str
-    description: Optional[str] = None
-
-
-@strawberry.type(description="Course Category")
-class CourseCategoryNode:
-    id: int
-    uid: str
-    description: str
-    name: str
 
 
 @strawberry.input(description="Course Allocation Input")
