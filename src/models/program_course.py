@@ -4,7 +4,7 @@ from src.models import BaseModel
 
 
 class ProgramCourse(BaseModel):
-    __tablename__ = "program_course"
+    __tablename__ = "program_courses"
     id: int = Column(Integer, primary_key=True, index=True, unique=False)
     program_semester_id: str = Column(String, nullable=False)
     course_id: str = Column(String, nullable=False)

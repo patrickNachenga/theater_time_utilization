@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, FLOAT
 from src.models import BaseModel
 
 class ExamSummary(BaseModel):
-    __tablename__ = "exam_summary"
+    __tablename__ = "exam_summaries"
     id:                 int = Column(Integer, primary_key=True, index=True)
     program_course_id:    int = Column(Integer, nullable=False, unique=False)
     student_id:          int = Column(Integer, nullable=False, unique=False)

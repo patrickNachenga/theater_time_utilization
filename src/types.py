@@ -4,14 +4,14 @@ from typing import Optional
 import strawberry
 
 
-@strawberry.input(description="Examcat Groups Input")
+@strawberry.input(description="Exam Category Groups Input")
 class ExamCatGroupsInput:
     uid: Optional[str] = None
     id: int
     name: str
 
 
-@strawberry.type(description="Exam category Groups Node")
+@strawberry.type(description="Exam category Groups Output")
 class ExamCatGroupsNode:
     id: int
     name: str
@@ -26,7 +26,7 @@ class ExamCatsInput:
     exam_group_id: int
 
 
-@strawberry.type(description="Exam Category Node")
+@strawberry.type(description="Exam Category Output")
 class ExamCatsNode:
     id: int
     name: str
@@ -49,7 +49,7 @@ class ExamResultsInput:
     publish: int
 
 
-@strawberry.type(description="Exam cat Groups Node")
+@strawberry.type(description="Exam Category Groups Output")
 class ExamResultsNode:
     id: int
     student_id: int
@@ -63,7 +63,7 @@ class ExamResultsNode:
     publish: int
 
 
-@strawberry.input(description="Exam cat Groups Input")
+@strawberry.input(description="Exam Category Groups Input")
 class ExamSummaryInput:
     uid: Optional[str] = None
     id: int
@@ -76,7 +76,7 @@ class ExamSummaryInput:
     status: int
 
 
-@strawberry.type(description="Exam Summary Node")
+@strawberry.type(description="Exam Summary Output")
 class ExamSummaryNode:
     id: int
     student_id: int
@@ -94,7 +94,7 @@ class StudentInput:
     reg_no: str
 
 
-@strawberry.type(description="Student")
+@strawberry.type(description="Student Output")
 class StudentNode:
     id: int
     uid: str
@@ -114,7 +114,7 @@ class StaffNode:
     pf_number: str
 
 
-@strawberry.input(description="Staff Input")
+@strawberry.input(description="Group Input")
 class GroupInput:
     uid: Optional[str] = None
     name: str
@@ -124,7 +124,7 @@ class GroupInput:
 int
 
 
-@strawberry.type(description="Staff")
+@strawberry.type(description="Group Output")
 class GroupNode:
     id: int
     uid: str
@@ -139,7 +139,7 @@ class ProgramCategoryInput:
     short_name: Optional[str] = None
 
 
-@strawberry.type(description="Program Category")
+@strawberry.type(description="Program Category Output")
 class ProgramCategoryNode:
     id: int
     uid: str
@@ -185,7 +185,7 @@ class CourseLearnOutcomeInput:
     learning_outcome: str
 
 
-@strawberry.type(description="Course Learn outcome")
+@strawberry.type(description="Course Learn Outcome Output")
 class CourseLearnOutcomeNode:
     id: int
     uid: str
@@ -211,7 +211,7 @@ class ProgramInput:
     campus_id: Optional[int] = 0
 
 
-@strawberry.type(description="Program outputs")
+@strawberry.type(description="Program Output")
 class ProgramNode:
     id: int
     uid: str
@@ -227,7 +227,7 @@ class ProgramNode:
     campus_id: int
 
 
-@strawberry.input(description="program_sem_unit Input")
+@strawberry.input(description="Program Semester Input")
 class ProgramSemester:
     uid: Optional[str] = None
     program_id: str
@@ -239,7 +239,7 @@ class ProgramSemester:
     created_by: str
 
 
-@strawberry.type(description="program_sem_unit output")
+@strawberry.type(description="Program Semester Output")
 class ProgramSemesterNode:
     id: str
     uid: str
@@ -263,7 +263,7 @@ class CourseInput:
     department_uid: str
 
 
-@strawberry.type(description="Course")
+@strawberry.type(description="Course Output")
 class CourseNode:
     id: int
     uid: str

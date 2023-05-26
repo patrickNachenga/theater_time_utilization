@@ -32,7 +32,7 @@ class CourseCategoryMutation:
 
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register course category", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course C  ategory", data=[])
 
     @strawberry.mutation
     async def remove_course_category(self, uid: str) -> Response[None]:

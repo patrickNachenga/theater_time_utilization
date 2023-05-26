@@ -4,7 +4,7 @@ from src.models import BaseModel
 
 
 class Program(BaseModel):
-    __tablename__ = "program"
+    __tablename__ = "programs"
     id: int = Column(Integer, primary_key=True, index=True)
     code: str = Column(String, nullable=False, unique=True)
     tcu_code: str = Column(String, nullable=True, unique=False)

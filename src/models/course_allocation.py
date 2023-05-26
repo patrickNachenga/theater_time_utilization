@@ -4,7 +4,7 @@ from src.models import BaseModel
 
 
 class CourseAllocation(BaseModel):
-    __tablename__ = "course_allocation"
+    __tablename__ = "course_allocations"
     id: int = Column(Integer, primary_key=True, index=True)
     program_course_id: str = Column(String, nullable=False, unique=False)
     staff_id: str = Column(String, nullable=False, unique=False)

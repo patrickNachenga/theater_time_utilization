@@ -28,7 +28,7 @@ class AcademicYearService(object):
     @staticmethod
     def get_academic_year_by_name(name: List[str]) -> List[AcademicYear]:
         """
-        Get Academic Year by code
+        Get Academic Year by name
         :return:
         """
         with session_scope() as session:
@@ -39,7 +39,7 @@ class AcademicYearService(object):
     @staticmethod
     def get_academic_year_by_id(id: List[int]) -> List[AcademicYear]:
         """
-        Get AcademicYear by code
+        Get AcademicYear by id
         :return:
         """
         with session_scope() as session:
@@ -108,7 +108,7 @@ class AcademicYearService(object):
             session.add_all(academic_year_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=academic_year_list,
-                            message="Successfully Submitted Academic Year")
+                            message="Academic Year Successfully Submitted")
 
     # Delete Function
     @staticmethod

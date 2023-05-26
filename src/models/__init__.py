@@ -25,7 +25,6 @@ from .program_category import ProgramCategory
 from .course import Course
 from .program import Program
 from .group import Group
-from .program_sem_unit import ProgramSemester
 from .program_course import ProgramCourse
 from .exam_cat_groups import ExamCatGroups
 from .exam_cats import ExamCats
@@ -34,3 +33,5 @@ from .exam_summary import ExamSummary
 from .academic_year import AcademicYear
 from .course_assessment import CourseAssessment
 from .program_course_assessment import ProgramCourseAssessment
+from .course_allocation import CourseAllocation
+from .course_category import CourseCategory
