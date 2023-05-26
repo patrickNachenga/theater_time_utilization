@@ -22,15 +22,15 @@ from src.modules.program_course_assessment.apis import ProgramCourseAssessmentQu
 
 @strawberry.type
 class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, GroupQuery, ProgramQuery,
-               ProgramSemesterQuery,
-               CourseLearnOutcomeQuery, ProgramCourseQuery, ExamCatGroupsQuery, ExamCatsQuery, ExamResultsQuery,
-               ExamSummaryQuery, AcademicYearQuery, ProgramCourseAssessmentQuery, CourseCategoryQuery):
+               ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery, ExamCatGroupsQuery,
+               ExamCatsQuery, ExamResultsQuery, ExamSummaryQuery, AcademicYearQuery, ProgramCourseAssessmentQuery,
+               CourseCategoryQuery):
     pass
 
 
 @strawberry.type
 class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, CourseMutation, GroupMutation,
-                  ProgramSemesterMutation, CourseLearnOutcomeMutation,ProgramCourseMutation, ProgramMutation,
+                  ProgramSemesterMutation, ProgramMutation, CourseLearnOutcomeMutation, ProgramCourseMutation,
                   ExamCatGroupsMutation, ExamCatsMutation, ExamResultsMutation, ExamSummaryMutation,
                   AcademicYearMutation, ProgramCourseAssessmentMutation, CourseCategoryMutation):
     pass

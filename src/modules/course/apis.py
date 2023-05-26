@@ -7,6 +7,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseInput, CourseNode
 
+
 @strawberry.type
 class CourseQuery:
     @strawberry.field
@@ -19,8 +20,9 @@ class CourseQuery:
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Students retrieved successfully",
+            message="Course retrieved successfully",
             data=result)
+
 
 @strawberry.type
 class CourseMutation:
@@ -32,6 +34,7 @@ class CourseMutation:
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register course", data=[])
+
     @strawberry.mutation
     async def remove_course(self, uid: str) -> Response[None]:
         """

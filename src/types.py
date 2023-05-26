@@ -238,6 +238,10 @@ class CourseCategoryNode:
     description: str
     name: str
 
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+
 
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:

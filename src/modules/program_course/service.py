@@ -58,8 +58,6 @@ class ProgramCourseService(object):
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
-                    print("0000000000000000000000000000000000000000000000000000000000")
-                    print(inputItem)
                     program_course = ProgramCourse(
                         program_semester_id=inputItem.program_semester_id,
                         course_id=inputItem.course_id,
@@ -88,6 +86,8 @@ class ProgramCourseService(object):
                         program_course.assignment_hours = inputItem.assignment_hours,
                         program_course.independent_study_hours = inputItem.independent_study_hours,
                         program_course.pass_hours = inputItem.pass_hours
+            print("----------------------------------------------------------")
+            print(inputItem)
             session.add_all(program_course_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=program_course_list,
