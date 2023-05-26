@@ -136,7 +136,7 @@ class CourseInput:
     description: Optional[str] = None
     name: str
     offered: Optional[int] = 1
-    department_id: int
+    department_uid: str
 
 
 @strawberry.type(description="Course")
@@ -147,7 +147,7 @@ class CourseNode:
     description: str
     name: str
     offered: int
-    department_id: int
+    department_uid: str
 
 
 @strawberry.type(description="Program Category")
@@ -172,7 +172,7 @@ class ProgramInput:
     duration: Optional[int] = 0
     reg_code: Optional[str] = None
     program_category_id: Optional[int] = 0
-    department_id: Optional[int] = 0
+    department_uid: str
     campus_id: Optional[int] = 0
 
 
@@ -189,7 +189,7 @@ class ProgramNode:
     reg_code: str
     program_category_id: int
     program_category: ProgramCategoryNode
-    department_id: int
+    department_uid: str
     campus_id: int
     created_by: str
     created_at: datetime
@@ -291,7 +291,7 @@ class ProgramCategoryInput:
 @strawberry.input(description="Course Learn Outcome Input")
 class CourseLearnOutcomeInput:
     uid: Optional[str] = None
-    staff_id: str
+    staff_uid: str
     program_course_id: str
     learning_outcome: str
 
@@ -300,7 +300,7 @@ class CourseLearnOutcomeInput:
 class CourseLearnOutcomeNode:
     id: int
     uid: str
-    staff_id: str
+    staff_uid: str
     program_course_id: str
     learning_outcome: str
     created_by: str
@@ -311,7 +311,6 @@ class CourseLearnOutcomeNode:
 @strawberry.input(description="Academic Year Input")
 class AcademicYearInput:
     uid: Optional[str] = None
-    id: int
     name: str
     status: Optional[int] = 1
     start_date: Optional[datetime] = None
@@ -333,7 +332,7 @@ class CourseAssessmentNode:
     id: int
     uid: str
     program_course_id: int
-    exam_category_id: int
+    exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
     maximum_score: int
@@ -344,7 +343,7 @@ class CourseAssessmentInput:
     uid: Optional[str] = None
     id: int
     program_course_id: int
-    exam_category_id: int
+    exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
     maximum_score: int
@@ -354,7 +353,7 @@ class CourseAssessmentInput:
 class CourseAllocationInput:
     uid: Optional[str] = None
     program_course_id: str
-    staff_id: Optional[str] = None
+    staff_uid: str
 
 
 @strawberry.type(description="Course Allocation")
@@ -362,7 +361,7 @@ class CourseAllocationNode:
     id: int
     uid: str
     program_course_id: str
-    staff_id: str
+    staff_uid: str
 
 
 @strawberry.type(description="Program Course Assessment Input")
@@ -370,7 +369,7 @@ class ProgramCourseAssessmentNode:
     id: int
     uid: str
     program_course_id: int
-    exam_category_id: int
+    exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
@@ -381,7 +380,7 @@ class ProgramCourseAssessmentInput:
     uid: Optional[str] = None
     id: int
     program_course_id: int
-    exam_category_id: int
+    exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int

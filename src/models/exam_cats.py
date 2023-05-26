@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 
 from src.models import BaseModel
 
+
 class ExamCats(BaseModel):
     __tablename__ = "exam_cats"
     id: int = Column(Integer, primary_key=True, index=True)

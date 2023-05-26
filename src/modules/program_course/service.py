@@ -62,6 +62,7 @@ class ProgramCourseService(object):
                         program_semester_id=inputItem.program_semester_id,
                         course_id=inputItem.course_id,
                         credit=inputItem.credit,
+                        course_category_id=inputItem.course_category_id,
                         lecture_hours=inputItem.lecture_hours,
                         seminar_hours=inputItem.seminar_hours,
                         practical_hours=inputItem.practical_hours,
@@ -86,8 +87,6 @@ class ProgramCourseService(object):
                         program_course.assignment_hours = inputItem.assignment_hours,
                         program_course.independent_study_hours = inputItem.independent_study_hours,
                         program_course.pass_hours = inputItem.pass_hours
-            print("----------------------------------------------------------")
-            print(inputItem)
             session.add_all(program_course_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=program_course_list,

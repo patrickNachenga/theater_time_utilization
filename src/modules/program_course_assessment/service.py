@@ -15,15 +15,7 @@ class ProgramCourseAssessmentService(object):
     @staticmethod
     def get_program_course_assessment() -> List[ProgramCourseAssessment]:
         with session_scope() as session:
-            result = session.query(
-                ProgramCourseAssessment.id,
-                ProgramCourseAssessment.uid,
-                ProgramCourseAssessment.program_course_id,
-                ProgramCourseAssessment.exam_category_id,
-                ProgramCourseAssessment.maximum_score,
-                ProgramCourseAssessment.can_exceed_minimum_by,
-                ProgramCourseAssessment.minimum_exams
-            ).filter(ProgramCourseAssessment.deleted_at.is_(None)).all()
+            result = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -80,7 +72,7 @@ class ProgramCourseAssessmentService(object):
                 if inputItem.uid is None:
                     program_course_assessment = ProgramCourseAssessment(
                         program_course_id=inputItem.program_course_id,
-                        exam_category_id=inputItem.exam_category_id,
+                        exam_category_uid=inputItem.exam_category_uid,
                         minimum_exams=inputItem.minimum_exams,
                         can_exceed_minimum_by=inputItem.can_exceed_minimum_by,
                         maximum_score=inputItem.maximum_score
@@ -91,7 +83,7 @@ class ProgramCourseAssessmentService(object):
                                          existed_program_course_assessment), None)
                     if program_course_assessment:
                         program_course_assessment.program_course_id = inputItem.program_course_id,
-                        program_course_assessment.exam_category_id = inputItem.exam_category_id,
+                        program_course_assessment.exam_category_uid = inputItem.exam_category_uid,
                         program_course_assessment.minimum_exams = inputItem.minimum_exams,
                         program_course_assessment.can_exceed_minimum_by = inputItem.can_exceed_minimum_by,
                         program_course_assessment.maximum_score = inputItem.maximum_score

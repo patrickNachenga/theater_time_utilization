@@ -111,7 +111,7 @@ class ProgramService(object):
                         reg_code=inputItem.reg_code,
                         nacte_code=inputItem.nacte_code,
                         program_category_id=inputItem.program_category_id,
-                        department_id=inputItem.department_id,
+                        department_uid=inputItem.department_uid,
                         campus_id=inputItem.campus_id,
                         duration=inputItem.duration,
                     )
@@ -128,7 +128,7 @@ class ProgramService(object):
                         program.reg_code = inputItem.reg_code,
                         program.nacte_code = inputItem.nacte_code,
                         program.program_category_id = inputItem.program_category_id,
-                        program.department_id = inputItem.department_id,
+                        program.department_uid = inputItem.department_uid,
                         program.campus_id = inputItem.campus_id,
                         program.duration = inputItem.duration,
                         program_list.append(program)

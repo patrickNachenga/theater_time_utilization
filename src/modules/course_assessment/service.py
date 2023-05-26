@@ -15,15 +15,7 @@ class CourseAssessmentService(object):
     @staticmethod
     def get_course_assessment() -> List[CourseAssessment]:
         with session_scope() as session:
-            result = session.query(
-                CourseAssessment.id,
-                CourseAssessment.uid,
-                CourseAssessment.program_course_id,
-                CourseAssessment.exam_category_id,
-                CourseAssessment.maximum_score,
-                CourseAssessment.can_exceed_minimum,
-                CourseAssessment.minimum_exams
-            ).filter(CourseAssessment.deleted_at.is_(None)).all()
+            result = session.query(CourseAssessment).filter(CourseAssessment.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -33,7 +25,8 @@ class CourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAssessment).where((CourseAssessment.id.in_(id)) & (CourseAssessment.deleted_at.is_(None)))
+            stmt = select(CourseAssessment).where(
+                (CourseAssessment.id.in_(id)) & (CourseAssessment.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -44,7 +37,8 @@ class CourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAssessment).where((CourseAssessment.uid.in_(uids)) & (CourseAssessment.deleted_at.is_(None)))
+            stmt = select(CourseAssessment).where(
+                (CourseAssessment.uid.in_(uids)) & (CourseAssessment.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -56,7 +50,8 @@ class CourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAssessment).where((CourseAssessment.uid == uid) & (CourseAssessment.deleted_at.is_(None)))
+            stmt = select(CourseAssessment).where(
+                (CourseAssessment.uid == uid) & (CourseAssessment.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
@@ -80,18 +75,19 @@ class CourseAssessmentService(object):
                 if inputItem.uid is None:
                     course_assessment = CourseAssessment(
                         program_course_id=inputItem.program_course_id,
-                        exam_category_id=inputItem.exam_category_id,
+                        exam_category_uid=inputItem.exam_category_uid,
                         minimum_exams=inputItem.minimum_exams,
                         can_exceed_minimum=inputItem.can_exceed_minimum,
                         maximum_score=inputItem.maximum_score
                     )
                     course_assessment_list.append(course_assessment)
                 else:
-                    course_assessment = next(filter(lambda course_assessment: str(course_assessment.uid) == str(inputItem.uid),
-                                         existed_course_assessment), None)
+                    course_assessment = next(
+                        filter(lambda course_assessment: str(course_assessment.uid) == str(inputItem.uid),
+                               existed_course_assessment), None)
                     if course_assessment:
                         course_assessment.program_course_id = inputItem.program_course_id,
-                        course_assessment.exam_category_id = inputItem.exam_category_id,
+                        course_assessment.exam_category_uid = inputItem.exam_category_uid,
                         course_assessment.minimum_exams = inputItem.minimum_exams,
                         course_assessment.can_exceed_minimum = inputItem.can_exceed_minimum,
                         course_assessment.maximum_score = inputItem.maximum_score

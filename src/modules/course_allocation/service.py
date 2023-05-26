@@ -4,7 +4,7 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models import CourseAllocation
+from src.models.course_allocation import CourseAllocation
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode
@@ -14,17 +14,8 @@ class CourseAllocationService(object):
     @staticmethod
     def get_course_allocations() -> List[CourseAllocation]:
         with session_scope() as session:
-            result = session.query(
-                CourseAllocation.id,
-                CourseAllocation.uid,
-
-                CourseAllocation.program_course_id,
-                CourseAllocation.staff_id,
-
-            ).filter(CourseAllocation.deleted_at.is_(None)).all()
+            result = session.query(CourseAllocation).filter(CourseAllocation.deleted_at.is_(None)).all()
             return result
-
-
 
     @staticmethod
     def get_course_allocations_by_uids(uids: List[str]) -> List[CourseAllocation]:
@@ -33,7 +24,8 @@ class CourseAllocationService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAllocation).where((CourseAllocation.uid.in_(uids)) & (CourseAllocation.deleted_at.is_(None)))
+            stmt = select(CourseAllocation).where(
+                (CourseAllocation.uid.in_(uids)) & (CourseAllocation.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -45,7 +37,8 @@ class CourseAllocationService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAllocation).where((CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
+            stmt = select(CourseAllocation).where(
+                (CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
@@ -69,7 +62,7 @@ class CourseAllocationService(object):
                 if inputItem.uid is None:
                     course_allocation = CourseAllocation(
                         program_course_id=inputItem.program_course_id,
-                        staff_id=inputItem.staff_id,
+                        staff_uid=inputItem.staff_uid,
 
                     )
                     course_allocation_list.append(course_allocation)
@@ -79,7 +72,7 @@ class CourseAllocationService(object):
                                 existed_course_allocation), None)
                     if course_allocation:
                         course_allocation.program_course_id = inputItem.program_course_id,
-                        course_allocation.staff_id = inputItem.staff_id,
+                        course_allocation.staff_uid = inputItem.staff_uid,
 
             session.add_all(course_allocation_list)
             session.commit()
