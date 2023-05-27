@@ -112,7 +112,7 @@ class ProgramService(object):
                         nacte_code=inputItem.nacte_code,
                         program_category_id=inputItem.program_category_id,
                         department_uid=inputItem.department_uid,
-                        campus_id=inputItem.campus_id,
+                        campus_uid=inputItem.campus_uid,
                         duration=inputItem.duration,
                     )
 
@@ -129,7 +129,7 @@ class ProgramService(object):
                         program.nacte_code = inputItem.nacte_code,
                         program.program_category_id = inputItem.program_category_id,
                         program.department_uid = inputItem.department_uid,
-                        program.campus_id = inputItem.campus_id,
+                        program.campus_uid = inputItem.campus_uid,
                         program.duration = inputItem.duration,
                         program_list.append(program)
             session.add_all(program_list)

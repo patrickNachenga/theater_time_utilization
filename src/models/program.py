@@ -20,7 +20,7 @@ class Program(BaseModel):
 
     department_uid: str = Column(String, nullable=True, index=True)
 
-    campus_id: int = Column(String, nullable=True)
+    campus_uid: str = Column(String, nullable=True)
 
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 import strawberry
 from pendulum import DateTime
@@ -228,7 +228,7 @@ class ProgramInput:
     registration_code: Optional[str] = None
     program_category_id: Optional[int] = 0
     department_uid: str
-    campus_id: Optional[int] = 0
+    campus_uid: Optional[str] = None
 
 
 @strawberry.type(description="Program Output")
@@ -245,7 +245,7 @@ class ProgramNode:
     program_category_id: int
     program_category: ProgramCategoryNode
     department_uid: str
-    campus_id: int
+    campus_uid: str
     created_by: str
     created_at: datetime
     updated_at: datetime
@@ -379,9 +379,14 @@ class AcademicYearNode:
     status: Optional[int]
     start_date: str
     end_date: str
-    created_by: int
     created_at: datetime
     updated_at: datetime
+
+
+@strawberry.type(description="AcademicYear Country")
+class AcademicYearListNode:
+    items: List[AcademicYearNode]
+    total_count: int
 
 
 @strawberry.input(description="Program Course Assessment Input")
