@@ -5,7 +5,6 @@ from sqlalchemy import select
 
 from src.db.session import session_scope
 from src.models import AcademicYear
-from src.models.student import Student
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import AcademicYearInput, AcademicYearNode
@@ -86,7 +85,7 @@ class AcademicYearService(object):
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_academic_year_list,
                                 message="Academic Year Already Exists")
             # check for existing course using uid
-            existed_academic_year = self.get_academic_year_by_id([inputItem.id for inputItem in inputs])
+            existed_academic_year = self.get_academic_year_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
                     academic_year = AcademicYear(
@@ -100,10 +99,10 @@ class AcademicYearService(object):
                     academic_year = next(filter(lambda academic_year: str(academic_year.uid) == str(inputItem.uid),
                                          existed_academic_year), None)
                     if academic_year:
-                        academic_year.end_date = inputItem.end_date,
                         academic_year.name = inputItem.name,
                         academic_year.status = inputItem.status,
                         academic_year.start_date = inputItem.start_date
+                        academic_year.end_date = inputItem.end_date,
                         academic_year_list.append(academic_year)
             session.add_all(academic_year_list)
             session.commit()

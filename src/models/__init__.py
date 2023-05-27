@@ -22,7 +22,6 @@ from .staff import Staff
 from .student import Student
 from .program_category import ProgramCategory
 from .course import Course
-from .course_assessment import CourseAssessment
 from .course_learn_outcome import CourseLearnOutcome
 from .exam_cat_group import ExamCatGroups
 from .program import Program
@@ -30,10 +29,10 @@ from .group import Group
 from .program_semester import ProgramSemester
 from .course_category import CourseCategory
 from .program_course import ProgramCourse
-from .exam_cats import ExamCats
+from .exam_category import ExamCats
 from .exam_result import ExamResults
 from .exam_summary import ExamSummary
 from .academic_year import AcademicYear
-from .course_assessment import CourseAssessment
+from .program_course_assessment import ProgramCourseAssessment
 from .program_course_assessment import ProgramCourseAssessment
 from .course_allocation import CourseAllocation

@@ -8,7 +8,6 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseInput, CourseNode
 
-#
 @strawberry.type
 class CourseQuery:
     @strawberry.field

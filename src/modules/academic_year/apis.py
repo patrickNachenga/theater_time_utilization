@@ -7,6 +7,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import AcademicYearInput, AcademicYearNode
 
+
 @strawberry.type
 class AcademicYearQuery:
     @strawberry.field
@@ -22,6 +23,7 @@ class AcademicYearQuery:
             message="Academic Year retrieved successfully",
             data=result)
 
+
 @strawberry.type
 class AcademicYearMutation:
     @strawberry.field
@@ -32,6 +34,7 @@ class AcademicYearMutation:
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Add Academic Year", data=[])
+
     @strawberry.mutation
     async def remove_academic_year(self, uid: str) -> Response[None]:
         """

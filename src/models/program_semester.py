@@ -14,7 +14,8 @@ class ProgramSemester(BaseModel):
     created_by: str = Column(String, nullable=True, index=True)
 
     # ---------------Mapped Columns ---------------------
-    academic_year_id: int = Column(Integer, nullable=False)
+    academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"), nullable=False, index=True)
+    academic_year = relationship('AcademicYear', lazy='subquery', back_populates="program_semesters")
 
     program_id: int = Column(Integer, ForeignKey("programs.id"), nullable=False, index=True)
     program = relationship('Program', lazy='subquery', back_populates="program_semesters")

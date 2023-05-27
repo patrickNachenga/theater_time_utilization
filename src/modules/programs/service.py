@@ -92,7 +92,7 @@ class ProgramService(object):
         """
         program_list = []
         with session_scope() as session:
-            # Check if student already exist using reg_no
+            # Check if program already exist using code
             existed_program_list = self.get_program_by_codes(
                 [program.code for program in inputs if program.uid is None])
             if existed_program_list:
@@ -108,10 +108,10 @@ class ProgramService(object):
                         name=inputItem.name,
                         short_name=inputItem.short_name,
                         tcu_code=inputItem.tcu_code,
-                        reg_code=inputItem.reg_code,
+                        registration_code=inputItem.registration_code,
                         nacte_code=inputItem.nacte_code,
                         program_category_id=inputItem.program_category_id,
-                        department_id=inputItem.department_id,
+                        department_uid=inputItem.department_uid,
                         campus_id=inputItem.campus_id,
                         duration=inputItem.duration,
                     )
@@ -125,10 +125,10 @@ class ProgramService(object):
                         program.name = inputItem.name,
                         program.short_name = inputItem.short_name,
                         program.tcu_code = inputItem.tcu_code,
-                        program.reg_code = inputItem.reg_code,
+                        program.registration_code = inputItem.registration_code,
                         program.nacte_code = inputItem.nacte_code,
                         program.program_category_id = inputItem.program_category_id,
-                        program.department_id = inputItem.department_id,
+                        program.department_uid = inputItem.department_uid,
                         program.campus_id = inputItem.campus_id,
                         program.duration = inputItem.duration,
                         program_list.append(program)
@@ -147,3 +147,23 @@ class ProgramService(object):
         with session_scope() as session:
             session.query(Program).filter_by(uid=uid).update({Program.deleted_at: pendulum.now()})
             session.commit()
+
+    @staticmethod
+    async def api_get_program_by_code(code: str) -> Response:
+        """
+            Get programs by codes
+        :param code:
+        """
+        try:
+            program = ProgramService.get_program_by_code(code)
+            print(program.uid)
+            return Response(status=True, code=ResponseCode.SUCCESS, data={
+                "uid": program.uid,
+                "code": program.code,
+                "name": program.name,
+                "short_name": program.short_name,
+            }, message="Program retrieved Successfully")
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"fail to find program with code : {code}", data={})
