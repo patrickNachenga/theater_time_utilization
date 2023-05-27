@@ -25,7 +25,8 @@ class ProgramCourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCourseAssessment).where((ProgramCourseAssessment.id.in_(id)) & (ProgramCourseAssessment.deleted_at.is_(None)))
+            stmt = select(ProgramCourseAssessment).where(
+                (ProgramCourseAssessment.id.in_(id)) & (ProgramCourseAssessment.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -36,7 +37,8 @@ class ProgramCourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCourseAssessment).where((ProgramCourseAssessment.uid.in_(uids)) & (ProgramCourseAssessment.deleted_at.is_(None)))
+            stmt = select(ProgramCourseAssessment).where(
+                (ProgramCourseAssessment.uid.in_(uids)) & (ProgramCourseAssessment.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
@@ -48,7 +50,8 @@ class ProgramCourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCourseAssessment).where((ProgramCourseAssessment.uid == uid) & (ProgramCourseAssessment.deleted_at.is_(None)))
+            stmt = select(ProgramCourseAssessment).where(
+                (ProgramCourseAssessment.uid == uid) & (ProgramCourseAssessment.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
@@ -61,13 +64,15 @@ class ProgramCourseAssessmentService(object):
         program_course_assessment_list = []
         with session_scope() as session:
             # Check if the course assessment already exist using uid
-            existed_program_course_assessment_list = self.get_program_course_assessment_by_id(
-                [program_course_assessment.id for program_course_assessment in inputs if program_course_assessment.uid is None])
+            existed_program_course_assessment_list = self.get_program_course_assessment_by_uids(
+                [program_course_assessment.uid for program_course_assessment in inputs if
+                 program_course_assessment.uid is None])
             if existed_program_course_assessment_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_course_assessment_list,
                                 message="Course Assessment Already Exists")
             # check for existing course using uid
-            existed_program_course_assessment = self.get_program_course_assessment_by_id([inputItem.id for inputItem in inputs])
+            existed_program_course_assessment = self.get_program_course_assessment_by_uids(
+                [inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
                     program_course_assessment = ProgramCourseAssessment(
@@ -79,8 +84,9 @@ class ProgramCourseAssessmentService(object):
                     )
                     program_course_assessment_list.append(program_course_assessment)
                 else:
-                    program_course_assessment = next(filter(lambda program_course_assessment: str(program_course_assessment.uid) == str(inputItem.uid),
-                                         existed_program_course_assessment), None)
+                    program_course_assessment = next(filter(
+                        lambda program_course_assessment: str(program_course_assessment.uid) == str(inputItem.uid),
+                        existed_program_course_assessment), None)
                     if program_course_assessment:
                         program_course_assessment.program_course_id = inputItem.program_course_id,
                         program_course_assessment.exam_category_uid = inputItem.exam_category_uid,
@@ -102,5 +108,6 @@ class ProgramCourseAssessmentService(object):
         :return:
         """
         with session_scope() as session:
-            session.query(ProgramCourseAssessment).filter_by(uid=uid).update({ProgramCourseAssessment.deleted_at: pendulum.now()})
+            session.query(ProgramCourseAssessment).filter_by(uid=uid).update(
+                {ProgramCourseAssessment.deleted_at: pendulum.now()})
             session.commit()

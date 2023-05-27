@@ -10,7 +10,7 @@ class Program(BaseModel):
     code: str = Column(String, nullable=False, unique=True)
     tcu_code: str = Column(String, nullable=True, unique=False)
     nacte_code: str = Column(String, nullable=True, unique=False)
-    reg_code: str = Column(String, nullable=False)
+    registration_code: str = Column(String, nullable=False)
     name: str = Column(String, nullable=False)
     short_name: str = Column(String, nullable=False, unique=False)
     duration: int = Column(Integer, nullable=False)

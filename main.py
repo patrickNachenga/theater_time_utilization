@@ -3,6 +3,8 @@ from starlette.middleware.cors import CORSMiddleware
 from src.app import RegistrationApp
 from src.core.redis import redis_dependency
 from src.db.session import database
+from src.api import program_api
+from src.modules.programs.service import ProgramService
 
 app = RegistrationApp()
 
@@ -37,13 +39,9 @@ async def shutdown():
     await database.disconnect()
 
 
-@app.get("/health")
-async def health():
-    """
-        Health Check For APP
-    :return:
-    """
-    return {"status": "ok"}
+@app.get("/program")
+async def get_program_data(code: str | None = None):
+    return await ProgramService().api_get_program_by_code(code=code)
 
 
 @app.get("/")
