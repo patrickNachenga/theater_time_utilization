@@ -169,6 +169,12 @@ class ProgramCategoryNode:
     updated_at: datetime
 
 
+@strawberry.type(description="Program Category paginated Output")
+class ProgramCategoryListNode:
+    items: List[ProgramCategoryNode]
+    total_count: int
+
+
 @strawberry.input(description="Program Semester Input")
 class ProgramSemesterInput:
     uid: Optional[str] = None

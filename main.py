@@ -3,7 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 from src.app import RegistrationApp
 from src.core.redis import redis_dependency
 from src.db.session import database
-# from src.api_routes.program_api import program_router
+from src.api_routes.program_api import program_router
 
 app = RegistrationApp()
 
@@ -13,8 +13,8 @@ app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
 )
 
-# Adding REST API rout for querying Program Module
-# app.include_router(program_router)
+# Adding REST API route for querying Program Module
+app.include_router(program_router)
 
 
 @app.on_event("startup")

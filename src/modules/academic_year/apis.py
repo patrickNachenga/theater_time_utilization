@@ -6,7 +6,7 @@ from src.models import AcademicYear
 from src.modules.academic_year.service import AcademicYearService, AcademicYearCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, AcademicYearNode, PaginationInput, AcademicYearListNode
+from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode
 
 
 @strawberry.type
@@ -19,8 +19,8 @@ class AcademicYearQuery:
             print(e)
             result = []
         return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
+            status=False,
+            code=ResponseCode.FAILURE,
             message="Academic Year retrieved successfully",
             data=result)
 
