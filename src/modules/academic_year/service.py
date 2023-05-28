@@ -64,21 +64,21 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             result = session.scalars(stmt)
             return result.first()
 
-    def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[List[AcademicYearNode]]:
+    def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         """
         Register Academic Year
         :param inputs:
         :return:
         """
         academic_year_list = []
+        action_name = "Registered"
         with session_scope() as session:
-            count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()
             # Check if the Academic Year already exist using uid
             existed_academic_year_list = self.get_academic_year_by_name(
                 [academic_year.name for academic_year in inputs if academic_year.uid is None])
             if existed_academic_year_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=AcademicYearListNode(items=existed_academic_year_list, total_count=count),
+                                data=AcademicYearListNode(items=existed_academic_year_list, total_count=0),
                                 message="One or More Academic Year Already exist")
             # check for existing course using uid
             existed_academic_year = self.get_academic_year_by_uids([inputItem.uid for inputItem in inputs])
@@ -92,6 +92,7 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                     )
                     academic_year_list.append(academic_year)
                 else:
+                    action_name = "Updated"
                     academic_year = next(filter(lambda academic_year: str(academic_year.uid) == str(inputItem.uid),
                                                 existed_academic_year), None)
 
@@ -102,10 +103,10 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                         academic_year.end_date = inputItem.end_date,
                         academic_year_list.append(academic_year)
             session.add_all(academic_year_list)
+            count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=academic_year_list,
-                            message="Academic Year Successfully Submitted")
-
+            return Response(status=True, code=ResponseCode.SUCCESS, data=AcademicYearListNode(items=academic_year_list, total_count=count),
+                            message=f"Academic Year {action_name} Successfully")
     # Delete Function
     @staticmethod
     def remove_academic_year(uid: str):

@@ -28,10 +28,9 @@ class AcademicYearQuery:
 @strawberry.type
 class AcademicYearMutation:
     @strawberry.field
-    def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[List[AcademicYearNode]]:
+    def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         try:
             return AcademicYearService(AcademicYear).register_academic_year(inputs)
-
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Add Academic Year", data=[])
