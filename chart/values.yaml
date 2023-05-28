@@ -1,0 +1,290 @@
+# Default values for land-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+#### To deploy by passing override values #####
+# Use the following command:
+# Syntax:
+# helm upgrade release-name <chart-directory> --install --dry-run --debug --set a=b,c=d
+# Example:
+# helm upgrade budget /home/user/HELM-CHARTS/land-service/. --install --dry-run --debug --set fullnameOverride=budget,nameOverride=budget
+#
+#### To deploy by passing file with override configurations #####
+# Use the following command:
+# Syntax:
+# helm upgrade release-name <chart-directory> --install --dry-run -f <file-path>
+# Example:
+# helm upgrade api-integration /home/user/HELM-CHARTS/land-service/. --install --dry-run --debug -f ../integration-value.yaml
+
+replicaCount: 1
+
+image:
+  # Allow chart to use release version as a tag in image
+  versioning: true
+  tag: 1.0.1
+  repository: dev.registry.go.tz/registration
+  pullPolicy: Always
+labels:
+  component: server
+  partof: service
+
+imagePullSecrets:
+  - name: dev-reg-credential
+nameOverride: "registration"
+fullnameOverride: "registration"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+
+podSecurityContext:
+  {}
+  # fsGroup: 2000
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+########### Section for Service configuration ###################
+service:
+  # Service Type can either be ClusterIP, LoadBalancer and NodePort
+  #type: ClusterIP
+  #port: 8990
+  #targetPort: 8990
+  #nodePort: 
+  #externalIP: {}
+  type: LoadBalancer
+  port: 9200
+  targetPort: 9200
+  nodePort: 9200
+  externalIP:
+  - 10.10.97.133
+  - 10.10.97.136
+  - 10.10.97.137
+########### Section for Service configuration ###################
+
+########### Section for Ingress configuration ###################
+ingress:
+  enabled: false
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+########### Section for Ingress configuration ###################
+
+########### Section for Resource configuration ###################
+resources:
+  {}
+  # We usually recommend not to specify default resources and to service this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+########### Section for Resource configuration ###################
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+########### Section for Probes configuration ###################
+probes:
+  enabled: false
+  # Type of probe can be Liveness, Readiness or Both.
+  type: Both
+  # Mode of probe can be http, tcp or exec
+  mode: http
+  options: {}
+  #  initialDelaySeconds: 5
+  #  failureTland-serviceeshold: 1
+  #  periodSeconds: 5
+  #  timeoutSeconds: 5
+  # Scheme can either be http or https
+  httpLive: {}
+  #  httpGet:
+  #  path: /
+  #  port: http
+  #  scheme: http
+  #  httpHeaders:
+  #  - name: Custom-Header
+  #    value: Awesome
+  httpReady: {}
+  #  httpGet:
+  #  path: /
+  #  port: http
+  #  scheme: http
+  #  httpHeaders:
+  #  - name: Custom-Header
+  #    value: Awesome
+  tcpLive: {}
+  #  tcpSocket:
+  #  port: 8080
+  tcpReady: {}
+  #  tcpSocket:
+  #  port: 8080
+  execLive: {}
+  #  exec:
+  #  command:
+  #  - cat
+  #  - /tmp/healthy
+  execReady: {}
+  #  exec:
+  #  command:
+  #  - cat
+  #  - /tmp/healthy
+########### Section for Probes configuration ###################
+
+########### Section for InitContainers configuration ###################
+initContainers:
+  enabled: false
+  init: {}
+  #  - name: init-postgres
+  #    image: busybox
+  #    command: ['sh', '-c', 'until nslookup service-mgt-db; do sleep 1; done;']
+########### Section for InitContainers configuration ###################
+
+#### Section configuration of environment variables (Configs and Secrets ) #############
+configMap:
+  enabled: true
+  # List of all the config maps
+  name:
+    - "registration"
+  #  - "stat-config"
+  data:
+    # Write all the needed config map variables
+    #SERVICE_PORT: "8805"
+    DB_PORT: "5432"
+    DB_HOST: "registration-db"
+    DB_NAME: "registrationdb"
+    DB_USER: "postgres"
+    DB_PASS: ""
+    DEFAULT_INSTITUTION: "1"
+    FRONT_END_URL: "http://10.10.97.132:8810"
+    #DISCOVERY_SERVER: "sua-registry-server"
+    #GATE_WAY: "sua-gateway"
+    #CONFIG_SERVER: "sua-config-server"
+    #PROFILE: "staging"
+
+
+    #DEFAULT_INSTITUTION: "102"
+
+    FRONT_END_URL: "http://10.10.97.132:9200"
+    # KAFKA_ADVERTISED_HOST_NAME: "service"
+    # KAFKA_BROKER_ID: "1"
+
+# This section is for credential secrets i.e. database credential environment variables
+secret:
+  enabled: true
+  # List of all the secrets
+  name:
+    - "appl-secret"
+    # - "rabbitmq"
+  credentials:
+    # Write all the needed config map variables
+    database:
+      # Database type can be postgres, mongo or none for application.
+      type: none
+      dbUser: "postgres"
+      dbPass: "rita_@_20+20"
+    application: []
+      # variable: "value"
+    ldap: []
+      # ldapuser: ""
+      # ldappass: ""
+
+############# Section configuration of environment variables (Configs and Secrets ) #############
+
+############# Section for network policy configuration ##############
+networkPolicy:
+  enabled: false
+  ingress: {}
+  #  - podSelector:
+  #      matchLabels:
+  #        tier: frontend
+  egress: {}
+  #  - podSelector:
+  #      matchLabels:
+  #        app: accounts-db
+############# Section for network policy configuration ##############
+
+############# Section for deployment volumes ###################
+# Configure volume name as from volume
+# Configure mount path for the container
+volumeMount:
+  - name: registration-storage
+    mountPath: "/data/uploads/attachments"
+#  - name: vol2
+#    mountPath: "/data/file2"
+
+volumes:
+  # Configure volume name from persistence volume claim
+  claim:
+    - name: registration-storage
+      persistentVolumeClaim:
+        claimName: registration
+  # Configure volume name from secret name
+  # Mounting certificate files are certificates
+  secret: {}
+  #  - name: vol1
+  #    secret:
+  #      secretName: files-service-mgt-claim
+############# Section for deployment volumes ###################
+
+############# Section for persistent volumes ###################
+persistent:
+  enabled:  true
+  storageclass: false
+  #storageClassName: prodshare
+  # hostPath: "/data/tests-storage/files/service/signature-crt"
+  hostPath: "/data/sua"
+  storageSize: 10Gi
+  accessModes: 
+    - ReadWriteMany
+############# Section for persistent volumes ###################
+
+############# Section for RBAC #################################
+role:
+  enabled: false
+  rules: []
+clusterrole:
+  enabled: false
+  rules:
+  # - apiGroups: [""]
+  #   resources: ["secrets"]
+  #   resourceNames: ["service-db-secret","land-service-service-secret","rabbitmq-secret"]
+  #   verbs: ["get","list"]
+############# Section for RBAC #################################
+
+############# Section for HPA #################################
+podAutoscaler:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  # Percentage of CPU utilization e.g 60
+  targetCPUUtilizationPercentage:
+  targetMemorymetrics:
+    # - type: Resource
+    #   resource:
+    #     name: memory
+    #     targetAverageUtilization: 80
+############# Section for HPA #################################
