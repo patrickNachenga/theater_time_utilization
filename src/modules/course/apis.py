@@ -3,17 +3,19 @@ from typing import List
 
 import strawberry #For building graphQL APIs
 
-from src.modules.course.service import CourseService
+from src.models import Course
+from src.modules.course.service import CourseService, CourseCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, CourseNode
+from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
+
 
 @strawberry.type
 class CourseQuery:
     @strawberry.field
-    def get_courses(self) -> Response[List[CourseNode]]:
+    def get_courses(self, pagination: PaginationInput) -> Response[PaginatedCourse]:
         try:
-            result = CourseService.get_courses()
+            result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
         except Exception as e:
             print(e)
             result = []
@@ -29,7 +31,7 @@ class CourseMutation:
     @strawberry.field
     def register_courses(self, inputs: List[CourseInput]) -> Response[List[CourseNode]]:
         try:
-            return CourseService().register_courses(inputs)
+            return CourseService(Course).register_courses(inputs)
 
         except Exception as e:
             print(e)
@@ -43,7 +45,7 @@ class CourseMutation:
         :return:
         """
         try:
-            CourseService().remove_course(uid)
+            CourseService(Course).remove_course(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

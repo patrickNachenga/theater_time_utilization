@@ -2,18 +2,20 @@ from typing import List
 
 import strawberry
 
-from src.modules.course_learn_outcome.service import CourseLearnOutcomeService
+from src.models import CourseLearnOutcome
+from src.modules.course_learn_outcome.service import CourseLearnOutcomeService, CourseLearnOutcomeCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseLearnOutcomeNode, CourseLearnOutcomeInput
+from src.types import CourseLearnOutcomeNode, CourseLearnOutcomeInput, PaginatedCourseLearnOutcome, PaginationInput
 
 
 @strawberry.type
 class CourseLearnOutcomeQuery:
     @strawberry.field
-    def get_course_learn_outcome(self) -> Response[List[CourseLearnOutcomeNode]]:
+    def get_course_learn_outcome(self, pagination: PaginationInput) -> Response[PaginatedCourseLearnOutcome]:
         try:
-            result = CourseLearnOutcomeService.get_course_learn_outcome()
+            result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, ['staff_id', 'program_course_id', 'learning_outcome'], PaginatedCourseLearnOutcome)
+
         except Exception as e:
             print(e)
             result = []
@@ -29,10 +31,10 @@ class CourseLearnOutcomeMutation:
     @strawberry.field
     def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[List[CourseLearnOutcomeNode]]:
         try:
-            return CourseLearnOutcomeService().register_course_learn_outcome(inputs)
+            return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed made Change on course learn outcome",
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register course learn outcome",
                             data=[])
 
     # Delete programs type function

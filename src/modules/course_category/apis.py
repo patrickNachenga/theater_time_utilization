@@ -2,18 +2,19 @@ from typing import List
 
 import strawberry
 
-from src.modules.course_category.service import CourseCategoryService
+from src.models import CourseCategory
+from src.modules.course_category.service import CourseCategoryService, CourseCategoryCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseCategoryInput, CourseCategoryNode
+from src.types import CourseCategoryInput, CourseCategoryNode, PaginatedCourseCategory, PaginationInput
 
 
 @strawberry.type
 class CourseCategoryQuery:
     @strawberry.field
-    def get_course_categories(self) -> Response[List[CourseCategoryNode]]:
+    def get_course_categories(self, pagination: PaginationInput) -> Response[PaginatedCourseCategory]:
         try:
-            result = CourseCategoryService.get_course_categories()
+            result = CourseCategoryCrud.get_multi_paginated(pagination, ['program_courses', 'code', 'description'], PaginatedCourseCategory)
         except Exception as e:
             print(e)
             result = []
@@ -28,7 +29,7 @@ class CourseCategoryMutation:
     @strawberry.field
     def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[List[CourseCategoryNode]]:
         try:
-            return CourseCategoryService().register_course_categories(inputs)
+            return CourseCategoryService(CourseCategory).register_course_categories(inputs)
 
         except Exception as e:
             print(e)
