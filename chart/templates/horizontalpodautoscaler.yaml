@@ -1,0 +1,21 @@
+{{ if eq .Values.podAutoscaler.enabled true }}
+apiVersion: {{ include "apiversion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "registration.fullname" . }}
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "registration.fullname" . }}
+  minReplicas: {{ .Values.podAutoscaler.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.podAutoscaler.maxReplicas | default 1  }}
+  {{- if .Values.podAutoscaler.targetCPUUtilizationPercentage }}
+  targetCPUUtilizationPercentage: {{ .Values.podAutoscaler.targetCPUUtilizationPercentage | default 80  }}
+  {{- end }}
+  {{- if .Values.podAutoscaler.targetMemorymetrics }}
+  metrics:
+  {{- toYaml .Values.podAutoscaler.targetMemorymetrics | nindent 2 }}
+  {{- end }}
+{{ end }}
