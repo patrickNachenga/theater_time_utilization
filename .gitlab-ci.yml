@@ -29,11 +29,12 @@ before_script:
   - echo "$REGISTRY_SERVER_IP  $REGISTRY_SERVER" >> /etc/hosts
   - echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
   - python -m pip install --upgrade pip
+  - python -m pip cache purge
 
 
 
 build:
-  image: $REGISTRY_SERVER/python:3.9
+  image: $REGISTRY_SERVER/python:3.10
   stage: build
   tags:
     - sua-runner02
