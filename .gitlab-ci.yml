@@ -36,7 +36,7 @@ build:
   image: $REGISTRY_SERVER/python:3.9
   stage: build
   tags:
-    - sua-runner
+    - sua-runner02
   only:
     - develop
     - staging
@@ -54,7 +54,7 @@ build:
 package:
   stage: package
   tags:
-    - sua-runner
+    - sua-runner02
   only:
     - develop
     - staging
@@ -71,7 +71,7 @@ deploy-dev:
   image: $REGISTRY_SERVER/helm:latest
   stage: deploy
   tags:
-    - sua-runner
+    - sua-runner02
   only:
     - live
   script:
