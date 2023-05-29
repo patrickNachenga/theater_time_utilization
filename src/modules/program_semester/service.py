@@ -4,12 +4,13 @@ import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
 from src.models.program_semester import ProgramSemester
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramSemesterInput, ProgramSemesterNode
 
 
-class ProgramSemesterService(object):
+class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, ProgramSemesterInput]):
     @staticmethod
     def get_program_semesters() -> List[ProgramSemester]:
         with session_scope() as session:
@@ -47,14 +48,7 @@ class ProgramSemesterService(object):
         """
         program_semester_list = []
         action_type = "Register"
-        print("---------------------------------------------------------------")
         with session_scope() as session:
-            # Check if the programs category already exist using uid
-            existed_program_semester_list = self.get_program_semester_by_uids(
-                [program_semester.uid for program_semester in inputs if program_semester.uid is None])
-            if existed_program_semester_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_semester_list,
-                                message="Program Category Already Exists")
             # check for existing programs semesters using uid
             existed_program_semester = self.get_program_semester_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
@@ -62,7 +56,6 @@ class ProgramSemesterService(object):
                     program_semester = ProgramSemester(
                         study_year=inputItem.study_year,
                         semester=inputItem.semester,
-                        created_by=inputItem.created_by,
                         program_id=inputItem.program_id,
                         academic_year_id=inputItem.academic_year_id,
                         core_credits=inputItem.core_credits,
@@ -100,3 +93,6 @@ class ProgramSemesterService(object):
         with session_scope() as session:
             session.query(ProgramSemester).filter_by(uid=uid).update({ProgramSemester.deleted_at: pendulum.now()})
             session.commit()
+
+
+ProgramSemesterCrud = ProgramSemesterService(ProgramSemester)

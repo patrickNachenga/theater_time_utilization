@@ -2,18 +2,20 @@ from typing import List
 
 import strawberry
 
-from src.modules.program_semester.service import ProgramSemesterService
+from src.models import ProgramSemester
+from src.modules.program_semester.service import ProgramSemesterService, ProgramSemesterCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramSemesterNode, ProgramSemesterInput
+from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput, ProgramSemesterListNode
 
 
 @strawberry.type
 class ProgramSemesterQuery:
     @strawberry.field
-    def get_program_semester(self) -> Response[List[ProgramSemesterNode]]:
+    def get_program_semester(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
         try:
-            result = ProgramSemesterService.get_program_semesters()
+            result = ProgramSemesterCrud.get_multi_paginated(pagination, ['name', 'short_name'],
+                                                             ProgramSemesterListNode)
         except Exception as e:
             print(e)
             result = []
@@ -29,7 +31,7 @@ class ProgramSemesterMutation:
     @strawberry.field
     def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[List[ProgramSemesterNode]]:
         try:
-            return ProgramSemesterService().register_program_semesters(inputs)
+            return ProgramSemesterService(ProgramSemester).register_program_semesters(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Semester",
@@ -44,7 +46,7 @@ class ProgramSemesterMutation:
         :return:
         """
         try:
-            ProgramSemesterService().remove_program_semester(uid)
+            ProgramSemesterService(ProgramSemester).remove_program_semester(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

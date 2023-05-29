@@ -2,8 +2,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from src.app import RegistrationApp
 from src.db.session import database
-from src.api import program_api
-from src.modules.programs.service import ProgramService
+from src.api_routes.program_api import program_router
 
 app = RegistrationApp()
 
@@ -12,6 +11,9 @@ app.debug = True
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
 )
+
+# Adding REST API route for querying Program Module
+app.include_router(program_router)
 
 
 @app.on_event("startup")
@@ -36,11 +38,6 @@ async def shutdown():
     :return:
     """
     await database.disconnect()
-
-
-@app.get("/program")
-async def get_program_data(code: str | None = None):
-    return await ProgramService().api_get_program_by_code(code=code)
 
 
 @app.get("/")
