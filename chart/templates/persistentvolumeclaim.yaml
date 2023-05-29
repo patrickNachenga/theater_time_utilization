@@ -1,0 +1,17 @@
+{{- if or (eq .Values.persistent.enabled true) (eq .Values.persistent.storageclass true) -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "registration.fullname" . }}
+spec:
+  storageClassName: {{ .Values.persistent.storageClassName }}
+  accessModes: {{ toYaml .Values.persistent.accessModes | nindent 4 }} 
+  {{- if eq .Values.persistent.storageclass false }}
+  selector:
+    matchLabels:
+      {{- include "registration.labels" . | nindent 8 }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistent.storageSize }}
+{{- end }}
