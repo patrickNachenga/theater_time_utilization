@@ -193,20 +193,20 @@ configMap:
     # KAFKA_BROKER_ID: "1"
 
 # This section is for credential secrets i.e. database credential environment variables
-secret:
-  enabled: true
+#secret:
+  #enabled: true
   # List of all the secrets
-  name:
+  #name:
     - "appl-secret"
     # - "rabbitmq"
-  credentials:
+  #credentials:
     # Write all the needed config map variables
-    database:
+    #database:
       # Database type can be postgres, mongo or none for application.
-      type: none
-      dbUser: "postgres"
-      dbPass: "rita_@_20+20"
-    application: []
+      #type: none
+      #dbUser: "postgres"
+      #dbPass: "rita_@_20+20"
+    #application: []
       # variable: "value"
     ldap: []
       # ldapuser: ""
