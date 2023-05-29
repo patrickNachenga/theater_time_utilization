@@ -5,12 +5,13 @@ from sqlalchemy import select
 
 from src.db.session import session_scope
 from src.models.course_category import CourseCategory
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseCategoryInput, CourseCategoryNode
 
 
-class CourseCategoryService(object):
+class CourseCategoryService(CRUDBase[CourseCategory, CourseCategoryInput, CourseCategoryInput]):
     @staticmethod
     def get_course_categories() -> List[CourseCategory]:
         with session_scope() as session:
@@ -74,7 +75,6 @@ class CourseCategoryService(object):
                     course_category = CourseCategory(
                         name=inputItem.name,
                         description=inputItem.description,
-
                     )
                     course_category_list.append(course_category)
                 else:
@@ -89,7 +89,7 @@ class CourseCategoryService(object):
             session.add_all(course_category_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=course_category_list,
-                            message=f"Successfully to {action_name} Course Category")
+                            message="Successfully to {action_name} Course Category")
 
     # Delete Function
     @staticmethod
@@ -102,3 +102,6 @@ class CourseCategoryService(object):
         with session_scope() as session:
             session.query(CourseCategory).filter_by(uid=uid).update({CourseCategory.deleted_at: pendulum.now()})
             session.commit()
+
+
+CourseCategoryCrud = CourseCategoryService(CourseCategory)

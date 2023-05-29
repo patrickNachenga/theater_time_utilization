@@ -6,12 +6,13 @@ from sqlalchemy import select
 from src.db.session import session_scope
 from src.models import Course
 from src.models.student import Student
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseInput, CourseNode
 
 
-class CourseService(object):
+class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
     @staticmethod
     def get_courses() -> List[Course]:
         with session_scope() as session:
@@ -104,3 +105,6 @@ class CourseService(object):
         with session_scope() as session:
             session.query(Course).filter_by(uid=uid).update({Course.deleted_at: pendulum.now()})
             session.commit()
+
+
+CourseCrud = CourseService(Course)

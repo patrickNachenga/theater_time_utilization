@@ -97,3 +97,7 @@ class StudentService(object):
         with session_scope() as session:
             session.query(Student).filter_by(uid=uid).update({Student.deleted_at: pendulum.now()})
             session.commit()
+
+
+
+
