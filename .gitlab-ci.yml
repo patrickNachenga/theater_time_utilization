@@ -18,7 +18,7 @@ variables:
 cache:
   policy: pull
   paths:
-    - .venv/ 
+    - .venv/  
 
 stages:
   - build 
