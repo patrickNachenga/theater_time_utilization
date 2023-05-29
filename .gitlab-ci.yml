@@ -11,12 +11,10 @@ services:
         echo "$REGISTRY_SERVER_CA" > /etc/docker/certs.d/$REGISTRY_SERVER/ca.crt
         cp /etc/docker/certs.d/$REGISTRY_SERVER/ca.crt /usr/local/share/ca-certificates/$REGISTRY_SERVER && update-ca-certificates
         dockerd-entrypoint.sh || exit 
-
 before_script:
   - echo "$REGISTRY_SERVER_IP  $REGISTRY_SERVER" >> /etc/hosts
   - echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
   - python -m pip install --upgrade pip
-
 build:
   image: $REGISTRY_SERVER/python:3.9
   stage: build
@@ -38,8 +36,7 @@ package:
     - sua-runner02
   only:
     - staging
-    
-    
+   
   script:
     - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} $REGISTRY_SERVER
     #- docker build -t $REGISTRY_SERVER/sua-frontend:{CI_COMMIT_SHA:0:8} .
