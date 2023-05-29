@@ -11,65 +11,46 @@ services:
         echo "$REGISTRY_SERVER_CA" > /etc/docker/certs.d/$REGISTRY_SERVER/ca.crt
         cp /etc/docker/certs.d/$REGISTRY_SERVER/ca.crt /usr/local/share/ca-certificates/$REGISTRY_SERVER && update-ca-certificates
         dockerd-entrypoint.sh || exit 
+stages:
+  - build
+  - test
+  - deploy
 
 variables:
-  DOCKER_DRIVER: overlay
+  # Set up environment variables
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
 
-
-artifacts:
-    paths:
-      - .venv/
-
-before_script:
-  - echo "$REGISTRY_SERVER_IP  $REGISTRY_SERVER" >> /etc/hosts
-  - echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
-  - python -m pip install --upgrade pip
-
-
-
+# Define job for building the application
 build:
-  image: $REGISTRY_SERVER/python:3.9
   stage: build
-  tags:
-    - sua-runner02
-  only:
-    - staging
-    
+  image: python:3.9
+  before_script:
+    - python -m pip install --upgrade pip
   script:
     - pip install -r requirements.txt
-   
   artifacts:
     paths:
       - .venv/
 
-
-package:
-  stage: package
-  tags:
-    - sua-runner02
-  only:
-    - staging
-    
-    
+# Define job for running tests
+test:
+  stage: test
+  image: python:3.9
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install --upgrade pytest
   script:
-    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} $REGISTRY_SERVER
-    #- docker build -t $REGISTRY_SERVER/sua-frontend:{CI_COMMIT_SHA:0:8} .
-    - docker build -t $REGISTRY_SERVER/registration:${CI_COMMIT_SHA:0:8} .
-    - docker push $REGISTRY_SERVER/registration:${CI_COMMIT_SHA:0:8}
+    - pytest tests/
 
-
-
-deploy-dev:
-  image: $REGISTRY_SERVER/helm:latest
+# Define job for deployment
+deploy:
   stage: deploy
-  tags:
-    - sua-runner02
-  only:
-    - live
+  image: python:3.9
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
   script:
-    - mkdir -p $HOME/.kube
-    - echo "$KUBERNETES_ADMIN" >> $HOME/.kube/config
-    - helm upgrade --install --set image.tag=${CI_COMMIT_SHA:0:8}  $CI_PROJECT_NAME --namespace sua chart/
-
-
-
+    - python deploy.py
+  only:
+    - master
