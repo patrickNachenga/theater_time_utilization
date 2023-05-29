@@ -43,7 +43,6 @@ build:
     - staging
     - live
   script:
-    - python -m pip install --upgrade pip
     - pip install -r requirements.txt
     #- npm install --force
     #- npm run build
