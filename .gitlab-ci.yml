@@ -13,7 +13,7 @@ services:
         dockerd-entrypoint.sh || exit 
 
 variables:
-  DOCKER_DRIVER: overlay
+  DOCKER_DRIVER: overlay 
 
 cache:
   policy: pull
