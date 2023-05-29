@@ -4,24 +4,17 @@ import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
 from src.models import ProgramCategory
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCategoryInput, ProgramCategoryNode
+from src.types import ProgramCategoryInput, ProgramCategoryListNode
 
 
-class ProgramCategoryService(object):
+class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, ProgramCategoryInput]):
     @staticmethod
     def get_program_categories() -> List[ProgramCategory]:
         with session_scope() as session:
-            result = session.query(
-                ProgramCategory.id,
-                ProgramCategory.uid,
-                ProgramCategory.name,
-                ProgramCategory.short_name,
-                ProgramCategory.created_by,
-                ProgramCategory.created_at,
-                ProgramCategory.updated_at,
-            ).filter(ProgramCategory.deleted_at.is_(None)).all()
+            result = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -60,7 +53,7 @@ class ProgramCategoryService(object):
             result = session.scalars(stmt)
             return result.all()
 
-    def register_program_categories(self, inputs: List[ProgramCategoryInput]) -> Response[List[ProgramCategoryNode]]:
+    def register_program_categories(self, inputs: List[ProgramCategoryInput]) -> Response[ProgramCategoryListNode]:
         """
         Register programs categories
         :param inputs:
@@ -73,7 +66,7 @@ class ProgramCategoryService(object):
             existed_program_category_list = self.get_program_categories_by_names(
                 [program_category.name for program_category in inputs if program_category.uid is None])
             if existed_program_category_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_category_list,
+                return Response(status=False, code=ResponseCode.DUPLICATE, data=ProgramCategoryListNode(items=existed_program_category_list, total_count=0),
                                 message="Program Category Already Exists")
             # check for existing programs categories using uid
             existed_program_category = self.get_program_categories_by_uids([inputItem.uid for inputItem in inputs])
@@ -95,8 +88,9 @@ class ProgramCategoryService(object):
                         program_category.short_name = inputItem.short_name
                         program_category_list.append(program_category)
             session.add_all(program_category_list)
+            count = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=program_category_list,
+            return Response(status=True, code=ResponseCode.SUCCESS, data=ProgramCategoryListNode(items=program_category_list, total_count=count),
                             message=f"Successfully to {action_type} Program category")
 
     # Delete FUnction
@@ -110,3 +104,6 @@ class ProgramCategoryService(object):
         with session_scope() as session:
             session.query(ProgramCategory).filter_by(uid=uid).update({ProgramCategory.deleted_at: pendulum.now()})
             session.commit()
+
+
+ProgramCategoryCrud = ProgramCategoryService(ProgramCategory)

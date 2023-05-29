@@ -13,7 +13,7 @@ class Course(BaseModel):
     offered: int = Column(Integer, nullable=False, unique=False)
 
     # ---------------Mapped Columns ---------------------
-    department_id: int = Column(Integer, nullable=False, unique=False)
+    department_uid: str = Column(String, nullable=False, unique=False)
 
     # ---------------Referenced Columns ---------------------
     program_courses = relationship('ProgramCourse', lazy='subquery', back_populates="course")

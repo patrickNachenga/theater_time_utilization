@@ -7,6 +7,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode
 
+
 @strawberry.type
 class ProgramCourseAssessmentQuery:
     @strawberry.field
@@ -22,6 +23,7 @@ class ProgramCourseAssessmentQuery:
             message="Program Course Assessment retrieved successfully",
             data=result)
 
+
 @strawberry.type
 class ProgramCourseAssessmentMutation:
     @strawberry.field
@@ -31,7 +33,9 @@ class ProgramCourseAssessmentMutation:
 
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Record Program Course Assessment", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE,
+                            message="Failed to Record Program Course Assessment", data=[])
+
     @strawberry.mutation
     async def remove_program_course_assessment(self, uid: str) -> Response[None]:
         """
@@ -44,7 +48,7 @@ class ProgramCourseAssessmentMutation:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="program_course_assessment Removed Successfully",
+                message="program course assessment Removed Successfully",
                 data=None
             )
         except Exception as e:

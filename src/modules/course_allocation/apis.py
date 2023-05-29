@@ -47,7 +47,7 @@ class CourseAllocationMutation:
         :return:
         """
         try:
-            result = CourseAllocationService().remove_course_allocation(uid)
+            result = CourseAllocationService(CourseAllocation).remove_course_allocation(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

@@ -76,7 +76,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
                         description=inputItem.description,
                         name=inputItem.name,
                         offered=inputItem.offered,
-                        department_id=inputItem.department_id
+                        department_uid=inputItem.department_uid
                     )
                     course_list.append(course)
                 else:
@@ -87,7 +87,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
                         course.description = inputItem.description,
                         course.name = inputItem.name,
                         course.offered = inputItem.offered,
-                        course.department_id = inputItem.department_id
+                        course.department_uid = inputItem.department_uid
                         course_list.append(course)
             session.add_all(course_list)
             session.commit()

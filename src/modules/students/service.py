@@ -1,5 +1,8 @@
-from typing import List
+from typing import List, Any
+
+import requests
 from sqlalchemy import select
+
 from src.db.session import session_scope
 from src.models.student import Student
 from src.shared.response import Response
@@ -99,5 +102,51 @@ class StudentService(object):
             session.commit()
 
 
-
-
+    # @staticmethod
+    # def moodle() -> str:
+    #     print("-----------------------------------------")
+    #     # Token and site URL
+    #     token = '9454c6efdb94236e618c9a7b1a67138b'
+    #     site_url = 'http://10.2.1.165/webservice/rest/server.php'
+    #
+    #     # User data
+    #     user_data = {
+    #         'username': 'mkwazu',
+    #         'password': 'mkwazu23NK++@x45',
+    #         'firstname': 'mkwazu',
+    #         'lastname': 'mkwazu',
+    #         'email': 'mkwazu@gmail.com'
+    #     }
+    #
+    #     # Set the request payload
+    #     payload = {
+    #         'wstoken': token,
+    #         'wsfunction': 'core_user_create_users',
+    #         'moodlewsrestformat': 'json',
+    #         'users[0][username]': user_data['username'],
+    #         'users[0][password]': user_data['password'],
+    #         'users[0][firstname]': user_data['firstname'],
+    #         'users[0][lastname]': user_data['lastname'],
+    #         'users[0][email]': user_data['email']
+    #     }
+    #
+    #     # Send the POST request
+    #     response = requests.post(site_url, data=payload)
+    #
+    #     # Check for errors
+    #     if response.status_code != 200:
+    #         print('HTTP Error:', response.status_code)
+    #     else:
+    #         # Decode the response
+    #         response_data = response.json()
+    #         print(response_data)
+    #
+    #         # Check the response for any errors
+    #         if 'exception' in response_data:
+    #             print('API Error:', response_data['message'])
+    #         else:
+    #             # User created successfully
+    #             print('User created with ID:', response_data[0]['id'])
+    #
+    #     return "moodle"
+    #

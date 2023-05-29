@@ -76,7 +76,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             for inputItem in inputs:
                 if inputItem.uid is None:
                     course_learn_outcome = CourseLearnOutcome(
-                        staff_id=inputItem.staff_id,
+                        staff_uid=inputItem.staff_uid,
                         program_course_id=inputItem.program_course_id,
                         learning_outcome=inputItem.learning_outcome
                     )
@@ -88,7 +88,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
                                existed_course_learn_outcome), None)
 
                     if course_learn_outcome:
-                        course_learn_outcome.staff_id = inputItem.staff_id
+                        course_learn_outcome.staff_uid = inputItem.staff_uid
                         course_learn_outcome.program_course_id = inputItem.program_course_id
                         course_learn_outcome.learning_outcome = inputItem.learning_outcome
                         course_learn_outcome_list.append(course_learn_outcome)

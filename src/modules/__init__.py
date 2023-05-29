@@ -44,6 +44,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     #         return session.query(self.model).where(self.model.deleted_at.is_(None)).offset(pagination.page).limit(
     #             pagination.limit).all()
 
+
     def get_multi(self) -> List[ModelType]:
         with session_scope() as session:
             result = session.query(self.model).filter(self.model.deleted_at.is_(None)).all()
@@ -125,6 +126,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             for column in inspect(self.model).columns:
                 if column.name in search_columns:
                     filter_conditions.append(getattr(self.model, column.name).ilike(f"%{search_q}%"))
+
             if filter_conditions:
                 query = query.filter(or_(*filter_conditions))
             # Apply pagination

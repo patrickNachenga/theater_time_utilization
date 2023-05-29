@@ -5,12 +5,13 @@ from sqlalchemy import select
 
 from src.db.session import session_scope
 from src.models.program import Program
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramInput, ProgramNode
+from src.types import ProgramInput, ProgramListNode
 
 
-class ProgramService(object):
+class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
     @staticmethod
     def get_programs() -> List[Program]:
         """
@@ -84,20 +85,22 @@ class ProgramService(object):
             result = session.scalars(stmt)
             return result.first()
 
-    def register_program(self, inputs: List[ProgramInput]) -> Response[List[ProgramNode]]:
+    def register_program(self, inputs: List[ProgramInput]) -> Response[ProgramListNode]:
         """
         Register Program
         :param inputs:
         :return:
         """
         program_list = []
+        action_type = "Register"
         with session_scope() as session:
-            # Check if student already exist using reg_no
+            # Check if program already exist using code
             existed_program_list = self.get_program_by_codes(
                 [program.code for program in inputs if program.uid is None])
             if existed_program_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_list,
-                                message="Program Already Exists")
+                return Response(status=False, code=ResponseCode.DUPLICATE,
+                                data=ProgramListNode(items=existed_program_list, total_count=0),
+                                message="Program  Already Exists")
 
             # check for existing Program using uid
             existed_program = self.get_program_by_uids([inputItem.uid for inputItem in inputs])
@@ -108,16 +111,16 @@ class ProgramService(object):
                         name=inputItem.name,
                         short_name=inputItem.short_name,
                         tcu_code=inputItem.tcu_code,
-                        reg_code=inputItem.reg_code,
+                        registration_code=inputItem.registration_code,
                         nacte_code=inputItem.nacte_code,
                         program_category_id=inputItem.program_category_id,
-                        department_id=inputItem.department_id,
-                        campus_id=inputItem.campus_id,
+                        department_uid=inputItem.department_uid,
                         duration=inputItem.duration,
                     )
 
                     program_list.append(program)
                 else:
+                    action_type = "Update"
                     program = next(filter(lambda program: str(program.uid) == str(inputItem.uid),
                                           existed_program), None)
                     if program:
@@ -125,17 +128,18 @@ class ProgramService(object):
                         program.name = inputItem.name,
                         program.short_name = inputItem.short_name,
                         program.tcu_code = inputItem.tcu_code,
-                        program.reg_code = inputItem.reg_code,
+                        program.registration_code = inputItem.registration_code,
                         program.nacte_code = inputItem.nacte_code,
                         program.program_category_id = inputItem.program_category_id,
-                        program.department_id = inputItem.department_id,
-                        program.campus_id = inputItem.campus_id,
+                        program.department_uid = inputItem.department_uid,
                         program.duration = inputItem.duration,
                         program_list.append(program)
             session.add_all(program_list)
+            count = session.query(Program).filter(Program.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=program_list,
-                            message="Successfully Submitted")
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=ProgramListNode(items=program_list, total_count=count),
+                            message=f"Successfully to {action_type} Program category")
 
     @staticmethod
     def remove_program(uid: str):
@@ -147,3 +151,26 @@ class ProgramService(object):
         with session_scope() as session:
             session.query(Program).filter_by(uid=uid).update({Program.deleted_at: pendulum.now()})
             session.commit()
+
+    @staticmethod
+    async def api_get_program_by_code(code: str) -> Response:
+        """
+            Get programs by codes
+        :param code:
+        """
+        try:
+            program = ProgramService.get_program_by_code(code)
+            print(program.uid)
+            return Response(status=True, code=ResponseCode.SUCCESS, data={
+                "uid": program.uid,
+                "code": program.code,
+                "name": program.name,
+                "short_name": program.short_name,
+            }, message="Program retrieved Successfully")
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"fail to find program with code : {code}", data={})
+
+
+ProgramCrud = ProgramService(Program)

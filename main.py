@@ -3,6 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 from src.app import RegistrationApp
 from src.core.redis import redis_dependency
 from src.db.session import database
+from src.api_routes.program_api import program_router
 
 app = RegistrationApp()
 
@@ -11,6 +12,9 @@ app.debug = True
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
 )
+
+# Adding REST API route for querying Program Module
+app.include_router(program_router)
 
 
 @app.on_event("startup")
@@ -35,15 +39,6 @@ async def shutdown():
     :return:
     """
     await database.disconnect()
-
-
-@app.get("/health")
-async def health():
-    """
-        Health Check For APP
-    :return:
-    """
-    return {"status": "ok"}
 
 
 @app.get("/")

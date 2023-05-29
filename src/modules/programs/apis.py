@@ -2,24 +2,25 @@ from typing import List
 
 import strawberry
 
-from src.modules.programs.service import ProgramService
+from src.models import Program
+from src.modules.programs.service import ProgramService, ProgramCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramNode, ProgramInput
+from src.types import ProgramNode, ProgramInput, PaginationInput, ProgramListNode
 
 
 @strawberry.type
 class ProgramQuery:
     @strawberry.field
-    def get_programs(self) -> Response[List[ProgramNode]]:
+    def get_programs(self, pagination: PaginationInput) -> Response[ProgramListNode]:
         try:
-            result = ProgramService.get_programs()
+            result = ProgramCrud.get_multi_paginated(pagination, ['name', 'short_name'], ProgramListNode)
         except Exception as e:
             print(e)
-            result = []
+            result = ProgramListNode(items=[], total_count=0)
         return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
+            status=False,
+            code=ResponseCode.FAILURE,
             message="Program retrieved successfully",
             data=result)
 
@@ -27,12 +28,12 @@ class ProgramQuery:
 @strawberry.type
 class ProgramMutation:
     @strawberry.field
-    def register_program(self, inputs: List[ProgramInput]) -> Response[List[ProgramNode]]:
+    def register_program(self, inputs: List[ProgramInput]) -> Response[ProgramListNode]:
         try:
-            return ProgramService().register_program(inputs)
+            return ProgramService(Program).register_program(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register programs", data=[])
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register programs", data=[])
 
     # delete programs
     @strawberry.mutation

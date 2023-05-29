@@ -23,6 +23,15 @@ class StudentQuery:
             message="Successfully Retrieve Students",
             data=result)
 
+    @strawberry.field
+    def get_moodle_try(self) -> Response[str]:
+        data = StudentService().moodle()
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Successfully Retrieve Students",
+            data=data)
+
 
 @strawberry.type
 class StudentMutation:

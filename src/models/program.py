@@ -10,7 +10,7 @@ class Program(BaseModel):
     code: str = Column(String, nullable=False, unique=False)
     tcu_code: str = Column(String, nullable=True, unique=False)
     nacte_code: str = Column(String, nullable=True, unique=False)
-    reg_code: str = Column(String, nullable=False)
+    registration_code: str = Column(String, nullable=False)
     name: str = Column(String, nullable=False)
     short_name: str = Column(String, nullable=False, unique=False)
     duration: int = Column(Integer, nullable=False)
@@ -18,9 +18,9 @@ class Program(BaseModel):
     program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=True, index=True)
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
 
-    department_id: int = Column(Integer, nullable=True, index=True)
+    department_uid: str = Column(String, nullable=True, index=True)
 
-    campus_id: int = Column(String, nullable=True)
+    campus_uid: str = Column(String, nullable=True)
 
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")

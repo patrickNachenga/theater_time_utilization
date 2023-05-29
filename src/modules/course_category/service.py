@@ -69,7 +69,7 @@ class CourseCategoryService(CRUDBase[CourseCategory, CourseCategoryInput, Course
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_category_list,
                                 message="Course Category Already Exists")
             # check for existing course category using uid
-            existed_course_category = self.get_course_categories_by_names([inputItem.uid for inputItem in inputs])
+            existed_course_category = self.get_course_categories_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
                     course_category = CourseCategory(
@@ -85,7 +85,7 @@ class CourseCategoryService(CRUDBase[CourseCategory, CourseCategoryInput, Course
                     if course_category:
                         course_category.description = inputItem.description,
                         course_category.name = inputItem.name,
-
+                        course_category_list.append(course_category)
             session.add_all(course_category_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=course_category_list,
