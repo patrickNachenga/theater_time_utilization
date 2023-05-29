@@ -1,0 +1,15 @@
+{{- if and (eq .Values.persistent.enabled true) (eq .Values.persistent.storageclass false) -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "registration.fullname" . }}
+  labels:
+    {{ include "registration.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.persistent.storageClassName }}
+  capacity:
+    storage: {{  .Values.persistent.storageSize  }}
+  accessModes: {{ toYaml .Values.persistent.accessModes | nindent 4 }}
+  hostPath:
+    path: {{ .Values.persistent.hostPath }}
+{{- end }}
