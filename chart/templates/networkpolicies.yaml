@@ -1,0 +1,20 @@
+{{-  if eq .Values.networkPolicy.enabled true }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "land-service.fullname" . }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ include "land-service.fullname" . }}
+  {{- if .Values.networkPolicy.ingress }}
+  ingress:
+  - from:
+  {{- toYaml .Values.networkPolicy.ingress | nindent 4 }}
+  {{- end }}
+  {{- if .Values.networkPolicy.egress }}
+  egress:
+  - to:
+  {{- toYaml .Values.networkPolicy.egress | nindent 4 }}
+  {{- end }}
+{{- end }}
