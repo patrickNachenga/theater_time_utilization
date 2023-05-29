@@ -5,12 +5,13 @@ from sqlalchemy import select
 
 from src.db.session import session_scope
 from src.models.course_allocation import CourseAllocation
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode
 
 
-class CourseAllocationService(object):
+class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
     @staticmethod
     def get_course_allocations() -> List[CourseAllocation]:
         with session_scope() as session:
@@ -95,3 +96,6 @@ class CourseAllocationService(object):
         with session_scope() as session:
             session.query(CourseAllocation).filter_by(uid=uid).update({CourseAllocation.deleted_at: pendulum.now()})
             session.commit()
+
+
+CourseAllocationCrud = CourseAllocationService(CourseAllocation)

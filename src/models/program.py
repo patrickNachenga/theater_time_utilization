@@ -7,7 +7,7 @@ from src.models import BaseModel
 class Program(BaseModel):
     __tablename__ = "programs"
     id: int = Column(Integer, primary_key=True, index=True)
-    code: str = Column(String, nullable=False, unique=True)
+    code: str = Column(String, nullable=False, unique=False)
     tcu_code: str = Column(String, nullable=True, unique=False)
     nacte_code: str = Column(String, nullable=True, unique=False)
     registration_code: str = Column(String, nullable=False)

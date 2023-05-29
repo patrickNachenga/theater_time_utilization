@@ -173,7 +173,7 @@ class CourseInput:
     department_uid: str
 
 
-@strawberry.type(description="Course")
+@strawberry.type(description="Course Output")
 class CourseNode:
     id: int
     uid: str
@@ -329,7 +329,7 @@ class CourseCategoryInput:
     description: Optional[str] = None
 
 
-@strawberry.type(description="Course Category")
+@strawberry.type(description="Course Category Output")
 class CourseCategoryNode:
     id: int
     uid: str
@@ -456,6 +456,41 @@ class ProgramCourseAssessmentNode:
     maximum_score: int
 
 
+@strawberry.input(description="Pagination Input")
+class PaginationInput:
+    offset: int = 0
+    limit: int = 10
+    search: Optional[str] = None
+
+
+############ An output for Paginated Course #######################
+@strawberry.type(description="Paginated Course")
+class PaginatedCourse:
+    items: List[CourseNode]
+    total_count: int
+
+
+############ An output for Paginated Course Allocation ############
+@strawberry.type(description="Paginated Course Allocation")
+class PaginatedCourseAllocation:
+    items: List[CourseAllocationNode]
+    total_count: int
+
+
+############ An output for Paginated Course Category ###############
+@strawberry.type(description="Paginated Course Category")
+class PaginatedCourseCategory:
+    items: List[CourseCategoryNode]
+    total_count: int
+
+
+############ An output for Paginated Course Learn Outcome ###############
+@strawberry.type(description="Paginated Course Learn Outcome")
+class PaginatedCourseLearnOutcome:
+    items: List[CourseLearnOutcomeNode]
+    total_count: int
+
+
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str
@@ -475,13 +510,6 @@ class LoginSuccess:
 class LoginError:
     status: bool
     message: str | None = None
-
-
-@strawberry.input
-class Pagination:
-    page: int
-    limit: int
-    search: Optional[str] = None
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))

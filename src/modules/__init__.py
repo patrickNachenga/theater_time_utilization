@@ -33,6 +33,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             result = session.scalars(stmt)
             return result.first()
 
+    # def get_multi_paginated(self, filter_field, pagination: Pagination) -> List[ModelType]:
+    #     # return db.query(self.model).offset(skip).limit(limit).all()
+    #     model_field = getattr(self.model, filter_field)
+    #     with session_scope() as session:
+    #         if pagination.search:
+    #             return session.query(self.model).where(
+    #                 (model_field.ilike(f"%{pagination.search}%")) & (self.model.deleted_at.is_(None))).offset(
+    #                 pagination.page).limit(pagination.limit).all()
+    #         return session.query(self.model).where(self.model.deleted_at.is_(None)).offset(pagination.page).limit(
+    #             pagination.limit).all()
+
+
     def get_multi(self) -> List[ModelType]:
         with session_scope() as session:
             result = session.query(self.model).filter(self.model.deleted_at.is_(None)).all()

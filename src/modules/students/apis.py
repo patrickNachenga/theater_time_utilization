@@ -44,6 +44,11 @@ class StudentMutation:
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register students", data=[])
 
     # Delete student function
+
+    @strawberry.mutation
+    async def moodle(self, uid: str) -> bool:
+        StudentService.moodle_test()
+        return bool
     @strawberry.mutation
     async def remove_student(self, uid: str) -> Response[None]:
         """

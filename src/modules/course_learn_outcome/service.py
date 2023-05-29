@@ -4,12 +4,13 @@ import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
 from src.models.course_learn_outcome import CourseLearnOutcome
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeNode
 
 
-class CourseLearnOutcomeService(object):
+class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeInput, CourseLearnOutcomeInput]):
     @staticmethod
     def get_course_learn_outcome() -> List[CourseLearnOutcome]:
         with session_scope() as session:
@@ -32,7 +33,7 @@ class CourseLearnOutcomeService(object):
     def get_course_learn_outcome_by_uids(uids: List[str]) -> List[CourseLearnOutcome]:
         """
         Get course learn outcome by uids
-        :return:
+        :return uids:
         """
         with session_scope() as session:
             stmt = select(CourseLearnOutcome).where(
@@ -52,7 +53,8 @@ class CourseLearnOutcomeService(object):
             result = session.scalars(stmt)
             return result.all()
 
-    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[List[CourseLearnOutcomeNode]]:
+    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[
+        List[CourseLearnOutcomeNode]]:
         """
         Register Course Learn outcome semesters
         :param inputs:
@@ -60,11 +62,11 @@ class CourseLearnOutcomeService(object):
         """
         course_learn_outcome_list = []
         action_type = "Register"
-        print("---------------------------------------------------------------")
         with session_scope() as session:
             # Check if the course learn outcome already exist using uid
             existed_course_learn_outcome_list = self.get_course_learn_outcome_by_uids(
-                [course_learn_outcome.program_course_id for course_learn_outcome in inputs if course_learn_outcome.uid is None])
+                [course_learn_outcome.program_course_id for course_learn_outcome in inputs if
+                 course_learn_outcome.uid is None])
             if existed_course_learn_outcome_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_learn_outcome_list,
                                 message="Course Learn outcome Already Exists")
@@ -93,7 +95,7 @@ class CourseLearnOutcomeService(object):
             session.add_all(course_learn_outcome_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=course_learn_outcome_list,
-                            message=f"Successfully to {action_type} Course Learn Outcome")
+                            message="Successfully to {action_type} Course Learn Outcome")
 
     # Delete FUnction
     @staticmethod
@@ -106,3 +108,6 @@ class CourseLearnOutcomeService(object):
         with session_scope() as session:
             session.query(CourseLearnOutcome).filter_by(uid=uid).update({CourseLearnOutcome.deleted_at: pendulum.now()})
             session.commit()
+
+
+CourseLearnOutcomeCrud = CourseLearnOutcomeService(CourseLearnOutcome)
