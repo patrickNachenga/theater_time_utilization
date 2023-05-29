@@ -23,7 +23,6 @@ class AcademicYearInput:
 
 @strawberry.type(description="Academic Year")
 class AcademicYearNode:
-    id: int
     uid: str
     name: str
     status: Optional[int]
@@ -212,8 +211,8 @@ class ProgramCategoryListNode:
 @strawberry.input(description="Program Semester Input")
 class ProgramSemesterInput:
     uid: Optional[str] = None
-    program_id: str
-    academic_year_id: str
+    program_uid: str
+    academic_year_uid: str
     study_year: int
     semester: int
     core_credits: float
@@ -295,7 +294,7 @@ class ProgramListNode:
 @strawberry.input(description="Program Semester Input")
 class ProgramSemesterInput:
     uid: Optional[str] = None
-    program_id: int
+    program_uid: str
     academic_year_id: int
     study_year: int
     semester: int

@@ -3,8 +3,10 @@ from typing import List
 import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
+from src.models import Program
 from src.models.program_semester import ProgramSemester
 from src.modules import CRUDBase
+from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramSemesterInput, ProgramSemesterNode
@@ -46,9 +48,19 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :param inputs:
         :return:
         """
+        #
+        # program_id = ProgramService.get_program_by_uid([program.id for program in inputs if program.uid is None])
         program_semester_list = []
         action_type = "Register"
         with session_scope() as session:
+            print([program.program_uid for program in inputs])
+            try:
+                existed_program_uid = ProgramService.get_program_uids_by_uids(
+                    [program.program_uid for program in inputs if program.program_uid is not None])
+            except Exception as e:
+                print(e)
+
+            print(existed_program_uid)
             # check for existing programs semesters using uid
             existed_program_semester = self.get_program_semester_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
