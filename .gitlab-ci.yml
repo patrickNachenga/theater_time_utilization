@@ -17,6 +17,7 @@ before_script:
   - echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
   - python -m pip install --upgrade pip
 
+
 build:
   image: $REGISTRY_SERVER/python:3.9
   stage: build
