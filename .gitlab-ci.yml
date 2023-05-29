@@ -26,9 +26,9 @@ stages:
   - deploy
 
 before_script:
+  image: aquasec/trivy
    - echo "$REGISTRY_SERVER_IP  $REGISTRY_SERVER" >> /etc/hosts
    - echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
-   - apt add --no-cache --upgrade bash
    - python -m pip install --upgrade pip
    
 
