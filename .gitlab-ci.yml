@@ -73,7 +73,7 @@ deploy-dev:
   tags:
     - sua-runner02
   only:
-    - live
+    - staging
   script:
     - mkdir -p $HOME/.kube
     - echo "$KUBERNETES_ADMIN" >> $HOME/.kube/config
