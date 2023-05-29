@@ -12,6 +12,33 @@ class PaginationInput:
     search: Optional[str] = None
 
 
+@strawberry.input(description="Academic Year Input")
+class AcademicYearInput:
+    uid: Optional[str] = None
+    name: str
+    status: Optional[int] = 1
+    start_date: datetime
+    end_date: datetime
+
+
+@strawberry.type(description="Academic Year")
+class AcademicYearNode:
+    id: int
+    uid: str
+    name: str
+    status: Optional[int]
+    start_date: str
+    end_date: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@strawberry.type(description="AcademicYear Country")
+class AcademicYearListNode:
+    items: List[AcademicYearNode]
+    total_count: int
+
+
 @strawberry.input(description="Exam Category Groups Input")
 class ExamCatGroupsInput:
     uid: Optional[str] = None
@@ -158,6 +185,13 @@ class CourseNode:
     department_uid: str
 
 
+@strawberry.input(description="Program Category Input")
+class ProgramCategoryInput:
+    uid: Optional[str] = None
+    name: str
+    short_name: Optional[str] = None
+
+
 @strawberry.type(description="Program Category Output")
 class ProgramCategoryNode:
     id: int
@@ -234,7 +268,6 @@ class ProgramInput:
     registration_code: Optional[str] = None
     program_category_id: Optional[int] = 0
     department_uid: str
-    campus_uid: Optional[str] = None
 
 
 @strawberry.type(description="Program Output")
@@ -251,10 +284,12 @@ class ProgramNode:
     program_category_id: int
     program_category: ProgramCategoryNode
     department_uid: str
-    campus_uid: str
-    created_by: str
-    created_at: datetime
-    updated_at: datetime
+
+
+@strawberry.type(description="Program paginated Output")
+class ProgramListNode:
+    items: List[ProgramNode]
+    total_count: int
 
 
 @strawberry.input(description="Program Semester Input")
@@ -266,23 +301,26 @@ class ProgramSemesterInput:
     semester: int
     core_credits: float
     elective_credits: float
-    created_by: Optional[str] = None
 
 
 @strawberry.type(description="Program Semester output")
 class ProgramSemesterNode:
     id: int
     uid: str
-    program_id: int
     program: ProgramNode
-    academic_year_id: int
+    academic_year: AcademicYearNode
     study_year: int
     semester: int
     core_credits: float
     elective_credits: float
-    created_by: str
     created_at: datetime
     updated_at: datetime
+
+
+@strawberry.type(description="Program semester Output")
+class ProgramSemesterListNode:
+    items: List[ProgramSemesterNode]
+    total_count: int
 
 
 @strawberry.input(description="Course Category Input")
@@ -298,10 +336,6 @@ class CourseCategoryNode:
     uid: str
     description: str
     name: str
-
-    created_by: int
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.input(description="Program Course Input")
@@ -341,13 +375,6 @@ class ProgramCourseNode:
     updated_at: datetime
 
 
-@strawberry.input(description="Program Category Input")
-class ProgramCategoryInput:
-    uid: Optional[str] = None
-    name: str
-    short_name: Optional[str] = None
-
-
 @strawberry.input(description="Course Learn Outcome Input")
 class CourseLearnOutcomeInput:
     uid: Optional[str] = None
@@ -366,33 +393,6 @@ class CourseLearnOutcomeNode:
     created_by: str
     created_at: datetime
     updated_at: datetime
-
-
-@strawberry.input(description="Academic Year Input")
-class AcademicYearInput:
-    uid: Optional[str] = None
-    name: str
-    status: Optional[int] = 1
-    start_date: datetime
-    end_date: datetime
-
-
-@strawberry.type(description="Academic Year")
-class AcademicYearNode:
-    id: int
-    uid: str
-    name: str
-    status: Optional[int]
-    start_date: str
-    end_date: str
-    created_at: datetime
-    updated_at: datetime
-
-
-@strawberry.type(description="AcademicYear Country")
-class AcademicYearListNode:
-    items: List[AcademicYearNode]
-    total_count: int
 
 
 @strawberry.input(description="Program Course Assessment Input")

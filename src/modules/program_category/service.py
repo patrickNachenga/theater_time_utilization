@@ -7,7 +7,7 @@ from src.models import ProgramCategory
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCategoryInput, ProgramCategoryNode, ProgramCategoryListNode
+from src.types import ProgramCategoryInput, ProgramCategoryListNode
 
 
 class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, ProgramCategoryInput]):
