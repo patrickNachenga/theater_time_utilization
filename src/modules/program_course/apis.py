@@ -6,7 +6,7 @@ from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseNode, ProgramCourseInput, ProgramCourseListNode, PaginationInput
+from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput
 
 
 @strawberry.type

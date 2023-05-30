@@ -3,15 +3,12 @@ from datetime import datetime
 from typing import Optional, List
 
 import strawberry
-from pendulum import DateTime
-
 
 @strawberry.input
 class PaginationInput:
     offset: int = 0
     limit: int = 10
     search: Optional[str] = None
-
 
 @strawberry.input(description="Academic Year Input")
 class AcademicYearInput:
@@ -423,7 +420,7 @@ class ProgramCourseAssessmentNode:
 @strawberry.input(description="Course Allocation Input")
 class CourseAllocationInput:
     uid: Optional[str] = None
-    program_course_id: str
+    program_course_uid: str
     staff_uid: str
 
 
@@ -471,13 +468,11 @@ class PaginatedCourse:
     items: List[CourseNode]
     total_count: int
 
-
 ############ An output for Paginated Course Allocation ############
 @strawberry.type(description="Paginated Course Allocation")
 class PaginatedCourseAllocation:
     items: List[CourseAllocationNode]
     total_count: int
-
 
 ############ An output for Paginated Course Category ###############
 @strawberry.type(description="Paginated Course Category")
@@ -485,20 +480,29 @@ class PaginatedCourseCategory:
     items: List[CourseCategoryNode]
     total_count: int
 
-
 ############ An output for Paginated Course Learn Outcome ###############
 @strawberry.type(description="Paginated Course Learn Outcome")
 class PaginatedCourseLearnOutcome:
     items: List[CourseLearnOutcomeNode]
     total_count: int
 
+############ An output for Paginated Course #######################
+@strawberry.type(description="Paginated Program Course Outcome")
+class PaginatedProgramCourse:
+    items: List[ProgramCourseNode]
+    total_count: int
+
+############ An output for Paginated Course Allocation ############
+@strawberry.type(description="Paginated Course Allocation")
+class PaginatedProgramCourseAssessment:
+    items: List[ProgramCourseAssessmentNode]
+    total_count: int
 
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str
     refresh_token: str
     token_type: str
-
 
 @strawberry.type
 class LoginSuccess:

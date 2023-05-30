@@ -6,7 +6,7 @@ from src.models import Program
 from src.modules.programs.service import ProgramService, ProgramCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramNode, ProgramInput, PaginationInput, ProgramListNode
+from src.types import ProgramInput, PaginationInput, ProgramListNode
 
 
 @strawberry.type

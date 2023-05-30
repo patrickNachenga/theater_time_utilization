@@ -10,7 +10,7 @@ from src.modules.course_category.service import CourseCategoryService
 from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseInput, ProgramCourseNode, ProgramCourseListNode
+from src.types import ProgramCourseInput, ProgramCourseListNode
 
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
@@ -21,15 +21,15 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             return result
 
     @staticmethod
-    def get_program_courses_by_ids(ids: List[str]) -> List[ProgramCourse]:
+    def get_program_course_by_uid(uid: str) -> ProgramCourse:
         """
-        Get programs Course by ids
+        Get Program Course by uid
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCourse).where((ProgramCourse.id.in_(ids)) & (ProgramCourse.deleted_at.is_(None)))
+            stmt = select(ProgramCourse).where((ProgramCourse.uid == uid) & (ProgramCourse.deleted_at.is_(None)))
             result = session.scalars(stmt)
-            return result.all()
+            return result.first()
 
     @staticmethod
     def get_program_courses_by_uids(uids: List[str]) -> List[ProgramCourse]:
@@ -57,7 +57,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             for inputItem in inputs:
                 # Verify and get supplied Program uid. and get existed program id from returned program model
                 try:
-                    program_semester_id = ProgramSemesterService.get_program_semester_by_uid(inputItem.program_semester_uid).id
+                    program_semester_id = ProgramSemesterService.get_program_semester_by_uid(
+                        inputItem.program_semester_uid).id
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
@@ -75,7 +76,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
                 try:
-                    course_category_id = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid).id
+                    course_category_id = CourseCategoryService.get_course_category_by_uid(
+                        inputItem.course_category_uid).id
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
