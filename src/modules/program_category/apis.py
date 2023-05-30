@@ -12,6 +12,20 @@ from src.types import ProgramCategoryInput, ProgramCategoryListNode, PaginationI
 @strawberry.type
 class ProgramCategoryQuery:
     @strawberry.field
+    def get_program_categories(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
+        try:
+            result = ProgramCategoryCrud.get_multi_paginated(pagination, ['name', 'short_name'],
+                                                             ProgramCategoryListNode)
+        except Exception as e:
+            print(e)
+            result = ProgramCategoryListNode(items=[], total_count=0)
+        return Response(
+            status=False,
+            code=ResponseCode.FAILURE,
+            message="Successfully Retrieve Program Category",
+            data=result)
+
+    @strawberry.field
     def get_program_category(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
         try:
             result = ProgramCategoryCrud.get_multi_paginated(pagination, ['name', 'short_name'],
@@ -24,6 +38,7 @@ class ProgramCategoryQuery:
             code=ResponseCode.FAILURE,
             message="Successfully Retrieve Program Category",
             data=result)
+
 
 
 @strawberry.type

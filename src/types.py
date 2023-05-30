@@ -369,16 +369,11 @@ class ProgramCourseNode:
     updated_at: datetime
 
 
-@strawberry.type(description="Program Semester paginated Output")
+@strawberry.type(description="Program Course paginated Output")
 class ProgramCourseListNode:
     items: List[ProgramSemesterNode]
     total_count: int
 
-
-@strawberry.type(description="Program Semester paginated Output")
-class ProgramCourseListNode:
-    items: List[ProgramSemesterNode]
-    total_count: int
 
 
 @strawberry.input(description="Course Learn Outcome Input")

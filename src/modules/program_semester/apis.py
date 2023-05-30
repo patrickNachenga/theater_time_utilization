@@ -14,8 +14,7 @@ class ProgramSemesterQuery:
     @strawberry.field
     def get_program_semester(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
         try:
-            result = ProgramSemesterCrud.get_multi_paginated(pagination, ['name', 'short_name'],
-                                                             ProgramSemesterListNode)
+            result = ProgramSemesterCrud.get_multi_paginated(pagination, [], ProgramSemesterListNode)
         except Exception as e:
             print(e)
             result = []
