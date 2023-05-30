@@ -35,7 +35,7 @@ class ProgramCourseMutation:
             :return:List[ProgramCourseNode]
         """
         try:
-            return ProgramCourseService().register_program_courses(inputs)
+            return ProgramCourseService(ProgramCourse).register_program_courses(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Change Program Courses", data=[])

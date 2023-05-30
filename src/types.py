@@ -351,7 +351,6 @@ class ProgramCourseInput:
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
-    id: int
     uid: str
     program_semester_id: int
     program_semester: ProgramSemesterNode
@@ -418,7 +417,7 @@ class ProgramCourseAssessmentNode:
 @strawberry.input(description="Course Allocation Input")
 class CourseAllocationInput:
     uid: Optional[str] = None
-    program_course_id: str
+    program_course_uid: str
     staff_uid: str
 
 

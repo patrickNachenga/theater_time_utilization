@@ -17,15 +17,15 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             return result
 
     @staticmethod
-    def get_program_courses_by_ids(ids: List[str]) -> List[ProgramCourse]:
+    def get_program_course_by_uid(uid: str) -> ProgramCourse:
         """
-        Get programs Course by ids
+        Get Program Course by uid
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCourse).where((ProgramCourse.id.in_(ids)) & (ProgramCourse.deleted_at.is_(None)))
+            stmt = select(ProgramCourse).where((ProgramCourse.uid == uid) & (ProgramCourse.deleted_at.is_(None)))
             result = session.scalars(stmt)
-            return result.all()
+            return result.first()
 
     @staticmethod
     def get_program_courses_by_uids(uids: List[str]) -> List[ProgramCourse]:

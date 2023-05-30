@@ -4,8 +4,10 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
+from src.models import ProgramCourse
 from src.models.course_allocation import CourseAllocation
 from src.modules import CRUDBase
+from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode
@@ -15,12 +17,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
     @staticmethod
     def get_course_allocations() -> List[CourseAllocation]:
         with session_scope() as session:
-            result = session.query(
-                CourseAllocation.id,
-                CourseAllocation.uid,
-                CourseAllocation.program_course_id,
-                CourseAllocation.staff_id,
-            ).filter(CourseAllocation.deleted_at.is_(None)).all()
+            result = session.query(CourseAllocation).filter(CourseAllocation.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -65,9 +62,18 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             # check for existing course category using uid
             existed_course_allocation = self.get_course_allocations_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
+
+                try:
+                    program_course_id = ProgramCourseService(ProgramCourse).get_program_course_by_uid(inputItem.uid).id
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_allocation_list,
+                                    message="Please make sure you have submitted correct program course values")
+
+
                 if inputItem.uid is None:
                     course_allocation = CourseAllocation(
-                        program_course_id=inputItem.program_course_id,
+                        program_course_id=program_course_id,
                         staff_uid=inputItem.staff_uid,
 
                     )
