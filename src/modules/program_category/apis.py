@@ -6,13 +6,13 @@ from src.models import ProgramCategory
 from src.modules.program_category.service import ProgramCategoryService, ProgramCategoryCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCategoryInput, ProgramCategoryListNode, PaginationInput
+from src.types import ProgramCategoryInput, ProgramCategoryListNode, PaginationInput, ProgramCategoryNode
 
 
 @strawberry.type
 class ProgramCategoryQuery:
     @strawberry.field
-    def get_program_category(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
+    def get_program_categories(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
         try:
             result = ProgramCategoryCrud.get_multi_paginated(pagination, ['name', 'short_name'],
                                                              ProgramCategoryListNode)
@@ -23,6 +23,19 @@ class ProgramCategoryQuery:
             status=False,
             code=ResponseCode.FAILURE,
             message="Successfully Retrieve Program Category",
+            data=result)
+
+    @strawberry.field
+    def get_program_category(self, uid: str) -> Response[ProgramCategoryNode]:
+        try:
+            result = ProgramCategoryService(ProgramCategory).get_program_category_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Program Category Retrieved successfully",
             data=result)
 
 

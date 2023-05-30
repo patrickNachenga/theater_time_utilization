@@ -4,6 +4,7 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
+from src.models import ProgramCategory
 from src.models.course_category import CourseCategory
 from src.modules import CRUDBase
 from src.shared.response import Response
@@ -42,7 +43,7 @@ class CourseCategoryService(CRUDBase[CourseCategory, CourseCategoryInput, Course
             return result.all()
 
     @staticmethod
-    def get_course_by_uid(uid: str) -> CourseCategory:
+    def get_course_category_by_uid(uid: str) -> CourseCategory:
         """
         Get course category by uid
         :param uid:

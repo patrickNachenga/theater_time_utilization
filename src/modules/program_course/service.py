@@ -5,9 +5,13 @@ from sqlalchemy import select
 from src.db.session import session_scope
 from src.models import ProgramCourse
 from src.modules import CRUDBase
+from src.modules.course.service import CourseService
+from src.modules.course_category.service import CourseCategoryService
+from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseInput, ProgramCourseNode
+from src.types import ProgramCourseInput, ProgramCourseListNode
+
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
     @staticmethod
@@ -39,7 +43,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             result = session.scalars(stmt)
             return result.all()
 
-    def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[List[ProgramCourseNode]]:
+    def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
         """
         Register programs Course
         :param inputs:
@@ -48,21 +52,44 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
         program_course_list = []
         action_type = "Register"
         with session_scope() as session:
-            # Check if the program courses already exist using uid
-            existed_program_course_list = self.get_program_courses_by_uids(
-                [program_course.uid for program_course in inputs if program_course.uid is None])
-            if existed_program_course_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_course_list,
-                                message="Program Course Already Exists")
             # check for existing programs courses using uid
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
+                # Verify and get supplied Program uid. and get existed program id from returned program model
+                try:
+                    program_semester_id = ProgramSemesterService.get_program_semester_by_uid(
+                        inputItem.program_semester_uid).id
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramCourseListNode(items=[], total_count=0),
+                                    message="Please make sure you have submitted correct programs semester value")
+
+                # Verify and get supplied Course uid. and get existed Course id from returned Course model
+                try:
+                    course_id = CourseService.get_course_by_uid(inputItem.course_uid).id
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramCourseListNode(items=[], total_count=0),
+                                    message="Please make sure you have submitted correct courses value")
+
+                # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
+                try:
+                    course_category_id = CourseCategoryService.get_course_category_by_uid(
+                        inputItem.course_category_uid).id
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramCourseListNode(items=[], total_count=0),
+                                    message="Please make sure you have submitted correct courses category value")
+
                 if inputItem.uid is None:
                     program_course = ProgramCourse(
-                        program_semester_id=inputItem.program_semester_id,
-                        course_id=inputItem.course_id,
+                        program_semester_id=program_semester_id,
+                        course_id=course_id,
                         credit=inputItem.credit,
-                        course_category_id=inputItem.course_category_id,
+                        course_category_id=course_category_id,
                         lecture_hours=inputItem.lecture_hours,
                         seminar_hours=inputItem.seminar_hours,
                         practical_hours=inputItem.practical_hours,
@@ -72,14 +99,14 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     )
                     program_course_list.append(program_course)
                 else:
-
+                    action_type = "Update"
                     program_course = next(
                         filter(lambda program_course: str(program_course.uid) == str(inputItem.uid),
                                existed_program_course), None)
                     if program_course:
-                        program_course.program_semester_id = inputItem.program_semester_id,
-                        program_course.course_id = inputItem.course_id,
-                        program_course.course_category_id = inputItem.course_category_id,
+                        program_course.program_semester_id = program_semester_id,
+                        program_course.course_id = course_id,
+                        program_course.course_category_id = course_category_id,
                         program_course.credit = inputItem.credit,
                         program_course.lecture_hours = inputItem.lecture_hours,
                         program_course.seminar_hours = inputItem.seminar_hours,
@@ -88,9 +115,11 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                         program_course.independent_study_hours = inputItem.independent_study_hours,
                         program_course.pass_hours = inputItem.pass_hours
             session.add_all(program_course_list)
+            count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=program_course_list,
-                            message=f"Successfully to {action_type} Program course")
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=ProgramCourseListNode(items=program_course_list, total_count=count),
+                            message=f"Successfully to {action_type} Program Course")
 
     # Delete FUnction
     @staticmethod
@@ -103,5 +132,6 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
         with session_scope() as session:
             session.query(ProgramCourse).filter_by(uid=uid).update({ProgramCourse.deleted_at: pendulum.now()})
             session.commit()
+
 
 ProgramCourseCrud = ProgramCourseService(ProgramCourse)
