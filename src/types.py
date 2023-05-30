@@ -194,9 +194,6 @@ class ProgramCategoryNode:
     uid: str
     name: str
     short_name: str
-    created_by: str
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.type(description="Program Category paginated Output")
@@ -214,7 +211,6 @@ class ProgramSemesterInput:
     semester: int
     core_credits: float
     elective_credits: float
-    created_by: Optional[str] = None
 
 
 @strawberry.type(description="Program Semester output")
@@ -227,9 +223,6 @@ class ProgramSemesterNode:
     semester: int
     core_credits: float
     elective_credits: float
-    created_by: str
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.input(description="Course Learn Outcome Input")
@@ -247,10 +240,6 @@ class CourseLearnOutcomeNode:
     staff_id: str
     program_course_id: str
     learning_outcome: str
-    created_by: int
-    created_at: datetime
-    updated_at: datetime
-
 
 @strawberry.input(description="Program Input")
 class ProgramInput:
@@ -367,7 +356,7 @@ class ProgramCourseNode:
 
 @strawberry.type(description="Program Course paginated Output")
 class ProgramCourseListNode:
-    items: List[ProgramSemesterNode]
+    items: List[ProgramCourseNode]
     total_count: int
 
 

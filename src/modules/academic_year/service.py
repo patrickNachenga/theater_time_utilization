@@ -88,7 +88,7 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                         name=inputItem.name,
                         status=inputItem.status,
                         start_date=inputItem.start_date,
-                        end_date=inputItem.end_date
+                        end_date=inputItem.end_date,
                     )
                     academic_year_list.append(academic_year)
                 else:
@@ -97,16 +97,18 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                                                 existed_academic_year), None)
 
                     if academic_year:
-                        academic_year.name = inputItem.name,
+                        academic_year.name = str(inputItem.name),
                         academic_year.status = inputItem.status,
-                        academic_year.start_date = inputItem.start_date
+                        academic_year.start_date = inputItem.start_date,
                         academic_year.end_date = inputItem.end_date,
                         academic_year_list.append(academic_year)
             session.add_all(academic_year_list)
             count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=AcademicYearListNode(items=academic_year_list, total_count=count),
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=AcademicYearListNode(items=academic_year_list, total_count=count),
                             message=f"Academic Year {action_name} Successfully")
+
     # Delete Function
     @staticmethod
     def remove_academic_year(uid: str):
