@@ -29,13 +29,13 @@ class ProgramSemesterQuery:
 @strawberry.type
 class ProgramSemesterMutation:
     @strawberry.field
-    def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[List[ProgramSemesterNode]]:
+    def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[ProgramSemesterListNode]:
         try:
             return ProgramSemesterService(ProgramSemester).register_program_semesters(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Semester",
-                            data=[])
+                            data=ProgramSemesterListNode(items=[], total_count=0),)
 
     # Delete programs type function
     @strawberry.mutation
