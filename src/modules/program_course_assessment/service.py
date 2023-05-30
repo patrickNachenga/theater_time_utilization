@@ -6,12 +6,14 @@ from sqlalchemy import select
 from src.db.session import session_scope
 from src.models import ProgramCourseAssessment
 from src.models.student import Student
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode
 
 
-class ProgramCourseAssessmentService(object):
+class ProgramCourseAssessmentService(
+    CRUDBase[ProgramCourseAssessment, ProgramCourseAssessmentInput, ProgramCourseAssessmentInput]):
     @staticmethod
     def get_program_course_assessment() -> List[ProgramCourseAssessment]:
         with session_scope() as session:
@@ -55,7 +57,8 @@ class ProgramCourseAssessmentService(object):
             result = session.scalars(stmt)
             return result.first()
 
-    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[List[ProgramCourseAssessmentNode]]:
+    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[
+        List[ProgramCourseAssessmentNode]]:
         """
         Register Course Assessment
         :param inputs:
@@ -111,3 +114,5 @@ class ProgramCourseAssessmentService(object):
             session.query(ProgramCourseAssessment).filter_by(uid=uid).update(
                 {ProgramCourseAssessment.deleted_at: pendulum.now()})
             session.commit()
+
+ProgramCourseAssessmentCrud = ProgramCourseAssessmentService(ProgramCourseAssessment)

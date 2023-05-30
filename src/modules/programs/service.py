@@ -35,14 +35,14 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             return result.all()
 
     @staticmethod
-    def get_program_uids_by_uids(uids: List[str]) -> List[str]:
+    def get_program_ids_by_uids(uids: List[str]) -> List:
         """
             Get programs_uid by uids
         :param:uids
         :return:List[str]
         """
         with session_scope() as session:
-            stmt = select(Program.uid or None).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
+            stmt = select(Program.id, Program.uid).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 

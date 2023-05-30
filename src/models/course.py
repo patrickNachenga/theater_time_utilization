@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
 
-
 class Course(BaseModel):
     __tablename__ = "courses"
     id: int = Column(Integer, primary_key=True, index=True)

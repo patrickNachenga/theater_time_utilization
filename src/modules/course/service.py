@@ -5,7 +5,6 @@ from sqlalchemy import select
 
 from src.db.session import session_scope
 from src.models import Course
-from src.models.student import Student
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -49,7 +48,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
         :return:
         """
         with session_scope() as session:
-            stmt = select(Student).where((Course.reg_no == uid) & (Course.deleted_at.is_(None)))
+            stmt = select(Course).where((Course.uid == uid) & (Course.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
