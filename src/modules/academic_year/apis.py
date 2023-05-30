@@ -12,15 +12,27 @@ from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode
 @strawberry.type
 class AcademicYearQuery:
     @strawberry.field
-    def get_academic_year(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
+    def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
         try:
             result = AcademicYearCrud.get_multi_paginated(pagination, ['name'], AcademicYearListNode)
         except Exception as e:
             print(e)
             result = []
         return Response(
-            status=False,
-            code=ResponseCode.FAILURE,
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Academic Year retrieved successfully",
+            data=result)
+
+    def get_single_academic_year(self, uid: str) -> Response[AcademicYear]:
+        try:
+            result = AcademicYearService.get_academic_year_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
             message="Academic Year retrieved successfully",
             data=result)
 
