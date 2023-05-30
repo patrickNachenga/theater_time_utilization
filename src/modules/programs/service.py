@@ -23,19 +23,6 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             return result
 
     @staticmethod
-    def get_program_by_ids(ids: List[str]) -> List[Program]:
-        """
-            Get programs by program ids
-        :param ids:
-        :return:List[Program]
-        """
-        with session_scope() as session:
-            stmt = select(Program).where(
-                (Program.id.in_(ids)) & (Program.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.all()
-
-    @staticmethod
     def get_program_by_uids(uids: List[str]) -> List[Program]:
         """
             Get programs by uids
@@ -46,6 +33,31 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             stmt = select(Program).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
+
+    @staticmethod
+    def get_program_uids_by_uids(uids: List[str]) -> List[str]:
+        """
+            Get programs_uid by uids
+        :param:uids
+        :return:List[str]
+        """
+        with session_scope() as session:
+            stmt = select(Program.uid or None).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
+    def get_program_by_uid(uid: str) -> Program:
+        """
+        Get Program by uid
+        :param uid:
+        :return:Program
+        """
+        with session_scope() as session:
+            stmt = select(Program).where(
+                (Program.uid == uid) & (Program.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
 
     @staticmethod
     def get_program_by_codes(codes: List[str]) -> List[Program]:
@@ -69,19 +81,6 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         with session_scope() as session:
             stmt = select(Program).where(
                 (Program.code == code) & (Program.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.first()
-
-    @staticmethod
-    def get_program_by_id(id: str) -> Program:
-        """
-        Get Program by id
-        :param:id
-        :return:Program
-        """
-        with session_scope() as session:
-            stmt = select(Program).where(
-                (Program.id == id) & (Program.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
