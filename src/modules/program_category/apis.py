@@ -20,7 +20,7 @@ class ProgramCategoryQuery:
             print(e)
             result = ProgramCategoryListNode(items=[], total_count=0)
         return Response(
-            status=False,
+            status=True,
             code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Program Category",
             data=result)
