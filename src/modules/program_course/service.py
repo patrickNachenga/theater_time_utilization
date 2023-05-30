@@ -4,12 +4,12 @@ import pendulum
 from sqlalchemy import select
 from src.db.session import session_scope
 from src.models import ProgramCourse
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseInput, ProgramCourseNode
 
-
-class ProgramCourseService(object):
+class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
     @staticmethod
     def get_program_courses() -> List[ProgramCourse]:
         with session_scope() as session:
@@ -103,3 +103,5 @@ class ProgramCourseService(object):
         with session_scope() as session:
             session.query(ProgramCourse).filter_by(uid=uid).update({ProgramCourse.deleted_at: pendulum.now()})
             session.commit()
+
+ProgramCourseCrud = ProgramCourseService(ProgramCourse)

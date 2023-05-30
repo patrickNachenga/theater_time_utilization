@@ -470,7 +470,6 @@ class PaginatedCourse:
     items: List[CourseNode]
     total_count: int
 
-
 ############ An output for Paginated Course Allocation ############
 @strawberry.type(description="Paginated Course Allocation")
 class PaginatedCourseAllocation:
@@ -491,7 +490,11 @@ class PaginatedCourseLearnOutcome:
     items: List[CourseLearnOutcomeNode]
     total_count: int
 
-
+############ An output for Paginated Course #######################
+@strawberry.type(description="Paginated Program Course Outcome")
+class PaginatedProgramCourse:
+    items: List[ProgramCourseNode]
+    total_count: int
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str

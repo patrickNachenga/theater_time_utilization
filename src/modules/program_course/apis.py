@@ -2,18 +2,19 @@ from typing import List
 
 import strawberry
 
-from src.modules.program_course.service import ProgramCourseService
+from src.models import ProgramCourse
+from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseNode, ProgramCourseInput
+from src.types import ProgramCourseNode, ProgramCourseInput, PaginationInput, PaginatedProgramCourse
 
 
 @strawberry.type
 class ProgramCourseQuery:
     @strawberry.field
-    def get_program_course(self) -> Response[List[ProgramCourseNode]]:
+    def get_program_course(self, pagination: PaginationInput) -> Response[PaginatedProgramCourse]:
         try:
-            result = ProgramCourseService.get_program_courses()
+            result = ProgramCourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedProgramCourse)
         except Exception as e:
             print(e)
             result = []
@@ -48,7 +49,7 @@ class ProgramCourseMutation:
         :return:
         """
         try:
-            ProgramCourseService().remove_program_course(uid)
+            ProgramCourseService(ProgramCourse).remove_program_course(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
