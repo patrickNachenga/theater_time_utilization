@@ -21,7 +21,7 @@ class ProgramCategoryQuery:
             result = ProgramCategoryListNode(items=[], total_count=0)
         return Response(
             status=False,
-            code=ResponseCode.FAILURE,
+            code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Program Category",
             data=result)
 
