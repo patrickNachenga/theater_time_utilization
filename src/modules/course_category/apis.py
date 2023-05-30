@@ -14,7 +14,8 @@ class CourseCategoryQuery:
     @strawberry.field
     def get_course_categories(self, pagination: PaginationInput) -> Response[PaginatedCourseCategory]:
         try:
-            result = CourseCategoryCrud.get_multi_paginated(pagination, ['program_courses', 'code', 'description'], PaginatedCourseCategory)
+            result = CourseCategoryCrud.get_multi_paginated(pagination, ['program_courses', 'code', 'description'],
+                                                            PaginatedCourseCategory)
         except Exception as e:
             print(e)
             result = []
@@ -23,6 +24,20 @@ class CourseCategoryQuery:
             code=ResponseCode.SUCCESS,
             message="Course Category Retrieved successfully",
             data=result)
+
+    @strawberry.field
+    def get_course_category(self, uid: str) -> Response[CourseCategoryNode]:
+        try:
+            result = CourseCategoryService(CourseCategory).get_course_category_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Course Category Retrieved successfully",
+            data=result)
+
 
 @strawberry.type
 class CourseCategoryMutation:
@@ -33,7 +48,8 @@ class CourseCategoryMutation:
 
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course C  ategory", data=[])
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course C  ategory",
+                            data=[])
 
     @strawberry.mutation
     async def remove_course_category(self, uid: str) -> Response[None]:

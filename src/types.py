@@ -191,7 +191,6 @@ class ProgramCategoryInput:
 
 @strawberry.type(description="Program Category Output")
 class ProgramCategoryNode:
-    id: int
     uid: str
     name: str
     short_name: str
