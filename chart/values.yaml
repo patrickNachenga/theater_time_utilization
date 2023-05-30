@@ -51,24 +51,18 @@ securityContext:
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
-
 ########### Section for Service configuration ###################
 service:
   # Service Type can either be ClusterIP, LoadBalancer and NodePort
-  #type: ClusterIP
-  #port: 8990
-  #targetPort: 8990
-  #nodePort: 
-  #externalIP: {}
-  type: LoadBalancer
-  port: 9200
-  targetPort: 9200
-  nodePort: 9200
-  externalIP:
-  - 10.10.97.133
-  - 10.10.97.136
-  - 10.10.97.137
+  type: ClusterIP
+  port: 8805
+  targetPort:  8805
+  nodePort:  8805
+  externalIP: {}
 ########### Section for Service configuration ###################
+
+########### Section for Ingress configuration ###################
+
 
 ########### Section for Ingress configuration ###################
 ingress:
