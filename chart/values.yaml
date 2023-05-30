@@ -29,7 +29,7 @@ labels:
   partof: service
 
 imagePullSecrets:
-  - name: dev-reg-credential
+  - name: devp-reg-credential
 nameOverride: "registration"
 fullnameOverride: "registration"
 
@@ -193,13 +193,13 @@ configMap:
     # KAFKA_BROKER_ID: "1"
 
 # This section is for credential secrets i.e. database credential environment variables
-#secret:
-  #enabled: true
-  # List of all the secrets
-  #name:
-    - "appl-secret"
+secret:
+  enabled: false
+   # List of all the secrets
+   #name:
+   # - "appl-secret"
     # - "rabbitmq"
-  #credentials:
+   #credentials:
     # Write all the needed config map variables
     #database:
       # Database type can be postgres, mongo or none for application.
@@ -208,7 +208,7 @@ configMap:
       #dbPass: "rita_@_20+20"
     #application: []
       # variable: "value"
-    ldap: []
+  ldap: []
       # ldapuser: ""
       # ldappass: ""
 
