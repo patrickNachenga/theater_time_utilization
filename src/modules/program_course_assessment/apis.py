@@ -2,18 +2,19 @@ from typing import List
 
 import strawberry
 
-from src.modules.program_course_assessment.service import ProgramCourseAssessmentService
+from src.modules.program_course_assessment.service import ProgramCourseAssessmentService, ProgramCourseAssessmentCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode
+from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode, PaginatedProgramCourseAssessment, \
+    PaginationInput
 
 
 @strawberry.type
 class ProgramCourseAssessmentQuery:
     @strawberry.field
-    def get_program_course_assessment(self) -> Response[List[ProgramCourseAssessmentNode]]:
+    def get_program_course_assessment(self, pagination: PaginationInput) -> Response[PaginatedProgramCourseAssessment]:
         try:
-            result = ProgramCourseAssessmentService.get_program_course_assessment()
+            result = ProgramCourseAssessmentCrud.get_multi_paginated(pagination, ['program_course_id', 'program_course', 'minimum_exams', 'maximum_score' ], PaginatedProgramCourseAssessment)
         except Exception as e:
             print(e)
             result = []
