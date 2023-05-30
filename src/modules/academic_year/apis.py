@@ -24,7 +24,6 @@ class AcademicYearQuery:
             message="Academic Year retrieved successfully",
             data=result)
 
-
 @strawberry.type
 class AcademicYearMutation:
     @strawberry.field
