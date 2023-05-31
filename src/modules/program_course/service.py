@@ -63,7 +63,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct programs semester value")
+                                    message="Please make sure you have submitted correct programs semester details")
 
                 # Verify and get supplied Course uid. and get existed Course id from returned Course model
                 try:
@@ -72,7 +72,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct courses value")
+                                    message="Please make sure you have submitted correct courses details")
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
                 try:
@@ -82,7 +82,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct courses category value")
+                                    message="Please make sure you have submitted correct courses category details")
 
                 if inputItem.uid is None:
                     program_course = ProgramCourse(
@@ -114,6 +114,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                         program_course.assignment_hours = inputItem.assignment_hours,
                         program_course.independent_study_hours = inputItem.independent_study_hours,
                         program_course.pass_hours = inputItem.pass_hours
+                        program_course_list.append(program_course)
             session.add_all(program_course_list)
             count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()
             session.commit()

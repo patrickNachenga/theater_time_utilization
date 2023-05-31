@@ -6,7 +6,7 @@ from src.models import AcademicYear
 from src.modules.academic_year.service import AcademicYearService, AcademicYearCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode
+from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode, AcademicYearNode
 
 
 @strawberry.type
@@ -24,7 +24,8 @@ class AcademicYearQuery:
             message="Academic Year retrieved successfully",
             data=result)
 
-    def get_single_academic_year(self, uid: str) -> Response[AcademicYear]:
+    @strawberry.field
+    def get_academic_year(self, uid: str) -> Response[AcademicYearNode]:
         try:
             result = AcademicYearService.get_academic_year_by_uid(uid)
         except Exception as e:

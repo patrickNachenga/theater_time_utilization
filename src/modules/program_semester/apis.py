@@ -12,7 +12,7 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 @strawberry.type
 class ProgramSemesterQuery:
     @strawberry.field
-    def get_program_semester(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
+    def get_program_semesters(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
         try:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, [], ProgramSemesterListNode)
         except Exception as e:
@@ -22,6 +22,19 @@ class ProgramSemesterQuery:
             status=True,
             code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Program Semesters",
+            data=result)
+
+    @strawberry.field
+    def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode]:
+        try:
+            result = ProgramSemesterService.get_program_semester_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Program Semester retrieved successfully",
             data=result)
 
 

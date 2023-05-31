@@ -17,19 +17,17 @@ class AcademicYearInput:
     uid: Optional[str] = None
     name: str
     status: Optional[int] = 1
-    start_date: datetime
-    end_date: datetime
+    start_date: str
+    end_date: str
 
 
 @strawberry.type(description="Academic Year")
 class AcademicYearNode:
     uid: str
     name: str
-    status: Optional[int]
+    status: int
     start_date: str
     end_date: str
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.type(description="AcademicYear Country")

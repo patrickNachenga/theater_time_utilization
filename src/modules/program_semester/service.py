@@ -38,9 +38,11 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramSemester).where((ProgramSemester.uid == uid) & (ProgramSemester.deleted_at.is_(None)))
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.uid == uid) & (ProgramSemester.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
+
 
     @staticmethod
     def get_program_semester_by_uids(uids: List[str]) -> List[ProgramSemester]:
