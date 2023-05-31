@@ -173,7 +173,6 @@ class CourseInput:
 
 @strawberry.type(description="Course Output")
 class CourseNode:
-    id: int
     uid: str
     code: str
     description: str

@@ -59,7 +59,7 @@ class CourseCategoryMutation:
         :return:
         """
         try:
-            result = CourseCategoryService().remove_course_category(uid)
+            result = CourseCategoryService(CourseCategory).remove_course_category(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
