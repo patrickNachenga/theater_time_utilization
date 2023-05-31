@@ -217,22 +217,6 @@ class ProgramSemesterNode:
     elective_credits: float
 
 
-@strawberry.input(description="Course Learn Outcome Input")
-class CourseLearnOutcomeInput:
-    uid: Optional[str] = None
-    staff_id: str
-    program_course_id: str
-    learning_outcome: str
-
-
-@strawberry.type(description="Course Learn Outcome Output")
-class CourseLearnOutcomeNode:
-    uid: str
-    staff_id: str
-    program_course_id: str
-    learning_outcome: str
-
-
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -287,8 +271,6 @@ class ProgramSemesterNode:
     semester: int
     core_credits: float
     elective_credits: float
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.type(description="Program Semester paginated Output")
@@ -339,9 +321,6 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
-    created_by: int
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.type(description="Program Course paginated Output")
@@ -354,19 +333,23 @@ class ProgramCourseListNode:
 class CourseLearnOutcomeInput:
     uid: Optional[str] = None
     staff_uid: str
-    program_course_id: str
+    program_course_uid: str
     learning_outcome: str
 
 
-@strawberry.type(description="Course Learn outcome")
+@strawberry.type(description="Course Learn Outcome Output")
 class CourseLearnOutcomeNode:
     uid: str
-    staff_uid: str
-    program_course_id: str
+    program_course_uid: str
+    program_course: ProgramCourseNode
     learning_outcome: str
-    created_by: str
-    created_at: datetime
-    updated_at: datetime
+    staff_uid: str
+
+
+@strawberry.type(description="Program Course paginated Output")
+class CourseLearnOutcomeListNode:
+    items: List[CourseLearnOutcomeNode]
+    total_count: int
 
 
 @strawberry.input(description="Program Course Assessment Input")
@@ -453,13 +436,6 @@ class PaginatedCourseAllocation:
 @strawberry.type(description="Paginated Course Category")
 class PaginatedCourseCategory:
     items: List[CourseCategoryNode]
-    total_count: int
-
-
-############ An output for Paginated Course Learn Outcome ###############
-@strawberry.type(description="Paginated Course Learn Outcome")
-class PaginatedCourseLearnOutcome:
-    items: List[CourseLearnOutcomeNode]
     total_count: int
 
 

@@ -55,7 +55,7 @@ class CourseCategoryMutation:
 
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course C  ategory",
+            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course Category",
                             data=[])
 
     @strawberry.mutation
