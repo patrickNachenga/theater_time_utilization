@@ -45,7 +45,7 @@ class ProgramCourseAssessmentMutation:
         :return:
         """
         try:
-            ProgramCourseAssessmentService().remove_program_course_assessment(uid)
+            ProgramCourseAssessmentService.remove_program_course_assessment(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

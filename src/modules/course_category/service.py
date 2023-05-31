@@ -1,6 +1,7 @@
 from typing import List
 
 import pendulum
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 
 from src.db.session import session_scope
@@ -84,13 +85,14 @@ class CourseCategoryService(CRUDBase[CourseCategory, CourseCategoryInput, Course
                         filter(lambda course_category: str(course_category.uid) == str(inputItem.uid),
                                existed_course_category), None)
                     if course_category:
-                        course_category.description = inputItem.description,
-                        course_category.name = inputItem.name,
+                        obj_data = jsonable_encoder(inputItem)
+                        for key, value in obj_data.items():
+                            setattr(course_category, key, value)
                         course_category_list.append(course_category)
             session.add_all(course_category_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=course_category_list,
-                            message="Successfully to {action_name} Course Category")
+                            message=f"Successfully to {action_name} Course Category")
 
     # Delete Function
     @staticmethod

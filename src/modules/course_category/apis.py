@@ -26,17 +26,24 @@ class CourseCategoryQuery:
             data=result)
 
     @strawberry.field
-    def get_course_category(self, uid: str) -> Response[CourseCategoryNode]:
+    def get_course_category(self, uid: str) -> Response[CourseCategoryNode | None]:
         try:
             result = CourseCategoryService(CourseCategory).get_course_category_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Course Category Retrieved successfully",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course Category Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Category not found",
+                data=None)
 
 
 @strawberry.type
@@ -59,7 +66,7 @@ class CourseCategoryMutation:
         :return:
         """
         try:
-            result = CourseCategoryService(CourseCategory).remove_course_category(uid)
+            CourseCategoryService.remove_course_category(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

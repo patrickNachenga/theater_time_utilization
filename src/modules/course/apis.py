@@ -25,6 +25,27 @@ class CourseQuery:
             message="Courses Retrieved Successfully",
             data=result)
 
+    @strawberry.field
+    def get_course(self, uid: str) -> Response[CourseNode | None]:
+        try:
+            result = CourseService.get_course_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course not found",
+                data=None)
+
 
 @strawberry.type
 class CourseMutation:
