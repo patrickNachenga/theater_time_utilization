@@ -25,17 +25,26 @@ class AcademicYearQuery:
             data=result)
 
     @strawberry.field
-    def get_academic_year(self, uid: str) -> Response[AcademicYearNode]:
+    def get_academic_year(self, uid: str) -> Response[AcademicYearNode | None]:
         try:
             result = AcademicYearService.get_academic_year_by_uid(uid)
         except Exception as e:
             print(e)
             result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Academic Year retrieved successfully",
-            data=result)
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Academic Year retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Academic year not found",
+                data=None)
+
 
 
 @strawberry.type

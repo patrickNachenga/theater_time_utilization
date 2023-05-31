@@ -245,6 +245,7 @@ class CourseLearnOutcomeNode:
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
+    program_category_uid: str
     code: str
     tcu_code: Optional[str] = None
     nacte_code: Optional[str] = None
@@ -252,7 +253,6 @@ class ProgramInput:
     short_name: str
     duration: Optional[int] = 0
     registration_code: Optional[str] = None
-    program_category_id: Optional[int] = 0
     department_uid: str
 
 
@@ -266,7 +266,6 @@ class ProgramNode:
     nacte_code: str
     duration: int
     registration_code: str
-    program_category_id: int
     program_category: ProgramCategoryNode
     department_uid: str
 

@@ -25,17 +25,24 @@ class ProgramSemesterQuery:
             data=result)
 
     @strawberry.field
-    def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode]:
+    def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode | None]:
         try:
             result = ProgramSemesterService.get_program_semester_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Program Semester retrieved successfully",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Semester retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Semester not found",
+                data=None)
 
 
 @strawberry.type

@@ -26,17 +26,25 @@ class ProgramCategoryQuery:
             data=result)
 
     @strawberry.field
-    def get_program_category(self, uid: str) -> Response[ProgramCategoryNode]:
+    def get_program_category(self, uid: str) -> Response[ProgramCategoryNode | None]:
         try:
             result = ProgramCategoryService(ProgramCategory).get_program_category_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Program Category Retrieved successfully",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Category Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Category not found",
+                data=None)
+
 
 
 @strawberry.type
