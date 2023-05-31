@@ -1,20 +1,16 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim
-
-# Set the working directory in the container
+FROM python:3.10-alpine
 WORKDIR /registration
-
-# Copy the requirements file into the container
-COPY requirements.txt .
-
-# Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the application code into the container
-COPY . .
-
-# Set the command to run the application
-CMD ["uvicorn", "main:app"]
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONBUFFERED 1
+# install system dependencies
+RUN apt-get update \
+  && apt-get -y install netcat gcc postgresql \
+  && apt-get clean
+# install python dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt /uaa/requirements.txt
+RUN pip install -r requirements.txt
+COPY . /registration
 
 
 
