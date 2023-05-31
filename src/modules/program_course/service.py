@@ -1,6 +1,7 @@
 from typing import List
 
 import pendulum
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from src.db.session import session_scope
 from src.models import ProgramCourse
@@ -63,7 +64,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct programs semester details")
+                                    message="You have submitted incorrect programs semester details")
 
                 # Verify and get supplied Course uid. and get existed Course id from returned Course model
                 try:
@@ -72,7 +73,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct courses details")
+                                    message="You have submitted incorrect courses details")
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
                 try:
@@ -82,7 +83,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct courses category details")
+                                    message="You have submitted incorrect courses category details")
 
                 if inputItem.uid is None:
                     program_course = ProgramCourse(
@@ -104,16 +105,15 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                         filter(lambda program_course: str(program_course.uid) == str(inputItem.uid),
                                existed_program_course), None)
                     if program_course:
-                        program_course.program_semester_id = program_semester_id,
-                        program_course.course_id = course_id,
-                        program_course.course_category_id = course_category_id,
-                        program_course.credit = inputItem.credit,
-                        program_course.lecture_hours = inputItem.lecture_hours,
-                        program_course.seminar_hours = inputItem.seminar_hours,
-                        program_course.practical_hours = inputItem.practical_hours,
-                        program_course.assignment_hours = inputItem.assignment_hours,
-                        program_course.independent_study_hours = inputItem.independent_study_hours,
-                        program_course.pass_hours = inputItem.pass_hours
+                        obj_data = jsonable_encoder(inputItem)
+                        # # Replace referenced uids field with model required ids field
+                        obj_data['program_semester_id'] = program_semester_id
+                        obj_data['course_id'] = course_id
+                        obj_data['course_category_id'] = course_category_id
+
+                        for key, value in obj_data.items():
+                            setattr(program_course, key, value)
+
                         program_course_list.append(program_course)
             session.add_all(program_course_list)
             count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()

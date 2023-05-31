@@ -57,7 +57,7 @@ class StudentMutation:
         :return:
         """
         try:
-            StudentService().remove_student(uid)
+            StudentService.remove_student(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

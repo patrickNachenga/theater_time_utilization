@@ -46,7 +46,7 @@ class CourseLearnOutcomeMutation:
         :return:
         """
         try:
-            CourseLearnOutcomeService().remove_course_learn_outcome(uid)
+            CourseLearnOutcomeService.remove_course_learn_outcome(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

@@ -60,7 +60,6 @@ class ExamCatsInput:
 
 @strawberry.type(description="Exam Category Output")
 class ExamCatsNode:
-    id: int
     name: str
     code: str
     exam_group_id: int
@@ -83,7 +82,6 @@ class ExamResultsInput:
 
 @strawberry.type(description="Exam Category Groups Output")
 class ExamResultsNode:
-    id: int
     student_id: int
     program_course_id: int
     exam_cat_id: int
@@ -110,7 +108,6 @@ class ExamSummaryInput:
 
 @strawberry.type(description="Exam Summary Output")
 class ExamSummaryNode:
-    id: int
     student_id: int
     program_course_id: int
     marks: float
@@ -128,7 +125,6 @@ class StudentInput:
 
 @strawberry.type(description="Student Output")
 class StudentNode:
-    id: int
     uid: str
     reg_no: str
 
@@ -141,7 +137,6 @@ class StaffInput:
 
 @strawberry.type(description="Staff")
 class StaffNode:
-    id: int
     uid: str
     pf_number: str
 
@@ -155,7 +150,6 @@ class GroupInput:
 
 @strawberry.type(description="Staff")
 class GroupNode:
-    id: int
     uid: str
     name: str
     code: str
@@ -173,7 +167,6 @@ class CourseInput:
 
 @strawberry.type(description="Course Output")
 class CourseNode:
-    id: int
     uid: str
     code: str
     description: str
@@ -215,7 +208,6 @@ class ProgramSemesterInput:
 
 @strawberry.type(description="Program Semester output")
 class ProgramSemesterNode:
-    id: int
     uid: str
     program_id: str
     academic_year_id: str
@@ -235,7 +227,6 @@ class CourseLearnOutcomeInput:
 
 @strawberry.type(description="Course Learn Outcome Output")
 class CourseLearnOutcomeNode:
-    id: int
     uid: str
     staff_id: str
     program_course_id: str
@@ -315,7 +306,6 @@ class CourseCategoryInput:
 
 @strawberry.type(description="Course Category Output")
 class CourseCategoryNode:
-    id: int
     uid: str
     description: str
     name: str
@@ -370,7 +360,6 @@ class CourseLearnOutcomeInput:
 
 @strawberry.type(description="Course Learn outcome")
 class CourseLearnOutcomeNode:
-    id: int
     uid: str
     staff_uid: str
     program_course_id: str
@@ -392,7 +381,6 @@ class ProgramCourseAssessmentInput:
 
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode:
-    id: int
     uid: str
     program_course_id: int
     program_course: ProgramCourseNode
@@ -413,7 +401,6 @@ class CourseAllocationInput:
 
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
-    id: int
     uid: str
     program_course_id: str
     program_course: ProgramCourseNode
@@ -432,7 +419,6 @@ class ProgramCourseAssessmentInput:
 
 @strawberry.type(description="Program Course Assessment Input")
 class ProgramCourseAssessmentNode:
-    id: int
     uid: str
     program_course_id: int
     program_course: ProgramCourseNode
