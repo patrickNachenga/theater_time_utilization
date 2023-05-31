@@ -38,9 +38,11 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramSemester).where((ProgramSemester.uid == uid) & (ProgramSemester.deleted_at.is_(None)))
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.uid == uid) & (ProgramSemester.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
+
 
     @staticmethod
     def get_program_semester_by_uids(uids: List[str]) -> List[ProgramSemester]:
@@ -74,7 +76,7 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE, data=ProgramSemesterListNode(items=[], total_count=0),
-                                    message="Please make sure you have submitted correct program value")
+                                    message="You have submitted incorrect program details")
 
                 # Verify and get supplied Academic year uid. and get existed Academic year id from returned Academic year model
                 try:
@@ -82,7 +84,7 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE, data=ProgramSemesterListNode(items=[], total_count=0),
-                                    message="Please make sure you submitted correct academic year value")
+                                    message="You submitted incorrect academic year details")
 
                 if inputItem.uid is None:
                     program_semester = ProgramSemester(

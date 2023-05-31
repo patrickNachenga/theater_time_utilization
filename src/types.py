@@ -4,30 +4,30 @@ from typing import Optional, List
 
 import strawberry
 
+
 @strawberry.input
 class PaginationInput:
     offset: int = 0
     limit: int = 10
     search: Optional[str] = None
 
+
 @strawberry.input(description="Academic Year Input")
 class AcademicYearInput:
     uid: Optional[str] = None
     name: str
     status: Optional[int] = 1
-    start_date: datetime
-    end_date: datetime
+    start_date: str
+    end_date: str
 
 
 @strawberry.type(description="Academic Year")
 class AcademicYearNode:
     uid: str
     name: str
-    status: Optional[int]
+    status: int
     start_date: str
     end_date: str
-    created_at: datetime
-    updated_at: datetime
 
 
 @strawberry.type(description="AcademicYear Country")
@@ -240,9 +240,11 @@ class CourseLearnOutcomeNode:
     program_course_id: str
     learning_outcome: str
 
+
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
+    program_category_uid: str
     code: str
     tcu_code: Optional[str] = None
     nacte_code: Optional[str] = None
@@ -250,7 +252,6 @@ class ProgramInput:
     short_name: str
     duration: Optional[int] = 0
     registration_code: Optional[str] = None
-    program_category_id: Optional[int] = 0
     department_uid: str
 
 
@@ -264,7 +265,6 @@ class ProgramNode:
     nacte_code: str
     duration: int
     registration_code: str
-    program_category_id: int
     program_category: ProgramCategoryNode
     department_uid: str
 
@@ -357,7 +357,6 @@ class ProgramCourseNode:
 class ProgramCourseListNode:
     items: List[ProgramCourseNode]
     total_count: int
-
 
 
 @strawberry.input(description="Course Learn Outcome Input")
@@ -455,11 +454,13 @@ class PaginatedCourse:
     items: List[CourseNode]
     total_count: int
 
+
 ############ An output for Paginated Course Allocation ############
 @strawberry.type(description="Paginated Course Allocation")
 class PaginatedCourseAllocation:
     items: List[CourseAllocationNode]
     total_count: int
+
 
 ############ An output for Paginated Course Category ###############
 @strawberry.type(description="Paginated Course Category")
@@ -467,11 +468,13 @@ class PaginatedCourseCategory:
     items: List[CourseCategoryNode]
     total_count: int
 
+
 ############ An output for Paginated Course Learn Outcome ###############
 @strawberry.type(description="Paginated Course Learn Outcome")
 class PaginatedCourseLearnOutcome:
     items: List[CourseLearnOutcomeNode]
     total_count: int
+
 
 ############ An output for Paginated Course #######################
 @strawberry.type(description="Paginated Program Course Outcome")
@@ -479,17 +482,20 @@ class PaginatedProgramCourse:
     items: List[ProgramCourseNode]
     total_count: int
 
+
 ############ An output for Paginated Course Allocation ############
 @strawberry.type(description="Paginated Course Allocation")
 class PaginatedProgramCourseAssessment:
     items: List[ProgramCourseAssessmentNode]
     total_count: int
 
+
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str
     refresh_token: str
     token_type: str
+
 
 @strawberry.type
 class LoginSuccess:

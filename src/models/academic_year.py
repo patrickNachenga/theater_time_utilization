@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
 
+
 class AcademicYear(BaseModel):
     __tablename__ = "academic_years"
     id: int = Column(Integer, primary_key=True, index=True)
@@ -12,5 +13,3 @@ class AcademicYear(BaseModel):
     end_date: DateTime = Column(DateTime, nullable=True, unique=False)
 
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="academic_year")
-
-

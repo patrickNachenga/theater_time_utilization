@@ -1,6 +1,7 @@
 from typing import List
 
 import pendulum
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 
 from src.db.session import session_scope
@@ -97,10 +98,9 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                                                 existed_academic_year), None)
 
                     if academic_year:
-                        academic_year.name = str(inputItem.name),
-                        academic_year.status = inputItem.status,
-                        academic_year.start_date = inputItem.start_date,
-                        academic_year.end_date = inputItem.end_date,
+                        obj_data = jsonable_encoder(inputItem)
+                        for key, value in obj_data.items():
+                            setattr(academic_year, key, value)
                         academic_year_list.append(academic_year)
             session.add_all(academic_year_list)
             count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()

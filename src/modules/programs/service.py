@@ -4,8 +4,10 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
+from src.models import ProgramCategory
 from src.models.program import Program
 from src.modules import CRUDBase
+from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramInput, ProgramListNode
@@ -104,6 +106,14 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             # check for existing Program using uid
             existed_program = self.get_program_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
+                # Verify and get supplied program category uid. and get existed year id from returned Program Category model
+                try:
+                    program_category_id = ProgramCategoryService.get_program_category_by_uid(inputItem.program_category_uid).id
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramListNode(items=[], total_count=0),
+                                    message="you have submitted incorrect program category year details")
                 if inputItem.uid is None:
                     program = Program(
                         code=inputItem.code,
@@ -112,7 +122,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                         tcu_code=inputItem.tcu_code,
                         registration_code=inputItem.registration_code,
                         nacte_code=inputItem.nacte_code,
-                        program_category_id=inputItem.program_category_id,
+                        program_category_id=program_category_id,
                         department_uid=inputItem.department_uid,
                         duration=inputItem.duration,
                     )
@@ -129,7 +139,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                         program.tcu_code = inputItem.tcu_code,
                         program.registration_code = inputItem.registration_code,
                         program.nacte_code = inputItem.nacte_code,
-                        program.program_category_id = inputItem.program_category_id,
+                        program.program_category_id = program_category_id,
                         program.department_uid = inputItem.department_uid,
                         program.duration = inputItem.duration,
                         program_list.append(program)
@@ -165,6 +175,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 "code": program.code,
                 "name": program.name,
                 "short_name": program.short_name,
+                "department_uid": program.department_uid
             }, message="Program retrieved Successfully")
         except Exception as e:
             print(e)

@@ -6,7 +6,7 @@ from src.models import Program
 from src.modules.programs.service import ProgramService, ProgramCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramInput, PaginationInput, ProgramListNode
+from src.types import ProgramInput, PaginationInput, ProgramListNode, ProgramNode
 
 
 @strawberry.type
@@ -23,6 +23,26 @@ class ProgramQuery:
             code=ResponseCode.FAILURE,
             message="Program retrieved successfully",
             data=result)
+
+    @strawberry.field
+    def get_program(self, uid: str) -> Response[ProgramNode | None]:
+        try:
+            result = ProgramService.get_program_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=None)
 
 
 @strawberry.type

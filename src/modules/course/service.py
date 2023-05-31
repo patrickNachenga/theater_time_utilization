@@ -1,6 +1,7 @@
 from typing import List
 
 import pendulum
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 
 from src.db.session import session_scope
@@ -8,7 +9,7 @@ from src.models import Course
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, CourseNode
+from src.types import CourseInput, CourseNode, PaginatedCourse
 
 
 class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
@@ -52,7 +53,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             result = session.scalars(stmt)
             return result.first()
 
-    def register_courses(self, inputs: List[CourseInput]) -> Response[List[CourseNode]]:
+    def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
         """
         Register Course
         :param inputs:
@@ -67,7 +68,8 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
                 return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_list,
                                 message="Course Already Exists")
             # check for existing course using uid
-            existed_course = self.get_courses_by_codes([inputItem.uid for inputItem in inputs])
+            existed_course = self.get_courses_by_uids([inputItem.uid for inputItem in inputs])
+            action_name = "Register"
             for inputItem in inputs:
                 if inputItem.uid is None:
                     course = Course(
@@ -79,19 +81,20 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
                     )
                     course_list.append(course)
                 else:
-                    course = next(filter(lambda course: str(course.uid) == str(inputItem.uid),
+                    action_name = "Updated"
+                    course = next(filter(lambda course: str(course.code) == str(inputItem.code),
                                          existed_course), None)
                     if course:
-                        course.code = inputItem.code,
-                        course.description = inputItem.description,
-                        course.name = inputItem.name,
-                        course.offered = inputItem.offered,
-                        course.department_uid = inputItem.department_uid
+                        obj_data = jsonable_encoder(inputItem)
+                        for key, value in obj_data.items():
+                            setattr(course, key, value)
                         course_list.append(course)
             session.add_all(course_list)
+            count = session.query(Course).filter(Course.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=course_list,
-                            message="Successfully Submitted")
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=PaginatedCourse(items=course_list, total_count=count),
+                            message=f"Course {action_name} Successfully")
 
     # Delete Function
     @staticmethod

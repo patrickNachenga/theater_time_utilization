@@ -29,13 +29,13 @@ class CourseQuery:
 @strawberry.type
 class CourseMutation:
     @strawberry.field
-    def register_courses(self, inputs: List[CourseInput]) -> Response[List[CourseNode]]:
+    def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
         try:
             return CourseService(Course).register_courses(inputs)
 
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course", data=[])
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course", data=[])
 
     @strawberry.mutation
     async def remove_course(self, uid: str) -> Response[None]:
