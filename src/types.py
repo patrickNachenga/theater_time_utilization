@@ -293,6 +293,12 @@ class CourseCategoryNode:
     name: str
 
 
+@strawberry.type(description="Course Category paginated output")
+class CourseCategoryListNode:
+    items: List[CourseCategoryNode]
+    total_count: int
+
+
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -355,7 +361,7 @@ class CourseLearnOutcomeListNode:
 @strawberry.input(description="Program Course Assessment Input")
 class ProgramCourseAssessmentInput:
     uid: Optional[str] = None
-    program_course_id: int
+    program_course_uid: int
     exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
@@ -365,14 +371,18 @@ class ProgramCourseAssessmentInput:
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode:
     uid: str
-    program_course_id: int
+    program_course_uid: int
     program_course: ProgramCourseNode
     exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
     maximum_score: int
-    created_at: datetime
-    updated_at: datetime
+
+
+@strawberry.type(description="Program Course Assessment paginated Output")
+class ProgramCourseAssessmentListNode:
+    items: List[ProgramCourseAssessmentNode]
+    total_count: int
 
 
 @strawberry.input(description="Course Allocation Input")
@@ -388,27 +398,6 @@ class CourseAllocationNode:
     program_course_id: str
     program_course: ProgramCourseNode
     staff_uid: str
-
-
-@strawberry.input(description="Course Assessment Input")
-class ProgramCourseAssessmentInput:
-    uid: Optional[str] = None
-    program_course_id: int
-    exam_category_uid: str
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
-
-
-@strawberry.type(description="Program Course Assessment Input")
-class ProgramCourseAssessmentNode:
-    uid: str
-    program_course_id: int
-    program_course: ProgramCourseNode
-    exam_category_uid: str
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
 
 
 @strawberry.input(description="Pagination Input")
@@ -429,13 +418,6 @@ class PaginatedCourse:
 @strawberry.type(description="Paginated Course Allocation")
 class PaginatedCourseAllocation:
     items: List[CourseAllocationNode]
-    total_count: int
-
-
-############ An output for Paginated Course Category ###############
-@strawberry.type(description="Paginated Course Category")
-class PaginatedCourseCategory:
-    items: List[CourseCategoryNode]
     total_count: int
 
 

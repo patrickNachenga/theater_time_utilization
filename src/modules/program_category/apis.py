@@ -46,7 +46,6 @@ class ProgramCategoryQuery:
                 data=None)
 
 
-
 @strawberry.type
 class ProgramCategoryMutation:
     @strawberry.field

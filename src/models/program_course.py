@@ -15,7 +15,7 @@ class ProgramCourse(BaseModel):
     independent_study_hours: float = Column(Float(4), nullable=True)
     pass_hours: float = Column(Float(4), nullable=True)
 
-    # ---------------Mapped Columns ---------------------
+    # ---------------Referenced Columns ---------------------
     course_category_id: int = Column(Integer, ForeignKey("course_categories.id"), nullable=False, index=True)
     course_category = relationship('CourseCategory', lazy='subquery', back_populates="program_courses")
 
@@ -25,7 +25,8 @@ class ProgramCourse(BaseModel):
     course_id: int = Column(Integer, ForeignKey("courses.id"), nullable=False, index=True)
     course = relationship('Course', lazy='subquery', back_populates="program_courses")
 
-    # ---------------Referenced Columns ---------------------
-    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery', back_populates="program_course")
+    # --------------- Mapped Columns ---------------------
+    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
+                                              back_populates="program_course")
     course_allocations = relationship("CourseAllocation", lazy="subquery", back_populates="program_course")
     course_learn_outcomes = relationship('CourseLearnOutcome', lazy='subquery', back_populates="program_course")

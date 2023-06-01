@@ -2,7 +2,7 @@ from typing import List
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from src.db.session import session_scope
 from src.models.course_learn_outcome import CourseLearnOutcome
 from src.modules import CRUDBase
@@ -16,7 +16,8 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
     @staticmethod
     def get_course_learn_outcome() -> List[CourseLearnOutcome]:
         with session_scope() as session:
-            result = session.query(CourseLearnOutcome).filter(CourseLearnOutcome.deleted_at.is_(None)).all()
+            result = session.query(CourseLearnOutcome).filter(CourseLearnOutcome.deleted_at.is_(None)).order_by(
+                desc(CourseLearnOutcome.updated_at)).all()
             return result
 
     @staticmethod
@@ -38,7 +39,8 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseLearnOutcome).where((CourseLearnOutcome.uid == uid) & (CourseLearnOutcome.deleted_at.is_(None)))
+            stmt = select(CourseLearnOutcome).where((CourseLearnOutcome.uid == uid) & (CourseLearnOutcome.deleted_at.is_(None))).order_by(
+                desc(CourseLearnOutcome.updated_at))
             result = session.scalars(stmt)
             return result.all()
 

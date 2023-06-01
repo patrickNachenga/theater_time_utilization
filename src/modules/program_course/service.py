@@ -102,7 +102,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                 else:
                     action_type = "Update"
                     program_course = next(
-                        filter(lambda program_course: str(program_course.uid) == str(inputItem.uid),
+                        filter(lambda program_course_data: str(program_course_data.uid) == str(inputItem.uid),
                                existed_program_course), None)
                     if program_course:
                         obj_data = jsonable_encoder(inputItem)

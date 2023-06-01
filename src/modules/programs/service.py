@@ -113,7 +113,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramListNode(items=[], total_count=0),
-                                    message="you have submitted incorrect program category year details")
+                                    message="You have submitted incorrect program category details")
                 if inputItem.uid is None:
                     program = Program(
                         code=inputItem.code,
