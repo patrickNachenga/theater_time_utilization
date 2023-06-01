@@ -14,8 +14,9 @@ class Program(BaseModel):
     name: str = Column(String, nullable=False)
     short_name: str = Column(String, nullable=False, unique=False)
     duration: int = Column(Integer, nullable=False)
+    moodle_id: str = Column(String, nullable=True)
     # ---------------Mapped Columns ---------------------
-    program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=True, index=True)
+    program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False, index=True)
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
 
     department_uid: str = Column(String, nullable=True, index=True)
@@ -24,10 +25,3 @@ class Program(BaseModel):
 
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
-
-
-
-
-
-
-

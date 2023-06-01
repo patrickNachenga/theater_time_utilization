@@ -1,7 +1,8 @@
 from typing import List
 
 import pendulum
-from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select, desc
 from src.db.session import session_scope
 from src.models import Program, AcademicYear
 from src.models.program_semester import ProgramSemester
@@ -17,7 +18,8 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
     @staticmethod
     def get_program_semesters() -> List[ProgramSemester]:
         with session_scope() as session:
-            result = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).all()
+            result = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).order_by(
+                desc(ProgramSemester.updated_at)).all()
             return result
 
     @staticmethod
@@ -27,7 +29,8 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramSemester).where((ProgramSemester.id.in_(ids)) & (ProgramSemester.deleted_at.is_(None)))
+            stmt = select(ProgramSemester).where((ProgramSemester.id.in_(ids)) & (ProgramSemester.deleted_at.is_(None))).order_by(
+                desc(ProgramSemester.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
@@ -42,7 +45,6 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 (ProgramSemester.uid == uid) & (ProgramSemester.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
-
 
     @staticmethod
     def get_program_semester_by_uids(uids: List[str]) -> List[ProgramSemester]:
@@ -75,7 +77,8 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                     program_id = ProgramService.get_program_by_uid(inputItem.program_uid).id
                 except Exception as e:
                     print(e)
-                    return Response(status=False, code=ResponseCode.FAILURE, data=ProgramSemesterListNode(items=[], total_count=0),
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramSemesterListNode(items=[], total_count=0),
                                     message="You have submitted incorrect program details")
 
                 # Verify and get supplied Academic year uid. and get existed Academic year id from returned Academic year model
@@ -83,7 +86,8 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                     academic_year_id = AcademicYearService.get_academic_year_by_uid(inputItem.academic_year_uid).id
                 except Exception as e:
                     print(e)
-                    return Response(status=False, code=ResponseCode.FAILURE, data=ProgramSemesterListNode(items=[], total_count=0),
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramSemesterListNode(items=[], total_count=0),
                                     message="You submitted incorrect academic year details")
 
                 if inputItem.uid is None:
@@ -99,22 +103,23 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 else:
                     action_type = "Update"
                     program_semester = next(
-                        filter(lambda program_semester: str(program_semester.uid) == str(inputItem.uid),
+                        filter(lambda prog_semester: str(prog_semester.uid) == str(inputItem.uid),
                                existed_program_semester), None)
 
                     if program_semester:
-                        program_semester.study_year = inputItem.study_year
-                        program_semester.semester = inputItem.semester
-                        program_semester.created_by = inputItem.created_by
-                        program_semester.program_id = program_id
-                        program_semester.academic_year_id = academic_year_id
-                        program_semester.core_credits = inputItem.core_credits
-                        program_semester.elective_credits = inputItem.elective_credits
+                        obj_data = jsonable_encoder(inputItem)
+                        # Replace referenced uids field with model required ids field
+                        obj_data['academic_year_id'] = academic_year_id
+                        obj_data['program_id'] = program_id
+                        for key, value in obj_data.items():
+                            setattr(program_semester, key, value)
+
                         program_semester_list.append(program_semester)
             session.add_all(program_semester_list)
             count = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS,  data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
                             message=f"Successfully to {action_type} Program Semester")
 
     # Delete FUnction

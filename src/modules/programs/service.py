@@ -1,10 +1,10 @@
 from typing import List
 
 import pendulum
-from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select, desc
 
 from src.db.session import session_scope
-from src.models import ProgramCategory
 from src.models.program import Program
 from src.modules import CRUDBase
 from src.modules.program_category.service import ProgramCategoryService
@@ -21,7 +21,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:
         """
         with session_scope() as session:
-            result = session.query(Program).filter(Program.deleted_at.is_(None)).all()
+            result = session.query(Program).filter(Program.deleted_at.is_(None)).order_by(
+                desc(Program.updated_at)).all()
             return result
 
     @staticmethod
@@ -32,7 +33,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:List[Program]
         """
         with session_scope() as session:
-            stmt = select(Program).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
+            stmt = select(Program).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
+                desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
@@ -44,7 +46,43 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:List[str]
         """
         with session_scope() as session:
-            stmt = select(Program.id, Program.uid).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None)))
+            stmt = select(Program.id, Program.uid).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
+                desc(Program.updated_at))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
+    def get_programs_by_category(category_uid: str) -> Response[ProgramListNode]:
+        """
+            Get programs by program category uids
+        :param:category_uid
+        :return:List[ProgramListNode]
+        """
+        with session_scope() as session:
+            # Verify and get supplied program uid. and get existed year id from returned Program model
+            try:
+                program_category_id = ProgramCategoryService.get_program_category_by_uid(category_uid).id
+            except Exception as e:
+                print(e)
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=ProgramListNode(items=[], total_count=0),
+                                message="You have submitted incorrect program category details")
+
+            stmt = select(Program).where((Program.program_category_id == program_category_id) & (Program.deleted_at.is_(None))).order_by(
+                desc(Program.updated_at))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
+    def get_programs_by_department(department_uid: str) -> Response[ProgramListNode]:
+        """
+            Get programs by department uids
+        :param department_uid:
+        :return List[ProgramListNode]:
+        """
+        with session_scope() as session:
+            stmt = select(Program).where((Program.department_uid == department_uid) & (Program.deleted_at.is_(None))).order_by(
+                desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
@@ -69,7 +107,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:List[Program]
         """
         with session_scope() as session:
-            stmt = select(Program).where((Program.code.in_(codes)) & (Program.deleted_at.is_(None)))
+            stmt = select(Program).where((Program.code.in_(codes)) & (Program.deleted_at.is_(None))).order_by(
+                desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
@@ -108,7 +147,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             for inputItem in inputs:
                 # Verify and get supplied program category uid. and get existed year id from returned Program Category model
                 try:
-                    program_category_id = ProgramCategoryService.get_program_category_by_uid(inputItem.program_category_uid).id
+                    program_category_id = ProgramCategoryService.get_program_category_by_uid(
+                        inputItem.program_category_uid).id
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
@@ -133,22 +173,19 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     program = next(filter(lambda program: str(program.uid) == str(inputItem.uid),
                                           existed_program), None)
                     if program:
-                        program.code = inputItem.code,
-                        program.name = inputItem.name,
-                        program.short_name = inputItem.short_name,
-                        program.tcu_code = inputItem.tcu_code,
-                        program.registration_code = inputItem.registration_code,
-                        program.nacte_code = inputItem.nacte_code,
-                        program.program_category_id = program_category_id,
-                        program.department_uid = inputItem.department_uid,
-                        program.duration = inputItem.duration,
+                        obj_data = jsonable_encoder(inputItem)
+                        # Replace referenced uids field with model required ids field
+                        obj_data['program_category_id'] = program_category_id
+                        for key, value in obj_data.items():
+                            setattr(program, key, value)
+
                         program_list.append(program)
             session.add_all(program_list)
             count = session.query(Program).filter(Program.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=ProgramListNode(items=program_list, total_count=count),
-                            message=f"Successfully to {action_type} Program category")
+                            message=f"Successfully to {action_type} Program")
 
     @staticmethod
     def remove_program(uid: str):

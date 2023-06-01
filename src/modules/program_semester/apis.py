@@ -17,7 +17,7 @@ class ProgramSemesterQuery:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, [], ProgramSemesterListNode)
         except Exception as e:
             print(e)
-            result = []
+            result = ProgramSemesterListNode(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,

@@ -54,8 +54,9 @@ class ProgramCategoryMutation:
             return ProgramCategoryService(ProgramCategory).register_program_categories(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
-                            data=[])
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            data=ProgramCategoryListNode(items=[], total_count=0),
+                            message="Failed to Register Program Category")
 
     # Delete programs type function
     @strawberry.mutation

@@ -163,6 +163,7 @@ class CourseInput:
     name: str
     offered: Optional[int] = 1
     department_uid: str
+    moodle_id: Optional[str] = None
 
 
 @strawberry.type(description="Course Output")
@@ -227,6 +228,7 @@ class ProgramInput:
     name: str
     short_name: str
     duration: Optional[int] = 0
+    moodle_id: Optional[str] = None
     registration_code: Optional[str] = None
     department_uid: str
 
@@ -312,6 +314,8 @@ class ProgramCourseInput:
     assignment_hours: Optional[float] = 0.0
     independent_study_hours: Optional[float] = 0
     pass_hours: Optional[float] = 0.0
+    moodle_id: Optional[str] = None
+
 
 
 @strawberry.type(description="Program Course outputs")

@@ -11,6 +11,7 @@ class Course(BaseModel):
     name: str = Column(String, nullable=False, unique=False)
     code: str = Column(String, nullable=False, unique=False)
     offered: int = Column(Integer, nullable=False, unique=False)
+    moodle_id: str = Column(String, nullable=True)
 
     # ---------------Mapped Columns ---------------------
     department_uid: str = Column(String, nullable=False, unique=False)

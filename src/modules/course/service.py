@@ -2,7 +2,7 @@ from typing import List
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import select, desc
 
 from src.db.session import session_scope
 from src.models import Course
@@ -16,7 +16,8 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
     @staticmethod
     def get_courses() -> List[Course]:
         with session_scope() as session:
-            result = session.query(Course).filter(Course.deleted_at.is_(None)).all()
+            result = session.query(Course).filter(Course.deleted_at.is_(None)).order_by(
+                desc(Course.updated_at)).all()
             return result
 
     @staticmethod
