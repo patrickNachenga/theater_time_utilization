@@ -46,7 +46,6 @@ class AcademicYearQuery:
                 data=None)
 
 
-
 @strawberry.type
 class AcademicYearMutation:
     @strawberry.field

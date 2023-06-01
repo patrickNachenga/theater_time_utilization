@@ -70,7 +70,6 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_allocation_list,
                                     message="Please make sure you have submitted correct program course values")
 
-
                 if inputItem.uid is None:
                     course_allocation = CourseAllocation(
                         program_course_id=program_course_id,
@@ -83,7 +82,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                         filter(lambda course_allocation: str(course_allocation.uid) == str(inputItem.uid),
                                existed_course_allocation), None)
                     if course_allocation:
-                        course_allocation.program_course_id = inputItem.program_course_id,
+                        course_allocation.program_course_id = program_course_id,
                         course_allocation.staff_uid = inputItem.staff_uid,
 
             session.add_all(course_allocation_list)

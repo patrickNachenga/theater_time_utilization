@@ -9,7 +9,7 @@ from src.models import Course
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, CourseNode, PaginatedCourse
+from src.types import CourseInput, PaginatedCourse
 
 
 class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
