@@ -7,5 +7,5 @@ from src.models import BaseModel
 class CourseAllocation(BaseModel):
     __tablename__ = "course_allocations"
     staff_uid: str = Column(String, nullable=False, unique=False)
-    program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False, unique=False)
+    program_course_uid: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False, unique=False)
     program_course = relationship("ProgramCourse", lazy="subquery", back_populates="course_allocations")

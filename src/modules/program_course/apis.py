@@ -30,7 +30,7 @@ class ProgramCourseQuery:
             result = ProgramCourseService.get_program_course_by_uid(uid)
         except Exception as e:
             print(e)
-            result = ProgramCourseListNode(items=[], total_count=0)
+            result = None
         if result:
             return Response(
                 status=True,

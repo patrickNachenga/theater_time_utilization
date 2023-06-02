@@ -25,7 +25,8 @@ class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, Pro
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCategory).where((ProgramCategory.id.in_(ids)) & (ProgramCategory.deleted_at.is_(None))).order_by(
+            stmt = select(ProgramCategory).where(
+                (ProgramCategory.id.in_(ids)) & (ProgramCategory.deleted_at.is_(None))).order_by(
                 desc(ProgramCategory.updated_at))
             result = session.scalars(stmt)
             return result.all()
