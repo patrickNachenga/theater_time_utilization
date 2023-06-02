@@ -55,9 +55,9 @@ securityContext:
 service:
   # Service Type can either be ClusterIP, LoadBalancer and NodePort
   type: ClusterIP
-  port: 8805
-  targetPort:  8805
-  nodePort:  8805
+  port: 8804
+  targetPort:  8804
+  nodePort:  8804
   externalIP: {}
 ########### Section for Service configuration ###################
 
