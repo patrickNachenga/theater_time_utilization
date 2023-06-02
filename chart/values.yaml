@@ -171,7 +171,11 @@ configMap:
     DB_HOST: "registration-db"
     DB_NAME: "registrationdb"
     DB_USER: "postgres"
-    DB_PASS: ""
+    DB_PASS: "K1mbun9@13o"
+    REDIS_HOST: "redis"
+    REDIS_PORT: "6379"
+    REDIS_USERNAME: "redis"
+    SERVICE_PORT: "8804"
     DEFAULT_INSTITUTION: "1"
     FRONT_END_URL: "http://10.10.97.132:8810"
     #DISCOVERY_SERVER: "sua-registry-server"
@@ -182,7 +186,7 @@ configMap:
 
     #DEFAULT_INSTITUTION: "102"
 
-    FRONT_END_URL: "http://10.10.97.132:9200"
+    #FRONT_END_URL: "http://10.10.97.132:9200"
     # KAFKA_ADVERTISED_HOST_NAME: "service"
     # KAFKA_BROKER_ID: "1"
 
