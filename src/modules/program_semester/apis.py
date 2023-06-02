@@ -53,7 +53,7 @@ class ProgramSemesterMutation:
             return ProgramSemesterService(ProgramSemester).register_program_semesters(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Semester",
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Program Semester",
                             data=ProgramSemesterListNode(items=[], total_count=0),)
 
     # Delete programs type function

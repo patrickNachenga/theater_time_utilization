@@ -14,7 +14,7 @@ class ProgramCategoryQuery:
     @strawberry.field
     def get_program_categories(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
         try:
-            result = ProgramCategoryCrud.get_multi_paginated(pagination, ['name', 'short_name'],
+            result = ProgramCategoryCrud.get_multi_paginated(pagination, [],
                                                              ProgramCategoryListNode)
         except Exception as e:
             print(e)

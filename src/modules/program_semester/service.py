@@ -29,7 +29,8 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramSemester).where((ProgramSemester.id.in_(ids)) & (ProgramSemester.deleted_at.is_(None))).order_by(
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.id.in_(ids)) & (ProgramSemester.deleted_at.is_(None))).order_by(
                 desc(ProgramSemester.updated_at))
             result = session.scalars(stmt)
             return result.all()
@@ -58,6 +59,23 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             result = session.scalars(stmt)
             return result.all()
 
+    @staticmethod
+    def check_uniqueness(academic_year_id: int, program_id: int, study_year: int, semester: int) -> ProgramSemester:
+        """
+        Check if there already exists program semester with same academicYearId, programId, studyYear, semester all together
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.academic_year_id == academic_year_id) &
+                (ProgramSemester.program_id == program_id) &
+                (ProgramSemester.study_year == study_year) &
+                (ProgramSemester.semester == semester) &
+                (ProgramSemester.deleted_at.is_(None))
+            )
+            result = session.scalars(stmt)
+            return result.first()
+
     def register_program_semesters(self, inputs: List[ProgramSemesterInput]) -> Response[ProgramSemesterListNode]:
         """
         Register programs semesters
@@ -65,41 +83,59 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :return:
         """
         program_semester_list = []
-        existed_program: List[Program]
-        academic_year: List[AcademicYear]
         action_type = "Register"
+
         with session_scope() as session:
             # check for existing programs semesters using uid
             existed_program_semester = self.get_program_semester_by_uids([inputItem.uid for inputItem in inputs])
-            for inputItem in inputs:
-                # Verify and get supplied Program uid. and get existed program id from returned program model
-                try:
-                    program_id = ProgramService.get_program_by_uid(inputItem.program_uid).id
-                except Exception as e:
-                    print(e)
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=ProgramSemesterListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect program details")
 
-                # Verify and get supplied Academic year uid. and get existed Academic year id from returned Academic year model
-                try:
-                    academic_year_id = AcademicYearService.get_academic_year_by_uid(inputItem.academic_year_uid).id
-                except Exception as e:
-                    print(e)
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=ProgramSemesterListNode(items=[], total_count=0),
-                                    message="You submitted incorrect academic year details")
+            for inputItem in inputs:
+                # Verify and get supplied Program uid and get existed program model
+                program = ProgramService(Program).get(inputItem.program_uid)
+                if program is None:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        message="You have submitted incorrect program details"
+                    )
+
+                # Verify and get supplied Academic year uid and get existed Academic year model
+                academic_year = AcademicYearService(AcademicYear).get(inputItem.academic_year_uid)
+                if academic_year is None:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        message="You submitted incorrect academic year details"
+                    )
 
                 if inputItem.uid is None:
+                    # validate if this program semester is not deprecated
+                    deprecated_program_semester = self.check_uniqueness(academic_year_id=academic_year.id,
+                                                                        program_id=program.id,
+                                                                        semester=inputItem.semester,
+                                                                        study_year=inputItem.study_year)
+                    if deprecated_program_semester:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.FAILURE,
+                            data=ProgramSemesterListNode(items=[], total_count=0),
+                            message="Program Semester Already Exist"
+                        )
+
                     program_semester = ProgramSemester(
                         study_year=inputItem.study_year,
                         semester=inputItem.semester,
-                        program_id=program_id,
-                        academic_year_id=academic_year_id,
+                        program=program,
+                        academic_year=academic_year,
                         core_credits=inputItem.core_credits,
                         elective_credits=inputItem.elective_credits
                     )
-                    program_semester_list.append(program_semester)
+                    local_object = session.merge(program_semester)
+                    session.add(local_object)
+                    session.commit()
+                    program_semester_list.append(local_object)
                 else:
                     action_type = "Update"
                     program_semester = next(
@@ -109,18 +145,22 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                     if program_semester:
                         obj_data = jsonable_encoder(inputItem)
                         # Replace referenced uids field with model required ids field
-                        obj_data['academic_year_id'] = academic_year_id
-                        obj_data['program_id'] = program_id
+                        obj_data['academic_year'] = academic_year
+                        obj_data['program'] = program
                         for key, value in obj_data.items():
                             setattr(program_semester, key, value)
+                        local_object = session.merge(program_semester)
+                        session.add(local_object)
+                        session.commit()
+                        program_semester_list.append(local_object)
 
-                        program_semester_list.append(program_semester)
-            session.add_all(program_semester_list)
             count = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).count()
-            session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
-                            message=f"Successfully to {action_type} Program Semester")
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
+                message=f"Successfully {action_type}ed Program Semester"
+            )
 
     # Delete FUnction
     @staticmethod

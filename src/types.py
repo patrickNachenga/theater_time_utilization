@@ -317,7 +317,6 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
-
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
     uid: str
@@ -365,7 +364,7 @@ class CourseLearnOutcomeListNode:
 @strawberry.input(description="Program Course Assessment Input")
 class ProgramCourseAssessmentInput:
     uid: Optional[str] = None
-    program_course_uid: int
+    program_course_uid: str
     exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
@@ -375,7 +374,7 @@ class ProgramCourseAssessmentInput:
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode:
     uid: str
-    program_course_uid: int
+    program_course_uid: str
     program_course: ProgramCourseNode
     exam_category_uid: str
     minimum_exams: int

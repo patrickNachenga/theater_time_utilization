@@ -44,6 +44,21 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             result = session.scalars(stmt)
             return result.all()
 
+    @staticmethod
+    def check_uniqueness(course_id: int, program_semester_id: int) -> ProgramCourse:
+        """
+        Check if there already exists program course with same course_id, program_semester_id all together
+        :return ProgramCourse:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramCourse).where(
+                (ProgramCourse.course_id == course_id) &
+                (ProgramCourse.program_semester_id == program_semester_id) &
+                (ProgramCourse.deleted_at.is_(None))
+            )
+            result = session.scalars(stmt)
+            return result.first()
+
     def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
         """
         Register programs Course
@@ -56,41 +71,45 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             # check for existing programs courses using uid
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
-                # Verify and get supplied Program uid. and get existed program id from returned program model
-                try:
-                    program_semester_id = ProgramSemesterService.get_program_semester_by_uid(
-                        inputItem.program_semester_uid).id
-                except Exception as e:
-                    print(e)
+                # Verify and get supplied Program uid. and get existed program model
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(
+                    inputItem.program_semester_uid)
+                if program_semester is None:
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
                                     message="You have submitted incorrect programs semester details")
 
                 # Verify and get supplied Course uid. and get existed Course id from returned Course model
-                try:
-                    course_id = CourseService.get_course_by_uid(inputItem.course_uid).id
-                except Exception as e:
-                    print(e)
+                course = CourseService.get_course_by_uid(inputItem.course_uid)
+                if course is None:
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
                                     message="You have submitted incorrect courses details")
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
-                try:
-                    course_category_id = CourseCategoryService.get_course_category_by_uid(
-                        inputItem.course_category_uid).id
-                except Exception as e:
-                    print(e)
+                course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
+                if course_category is None:
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseListNode(items=[], total_count=0),
                                     message="You have submitted incorrect courses category details")
 
                 if inputItem.uid is None:
+                    # validate if this program semester is not deprecated
+                    deprecated_program_course = self.check_uniqueness(course_id=course.id,
+                                                                      program_semester_id=program_semester.id)
+                    if deprecated_program_course:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.FAILURE,
+                            data=ProgramCourseListNode(items=[], total_count=0),
+                            message="Program Course Already Exist"
+                        )
+
                     program_course = ProgramCourse(
-                        program_semester_id=program_semester_id,
-                        course_id=course_id,
+                        program_semester=program_semester,
+                        course=course,
                         credit=inputItem.credit,
-                        course_category_id=course_category_id,
+                        course_category=course_category,
                         lecture_hours=inputItem.lecture_hours,
                         seminar_hours=inputItem.seminar_hours,
                         practical_hours=inputItem.practical_hours,
@@ -98,7 +117,10 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                         independent_study_hours=inputItem.independent_study_hours,
                         pass_hours=inputItem.pass_hours
                     )
-                    program_course_list.append(program_course)
+                    local_object = session.merge(program_course)
+                    session.add(local_object)
+                    session.commit()
+                    program_course_list.append(local_object)
                 else:
                     action_type = "Update"
                     program_course = next(
@@ -107,17 +129,18 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     if program_course:
                         obj_data = jsonable_encoder(inputItem)
                         # # Replace referenced uids field with model required ids field
-                        obj_data['program_semester_id'] = program_semester_id
-                        obj_data['course_id'] = course_id
-                        obj_data['course_category_id'] = course_category_id
-
+                        obj_data['program_semester'] = program_semester
+                        obj_data['course'] = course
+                        obj_data['course_category'] = course_category
                         for key, value in obj_data.items():
                             setattr(program_course, key, value)
 
-                        program_course_list.append(program_course)
-            session.add_all(program_course_list)
+                        local_object = session.merge(program_course)
+                        session.add(local_object)
+                        session.commit()
+                        program_course_list.append(local_object)
+
             count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()
-            session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=ProgramCourseListNode(items=program_course_list, total_count=count),
                             message=f"Successfully to {action_type} Program Course")

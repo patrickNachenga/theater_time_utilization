@@ -125,6 +125,32 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def get_program_by_names(names: List[str]) -> List[Program]:
+        """
+            Get programs by names
+        :param names:
+        :return:List[Program]
+        """
+        with session_scope() as session:
+            stmt = select(Program).where((Program.name.in_(names)) & (Program.deleted_at.is_(None))).order_by(
+                desc(Program.updated_at))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
+    def get_program_by_name(name: str) -> Program:
+        """
+        Get Program by name
+        :param name:
+        :return:Program
+        """
+        with session_scope() as session:
+            stmt = select(Program).where(
+                (Program.name == name) & (Program.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
+
     def register_program(self, inputs: List[ProgramInput]) -> Response[ProgramListNode]:
         """
         Register Program
@@ -135,11 +161,14 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         action_type = "Register"
         with session_scope() as session:
             # Check if program already exist using code
-            existed_program_list = self.get_program_by_codes(
+            existed_program_code_list = self.get_program_by_codes(
                 [program.code for program in inputs if program.uid is None])
-            if existed_program_list:
+            # Check if program already exist using name
+            existed_program_name_list = self.get_program_by_names(
+                [program.name for program in inputs if program.uid is None])
+            if existed_program_code_list or existed_program_name_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=ProgramListNode(items=existed_program_list, total_count=0),
+                                data=ProgramListNode(items=existed_program_code_list if existed_program_code_list is not None else existed_program_name_list, total_count=0),
                                 message="Program  Already Exists")
 
             # check for existing Program using uid
@@ -147,8 +176,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             for inputItem in inputs:
                 # Verify and get supplied program category uid. and get existed year id from returned Program Category model
                 try:
-                    program_category_id = ProgramCategoryService.get_program_category_by_uid(
-                        inputItem.program_category_uid).id
+                    program_category = ProgramCategoryService.get_program_category_by_uid(
+                        inputItem.program_category_uid)
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
@@ -162,11 +191,12 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                         tcu_code=inputItem.tcu_code,
                         registration_code=inputItem.registration_code,
                         nacte_code=inputItem.nacte_code,
-                        program_category_id=program_category_id,
+                        program_category=program_category,
                         department_uid=inputItem.department_uid,
                         duration=inputItem.duration,
                     )
-
+                    session.add(program)
+                    session.commit()
                     program_list.append(program)
                 else:
                     action_type = "Update"
@@ -175,12 +205,13 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     if program:
                         obj_data = jsonable_encoder(inputItem)
                         # Replace referenced uids field with model required ids field
-                        obj_data['program_category_id'] = program_category_id
+                        obj_data['program_category_id'] = program_category.id
                         for key, value in obj_data.items():
                             setattr(program, key, value)
 
+                        session.add(program)
+                        session.commit()
                         program_list.append(program)
-            session.add_all(program_list)
             count = session.query(Program).filter(Program.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
