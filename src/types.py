@@ -341,21 +341,18 @@ class ProgramCourseListNode:
 @strawberry.input(description="Course Learn Outcome Input")
 class CourseLearnOutcomeInput:
     uid: Optional[str] = None
-    staff_uid: str
-    program_course_uid: str
+    course_uid: str
     learning_outcome: str
 
 
 @strawberry.type(description="Course Learn Outcome Output")
 class CourseLearnOutcomeNode:
     uid: str
-    program_course_uid: str
-    program_course: ProgramCourseNode
+    course: CourseNode
     learning_outcome: str
-    staff_uid: str
 
 
-@strawberry.type(description="Program Course paginated Output")
+@strawberry.type(description="Program Course learning outcome paginated Output")
 class CourseLearnOutcomeListNode:
     items: List[CourseLearnOutcomeNode]
     total_count: int

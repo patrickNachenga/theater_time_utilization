@@ -3,10 +3,11 @@ from typing import List
 import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
+
 from src.db.session import session_scope
 from src.models.course_learn_outcome import CourseLearnOutcome
 from src.modules import CRUDBase
-from src.modules.program_course.service import ProgramCourseService
+from src.modules.course.service import CourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeListNode
@@ -57,21 +58,21 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             existed_course_learn_outcome = self.get_course_learn_outcome_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 # Verify and get supplied Course learn outcome uid. and get existed Course learn outcome id from returned model
-                try:
-                    program_course_id = ProgramCourseService.get_program_course_by_uid(inputItem.program_course_uid).id
-                except Exception as e:
-                    print(e)
+                course = CourseService.get_course_by_uid(inputItem.course_uid)
+                if course is None:
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=CourseLearnOutcomeListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect program course details")
+                                    message="You have submitted incorrect course details")
 
                 if inputItem.uid is None:
                     course_learn_outcome = CourseLearnOutcome(
-                        staff_uid=inputItem.staff_uid,
-                        program_course_id=program_course_id,
+                        course=course,
                         learning_outcome=inputItem.learning_outcome
                     )
-                    course_learn_outcome_list.append(course_learn_outcome)
+                    local_object = session.merge(course_learn_outcome)
+                    session.add(local_object)
+                    session.commit()
+                    course_learn_outcome_list.append(local_object)
                 else:
                     action_type = "Update"
                     course_learn_outcome = next(
@@ -81,14 +82,18 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
                     if course_learn_outcome:
                         obj_data = jsonable_encoder(inputItem)
                         # Replace referenced uids field with model required ids field
-                        obj_data['program_course_id'] = program_course_id
+                        obj_data['course'] = course
                         for key, value in obj_data.items():
                             setattr(course_learn_outcome, key, value)
+                        local_object = session.merge(course_learn_outcome)
+                        session.add(local_object)
+                        session.commit()
+                        course_learn_outcome_list.append(local_object)
 
-                        course_learn_outcome_list.append(course_learn_outcome)
-            session.add_all(course_learn_outcome_list)
-            session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=course_learn_outcome_list,
+            count = session.query(CourseLearnOutcome).filter(CourseLearnOutcome.deleted_at.is_(None)).count()
+
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=CourseLearnOutcomeListNode(items=course_learn_outcome_list, total_count=count),
                             message=f"Successfully to {action_type} Course Learn Outcome")
 
     # Delete FUnction

@@ -143,18 +143,25 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                                existed_program_semester), None)
 
                     if program_semester:
+
                         obj_data = jsonable_encoder(inputItem)
                         # Replace referenced uids field with model required ids field
                         obj_data['academic_year'] = academic_year
                         obj_data['program'] = program
                         for key, value in obj_data.items():
                             setattr(program_semester, key, value)
+
                         local_object = session.merge(program_semester)
                         session.add(local_object)
                         session.commit()
                         program_semester_list.append(local_object)
 
             count = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).count()
+
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
+                            message=f"Successfully to {action_type} Program Semester")
+
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
