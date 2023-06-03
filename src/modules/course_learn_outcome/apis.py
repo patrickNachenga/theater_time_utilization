@@ -17,14 +17,15 @@ class CourseLearnOutcomeQuery:
             result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, [],
                                                                 CourseLearnOutcomeListNode)
 
+
         except Exception as e:
             print(e)
-            result = []
+            result = CourseLearnOutcomeListNode(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Course Learn Outcome",
-            data=result)
+            data=CourseLearnOutcomeListNode(items=[], total_count=0))
 
     @strawberry.field
     def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:

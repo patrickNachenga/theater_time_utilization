@@ -57,7 +57,7 @@ class CourseMutation:
 
         except Exception as e:
             print(e)
-            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course", data=[])
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course", data=PaginatedCourse(items=[], total_count=0))
 
     @strawberry.mutation
     async def remove_course(self, uid: str) -> Response[None]:
