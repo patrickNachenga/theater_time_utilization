@@ -63,8 +63,6 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
         :return:
         """
         program_semester_list = []
-        existed_program: List[Program]
-        academic_year: List[AcademicYear]
         action_type = "Register"
         with session_scope() as session:
             # check for existing programs semesters using uid
@@ -72,15 +70,15 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             for inputItem in inputs:
                 # Verify and get supplied Program uid. and get existed program id from returned program model
                 try:
-                    program_id = ProgramService.get_program_by_uid(inputItem.program_uid).id
+                    program = ProgramService.get_program_by_uid(inputItem.program_uid)
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE, data=ProgramSemesterListNode(items=[], total_count=0),
                                     message="You have submitted incorrect program details")
 
-                # Verify and get supplied Academic year uid. and get existed Academic year id from returned Academic year model
+                # Verify and get supplied Academic year uid and get existed Academic year id from returned Academic year model
                 try:
-                    academic_year_id = AcademicYearService.get_academic_year_by_uid(inputItem.academic_year_uid).id
+                    academic_year = AcademicYearService.get_academic_year_by_uid(inputItem.academic_year_uid)
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE, data=ProgramSemesterListNode(items=[], total_count=0),
@@ -90,12 +88,15 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                     program_semester = ProgramSemester(
                         study_year=inputItem.study_year,
                         semester=inputItem.semester,
-                        program_id=program_id,
-                        academic_year_id=academic_year_id,
+                        program=program,
+                        academic_year=academic_year,
                         core_credits=inputItem.core_credits,
                         elective_credits=inputItem.elective_credits
                     )
-                    program_semester_list.append(program_semester)
+                    local_object = session.merge(program_semester)
+                    session.add(local_object)
+                    session.commit()
+                    program_semester_list.append(local_object)
                 else:
                     action_type = "Update"
                     program_semester = next(
@@ -106,14 +107,17 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                         program_semester.study_year = inputItem.study_year
                         program_semester.semester = inputItem.semester
                         program_semester.created_by = inputItem.created_by
-                        program_semester.program_id = program_id
-                        program_semester.academic_year_id = academic_year_id
+                        program_semester.program = program
+                        program_semester.academic_year = academic_year
                         program_semester.core_credits = inputItem.core_credits
                         program_semester.elective_credits = inputItem.elective_credits
-                        program_semester_list.append(program_semester)
-            session.add_all(program_semester_list)
+                        local_object = session.merge(program_semester)
+                        session.add(local_object)
+                        session.commit()
+                        program_semester_list.append(local_object)
+
             count = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).count()
-            session.commit()
+
             return Response(status=True, code=ResponseCode.SUCCESS,  data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
                             message=f"Successfully to {action_type} Program Semester")
 

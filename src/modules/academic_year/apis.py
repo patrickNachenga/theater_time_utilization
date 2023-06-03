@@ -54,7 +54,7 @@ class AcademicYearMutation:
             return AcademicYearService(AcademicYear).register_academic_year(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Add Academic Year", data=[])
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add Academic Year", data=AcademicYearListNode(items=[], total_count=0))
 
     @strawberry.mutation
     async def remove_academic_year(self, uid: str) -> Response[None]:
