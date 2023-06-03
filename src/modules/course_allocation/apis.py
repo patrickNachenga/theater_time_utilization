@@ -14,7 +14,7 @@ from src.types import CourseAllocationInput, CourseAllocationNode, PaginatedCour
 class CourseAllocationQuery:
 
     @strawberry.field
-    def get_course_allocations(self, pagination: PaginationInput) -> Response[PaginatedCourse]:
+    def get_course_allocations(self, pagination: PaginationInput) -> Response[CourseAllocationListNode]:
         try:
             result = CourseAllocationCrud.get_multi_paginated(pagination, [], CourseAllocationListNode)
         except Exception as e:
@@ -56,7 +56,7 @@ class CourseAllocationMutation:
 
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course Allocation",
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course Allocation",
                             data=CourseAllocationListNode(items=[], total_count=0), )
 
     @strawberry.mutation
@@ -68,6 +68,7 @@ class CourseAllocationMutation:
         """
         try:
             result = CourseAllocationService(CourseAllocation).remove_course_allocation(uid)
+            print(result)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

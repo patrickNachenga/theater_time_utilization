@@ -53,18 +53,18 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         :return:
         """
         course_allocation_list = []
-        action_type = "Update"
+        action_type = "Register"
         with session_scope() as session:
             # check for existing course allocation using uid
             existed_course_allocation = self.get_course_allocations_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
-                program_course = ProgramCourseService(ProgramCourse).get_program_course_by_uid(inputItem.uid)
+                program_course = ProgramCourseService(ProgramCourse).get_program_course_by_uid(inputItem.program_course_uid)
                 if program_course is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
                         data=CourseAllocationListNode(items=[], total_count=0),
-                        message="You have submitted correct program course values"
+                        message="You have submitted incorrect program course values"
                     )
 
                 if inputItem.uid is None:
@@ -88,7 +88,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                         for key, value in obj_data.items():
                             setattr(program_course, key, value)
 
-                        local_object = session.merge(program_course)
+                        local_object = session.merge(course_allocation)
                         session.add(local_object)
                         session.commit()
                         course_allocation_list.append(local_object)

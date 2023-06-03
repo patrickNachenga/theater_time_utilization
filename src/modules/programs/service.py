@@ -46,7 +46,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:List[str]
         """
         with session_scope() as session:
-            stmt = select(Program.id, Program.uid).where((Program.uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
+            stmt = select(Program.id, Program.uid).where(
+                (Program.uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
                 desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
@@ -68,7 +69,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                                 data=ProgramListNode(items=[], total_count=0),
                                 message="You have submitted incorrect program category details")
 
-            stmt = select(Program).where((Program.program_category_id == program_category_id) & (Program.deleted_at.is_(None))).order_by(
+            stmt = select(Program).where(
+                (Program.program_category_id == program_category_id) & (Program.deleted_at.is_(None))).order_by(
                 desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
@@ -81,7 +83,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return List[ProgramListNode]:
         """
         with session_scope() as session:
-            stmt = select(Program).where((Program.department_uid == department_uid) & (Program.deleted_at.is_(None))).order_by(
+            stmt = select(Program).where(
+                (Program.department_uid == department_uid) & (Program.deleted_at.is_(None))).order_by(
                 desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
@@ -168,7 +171,9 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 [program.name for program in inputs if program.uid is None])
             if existed_program_code_list or existed_program_name_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=ProgramListNode(items=existed_program_code_list if existed_program_code_list is not None else existed_program_name_list, total_count=0),
+                                data=ProgramListNode(
+                                    items=existed_program_code_list if existed_program_code_list is not None else existed_program_name_list,
+                                    total_count=0),
                                 message="Program  Already Exists")
 
             # check for existing Program using uid
@@ -249,6 +254,31 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
                             message=f"fail to find program with code : {code}", data={})
+
+    @staticmethod
+    async def api_get_programs() -> Response:
+        """
+            Get all programs
+        :param:
+        """
+        try:
+            program = ProgramService(Program).get_programs()
+            if program:
+                return Response(status=True, code=ResponseCode.SUCCESS, data=[{
+                    "uid": programItems.uid,
+                    "code": programItems.code,
+                    "name": programItems.name,
+                    "short_name": programItems.short_name,
+                    "department_uid": programItems.department_uid
+                } for programItems in program],
+                                message="Program retrieved Successfully")
+            else:
+                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
+                                message="No program found")
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"Unable to find programs", data=None)
 
 
 ProgramCrud = ProgramService(Program)

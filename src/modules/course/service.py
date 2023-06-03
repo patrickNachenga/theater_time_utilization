@@ -66,7 +66,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             existed_course_list = self.get_courses_by_codes(
                 [course.code for course in inputs if course.uid is None])
             if existed_course_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_list,
+                return Response(status=False, code=ResponseCode.DUPLICATE, data=PaginatedCourse(items=existed_course_list, total_count=0),
                                 message="Course Already Exists")
             # check for existing course using uid
             existed_course = self.get_courses_by_uids([inputItem.uid for inputItem in inputs])
