@@ -14,10 +14,10 @@ class ProgramCourseQuery:
     @strawberry.field
     def get_program_courses(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
         try:
-            result = ProgramCourseCrud.get_multi_paginated(pagination, ['credit', 'short_name'], ProgramCourseListNode)
+            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode)
         except Exception as e:
             print(e)
-            result = []
+            result = ProgramCourseListNode(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
@@ -25,7 +25,7 @@ class ProgramCourseQuery:
             data=result)
 
     @strawberry.field
-    def get_program_course(self, uid: str) -> Response[ProgramCourseNode | None]:
+    def get_program_course(self, uid: str) -> Response[ProgramCourseNode]:
         try:
             result = ProgramCourseService.get_program_course_by_uid(uid)
         except Exception as e:
@@ -42,7 +42,7 @@ class ProgramCourseQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program Course not found",
-                data=None)
+                data=result)
 
 
 @strawberry.type

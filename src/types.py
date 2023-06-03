@@ -163,6 +163,7 @@ class CourseInput:
     name: str
     offered: Optional[int] = 1
     department_uid: str
+    moodle_id: Optional[str] = None
 
 
 @strawberry.type(description="Course Output")
@@ -227,6 +228,7 @@ class ProgramInput:
     name: str
     short_name: str
     duration: Optional[int] = 0
+    moodle_id: Optional[str] = None
     registration_code: Optional[str] = None
     department_uid: str
 
@@ -312,6 +314,7 @@ class ProgramCourseInput:
     assignment_hours: Optional[float] = 0.0
     independent_study_hours: Optional[float] = 0
     pass_hours: Optional[float] = 0.0
+    moodle_id: Optional[str] = None
 
 
 @strawberry.type(description="Program Course outputs")
@@ -361,7 +364,7 @@ class CourseLearnOutcomeListNode:
 @strawberry.input(description="Program Course Assessment Input")
 class ProgramCourseAssessmentInput:
     uid: Optional[str] = None
-    program_course_uid: int
+    program_course_uid: str
     exam_category_uid: str
     minimum_exams: int
     can_exceed_minimum: Optional[int] = 0
@@ -371,7 +374,7 @@ class ProgramCourseAssessmentInput:
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode:
     uid: str
-    program_course_uid: int
+    program_course_uid: str
     program_course: ProgramCourseNode
     exam_category_uid: str
     minimum_exams: int
@@ -395,9 +398,15 @@ class CourseAllocationInput:
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
     uid: str
-    program_course_id: str
+    program_course_uid: str
     program_course: ProgramCourseNode
     staff_uid: str
+
+
+@strawberry.type(description="Program Allocation Assessment paginated Output")
+class CourseAllocationListNode:
+    items: List[CourseAllocationNode]
+    total_count: int
 
 
 @strawberry.input(description="Pagination Input")
@@ -411,13 +420,6 @@ class PaginationInput:
 @strawberry.type(description="Paginated Course")
 class PaginatedCourse:
     items: List[CourseNode]
-    total_count: int
-
-
-############ An output for Paginated Course Allocation ############
-@strawberry.type(description="Paginated Course Allocation")
-class PaginatedCourseAllocation:
-    items: List[CourseAllocationNode]
     total_count: int
 
 

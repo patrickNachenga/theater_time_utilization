@@ -14,7 +14,7 @@ class ProgramCategoryQuery:
     @strawberry.field
     def get_program_categories(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
         try:
-            result = ProgramCategoryCrud.get_multi_paginated(pagination, ['name', 'short_name'],
+            result = ProgramCategoryCrud.get_multi_paginated(pagination, [],
                                                              ProgramCategoryListNode)
         except Exception as e:
             print(e)
@@ -54,8 +54,9 @@ class ProgramCategoryMutation:
             return ProgramCategoryService(ProgramCategory).register_program_categories(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
-                            data=[])
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            data=ProgramCategoryListNode(items=[], total_count=0),
+                            message="Failed to Register Program Category")
 
     # Delete programs type function
     @strawberry.mutation

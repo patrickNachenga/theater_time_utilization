@@ -1,7 +1,7 @@
 from typing import List
 
 import pendulum
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from src.db.session import session_scope
 from src.models import ProgramCategory
 from src.modules import CRUDBase
@@ -14,7 +14,8 @@ class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, Pro
     @staticmethod
     def get_program_categories() -> List[ProgramCategory]:
         with session_scope() as session:
-            result = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).all()
+            result = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).order_by(
+                desc(ProgramCategory.updated_at)).all()
             return result
 
     @staticmethod
@@ -24,7 +25,9 @@ class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, Pro
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCategory).where((ProgramCategory.id.in_(ids)) & (ProgramCategory.deleted_at.is_(None)))
+            stmt = select(ProgramCategory).where(
+                (ProgramCategory.id.in_(ids)) & (ProgramCategory.deleted_at.is_(None))).order_by(
+                desc(ProgramCategory.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
