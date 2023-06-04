@@ -40,12 +40,32 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseLearnOutcome).where((CourseLearnOutcome.uid == uid) & (CourseLearnOutcome.deleted_at.is_(None))).order_by(
+            stmt = select(CourseLearnOutcome).where(
+                (CourseLearnOutcome.uid == uid) & (CourseLearnOutcome.deleted_at.is_(None))).order_by(
                 desc(CourseLearnOutcome.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
-    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[CourseLearnOutcomeListNode]:
+    @staticmethod
+    def get_course_learn_outcome_by_course(course_uid: str) -> List[CourseLearnOutcome]:
+        """
+        Get one course learn outcome by course_uid
+        :return:
+        """
+        with session_scope() as session:
+            # Verify and get supplied Course uid. and get existed Course models
+            course = CourseService.get_course_by_uid(course_uid)
+            if course is None:
+                return []
+
+            stmt = select(CourseLearnOutcome).where(
+                (CourseLearnOutcome.course_id == course.id) & (CourseLearnOutcome.deleted_at.is_(None))).order_by(
+                desc(CourseLearnOutcome.updated_at))
+            result = session.scalars(stmt)
+            return result.all()
+
+    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[
+        CourseLearnOutcomeListNode]:
         """
         Register Course Learn outcome
         :param inputs:
@@ -55,7 +75,8 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
         action_type = "Register"
         with session_scope() as session:
             # check for existing course learn outcome using uid
-            existed_course_learn_outcome = self.get_course_learn_outcome_by_uids([inputItem.uid for inputItem in inputs])
+            existed_course_learn_outcome = self.get_course_learn_outcome_by_uids(
+                [inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 # Verify and get supplied Course learn outcome uid. and get existed Course learn outcome id from returned model
                 course = CourseService.get_course_by_uid(inputItem.course_uid)

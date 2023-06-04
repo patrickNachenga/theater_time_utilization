@@ -14,10 +14,7 @@ class CourseLearnOutcomeQuery:
     @strawberry.field
     def get_course_learn_outcomes(self, pagination: PaginationInput) -> Response[CourseLearnOutcomeListNode]:
         try:
-            result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, [],
-                                                                CourseLearnOutcomeListNode)
-
-
+            result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, [],CourseLearnOutcomeListNode)
         except Exception as e:
             print(e)
             result = CourseLearnOutcomeListNode(items=[], total_count=0)
@@ -25,7 +22,20 @@ class CourseLearnOutcomeQuery:
             status=True,
             code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Course Learn Outcome",
-            data=CourseLearnOutcomeListNode(items=[], total_count=0))
+            data=result)
+
+    @strawberry.field
+    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
+        try:
+            result = CourseLearnOutcomeService.get_course_learn_outcome_by_course(course_uid)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Successfully Retrieve Course Learn Outcome",
+            data=result)
 
     @strawberry.field
     def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
