@@ -11,18 +11,18 @@ from src.types import CourseLearnOutcomeNode, CourseLearnOutcomeInput, Paginatio
 
 @strawberry.type
 class CourseLearnOutcomeQuery:
-    @strawberry.field
-    def get_course_learn_outcomes(self, pagination: PaginationInput) -> Response[CourseLearnOutcomeListNode]:
-        try:
-            result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, [],CourseLearnOutcomeListNode)
-        except Exception as e:
-            print(e)
-            result = CourseLearnOutcomeListNode(items=[], total_count=0)
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Course Learn Outcome",
-            data=result)
+    # @strawberry.field
+    # def get_course_learn_outcomes(self, pagination: PaginationInput) -> Response[CourseLearnOutcomeListNode]:
+    #     try:
+    #         result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, [],CourseLearnOutcomeListNode)
+    #     except Exception as e:
+    #         print(e)
+    #         result = CourseLearnOutcomeListNode(items=[], total_count=0)
+    #     return Response(
+    #         status=True,
+    #         code=ResponseCode.SUCCESS,
+    #         message="Successfully Retrieve Course Learn Outcome",
+    #         data=result)
 
     @strawberry.field
     def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
@@ -30,15 +30,22 @@ class CourseLearnOutcomeQuery:
             result = CourseLearnOutcomeService.get_course_learn_outcome_by_course(course_uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Course Learn Outcome",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Successfully Retrieve Course Learn Outcome",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Learn Outcome not found",
+                data=[])
 
     @strawberry.field
-    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
+    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode]:
         try:
             result = CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_uid(uid)
         except Exception as e:
@@ -61,13 +68,13 @@ class CourseLearnOutcomeQuery:
 @strawberry.type
 class CourseLearnOutcomeMutation:
     @strawberry.field
-    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[CourseLearnOutcomeListNode]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode]:
         try:
             return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register course learn outcome",
-                            data=CourseLearnOutcomeListNode(items=[], total_count=0), )
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course learn outcome",
+                            data=None)
 
     # Delete programs type function
     @strawberry.mutation
