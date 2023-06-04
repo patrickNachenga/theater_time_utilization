@@ -28,6 +28,18 @@ class CourseLearnOutcomeQuery:
             data=CourseLearnOutcomeListNode(items=[], total_count=0))
 
     @strawberry.field
+    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[CourseLearnOutcomeNode | None]:
+        try:
+            return CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_course(course_uid)
+        except Exception as e:
+            print(e)
+            Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Unable To Retrieve Course Learn Outcome",
+                data=None)
+
+    @strawberry.field
     def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
         try:
             result = CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_uid(uid)
@@ -51,7 +63,8 @@ class CourseLearnOutcomeQuery:
 @strawberry.type
 class CourseLearnOutcomeMutation:
     @strawberry.field
-    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[CourseLearnOutcomeListNode]:
+    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[
+        CourseLearnOutcomeListNode]:
         try:
             return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
         except Exception as e:
