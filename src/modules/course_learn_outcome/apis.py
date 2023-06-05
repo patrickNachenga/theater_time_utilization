@@ -45,7 +45,7 @@ class CourseLearnOutcomeQuery:
                 data=[])
 
     @strawberry.field
-    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode]:
+    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
         try:
             result = CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_uid(uid)
         except Exception as e:
@@ -68,7 +68,7 @@ class CourseLearnOutcomeQuery:
 @strawberry.type
 class CourseLearnOutcomeMutation:
     @strawberry.field
-    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode | None]:
         try:
             return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
         except Exception as e:

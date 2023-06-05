@@ -65,7 +65,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             result = session.scalars(stmt)
             return result.all()
 
-    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome | None]:
         """
         Register/Update Course Learn outcome
         :param inputs:
@@ -79,9 +79,8 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             course = CourseService.get_course_by_uid(inputs.course_uid)
             if course is None:
                 return Response(status=False, code=ResponseCode.FAILURE,
-                                data={},
+                                data=course_learn_outcome,
                                 message="You have submitted incorrect course details")
-
             if inputs.uid is None:
                 course_learn_outcome = CourseLearnOutcome(
                     course=course,
