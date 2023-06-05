@@ -11,8 +11,7 @@ from src.modules import CRUDBase
 from src.modules.course.service import CourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeNode
-
+from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeListNode
 
 class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeInput, CourseLearnOutcomeInput]):
     @staticmethod
@@ -48,39 +47,25 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             return result.first()
 
     @staticmethod
-    def get_course_learn_outcome_by_course(course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
+    def get_course_learn_outcome_by_course(course_uid: str) -> List[CourseLearnOutcome] | None:
         """
-        Get one course learn outcome by course uid
+        Get one course learn outcome by course_uid
         :return:
         """
         with session_scope() as session:
-            # Verify and get supplied Course learn outcome. and get existed Course learn outcome model
+            # Verify and get supplied Course uid. and get existed Course models
             course = CourseService.get_course_by_uid(course_uid)
             if course is None:
-                return Response(
-                    status=False,
-                    code=ResponseCode.NO_RECORD_FOUND,
-                    message="Course Learn Outcome not found",
-                    data=[])
+
+                return None
 
             stmt = select(CourseLearnOutcome).where(
-                (CourseLearnOutcome.course_id == course.id) & (CourseLearnOutcome.deleted_at.is_(None)))
-            data = session.scalars(stmt)
-            result = data.all()
-            if result:
-                return Response(
-                    status=True,
-                    code=ResponseCode.SUCCESS,
-                    message="Course Learn Outcome Retrieved successfully",
-                    data=result)
-            else:
-                return Response(
-                    status=False,
-                    code=ResponseCode.NO_RECORD_FOUND,
-                    message="Course Learn Outcome not found",
-                    data=[])
+                (CourseLearnOutcome.course_id == course.id) & (CourseLearnOutcome.deleted_at.is_(None))).order_by(
+                desc(CourseLearnOutcome.updated_at))
+            result = session.scalars(stmt)
+            return result.all()
 
-    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome | None]:
         """
         Register/Update Course Learn outcome
         :param inputs:
@@ -94,9 +79,8 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             course = CourseService(Course).get(inputs.course_uid)
             if course is None:
                 return Response(status=False, code=ResponseCode.FAILURE,
-                                data={},
+                                data=None,
                                 message="You have submitted incorrect course details")
-
             if inputs.uid is None:
                 course_learn_outcome = CourseLearnOutcome(
                     course=course,

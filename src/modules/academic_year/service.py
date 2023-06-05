@@ -98,6 +98,7 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                                             message="End year must be great than Start year to all inputs")
                         # Apply one time check of all inputs status to decide return/pass the operation
                         if status_checkup:
+                            status_checkup = False
                             status_list = [item.status for item in inputs if item.status == 1]
                             if len(status_list) > 1:
                                 return Response(status=False, code=ResponseCode.INVALID_REQUEST,
