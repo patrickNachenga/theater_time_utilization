@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Any
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
 from src.db.session import session_scope
+from src.models import Course
 from src.models.course_learn_outcome import CourseLearnOutcome
 from src.modules import CRUDBase
 from src.modules.course.service import CourseService
@@ -41,7 +42,8 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
         """
         with session_scope() as session:
             stmt = select(CourseLearnOutcome).where(
-                (CourseLearnOutcome.uid == uid) & (CourseLearnOutcome.deleted_at.is_(None)))
+                (CourseLearnOutcome.uid == str(uid)) & (CourseLearnOutcome.deleted_at.is_(None))).order_by(
+                desc(CourseLearnOutcome.updated_at))
             result = session.scalars(stmt)
             return result.first()
 
@@ -78,57 +80,49 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
                     message="Course Learn Outcome not found",
                     data=[None])
 
-    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[
-        CourseLearnOutcomeListNode]:
+
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome]:
         """
-        Register Course Learn outcome
+        Register/Update Course Learn outcome
         :param inputs:
         :return:
         """
-        course_learn_outcome_list = []
+        course_learn_outcome: CourseLearnOutcome
         action_type = "Register"
         with session_scope() as session:
-            # check for existing course learn outcome using uid
-            existed_course_learn_outcome = self.get_course_learn_outcome_by_uids(
-                [inputItem.uid for inputItem in inputs])
-            for inputItem in inputs:
-                # Verify and get supplied Course learn outcome uid. and get existed Course learn outcome id from returned model
-                course = CourseService.get_course_by_uid(inputItem.course_uid)
-                if course is None:
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=CourseLearnOutcomeListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect course details")
+            print(inputs)
+            # Verify and get supplied Course learn outcome uid. and get existed Course learn outcome model
+            course = CourseService.get_course_by_uid(inputs.course_uid)
+            if course is None:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data={},
+                                message="You have submitted incorrect course details")
 
-                if inputItem.uid is None:
-                    course_learn_outcome = CourseLearnOutcome(
-                        course=course,
-                        learning_outcome=inputItem.learning_outcome
-                    )
+            if inputs.uid is None:
+                course_learn_outcome = CourseLearnOutcome(
+                    course=course,
+                    learning_outcome=inputs.learning_outcome
+                )
+                local_object = session.merge(course_learn_outcome)
+                session.add(local_object)
+                session.commit()
+                course_learn_outcome = local_object
+            else:
+                action_type = "Update"
+                # check for existing course learn outcome using uid
+                course_learn_outcome = self.get_course_learn_outcome_by_uid(inputs.uid)
+                if course_learn_outcome:
+                    obj_data = jsonable_encoder(inputs)
+                    # Replace referenced uids field with model required ids field
+                    obj_data['course'] = course
+                    for key, value in obj_data.items():
+                        setattr(course_learn_outcome, key, value)
                     local_object = session.merge(course_learn_outcome)
                     session.add(local_object)
                     session.commit()
-                    course_learn_outcome_list.append(local_object)
-                else:
-                    action_type = "Update"
-                    course_learn_outcome = next(
-                        filter(lambda learn_outcome: str(learn_outcome.uid) == str(inputItem.uid),
-                               existed_course_learn_outcome), None)
-
-                    if course_learn_outcome:
-                        obj_data = jsonable_encoder(inputItem)
-                        # Replace referenced uids field with model required ids field
-                        obj_data['course'] = course
-                        for key, value in obj_data.items():
-                            setattr(course_learn_outcome, key, value)
-                        local_object = session.merge(course_learn_outcome)
-                        session.add(local_object)
-                        session.commit()
-                        course_learn_outcome_list.append(local_object)
-
-            count = session.query(CourseLearnOutcome).filter(CourseLearnOutcome.deleted_at.is_(None)).count()
-
+                    course_learn_outcome = local_object
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=CourseLearnOutcomeListNode(items=course_learn_outcome_list, total_count=count),
+                            data=course_learn_outcome,
                             message=f"Successfully to {action_type} Course Learn Outcome")
 
     # Delete FUnction

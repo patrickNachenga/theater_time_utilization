@@ -14,7 +14,7 @@ class ProgramCourseQuery:
     @strawberry.field
     def get_program_courses(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
         try:
-            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode)
+            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode, ["course", "course_category", "program_semester"])
         except Exception as e:
             print(e)
             result = ProgramCourseListNode(items=[], total_count=0)
@@ -58,7 +58,7 @@ class ProgramCourseMutation:
             return ProgramCourseService(ProgramCourse).register_program_courses(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Change Program Courses",
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Change Program Courses",
                             data=ProgramCourseListNode(items=[], total_count=0), )
 
     # Delete programs type function

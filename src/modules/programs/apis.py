@@ -16,7 +16,7 @@ class ProgramQuery:
         try:
             result = ProgramCrud.get_multi_paginated(pagination,
                                                      ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
-                                                      'registration_code'], ProgramListNode)
+                                                      'registration_code'], ProgramListNode, ["program_category"])
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)

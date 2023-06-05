@@ -29,8 +29,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCourse).where((ProgramCourse.uid == uid) & (ProgramCourse.deleted_at.is_(None))).order_by(
-                desc(ProgramCourse.updated_at))
+            stmt = select(ProgramCourse).where((ProgramCourse.uid == uid) & (ProgramCourse.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 

@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 import pendulum
@@ -43,14 +44,21 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             return result.all()
 
     @staticmethod
-    def get_course_by_uid(uid: str) -> Course:
+    def get_course_by_uid(uid: str) -> Course | None:
         """
         Get course by uid
         :param uid:
         :return:
         """
+        try:
+            # Convert the input UID string to a UUID object
+            uid_uuid = uuid.UUID(uid)
+        except ValueError:
+            # Handle the case when the input UID is not a valid UUID
+            return None
+
         with session_scope() as session:
-            stmt = select(Course).where((Course.uid == uid) & (Course.deleted_at.is_(None)))
+            stmt = select(Course).where((Course.uid == uid_uuid) & (Course.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
@@ -66,8 +74,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             existed_course_list = self.get_courses_by_codes(
                 [course.code for course in inputs if course.uid is None])
             if existed_course_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=PaginatedCourse(items=existed_course_list, total_count=0),
+                return Response(status=False, code=ResponseCode.DUPLICATE, data=PaginatedCourse(items=existed_course_list, total_count=0),
                                 message="Course Already Exists")
             # check for existing course using uid
             existed_course = self.get_courses_by_uids([inputItem.uid for inputItem in inputs])
