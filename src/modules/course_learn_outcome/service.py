@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
@@ -11,7 +11,7 @@ from src.modules import CRUDBase
 from src.modules.course.service import CourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeListNode, CourseLearnOutcomeNode
+from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeNode
 
 
 class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeInput, CourseLearnOutcomeInput]):
@@ -48,7 +48,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             return result.first()
 
     @staticmethod
-    def get_course_learn_outcome_by_course(course_uid: str) -> Response[CourseLearnOutcomeNode | None]:
+    def get_course_learn_outcome_by_course(course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
         """
         Get one course learn outcome by course uid
         :return:
@@ -61,7 +61,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
                     status=False,
                     code=ResponseCode.NO_RECORD_FOUND,
                     message="Course Learn Outcome not found",
-                    data=[None])
+                    data=[])
 
             stmt = select(CourseLearnOutcome).where(
                 (CourseLearnOutcome.course_id == course.id) & (CourseLearnOutcome.deleted_at.is_(None)))
@@ -78,8 +78,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
                     status=False,
                     code=ResponseCode.NO_RECORD_FOUND,
                     message="Course Learn Outcome not found",
-                    data=[None])
-
+                    data=[])
 
     def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome]:
         """
@@ -92,7 +91,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
         with session_scope() as session:
             print(inputs)
             # Verify and get supplied Course learn outcome uid. and get existed Course learn outcome model
-            course = CourseService.get_course_by_uid(inputs.course_uid)
+            course = CourseService(Course).get(inputs.course_uid)
             if course is None:
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data={},
