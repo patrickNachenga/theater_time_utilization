@@ -79,7 +79,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             course = CourseService.get_course_by_uid(inputs.course_uid)
             if course is None:
                 return Response(status=False, code=ResponseCode.FAILURE,
-                                data=course_learn_outcome,
+                                data=None,
                                 message="You have submitted incorrect course details")
             if inputs.uid is None:
                 course_learn_outcome = CourseLearnOutcome(
