@@ -20,9 +20,9 @@ class Sr2ApiCalls(object):
     def request_fee_structure(inputs: FeeStructureInput) -> List[FeeStructure] | None:
         try:
             # Verify and get supplied Program uid and get existed program model
-            # program = ProgramService(Program).get_program_by_code(inputs.program_code)
-            # if program is None:
-            #     return None
+            program = ProgramService(Program).get_program_by_code(inputs.program_code)
+            if program is None:
+                return None
             # Set the request payload
             payload = {
                 "program_code": inputs.program_code,
