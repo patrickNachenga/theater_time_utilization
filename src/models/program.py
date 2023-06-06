@@ -21,12 +21,12 @@ class Program(BaseModel):
     program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False)
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
 
-    #Relationship to the Fee Structure Model
-    fee_structure = relationship("FeeStructure", lazy='subquery', back_populates="program")
-
     department_uid: str = Column(String, nullable=True)
 
     campus_uid: str = Column(String, nullable=True)
 
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
+    fee_structures = relationship("FeeStructure", lazy='subquery', back_populates="program")
+
+

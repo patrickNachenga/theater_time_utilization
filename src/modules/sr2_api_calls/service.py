@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 
 import requests
 
+from src.db import session
 from src.db.session import session_scope
 from src.models import Program
 from src.models.fee_structure import FeeStructure

@@ -53,18 +53,18 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             return result.all()
 
     @staticmethod
-    def api_get_program_by_departments(uids: List[str]) -> List[Program]:
+    def api_get_program_by_departments(uids: List[str]) -> List[str]:
         """
             Get programs by department_uids
         :param:uids
         :return:List[Program]
         """
         with session_scope() as session:
-            stmt = select(Program).where((Program.department_uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
+            stmt = select(Program.uid).where(
+                (Program.department_uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
                 desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
-
 
     @staticmethod
     def get_programs_by_category(category_uid: str) -> Response[ProgramListNode]:
