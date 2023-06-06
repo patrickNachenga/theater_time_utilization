@@ -20,7 +20,7 @@ class Program(BaseModel):
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
 
     #Relationship to the Fee Structure Model
-    fee_structure: FeeStructure = relationship("FeeStructure", lazy='subquery', back_populates="program")
+    fee_structure = relationship("FeeStructure", lazy='subquery', back_populates="program")
 
     department_uid: str = Column(String, nullable=True)
 

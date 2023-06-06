@@ -456,9 +456,21 @@ class LoginError:
 
 
 @strawberry.input(description="Course Category Input")
-class ProgramFeeStructureInput:
-    code: str
-    study_year: int
+class FeeStructureInput:
+    program_code: str
+    year_of_study: int
+    study_level: str
+    student_status: str
+    countrycode: int
+
+
+@strawberry.type(description="Course Allocation")
+class FeeStructureNode:
+    program_code: str
+    year_of_study: int
+    study_level: str
+    student_status: str
+    countrycode: int
 
 
 # @strawberry.type(description="Course Category Output")
