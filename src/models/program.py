@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
+from src.models.fee_structure import FeeStructure
 
 
 class Program(BaseModel):
@@ -17,6 +18,9 @@ class Program(BaseModel):
     # ---------------Mapped Columns ---------------------
     program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False)
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
+
+    #Relationship to the Fee Structure Model
+    fee_structure: FeeStructure = relationship("FeeStructure", lazy='subquery', back_populates="program")
 
     department_uid: str = Column(String, nullable=True)
 

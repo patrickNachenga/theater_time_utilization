@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
 
-
 class AcademicYear(BaseModel):
     __tablename__ = "academic_years"
     name: str = Column(String, nullable=False, unique=False)
