@@ -455,4 +455,17 @@ class LoginError:
     message: str | None = None
 
 
+@strawberry.input(description="Course Category Input")
+class ProgramFeeStructureInput:
+    code: str
+    study_year: int
+
+
+# @strawberry.type(description="Course Category Output")
+# class CourseCategoryNode:
+#     uid: str
+#     description: str
+#     name: str
+
+
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
