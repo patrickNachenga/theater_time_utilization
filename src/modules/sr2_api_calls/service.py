@@ -1,9 +1,11 @@
 import json
 from typing import Any, List
+from urllib.parse import urlencode
 
 import requests
 
 from src.models import Program
+from src.models.fee_structure import FeeStructure
 from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -15,7 +17,7 @@ class Sr2ApiCalls(object):
     site_url = 'http://197.250.34.41:4747/api/v2/'
 
     @staticmethod
-    def request_fee_structure(inputs: FeeStructureInput) -> List[FeeStructureNode] | None:
+    def request_fee_structure(inputs: FeeStructureInput) -> List[FeeStructure] | None:
         try:
             # Verify and get supplied Program uid and get existed program model
             # program = ProgramService(Program).get_program_by_code(inputs.program_code)
@@ -29,22 +31,25 @@ class Sr2ApiCalls(object):
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
-            print(payload)
+            encoded_params = urlencode(payload)
             # Send the Get request
-            response = requests.get(Sr2ApiCalls.site_url + "billing/program_fee_structure", data=payload)
+            response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}")
             # Check for errors
-            print(response.status_code)
-            print("-------------------------------------------->", response.request.__dict__)
-            response_data = response.json()
-            print("-------------------------------------------->", response_data)
             if response.status_code == 200:
                 response_data = response.json()
-                # Process the response data as required
-                print("-------------------------------------------->", response_data["status"])
-                return []  # Return the processed data
+                fee_structure = []
+                for structure in response_data["data"]:
+                    fee_structure.append(
+                        FeeStructure(
+                            name=structure["fee_name"],
+                            amount=float(structure["amount"]),
+                            min_amount=float(structure["min_amount"]),
+                            currency=structure["currency"]
+                        )
+                    )
+                return fee_structure
             else:
-                print('HTTP Error:', response)
-                return []  # Return an empty list or handle the error condition accordingly
+                return []
 
         except Exception as e:
             print(e)

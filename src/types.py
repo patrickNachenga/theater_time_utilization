@@ -466,11 +466,11 @@ class FeeStructureInput:
 
 @strawberry.type(description="Course Allocation")
 class FeeStructureNode:
-    program_code: str
-    year_of_study: int
-    study_level: str
-    student_status: str
-    countrycode: int
+    name: str
+    amount: float
+    min_amount: float
+    currency: str
+
 
 
 # @strawberry.type(description="Course Category Output")
