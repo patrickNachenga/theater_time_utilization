@@ -21,7 +21,7 @@ class Sr2Query:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message=f"Fee Structure for {FeeStructureInput.program_code} retrieved successfully",
+                message=f"Fee Structure for {inputs.program_code} retrieved successfully",
                 data=result)
         else:
             return Response(

@@ -8,6 +8,7 @@ from src.modules.programs.service import ProgramService
 program_router = APIRouter()
 root_path = "/program"
 
+
 class ProgramCodeInput(BaseModel):
     code: str
 
@@ -26,6 +27,6 @@ async def get_program_data():
     return await ProgramService.api_get_programs()
 
 
-@program_router.get("program/department")
+@program_router.get("/program/department")
 async def get_program_data(parm: ProgramDepartmentInput):
-    return await ProgramService.api_get_program_by_departments(parm.departments)
+    return ProgramService.api_get_program_by_departments(parm.departments)
