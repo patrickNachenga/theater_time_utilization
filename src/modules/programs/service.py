@@ -168,18 +168,18 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             result = session.scalars(stmt)
             return result.first()
 
-    @staticmethod
-    def get_program_by_code(code: str) -> Program:
-        """
-        Get Program by name
-        :param code:
-        :return:Program
-        """
-        with session_scope() as session:
-            stmt = select(Program).where(
-                (Program.code == code) & (Program.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.first()
+    # @staticmethod
+    # def get_program_by_code(code: str) -> Program:
+    #     """
+    #     Get Program by name
+    #     :param code:
+    #     :return:Program
+    #     """
+    #     with session_scope() as session:
+    #         stmt = select(Program).where(
+    #             (Program.code == code) & (Program.deleted_at.is_(None)))
+    #         result = session.scalars(stmt)
+    #         return result.first()
 
     def register_program(self, inputs: List[ProgramInput]) -> Response[ProgramListNode]:
         """
