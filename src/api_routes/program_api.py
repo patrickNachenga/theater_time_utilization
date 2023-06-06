@@ -8,7 +8,6 @@ from src.modules.programs.service import ProgramService
 program_router = APIRouter()
 root_path = "/program"
 
-
 @program_router.get(root_path)
 async def get_program_data(code: str | None = None):
     if code:

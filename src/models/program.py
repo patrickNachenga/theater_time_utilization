@@ -2,11 +2,11 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
-from src.models.fee_structure import FeeStructure
 
 
 class Program(BaseModel):
     __tablename__ = "programs"
+    id
     code: str = Column(String, nullable=False, unique=False)
     tcu_code: str = Column(String, nullable=True, unique=False)
     nacte_code: str = Column(String, nullable=True, unique=False)
@@ -15,6 +15,8 @@ class Program(BaseModel):
     short_name: str = Column(String, nullable=False, unique=False)
     duration: int = Column(Integer, nullable=False)
     moodle_id: str = Column(String, nullable=True)
+
+    program_id = Column(Integer, index=True)
     # ---------------Mapped Columns ---------------------
     program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False)
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")

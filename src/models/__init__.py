@@ -19,6 +19,7 @@ class BaseModel(Base):
 
 
 from .staff import Staff
+from .fee_structure import FeeStructure
 from .student import Student
 from .program_category import ProgramCategory
 from .course import Course
