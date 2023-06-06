@@ -455,7 +455,19 @@ class LoginError:
     message: str | None = None
 
 
-@strawberry.input(description="Course Category Input")
+@strawberry.input(description="Control Number Input")
+class ControlNumberInput:
+    program_code: str
+    year_of_study: int
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
+
+
+@strawberry.input(description="Fee Structure Input")
 class FeeStructureInput:
     program_code: str
     year_of_study: int
@@ -470,7 +482,7 @@ class FeeStructureNode:
     amount: float
     min_amount: float
     currency: str
-
+    program: ProgramNode
 
 
 # @strawberry.type(description="Course Category Output")

@@ -60,11 +60,11 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:List[Program]
         """
         with session_scope() as session:
-            stmt = select(Program.uid).where((Program.department_uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
+            stmt = select(Program.uid).where(
+                (Program.department_uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
                 desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
-
 
     @staticmethod
     def get_programs_by_category(category_uid: str) -> Response[ProgramListNode]:
