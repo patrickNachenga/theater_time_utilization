@@ -1,3 +1,4 @@
+import json
 from typing import Any, List
 
 import requests
@@ -21,33 +22,30 @@ class Sr2ApiCalls(object):
             # if program is None:
             #     return None
             # Set the request payload
-            # payload = {
-            #     "program_code": inputs.program_code,
-            #     "year_of_study": inputs.year_of_study,
-            #     "study_level": inputs.study_level,
-            #     "student_status": inputs.student_status,
-            #     "countrycode": inputs.countrycode,
-            # }
             payload = {
-                "program_code": "AGC",
-                "year_of_study": 0,
-                "study_level": "Diploma",
-                "student_status": "Unregistered",
-                "countrycode": 255
+                "program_code": inputs.program_code,
+                "year_of_study": inputs.year_of_study,
+                "study_level": inputs.study_level,
+                "student_status": inputs.student_status,
+                "countrycode": inputs.countrycode,
             }
+            print(payload)
             # Send the Get request
-            response = requests.get(Sr2ApiCalls.site_url+"/billing/program_fee_structure", data=payload)
+            response = requests.get(Sr2ApiCalls.site_url + "billing/program_fee_structure", data=payload)
             # Check for errors
-            response_data = response.heaer
-            print(response_data)
+            print(response.status_code)
+            print("-------------------------------------------->", response.request.__dict__)
+            response_data = response.json()
+            print("-------------------------------------------->", response_data)
             if response.status_code == 200:
                 response_data = response.json()
-                print(response_data)
-                return []
+                # Process the response data as required
+                print("-------------------------------------------->", response_data["status"])
+                return []  # Return the processed data
             else:
-                print('HTTP Error:', response.json())
-                # Decode the response
-                return []
+                print('HTTP Error:', response)
+                return []  # Return an empty list or handle the error condition accordingly
+
         except Exception as e:
             print(e)
             return []
