@@ -34,7 +34,7 @@ class Sr2ApiCalls(object):
                 'data[0][code]': inputs.code,
                 'data[0][study_year]': inputs.study_year,
             }
-            # Send the Get request
+            # Send the Get requestg
             response = requests.get(Sr2ApiCalls.site_url, data=payload)
             # Check for errors
             if response.status_code == 200:
