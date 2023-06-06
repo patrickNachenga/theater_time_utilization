@@ -19,9 +19,9 @@ class Sr2Query:
             result = None
         if result:
             return Response(
-                status=False,
+                status=True,
                 code=ResponseCode.SUCCESS,
-                message="Program not found",
+                message=f"Fee Structure for {FeeStructureInput.program_code} retrieved successfully",
                 data=result)
         else:
             return Response(
