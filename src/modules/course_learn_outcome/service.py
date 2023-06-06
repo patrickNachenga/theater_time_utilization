@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
@@ -12,7 +12,6 @@ from src.modules.course.service import CourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseLearnOutcomeInput, CourseLearnOutcomeListNode
-
 
 class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeInput, CourseLearnOutcomeInput]):
     @staticmethod
@@ -57,6 +56,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             # Verify and get supplied Course uid. and get existed Course models
             course = CourseService.get_course_by_uid(course_uid)
             if course is None:
+
                 return None
 
             stmt = select(CourseLearnOutcome).where(
@@ -76,7 +76,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
         with session_scope() as session:
             print(inputs)
             # Verify and get supplied Course learn outcome uid. and get existed Course learn outcome model
-            course = CourseService.get_course_by_uid(inputs.course_uid)
+            course = CourseService(Course).get(inputs.course_uid)
             if course is None:
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None,
