@@ -51,7 +51,7 @@ class ProgramQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program not found",
-                data=result)
+                data=None)
 
     @strawberry.field
     def get_programs_by_program_category_uid(self, program_category_uid: str) -> Response[ProgramListNode]:

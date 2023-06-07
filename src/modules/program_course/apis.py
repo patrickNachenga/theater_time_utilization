@@ -25,7 +25,7 @@ class ProgramCourseQuery:
             data=result)
 
     @strawberry.field
-    def get_program_course(self, uid: str) -> Response[ProgramCourseNode]:
+    def get_program_course(self, uid: str) -> Response[ProgramCourseNode | None]:
         try:
             result = ProgramCourseService.get_program_course_by_uid(uid)
         except Exception as e:
@@ -42,7 +42,7 @@ class ProgramCourseQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program Course not found",
-                data=result)
+                data=None)
 
 
 @strawberry.type
