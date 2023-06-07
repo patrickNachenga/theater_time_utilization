@@ -6,7 +6,6 @@ from src.models import BaseModel
 
 class Program(BaseModel):
     __tablename__ = "programs"
-    id
     code: str = Column(String, nullable=False, unique=False)
     tcu_code: str = Column(String, nullable=True, unique=False)
     nacte_code: str = Column(String, nullable=True, unique=False)
@@ -28,7 +27,7 @@ class Program(BaseModel):
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
     fee_structures = relationship("FeeStructure", lazy='subquery', back_populates="program")
-    program_capacities = relationship('ProgramCapacity', lazy='subquery', back_populates="academic_year")
+    program_capacities = relationship('ProgramCapacity', lazy='subquery', back_populates="program")
 
 
 

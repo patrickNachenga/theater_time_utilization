@@ -13,7 +13,7 @@ class FeeStructure(BaseModel):
     program_id: int = Column(Integer, ForeignKey('programs.id'), nullable=False)
 
     #Relationship
-    program = relationship("Program", lazy="subquery", back_populates="fee_structure")
+    program = relationship("Program", lazy="subquery", back_populates="fee_structures")
 
 
 
