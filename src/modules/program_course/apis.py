@@ -1,6 +1,7 @@
 from typing import List
 
 import strawberry
+from sqlalchemy import inspect
 
 from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
