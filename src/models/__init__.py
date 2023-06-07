@@ -19,6 +19,7 @@ class BaseModel(Base):
 
 
 from .staff import Staff
+from .fee_structure import FeeStructure
 from .student import Student
 from .fee_structure import FeeStructure
 from .program_category import ProgramCategory
@@ -37,3 +38,4 @@ from .academic_year import AcademicYear
 from .program_course_assessment import ProgramCourseAssessment
 from .program_course_assessment import ProgramCourseAssessment
 from .course_allocation import CourseAllocation
+from .program_capacity import ProgramCapacity

@@ -475,13 +475,14 @@ class FeeStructureInput:
     countrycode: int
 
 
-@strawberry.type(description="Course Allocation")
+@strawberry.type(description="Fee Structure Output")
 class FeeStructureNode:
     name: str
     amount: float
     min_amount: float
     currency: str
     program: ProgramNode
+
 
 
 # @strawberry.type(description="Course Category Output")

@@ -30,6 +30,7 @@ class Sr2Query:
                 message="No Fee Structure Found",
                 data=None)
 
+
     @strawberry.field
     def get_control_number(self, inputs: ControlNumberInput) -> Response[None]:
         try:
