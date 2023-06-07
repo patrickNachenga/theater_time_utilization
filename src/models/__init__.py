@@ -38,3 +38,4 @@ from .academic_year import AcademicYear
 from .program_course_assessment import ProgramCourseAssessment
 from .program_course_assessment import ProgramCourseAssessment
 from .course_allocation import CourseAllocation
+from .program_capacity import ProgramCapacity
