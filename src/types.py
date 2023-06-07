@@ -454,6 +454,7 @@ class LoginError:
     status: bool
     message: str | None = None
 
+
 @strawberry.input(description="Control Number Input")
 class ControlNumberInput:
     program_code: str
@@ -464,6 +465,7 @@ class ControlNumberInput:
     registration_number: str
     program_name: str
     system: str
+
 
 @strawberry.input(description="Fee Structure Input")
 class FeeStructureInput:
@@ -482,11 +484,29 @@ class FeeStructureNode:
     currency: str
     program: ProgramNode
 
-# @strawberry.type(description="Course Category Output")
-# class CourseCategoryNode:
-#     uid: str
-#     description: str
-#     name: str
+
+@strawberry.input(description="Control Numbers Input")
+class ControlNumberInput:
+    program_code: str
+    year_of_study: float
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
+
+
+@strawberry.type(description="Control Numbers Output")
+class ControlNumberNode:
+    program_code: str
+    year_of_study: float
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
