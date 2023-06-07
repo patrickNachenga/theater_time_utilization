@@ -7,7 +7,6 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import FeeStructureInput, FeeStructureNode
 
-
 @strawberry.type
 class Sr2Query:
     @strawberry.field
@@ -30,9 +29,6 @@ class Sr2Query:
                 message="No Fee Structure Found",
                 data=None)
 
-<<<<<<< HEAD
-
-=======
     @strawberry.field
     def get_control_number(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode] | None]:
         try:
@@ -52,4 +48,4 @@ class Sr2Query:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="No Fee Structure Found",
                 data=None)
->>>>>>> f6c1bcacea4d7921ee708b1416f5cbbc1e42806d
+

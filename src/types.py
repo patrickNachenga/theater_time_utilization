@@ -454,9 +454,6 @@ class LoginError:
     status: bool
     message: str | None = None
 
-
-<<<<<<< HEAD
-=======
 @strawberry.input(description="Control Number Input")
 class ControlNumberInput:
     program_code: str
@@ -468,8 +465,6 @@ class ControlNumberInput:
     program_name: str
     system: str
 
-
->>>>>>> f6c1bcacea4d7921ee708b1416f5cbbc1e42806d
 @strawberry.input(description="Fee Structure Input")
 class FeeStructureInput:
     program_code: str
@@ -486,11 +481,6 @@ class FeeStructureNode:
     min_amount: float
     currency: str
     program: ProgramNode
-<<<<<<< HEAD
-
-=======
->>>>>>> f6c1bcacea4d7921ee708b1416f5cbbc1e42806d
-
 
 # @strawberry.type(description="Course Category Output")
 # class CourseCategoryNode:

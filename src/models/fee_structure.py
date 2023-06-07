@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
-
 from src.models import BaseModel
 
 class FeeStructure(BaseModel):
@@ -13,7 +12,7 @@ class FeeStructure(BaseModel):
     program_id: int = Column(Integer, ForeignKey('programs.id'), nullable=False)
 
     #Relationship
-    program = relationship("Program", lazy="subquery", back_populates="fee_structure")
+    program = relationship("Program", lazy="subquery", back_populates="fee_structures")
 
 
 

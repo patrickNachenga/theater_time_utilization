@@ -3,63 +3,10 @@ from urllib.parse import urlencode
 
 import requests
 
-from src.db import session
 from src.db.session import session_scope
 from src.models import Program
 from src.models.fee_structure import FeeStructure
-from src.modules.programs.service import ProgramService
-from src.shared.response import Response
-from src.shared.response_code import ResponseCode
 from src.types import FeeStructureInput
-#__________________________________________________________________________________________________
-#
-# class Sr2ApiCalls(object):
-#     token = '9454c6efdb94236e618c9a7b1a67138b'
-#     site_url = 'http://197.250.34.41:4747/api/v2/'
-#
-#     @staticmethod
-#     def request_fee_structure(inputs: FeeStructureInput) -> List[FeeStructure] | None:
-#         try:
-#             # Verify and get supplied Program uid and get existed program model
-#             # program = ProgramService(Program).get_program_by_code(inputs.program_code)
-#             # if program is None:
-#             #     return None
-#             # Set the request payload
-#             payload = {
-#                 "program_code": inputs.program_code,
-#                 "year_of_study": inputs.year_of_study,
-#                 "study_level": inputs.study_level,
-#                 "student_status": inputs.student_status,
-#                 "countrycode": inputs.countrycode,
-#             }
-#             encoded_params = urlencode(payload)
-#             # Send the Get request
-#             response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}")
-#
-#             # Check for errors
-#             if response.status_code == 200:
-#                 response_data = response.json()
-#                 fee_structure = []
-#                 for structure in response_data["data"]:
-#                     fee_structure.append(
-#                         FeeStructure(
-#                             name=structure["fee_name"],
-#                             amount=float(structure["amount"]),
-#                             min_amount=float(structure["min_amount"]),
-#                             currency=structure["currency"]
-#                         )
-#                     )
-#                 return fee_structure
-#             else:
-#                 return []
-#
-#         except Exception as e:
-#             print(e)
-#             return []
-#
-#
-#
-# _______________________________________________________________________________________________
 
 class Sr2ApiCalls(object):
     token = '9454c6efdb94236e618c9a7b1a67138b'
@@ -68,12 +15,19 @@ class Sr2ApiCalls(object):
     @staticmethod
     def request_fee_structure(inputs: FeeStructureInput) -> List[FeeStructure] | None:
         try:
-            # Verify and get supplied Program uid and get existed program model
+            # Verify and get supplied Program code and exists
             with session_scope() as session:
                 program = session.query(Program).filter_by(code=inputs.program_code).first()
                 if program is None:
                     return None
-
+                # Check if the program code already exists in the fee structure table
+                existing_fee_structure = (
+                    session.query(FeeStructure)
+                    .filter_by(program=program)
+                    .first()
+                )
+                if existing_fee_structure is not None:
+                    return None
                 # Set the request payload
                 payload = {
                     "program_code": inputs.program_code,
