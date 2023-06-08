@@ -11,7 +11,7 @@ from src.modules.course_category.service import CourseCategoryService
 from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseInput, ProgramCourseListNode
+from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode
 
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
@@ -73,26 +73,47 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 # Verify and get supplied Program uid. and get existed program model
-                program_semester = ProgramSemesterService.get_program_semester_by_uid(
-                    inputItem.program_semester_uid)
-                if program_semester is None:
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect programs semester details")
+                try:
+                    program_semester = ProgramSemesterService.get_program_semester_by_uid(
+                        inputItem.program_semester_uid)
+                    if program_semester is None:
+                        raise ValueError("You have submitted incorrect programs semester details")
+                except Exception as e:
+                    print(e)
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        message="You have submitted incorrect programs semester details"
+                    )
 
                 # Verify and get supplied Course uid. and get existed Course id from returned Course model
-                course = CourseService.get_course_by_uid(inputItem.course_uid)
-                if course is None:
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect courses details")
+                try:
+                    course = CourseService.get_course_by_uid(inputItem.course_uid)
+                    if course is None:
+                        raise ValueError("You have submitted incorrect courses details")
+                except Exception as e:
+                    print(e)
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        message="You have submitted incorrect courses details"
+                    )
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
-                course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
-                if course_category is None:
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=ProgramCourseListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect courses category details")
+                try:
+                    course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
+                    if course_category is None:
+                        raise ValueError("You have submitted incorrect courses category details")
+                except Exception as e:
+                    print(e)
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        message="You have submitted incorrect courses category details"
+                    )
 
                 if inputItem.uid is None:
                     # validate if this program semester is not deprecated

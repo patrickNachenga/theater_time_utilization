@@ -64,7 +64,7 @@ class ProgramCourseAssessmentService(
     def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[
         ProgramCourseAssessmentListNode]:
         """
-        Register Course Assessment
+        Register Program Course Assessment
         :param inputs:
         :return Response[ProgramCourseAssessmentListNode]:
         """
@@ -77,8 +77,9 @@ class ProgramCourseAssessmentService(
             for inputItem in inputs:
                 # Verify and get supplied Program course uid. and get existed program course id from returned program model
                 try:
-                    program_course_id = ProgramCourseService.get_program_course_by_uid(
-                        inputItem.program_semester_uid).id
+                    program_course = ProgramCourseService.get_program_course_by_uid(inputItem.program_course_uid)
+                    if program_course is None:
+                        raise ValueError("You have submitted incorrect programs course details")
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
@@ -87,13 +88,16 @@ class ProgramCourseAssessmentService(
 
                 if inputItem.uid is None:
                     program_course_assessment = ProgramCourseAssessment(
-                        program_course_id=program_course_id,
+                        program_course=program_course,
                         exam_category_uid=inputItem.exam_category_uid,
                         minimum_exams=inputItem.minimum_exams,
                         can_exceed_minimum_by=inputItem.can_exceed_minimum_by,
                         maximum_score=inputItem.maximum_score
                     )
-                    program_course_assessment_list.append(program_course_assessment)
+                    local_object = session.merge(program_course_assessment)
+                    session.add(local_object)
+                    session.commit()
+                    program_course_assessment_list.append(local_object)
                 else:
                     action_type = "Update"
                     program_course_assessment = next(filter(
@@ -102,10 +106,14 @@ class ProgramCourseAssessmentService(
                     if program_course_assessment:
                         obj_data = jsonable_encoder(inputItem)
                         # # Replace referenced uids field with model required ids field
-                        obj_data['program_course_id'] = program_course_id
+                        obj_data['program_course'] = program_course
 
                         for key, value in obj_data.items():
                             setattr(program_course_assessment, key, value)
+                        local_object = session.merge(program_course_assessment)
+                        session.add(local_object)
+                        session.commit()
+                        program_course_assessment_list.append(local_object)
                     program_course_assessment_list.append(program_course_assessment)
             session.add_all(program_course_assessment_list)
             count = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).count()

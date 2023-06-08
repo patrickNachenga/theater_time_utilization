@@ -364,18 +364,17 @@ class ProgramCourseAssessmentInput:
     program_course_uid: str
     exam_category_uid: str
     minimum_exams: int
-    can_exceed_minimum: Optional[int] = 0
+    can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
 
 
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode:
     uid: str
-    program_course_uid: str
     program_course: ProgramCourseNode
     exam_category_uid: str
     minimum_exams: int
-    can_exceed_minimum: Optional[int] = 0
+    can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
 
 
@@ -490,6 +489,30 @@ class FeeStructureNode:
 #     uid: str
 #     description: str
 #     name: str
+
+
+@strawberry.input(description="Control Numbers Input")
+class ControlNumberInput:
+    program_code: str
+    year_of_study: float
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
+
+
+@strawberry.type(description="Control Numbers Output")
+class ControlNumberNode:
+    program_code: str
+    year_of_study: float
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))

@@ -131,6 +131,7 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                             setattr(academic_year, key, value)
                         academic_year_list.append(academic_year)
             session.add_all(academic_year_list)
+            session.commit()
             count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
