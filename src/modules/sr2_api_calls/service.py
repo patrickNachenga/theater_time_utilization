@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 from urllib.parse import urlencode
 
 import requests
@@ -8,9 +8,8 @@ from src.models import Program
 from src.models.fee_structure import FeeStructure
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, FeeStructureNode, ControlNumberInput, ControlNumberNode
-from src.modules.programs.service import ProgramService
 from src.types import FeeStructureInput, ControlNumberInput
+from src.types import FeeStructureNode, ControlNumberNode
 
 
 class Sr2ApiCalls(object):
@@ -104,20 +103,13 @@ class Sr2ApiCalls(object):
                 "system": inputs.system,
             }
 
-            encoded_params = urlencode(payload)
-
             # Send the Get request
             response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
 
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
-                print("__________________________")
-                control_number_info = []
-                for control_number_item in response_data["data"]:
-                    control_number_info.append(control_number_item)
-                print("+++++++++++++++++++++++++++++++++++++++++++++")
-                print(control_number_info)
+                #print(response_data["message"])
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=None, message="Control number request generated successfully")
             else:

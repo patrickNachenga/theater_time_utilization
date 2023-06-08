@@ -23,7 +23,7 @@ class FeeStructureMutation:
                 data=None)
 
     @strawberry.field
-    def get_control_number(self, inputs: ControlNumberInput) -> Response[None]:
+    def request_control_number(self, inputs: ControlNumberInput) -> Response[None]:
         try:
             return Sr2ApiCalls.request_control_numbers(inputs)
         except Exception as e:
@@ -31,5 +31,5 @@ class FeeStructureMutation:
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,
-                message="Failed to generate control number",
+                message="Failed to generate control number request",
                 data=None)
