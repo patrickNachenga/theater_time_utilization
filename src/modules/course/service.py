@@ -99,6 +99,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
                             setattr(course, key, value)
                         course_list.append(course)
             session.add_all(course_list)
+            session.commit()
             count = session.query(Course).filter(Course.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,

@@ -364,18 +364,17 @@ class ProgramCourseAssessmentInput:
     program_course_uid: str
     exam_category_uid: str
     minimum_exams: int
-    can_exceed_minimum: Optional[int] = 0
+    can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
 
 
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode:
     uid: str
-    program_course_uid: str
     program_course: ProgramCourseNode
     exam_category_uid: str
     minimum_exams: int
-    can_exceed_minimum: Optional[int] = 0
+    can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
 
 
@@ -483,6 +482,8 @@ class FeeStructureNode:
     min_amount: float
     currency: str
     program: ProgramNode
+
+
 
 
 @strawberry.input(description="Control Numbers Input")

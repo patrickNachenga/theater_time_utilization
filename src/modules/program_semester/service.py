@@ -91,8 +91,12 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
 
             for inputItem in inputs:
                 # Verify and get supplied Program uid and get existed program model
-                program = ProgramService(Program).get(inputItem.program_uid)
-                if program is None:
+                try:
+                    program = ProgramService(Program).get(inputItem.program_uid)
+                    if program is None:
+                        raise ValueError("You have submitted incorrect program details")
+                except Exception as e:
+                    print(e)
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -101,8 +105,12 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                     )
 
                 # Verify and get supplied Academic year uid and get existed Academic year model
-                academic_year = AcademicYearService(AcademicYear).get(inputItem.academic_year_uid)
-                if academic_year is None:
+                try:
+                    academic_year = AcademicYearService(AcademicYear).get(inputItem.academic_year_uid)
+                    if academic_year is None:
+                        raise ValueError("You submitted incorrect academic year details")
+                except Exception as e:
+                    print(e)
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -161,13 +169,6 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
                             message=f"Successfully to {action_type} Program Semester")
-
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                data=ProgramSemesterListNode(items=program_semester_list, total_count=count),
-                message=f"Successfully {action_type}ed Program Semester"
-            )
 
     # Delete FUnction
     @staticmethod

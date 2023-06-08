@@ -27,5 +27,7 @@ class Program(BaseModel):
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
     fee_structures = relationship("FeeStructure", lazy='subquery', back_populates="program")
+    program_capacities = relationship('ProgramCapacity', lazy='subquery', back_populates="program")
+
 
 

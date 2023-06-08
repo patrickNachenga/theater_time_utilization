@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from urllib.parse import urlencode
 
 import requests
@@ -9,6 +9,8 @@ from src.models.fee_structure import FeeStructure
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import FeeStructureInput, FeeStructureNode, ControlNumberInput, ControlNumberNode
+from src.modules.programs.service import ProgramService
+from src.types import FeeStructureInput, ControlNumberInput
 
 
 class Sr2ApiCalls(object):
@@ -17,7 +19,9 @@ class Sr2ApiCalls(object):
 
     @staticmethod
     def request_fee_structure(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]] | None:
-
+        '''
+        This is a function to request program fee structure  from SR2
+        '''
         # Verify and get supplied Program code and exists
         with session_scope() as session:
             program = session.query(Program).filter_by(code=inputs.program_code).first()
@@ -87,9 +91,9 @@ class Sr2ApiCalls(object):
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Fee structure for %s was Not Found" % program.code)
             '''
+
             # Set the request payload
             payload = {
-
                 "program_code": inputs.program_code,
                 "year_of_study": inputs.year_of_study,
                 "study_level": inputs.study_level,
@@ -103,7 +107,7 @@ class Sr2ApiCalls(object):
             encoded_params = urlencode(payload)
 
             # Send the Get request
-            response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure",data=payload)
+            response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
 
             # Check for errors
             if response.status_code == 200:

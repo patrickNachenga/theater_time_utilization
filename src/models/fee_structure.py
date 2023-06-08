@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, Index, DateTi
 from sqlalchemy.orm import relationship
 from src.models import BaseModel
 
+
 class FeeStructure(BaseModel):
     __tablename__ = "fee_structure"
     name: str = Column(String)
@@ -12,11 +13,12 @@ class FeeStructure(BaseModel):
     program_id: int = Column(Integer, ForeignKey('programs.id'), nullable=False)
     deleted_at = Column(DateTime, nullable=True)
 
-    #Relationship
+    # Relationship
     program = relationship("Program", lazy="subquery", back_populates="fee_structures")
 
-    # Unique together constraint with condition
+    # table arguments for Unique together constraint with condition
     __table_args__ = (
+
         Index(
             'ix_unique_primary_content',  # Index name
             'study_year',
@@ -25,7 +27,3 @@ class FeeStructure(BaseModel):
             postgresql_where=(Column('deleted_at').is_(None)),  # The condition
         ),
     )
-
-
-
-
