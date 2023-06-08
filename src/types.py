@@ -485,7 +485,6 @@ class FeeStructureNode:
     program: ProgramNode
 
 
-
 # @strawberry.type(description="Course Category Output")
 # class CourseCategoryNode:
 #     uid: str
@@ -494,3 +493,24 @@ class FeeStructureNode:
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
+
+
+@strawberry.type(description="Program capacity")
+class ProgramCapacityNode:
+    uid: str
+    academic_year: AcademicYearNode
+    program: ProgramNode
+
+
+@strawberry.type(description="Program capacity list")
+class ProgramCapacityListNode:
+    items: List[ProgramCapacityNode]
+    total_count: int
+
+
+@strawberry.input(description="Program capacity input")
+class ProgramCapacityInputNode:
+    program_uid: str
+    academic_year_uid: str
+    is_active: bool
+    uid: Optional[str]
