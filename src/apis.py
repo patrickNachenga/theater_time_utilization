@@ -14,15 +14,15 @@ from src.modules.staff.apis import StaffQuery, StaffMutation
 from src.modules.students.apis import StudentQuery, StudentMutation
 from src.modules.exam_results.apis import ExamResultsQuery, ExamResultsMutation
 from src.modules.exam_summary.apis import ExamSummaryQuery, ExamSummaryMutation
-from src.modules.exam_cats.apis import ExamCatsQuery, ExamCatsMutation
-from src.modules.exam_cat_groups.apis import ExamCatGroupsQuery, ExamCatGroupsMutation
+from src.modules.exam_category.apis import ExamCategoriesQuery, ExamCategoriesMutation
+from src.modules.exam_category_groups.apis import ExamCategoryGroupsQuery, ExamCategoryGroupsMutation
 from src.modules.academic_year.apis import AcademicYearQuery, AcademicYearMutation
 from src.modules.program_course_assessment.apis import ProgramCourseAssessmentQuery, ProgramCourseAssessmentMutation
 
 
 @strawberry.type
 class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, CourseAllocationQuery,
-               CourseCategoryQuery, GroupQuery, ProgramQuery, ExamCatGroupsQuery, ExamCatsQuery, ExamResultsQuery,
+               CourseCategoryQuery, GroupQuery, ProgramQuery, ExamCategoryGroupsQuery, ExamCategoriesQuery, ExamResultsQuery,
                ExamSummaryQuery, AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
                ProgramCourseAssessmentQuery):
     pass
@@ -31,7 +31,7 @@ class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, Cour
 @strawberry.type
 class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, CourseMutation, CourseAllocationMutation,
                   CourseCategoryMutation, GroupMutation,
-                  ExamCatGroupsMutation, ExamCatsMutation,
+                  ExamCategoryGroupsMutation, ExamCategoriesMutation,
                   ExamResultsMutation, ExamSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
                   ProgramCourseAssessmentMutation, FeeStructureMutation):
