@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
 from src.db.session import session_scope
-from src.models import ProgramCourse
+from src.models import ProgramCourse, ProgramCourseAssessment
 from src.models.course_allocation import CourseAllocation
 from src.modules import CRUDBase
 from src.modules.program_course.service import ProgramCourseService
@@ -42,8 +42,22 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAllocation).where((CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
+            stmt = select(CourseAllocation).where(
+                (CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
             result = session.scalars(stmt)
+            return result.first()
+
+    @staticmethod
+    def get_staff_course_allocation(inputs) -> CourseAllocation:
+        """
+        Get staff course allocation
+        :param staff_uid and program_course_uid:
+        :return:
+        """
+        with session_scope() as session:
+            result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
+                                                            CourseAllocation.program_course_uid == inputs.program_course_uid,
+                                                            CourseAllocation.deleted_at.is_(None))
             return result.first()
 
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
@@ -58,7 +72,8 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             # check for existing course allocation using uid
             existed_course_allocation = self.get_course_allocations_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
-                program_course = ProgramCourseService(ProgramCourse).get_program_course_by_uid(inputItem.program_course_uid)
+                program_course = ProgramCourseService(ProgramCourse).get_program_course_by_uid(
+                    inputItem.program_course_uid)
                 if program_course is None:
                     return Response(
                         status=False,
@@ -109,6 +124,20 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         with session_scope() as session:
             session.query(CourseAllocation).filter_by(uid=uid).update({CourseAllocation.deleted_at: pendulum.now()})
             session.commit()
+
+    def staff_update_allocation_assessment_item(self, inputs) -> int:
+        """
+        Staff update can_exceed_minimum_by to increase number of assessment
+        input assessment items uid
+        """
+        with session_scope() as session:
+            session.query(ProgramCourseAssessment).filter_by(uid=inputs.uid).update(
+                {"can_exceed_minimum_by": inputs.can_exceed_minimum_by}
+            )
+            session.commit()
+            can_exceed_minimum_by = session.query(ProgramCourseAssessment.can_exceed_minimum_by).filter(
+                ProgramCourseAssessment.uid == inputs.uid).first()
+            return can_exceed_minimum_by[0]
 
 
 CourseAllocationCrud = CourseAllocationService(CourseAllocation)
