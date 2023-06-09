@@ -196,28 +196,6 @@ class ProgramCategoryListNode:
     total_count: int
 
 
-@strawberry.input(description="Program Semester Input")
-class ProgramSemesterInput:
-    uid: Optional[str] = None
-    program_uid: str
-    academic_year_uid: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-
-
-@strawberry.type(description="Program Semester output")
-class ProgramSemesterNode:
-    uid: str
-    program_id: str
-    academic_year_id: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-
-
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -531,3 +509,24 @@ class ControlNumberNode:
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
+
+
+@strawberry.type(description="Program capacity")
+class ProgramCapacityNode:
+    uid: str
+    academic_year: AcademicYearNode
+    program: ProgramNode
+
+
+@strawberry.type(description="Program capacity list")
+class ProgramCapacityListNode:
+    items: List[ProgramCapacityNode]
+    total_count: int
+
+
+@strawberry.input(description="Program capacity input")
+class ProgramCapacityInputNode:
+    program_uid: str
+    academic_year_uid: str
+    is_active: bool
+    uid: Optional[str]
