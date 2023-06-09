@@ -485,12 +485,14 @@ class ControlNumberInput:
 
 @strawberry.type(description="Control Numbers Output")
 class ControlNumberNode:
+    registration_number: str
     fee_name: str
     amount: float
     control_number: str
     currency: str
     pay_type: str
     academic_year: str
+    billid: str
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))

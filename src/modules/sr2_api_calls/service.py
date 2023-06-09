@@ -2,6 +2,7 @@ from typing import List, Optional
 from urllib.parse import urlencode
 
 import requests
+from sqlalchemy import desc, select
 
 from src.db.session import session_scope
 from src.models import Program
@@ -101,12 +102,12 @@ class Sr2ApiCalls(object):
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
-                #print(response_data["message"])
+                # print(response_data["message"])
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=None, message="Control number request generated successfully")
             else:
-                return Response( status=False,code=ResponseCode.FAILURE,
-                    data=None,message="Failed to generate control number request")
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=None, message="Failed to generate control number request")
 
     @staticmethod
     def register_control_numbers(input: ControlNumberInput) -> Response[Optional[str]]:
@@ -141,4 +142,18 @@ class Sr2ApiCalls(object):
                     message="Failed to register control number",
                     data=None)
 
-
+    @staticmethod
+    def get_student_control_number(registration_number: str) -> List[ControlNumberNode] | None:
+        """
+       Get Student saved control number
+       :param registration_number:
+       :return Optional[str]:
+       """
+        with session_scope() as session:
+            try:
+                stmt = select(ControlNumber).where((ControlNumber.registration_number.in_(registration_number)) & (ControlNumber.deleted_at.is_(None)))
+                result = session.scalars(stmt)
+                return result.all()
+            except Exception as e:
+                print(e)
+                return None

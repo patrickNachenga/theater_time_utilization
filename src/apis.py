@@ -10,7 +10,7 @@ from src.modules.program_category.apis import ProgramCategoryQuery, ProgramCateg
 from src.modules.program_course.apis import ProgramCourseQuery, ProgramCourseMutation
 from src.modules.program_semester.apis import ProgramSemesterQuery, ProgramSemesterMutation
 from src.modules.programs.apis import ProgramQuery, ProgramMutation
-from src.modules.sr2_api_calls.apis import FeeStructureMutation
+from src.modules.sr2_api_calls.apis import Sr2ApiCallQuery, Sr2ApiCallMutation
 from src.modules.staff.apis import StaffQuery, StaffMutation
 from src.modules.students.apis import StudentQuery, StudentMutation
 from src.modules.exam_results.apis import ExamResultsQuery, ExamResultsMutation
@@ -25,7 +25,7 @@ from src.modules.program_course_assessment.apis import ProgramCourseAssessmentQu
 class ApiQuery(StudentQuery, StaffQuery, ProgramCategoryQuery, CourseQuery, CourseAllocationQuery,
                CourseCategoryQuery, GroupQuery, ProgramQuery, ExamCatGroupsQuery, ExamCatsQuery, ExamResultsQuery,
                ExamSummaryQuery, AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
-               ProgramCapacityQuery, ProgramCourseAssessmentQuery):
+               ProgramCapacityQuery, ProgramCourseAssessmentQuery, Sr2ApiCallQuery):
     pass
 
 
@@ -35,5 +35,5 @@ class ApiMutation(StudentMutation, StaffMutation, ProgramCategoryMutation, Cours
                   ExamCatGroupsMutation, ExamCatsMutation,
                   ExamResultsMutation, ExamSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
-                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, FeeStructureMutation):
+                  ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation):
     pass
