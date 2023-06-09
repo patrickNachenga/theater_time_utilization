@@ -37,35 +37,34 @@ class AcademicYearListNode:
 
 
 @strawberry.input(description="Exam Category Groups Input")
-class ExamCatGroupsInput:
+class ExamCategoryGroupsInput:
     uid: Optional[str] = None
-    id: int
     name: str
 
 
 @strawberry.type(description="Exam category Groups Output")
-class ExamCatGroupsNode:
-    id: int
+class ExamCategoryGroupsNode:
+    uid: str
     name: str
 
 
 @strawberry.input(description="Exam Category Input")
-class ExamCatsInput:
+class ExamCategoriesInput:
     uid: Optional[str] = None
-    id: int
     name: str
     code: str
-    exam_group_id: int
+    exam_category_group_uid: str
 
 
 @strawberry.type(description="Exam Category Output")
-class ExamCatsNode:
+class ExamCategoriesNode:
+    uid: str
     name: str
     code: str
-    exam_group_id: int
+    exam_category_group: ExamCategoryGroupsNode
 
 
-@strawberry.input(description="Exam cat Groups Input")
+@strawberry.input(description="Exam Category Groups Input")
 class ExamResultsInput:
     uid: Optional[str] = None
     id: int
@@ -447,7 +446,6 @@ class FeeStructureNode:
     min_amount: float
     currency: str
     program: ProgramNode
-
 
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
