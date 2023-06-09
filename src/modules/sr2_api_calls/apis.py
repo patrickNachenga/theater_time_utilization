@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Any, Optional
 
 import strawberry
 
 from src.modules.sr2_api_calls.service import Sr2ApiCalls
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, FeeStructureNode, ControlNumberInput
+from src.types import FeeStructureInput, FeeStructureNode, RequestControlNumberInput
 
 
 @strawberry.type
@@ -23,7 +23,7 @@ class FeeStructureMutation:
                 data=None)
 
     @strawberry.field
-    def request_control_number(self, inputs: ControlNumberInput) -> Response[None]:
+    def request_control_number(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
         try:
             return Sr2ApiCalls.request_control_numbers(inputs)
         except Exception as e:

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -12,3 +12,4 @@ class ProgramCapacity(BaseModel):
     program = relationship('Program', lazy='subquery', back_populates="program_capacities")
     academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"),nullable=False)
     academic_year = relationship('AcademicYear', lazy='subquery', back_populates="program_capacities")
+    is_active = Column(Boolean)

@@ -39,4 +39,3 @@ async def get_program_data():
 @program_router.post("/program/department")
 async def get_program_data(parm: ProgramDepartmentInput):
     return ProgramService.api_get_program_by_departments(parm.departments)
-

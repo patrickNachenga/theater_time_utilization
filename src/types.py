@@ -195,28 +195,6 @@ class ProgramCategoryListNode:
     total_count: int
 
 
-@strawberry.input(description="Program Semester Input")
-class ProgramSemesterInput:
-    uid: Optional[str] = None
-    program_uid: str
-    academic_year_uid: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-
-
-@strawberry.type(description="Program Semester output")
-class ProgramSemesterNode:
-    uid: str
-    program_id: str
-    academic_year_id: str
-    study_year: int
-    semester: int
-    core_credits: float
-    elective_credits: float
-
-
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -453,23 +431,10 @@ class LoginError:
     message: str | None = None
 
 
-@strawberry.input(description="Control Number Input")
-class ControlNumberInput:
-    program_code: str
-    year_of_study: int
-    study_level: str
-    student_status: str
-    countrycode: int
-    registration_number: str
-    program_name: str
-    system: str
-
-
 @strawberry.input(description="Fee Structure Input")
 class FeeStructureInput:
-    program_code: str
+    program_uid: str
     year_of_study: int
-    study_level: str
     student_status: str
     countrycode: int
 
@@ -482,9 +447,18 @@ class FeeStructureNode:
     currency: str
     program: ProgramNode
 
+@strawberry.input(description="Request Control Numbers Input")
+class RequestControlNumberInput:
+    program_uid: str
+    year_of_study: float
+    student_status: str
+    countrycode: int
+    registration_number: str
+    system: str
 
-@strawberry.input(description="Control Numbers Input")
-class ControlNumberInput:
+
+@strawberry.type(description="Request Control Numbers Output")
+class RequestControlNumberNode:
     program_code: str
     year_of_study: float
     study_level: str
@@ -493,18 +467,49 @@ class ControlNumberInput:
     registration_number: str
     program_name: str
     system: str
+
+
+@strawberry.input(description="Control Numbers Input")
+class ControlNumberInput:
+    registration_number: str
+    fee_name: str
+    amount: float
+    control_number: str
+    currency: str
+    pay_type: str
+    academic_year: str
+    billid: str
 
 
 @strawberry.type(description="Control Numbers Output")
 class ControlNumberNode:
-    program_code: str
-    year_of_study: float
-    study_level: str
-    student_status: str
-    countrycode: int
-    registration_number: str
-    program_name: str
-    system: str
+    fee_name: str
+    amount: float
+    control_number: str
+    currency: str
+    pay_type: str
+    academic_year: str
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
+
+
+@strawberry.type(description="Program capacity")
+class ProgramCapacityNode:
+    uid: str
+    academic_year: AcademicYearNode
+    program: ProgramNode
+
+
+@strawberry.type(description="Program capacity list")
+class ProgramCapacityListNode:
+    items: List[ProgramCapacityNode]
+    total_count: int
+
+
+@strawberry.input(description="Program capacity input")
+class ProgramCapacityInputNode:
+    program_uid: str
+    academic_year_uid: str
+    is_active: bool
+    uid: Optional[str]
