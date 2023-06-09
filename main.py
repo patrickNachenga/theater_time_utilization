@@ -1,9 +1,12 @@
 from starlette.middleware.cors import CORSMiddleware
 
 from src.app import RegistrationApp
+from src.core.config import settings
 from src.core.redis import redis_dependency
+from src.helpers.task_manager import TaskManager
 from src.db.session import database
 from src.api_routes.program_api import program_router
+from src.api_routes.sr2_finance_api import sr2_router
 
 app = RegistrationApp()
 
@@ -15,6 +18,7 @@ app.add_middleware(
 
 # Adding REST API route for querying Program Module
 app.include_router(program_router)
+app.include_router(sr2_router)
 
 
 @app.on_event("startup")
@@ -26,6 +30,8 @@ async def startup():
     :return:
     """
     await database.connect()
+    task_manager = TaskManager(redis_url=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
     await redis_dependency.init()

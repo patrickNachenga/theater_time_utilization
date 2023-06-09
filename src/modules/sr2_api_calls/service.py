@@ -1,15 +1,16 @@
-from typing import List
+from typing import List, Optional
 from urllib.parse import urlencode
 
 import requests
 
 from src.db.session import session_scope
 from src.models import Program
+from src.models.control_number import ControlNumber
 from src.models.fee_structure import FeeStructure
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, ControlNumberInput
-from src.types import FeeStructureNode, ControlNumberNode
+from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode, ControlNumberInput
+from src.types import FeeStructureNode, RequestControlNumberNode
 
 
 class Sr2ApiCalls(object):
@@ -18,9 +19,9 @@ class Sr2ApiCalls(object):
 
     @staticmethod
     def request_fee_structure(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]] | None:
-        '''
+        """
         This is a function to request program fee structure  from SR2
-        '''
+        """
         # Verify and get supplied Program code and exists
         with session_scope() as session:
             program = session.query(Program).filter_by(code=inputs.program_code).first()
@@ -73,7 +74,7 @@ class Sr2ApiCalls(object):
                     data=None)
 
     @staticmethod
-    def request_control_numbers(inputs: ControlNumberInput) -> Response[List[ControlNumberNode]] | None:
+    def request_control_numbers(inputs: RequestControlNumberInput) -> Response[List[RequestControlNumberNode]] | None:
 
         # Verify and get supplied Program code and exists
         with session_scope() as session:
@@ -82,7 +83,7 @@ class Sr2ApiCalls(object):
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
-            
+
             # Check if the program code already exists in the fee structure table
             existing_fee_structure = session.query(FeeStructure).filter_by(program=program).first()
 
@@ -118,3 +119,38 @@ class Sr2ApiCalls(object):
                     code=ResponseCode.FAILURE,
                     message="Failed to generate control number request",
                     data=None)
+
+    @staticmethod
+    def register_control_numbers(input: ControlNumberInput) -> Response[Optional[str]]:
+        """
+       Register control number to db generated form sr2
+       :param input:
+       :return Optional[str]:
+       """
+        with session_scope() as session:
+            try:
+                control_number = ControlNumber(
+                    registration_number=input.registration_number,
+                    bill_id=input.billid,
+                    fee_name=input.fee_name,
+                    amount=input.amount,
+                    control_number=input.control_number,
+                    currency=input.currency,
+                    pay_type=input.pay_type,
+                    academic_year=input.academic_year,
+                )
+                session.add(control_number)
+                session.commit()
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Control number registered successful",
+                    data=None)
+            except Exception as e:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Failed to register control number",
+                    data=None)
+
+

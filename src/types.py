@@ -484,30 +484,50 @@ class FeeStructureNode:
     program: ProgramNode
 
 
+@strawberry.input(description="Request Control Numbers Input")
+class RequestControlNumberInput:
+    program_code: str
+    year_of_study: float
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
+
+
+@strawberry.type(description="Request Control Numbers Output")
+class RequestControlNumberNode:
+    program_code: str
+    year_of_study: float
+    study_level: str
+    student_status: str
+    countrycode: int
+    registration_number: str
+    program_name: str
+    system: str
 
 
 @strawberry.input(description="Control Numbers Input")
 class ControlNumberInput:
-    program_code: str
-    year_of_study: float
-    study_level: str
-    student_status: str
-    countrycode: int
     registration_number: str
-    program_name: str
-    system: str
+    fee_name: str
+    amount: float
+    control_number: str
+    currency: str
+    pay_type: str
+    academic_year: str
+    billid: str
 
 
 @strawberry.type(description="Control Numbers Output")
 class ControlNumberNode:
-    program_code: str
-    year_of_study: float
-    study_level: str
-    student_status: str
-    countrycode: int
-    registration_number: str
-    program_name: str
-    system: str
+    fee_name: str
+    amount: float
+    control_number: str
+    currency: str
+    pay_type: str
+    academic_year: str
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))

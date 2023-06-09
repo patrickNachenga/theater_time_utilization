@@ -5,6 +5,7 @@ import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
+from src.core.moodle_api import MoodleApi
 from src.db.session import session_scope
 from src.models import Course
 from src.modules import CRUDBase
@@ -74,7 +75,8 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             existed_course_list = self.get_courses_by_codes(
                 [course.code for course in inputs if course.uid is None])
             if existed_course_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=PaginatedCourse(items=existed_course_list, total_count=0),
+                return Response(status=False, code=ResponseCode.DUPLICATE,
+                                data=PaginatedCourse(items=existed_course_list, total_count=0),
                                 message="Course Already Exists")
             # check for existing course using uid
             existed_course = self.get_courses_by_uids([inputItem.uid for inputItem in inputs])
@@ -102,6 +104,16 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             session.commit()
             count = session.query(Course).filter(Course.deleted_at.is_(None)).count()
             session.commit()
+            # if action_name is "Register":
+            #     # TODO: add program to moodle
+            #     moodle = MoodleApi()
+            #     moodle_id = moodle.createCourse(
+            #         departmentId=8,
+            #         courseFullName=course_list[0].name,
+            #         courseShortName=course_list[0].code,
+            #         courseDescription=course_list[0].description
+            #     )
+            #     print(moodle_id)
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=PaginatedCourse(items=course_list, total_count=count),
                             message=f"Course {action_name} Successfully")
