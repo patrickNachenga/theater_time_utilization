@@ -104,16 +104,6 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             session.commit()
             count = session.query(Course).filter(Course.deleted_at.is_(None)).count()
             session.commit()
-            # if action_name is "Register":
-            #     # TODO: add program to moodle
-            #     moodle = MoodleApi()
-            #     moodle_id = moodle.createCourse(
-            #         departmentId=8,
-            #         courseFullName=course_list[0].name,
-            #         courseShortName=course_list[0].code,
-            #         courseDescription=course_list[0].description
-            #     )
-            #     print(moodle_id)
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=PaginatedCourse(items=course_list, total_count=count),
                             message=f"Course {action_name} Successfully")

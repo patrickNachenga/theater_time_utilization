@@ -432,23 +432,10 @@ class LoginError:
     message: str | None = None
 
 
-@strawberry.input(description="Control Number Input")
-class ControlNumberInput:
-    program_code: str
-    year_of_study: int
-    study_level: str
-    student_status: str
-    countrycode: int
-    registration_number: str
-    program_name: str
-    system: str
-
-
 @strawberry.input(description="Fee Structure Input")
 class FeeStructureInput:
-    program_code: str
+    program_uid: str
     year_of_study: int
-    study_level: str
     student_status: str
     countrycode: int
 
@@ -464,13 +451,11 @@ class FeeStructureNode:
 
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
-    program_code: str
+    program_uid: str
     year_of_study: float
-    study_level: str
     student_status: str
     countrycode: int
     registration_number: str
-    program_name: str
     system: str
 
 

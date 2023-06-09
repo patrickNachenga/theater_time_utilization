@@ -24,7 +24,7 @@ class Sr2ApiCalls(object):
         """
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            program = session.query(Program).filter_by(code=inputs.program_code).first()
+            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
@@ -36,9 +36,9 @@ class Sr2ApiCalls(object):
                                 data=None, message="Fee structure for %s was Not Found" % program.code)
             # Set the request payload
             payload = {
-                "program_code": inputs.program_code,
+                "program_code": program.code,
                 "year_of_study": inputs.year_of_study,
-                "study_level": inputs.study_level,
+                "study_level": program.program_category.code,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
@@ -74,33 +74,24 @@ class Sr2ApiCalls(object):
                     data=None)
 
     @staticmethod
-    def request_control_numbers(inputs: RequestControlNumberInput) -> Response[List[RequestControlNumberNode]] | None:
+    def request_control_numbers(inputs: RequestControlNumberInput) -> Response[Optional[str]]:
 
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            '''
-            program = session.query(Program).filter_by(code=inputs.program_code).first()
+            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
 
-            # Check if the program code already exists in the fee structure table
-            existing_fee_structure = session.query(FeeStructure).filter_by(program=program).first()
-
-            if not existing_fee_structure:
-                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
-                                data=None, message="Fee structure for %s was Not Found" % program.code)
-            '''
-
             # Set the request payload
             payload = {
-                "program_code": inputs.program_code,
+                "program_code": program.code,
+                "study_level": program.program_category.short_name,
+                "program_name": program.name,
                 "year_of_study": inputs.year_of_study,
-                "study_level": inputs.study_level,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "program_name": inputs.program_name,
                 "system": inputs.system,
             }
 
@@ -114,11 +105,8 @@ class Sr2ApiCalls(object):
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=None, message="Control number request generated successfully")
             else:
-                return Response(
-                    status=False,
-                    code=ResponseCode.FAILURE,
-                    message="Failed to generate control number request",
-                    data=None)
+                return Response( status=False,code=ResponseCode.FAILURE,
+                    data=None,message="Failed to generate control number request")
 
     @staticmethod
     def register_control_numbers(input: ControlNumberInput) -> Response[Optional[str]]:

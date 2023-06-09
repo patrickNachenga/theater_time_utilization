@@ -21,6 +21,12 @@ app.include_router(program_router)
 app.include_router(sr2_router)
 
 
+async def process_data():
+    task_manager = TaskManager(redis_url=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+    await task_manager.start_processing()
+    await task_manager.enqueue_task("create_course_to_moodle")
+
+
 @app.on_event("startup")
 async def startup():
     """
@@ -30,11 +36,14 @@ async def startup():
     :return:
     """
     await database.connect()
-    task_manager = TaskManager(redis_url=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
     await redis_dependency.init()
+
+    # background_tasks = BackgroundTasks()
+    # background_tasks.add_task(process_data)
+    # await background_tasks()
 
 
 @app.on_event("shutdown")
