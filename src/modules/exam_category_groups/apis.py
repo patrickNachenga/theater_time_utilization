@@ -32,3 +32,27 @@ class ExamCategoryGroupsMutation:
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register Category", data=[])
+
+    @strawberry.mutation
+    async def remove_exam_category_group(self, uid: str) -> Response[None]:
+        """
+        Remove exam category group By UID
+        :param uid:
+        :return:
+        """
+        try:
+            ExamCategoryGroupsService.remove_exam_category_group(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Category Group Removed Successfully",
+                data=None
+            )
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Remove Exam Category Group",
+                data=None
+            )
