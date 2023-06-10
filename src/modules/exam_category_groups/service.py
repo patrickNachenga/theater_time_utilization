@@ -14,7 +14,7 @@ class ExamCategoryGroupsService(object):
     def get_exam_category_groups() -> List[ExamCategoryGroup]:
         with session_scope() as session:
             result = session.query(
-                ExamCategoryGroup.id,
+                ExamCategoryGroup.uid,
                 ExamCategoryGroup.name,
                 ExamCategoryGroup.created_at,
                 ExamCategoryGroup.updated_at,

@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = os.environ.get("POSTGRES_DB")
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
+    UAA_USER: str = os.environ.get("UAA_USER", )
+    UAA_PASSWORD: str = os.environ.get("UAA_PASSWORD")
+    UAA_SERVER: str = os.environ.get("UAA_SERVER")
+    UAA_PORT: int = int(os.environ.get("UAA_PORT", 5432))
+    UAA_DB: str = os.environ.get("UAA_DB")
+    UAA_DATABASE_URL = f"postgresql://{UAA_USER}:{UAA_PASSWORD}@{UAA_SERVER}:{UAA_PORT}/{UAA_DB}"
+
     JWT_ALGORITHM = 'HS256'
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
     JWT_REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 6
