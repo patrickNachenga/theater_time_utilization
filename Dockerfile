@@ -1,23 +1,7 @@
-FROM python:3.10
+FROM python:3.10-alpine
 WORKDIR /registration
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONBUFFERED 1
-# install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    python3-dev \
-    libldap2-dev \
-    libsasl2-dev \
-    && rm -rf /var/lib/apt/lists/*
-# Install the OpenLDAP development package
-RUN apt-get update && apt-get install -y \
-    libldap2-dev \
-    && rm -rf /var/lib/apt/lists/*
-# Install the OpenLDAP development package    
-RUN apt-get update && apt-get install -y \
-    libsasl2-dev \
-    libldap2-dev \
-    libssl-dev
 # install system dependencies
 RUN apt-get update \
   && apt-get -y install netcat gcc postgresql \

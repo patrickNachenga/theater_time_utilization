@@ -1,7 +1,9 @@
-from typing import List
+from datetime import datetime
+from typing import List, Any
 
 import pendulum
-from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select, update
 
 from src.db.session import session_scope
 from src.models import AcademicYear
@@ -71,6 +73,7 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
         :return:
         """
         academic_year_list = []
+        status_checkup = True  # used for onetime check on all supplied academic year status from inputs
         action_name = "Registered"
         with session_scope() as session:
             # Check if the Academic Year already exist using uid
@@ -83,12 +86,38 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             # check for existing course using uid
             existed_academic_year = self.get_academic_year_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
+                # Through an Exception that may be occurred during verification of user inputs
+                try:
+                    start_date = datetime.strptime(inputItem.start_date, "%Y-%m-%d")
+                    end_date = datetime.strptime(inputItem.end_date, "%Y-%m-%d")
+                    # Check if inputs has value of start year that great than end year and through an exception
+                    if start_date > end_date:
+                        return Response(status=False, code=ResponseCode.INVALID_REQUEST,
+                                        data=AcademicYearListNode(items=[], total_count=0),
+                                        message="End year must be great than Start year to all inputs")
+                    # Apply one time check of all inputs status to decide return/pass the operation
+                    if status_checkup:
+                        status_checkup = False
+                        status_list = [item.status for item in inputs if item.status == 1]
+                        if len(status_list) > 1:
+                            return Response(status=False, code=ResponseCode.INVALID_REQUEST,
+                                            data=AcademicYearListNode(items=[], total_count=0),
+                                            message="Only one active Academic year are Accepted")
+                        else:
+                            if len(status_list) == 1:
+                                session.query(AcademicYear).filter(AcademicYear.status == 1).update({"status": 0})
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=AcademicYearListNode(items=[], total_count=0),
+                                    message="Unable to register Academic year")
+
                 if inputItem.uid is None:
                     academic_year = AcademicYear(
                         name=inputItem.name,
                         status=inputItem.status,
                         start_date=inputItem.start_date,
-                        end_date=inputItem.end_date
+                        end_date=inputItem.end_date,
                     )
                     academic_year_list.append(academic_year)
                 else:
@@ -97,16 +126,18 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
                                                 existed_academic_year), None)
 
                     if academic_year:
-                        academic_year.name = inputItem.name,
-                        academic_year.status = inputItem.status,
-                        academic_year.start_date = inputItem.start_date
-                        academic_year.end_date = inputItem.end_date,
+                        obj_data = jsonable_encoder(inputItem)
+                        for key, value in obj_data.items():
+                            setattr(academic_year, key, value)
                         academic_year_list.append(academic_year)
             session.add_all(academic_year_list)
+            session.commit()
             count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=AcademicYearListNode(items=academic_year_list, total_count=count),
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=AcademicYearListNode(items=academic_year_list, total_count=count),
                             message=f"Academic Year {action_name} Successfully")
+
     # Delete Function
     @staticmethod
     def remove_academic_year(uid: str):

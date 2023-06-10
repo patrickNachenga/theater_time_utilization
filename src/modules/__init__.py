@@ -3,6 +3,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, insert, inspect, or_
+from sqlalchemy.orm import joinedload
 
 from src.db.session import session_scope
 from src.models import Base, BaseModel
@@ -28,10 +29,23 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.session = session_scope()
 
     def get(self, uid: Any) -> Optional[ModelType]:
+        if uid == '':
+            uid = None
         with session_scope() as session:
             stmt = select(self.model).where((self.model.uid == uid) & (self.model.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
+
+    # def get_multi_paginated(self, filter_field, pagination: Pagination) -> List[ModelType]:
+    #     # return db.query(self.model).offset(skip).limit(limit).all()
+    #     model_field = getattr(self.model, filter_field)
+    #     with session_scope() as session:
+    #         if pagination.search:
+    #             return session.query(self.model).where(
+    #                 (model_field.ilike(f"%{pagination.search}%")) & (self.model.deleted_at.is_(None))).offset(
+    #                 pagination.page).limit(pagination.limit).all()
+    #         return session.query(self.model).where(self.model.deleted_at.is_(None)).offset(pagination.page).limit(
+    #             pagination.limit).all()
 
     def get_multi(self) -> List[ModelType]:
         with session_scope() as session:
@@ -54,7 +68,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                                                                [getattr(input_obj, input_unique_field) for input_obj in
                                                                 inputs if input_obj.uid is None])
             if existed_db_obj_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_db_obj_list,
+                return Response(status=False, code=ResponseCode.DUPLICATE,
+                                data=search_node(items=db_obj_list, total_count=count),
                                 message="Entry Already exists")
             try:
                 # check for existing Db Objs using uid
@@ -77,7 +92,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                             db_obj_list.append(db_obj)
                 session.add_all(db_obj_list)
                 session.commit()
-                return Response(status=True, code=ResponseCode.SUCCESS, data=db_obj_list,
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=search_node(items=db_obj_list, total_count=count),
                                 message="Successfully Submitted")
             except Exception as e:
                 print(e)
@@ -100,14 +116,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def remove(self, uid: str) -> ModelType:
         with session_scope() as session:
-            obj = session.query(self.model).filter_by(uid=uid).update({self.model.deleted_at: pendulum.now()})
+            obj = session.query(self.model).filter_by(uid=uid)
+            if not obj.first():
+                msg = "%s object not found with uid %s" % (self.model, uid)
+                raise Exception(msg)
+            obj.update({self.model.deleted_at: pendulum.now()})
             session.commit()
             return obj
 
-    def get_multi_paginated(self, pagination: PaginationInput, search_columns: List[str], search_node) -> SearchOutput:
+    def get_multi_paginated(self, pagination: PaginationInput, search_columns: List[str], search_node,
+                            relationships_to_join: List[str] = None) -> SearchOutput:
         with session_scope() as session:
             query = session.query(self.model).filter(self.model.deleted_at.is_(None))
-            total_count = query.count()
             search_q = pagination.search if pagination.search else ''
             # Apply filters
             filter_conditions = []
@@ -117,10 +137,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
             if filter_conditions:
                 query = query.filter(or_(*filter_conditions))
+            total_count = query.count()
             # Apply pagination
-            query = query.limit(pagination.limit).offset(pagination.offset)
+            query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
 
             # Fetch items and total count
+            if relationships_to_join and len(relationships_to_join) > 0:
+                for relationship_name in relationships_to_join:
+                    query = query.options(joinedload(relationship_name))
             items = query.all()
             session.close()
 

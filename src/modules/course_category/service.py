@@ -1,20 +1,23 @@
 from typing import List
 
 import pendulum
-from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select, desc
 
 from src.db.session import session_scope
 from src.models.course_category import CourseCategory
+from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseCategoryInput, CourseCategoryNode
+from src.types import CourseCategoryInput, CourseCategoryListNode
 
 
-class CourseCategoryService(object):
+class CourseCategoryService(CRUDBase[CourseCategory, CourseCategoryInput, CourseCategoryInput]):
     @staticmethod
     def get_course_categories() -> List[CourseCategory]:
         with session_scope() as session:
-            result = session.query(CourseCategory).filter(CourseCategory.deleted_at.is_(None)).all()
+            result = session.query(CourseCategory).filter(CourseCategory.deleted_at.is_(None)).order_by(
+                desc(CourseCategory.updated_at)).all()
             return result
 
     @staticmethod
@@ -36,12 +39,13 @@ class CourseCategoryService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseCategory).where((CourseCategory.uid.in_(uids)) & (CourseCategory.deleted_at.is_(None)))
+            stmt = select(CourseCategory).where((CourseCategory.uid.in_(uids)) & (CourseCategory.deleted_at.is_(None))).order_by(
+                desc(CourseCategory.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
     @staticmethod
-    def get_course_by_uid(uid: str) -> CourseCategory:
+    def get_course_category_by_uid(uid: str) -> CourseCategory:
         """
         Get course category by uid
         :param uid:
@@ -52,7 +56,7 @@ class CourseCategoryService(object):
             result = session.scalars(stmt)
             return result.first()
 
-    def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[List[CourseCategoryNode]]:
+    def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[CourseCategoryListNode]:
         """
         Register Course Categories
         :param inputs:
@@ -65,7 +69,8 @@ class CourseCategoryService(object):
             existed_course_category_list = self.get_course_categories_by_names(
                 [course_category.name for course_category in inputs if course_category.uid is None])
             if existed_course_category_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_course_category_list,
+                return Response(status=False, code=ResponseCode.DUPLICATE,
+                                data=CourseCategoryListNode(items=existed_course_category_list, total_count=0),
                                 message="Course Category Already Exists")
             # check for existing course category using uid
             existed_course_category = self.get_course_categories_by_uids([inputItem.uid for inputItem in inputs])
@@ -74,7 +79,6 @@ class CourseCategoryService(object):
                     course_category = CourseCategory(
                         name=inputItem.name,
                         description=inputItem.description,
-
                     )
                     course_category_list.append(course_category)
                 else:
@@ -83,12 +87,15 @@ class CourseCategoryService(object):
                         filter(lambda course_category: str(course_category.uid) == str(inputItem.uid),
                                existed_course_category), None)
                     if course_category:
-                        course_category.description = inputItem.description,
-                        course_category.name = inputItem.name,
+                        obj_data = jsonable_encoder(inputItem)
+                        for key, value in obj_data.items():
+                            setattr(course_category, key, value)
                         course_category_list.append(course_category)
             session.add_all(course_category_list)
+            count = session.query(CourseCategory).filter(CourseCategory.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=course_category_list,
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=CourseCategoryListNode(items=course_category_list, total_count=count),
                             message=f"Successfully to {action_name} Course Category")
 
     # Delete Function
@@ -102,3 +109,6 @@ class CourseCategoryService(object):
         with session_scope() as session:
             session.query(CourseCategory).filter_by(uid=uid).update({CourseCategory.deleted_at: pendulum.now()})
             session.commit()
+
+
+CourseCategoryCrud = CourseCategoryService(CourseCategory)

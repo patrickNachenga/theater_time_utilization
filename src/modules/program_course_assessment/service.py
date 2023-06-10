@@ -1,21 +1,25 @@
 from typing import List
 
 import pendulum
-from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select, desc
 
 from src.db.session import session_scope
 from src.models import ProgramCourseAssessment
-from src.models.student import Student
+from src.modules import CRUDBase
+from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode
+from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode, ProgramCourseAssessmentListNode
 
 
-class ProgramCourseAssessmentService(object):
+class ProgramCourseAssessmentService(
+    CRUDBase[ProgramCourseAssessment, ProgramCourseAssessmentInput, ProgramCourseAssessmentInput]):
     @staticmethod
     def get_program_course_assessment() -> List[ProgramCourseAssessment]:
         with session_scope() as session:
-            result = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).all()
+            result = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).order_by(
+                desc(ProgramCourseAssessment.updated_at)).all()
             return result
 
     @staticmethod
@@ -26,7 +30,8 @@ class ProgramCourseAssessmentService(object):
         """
         with session_scope() as session:
             stmt = select(ProgramCourseAssessment).where(
-                (ProgramCourseAssessment.id.in_(id)) & (ProgramCourseAssessment.deleted_at.is_(None)))
+                (ProgramCourseAssessment.id.in_(id)) & (ProgramCourseAssessment.deleted_at.is_(None))).order_by(
+                desc(ProgramCourseAssessment.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
@@ -38,7 +43,8 @@ class ProgramCourseAssessmentService(object):
         """
         with session_scope() as session:
             stmt = select(ProgramCourseAssessment).where(
-                (ProgramCourseAssessment.uid.in_(uids)) & (ProgramCourseAssessment.deleted_at.is_(None)))
+                (ProgramCourseAssessment.uid.in_(uids)) & (ProgramCourseAssessment.deleted_at.is_(None))).order_by(
+                desc(ProgramCourseAssessment.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
@@ -51,53 +57,71 @@ class ProgramCourseAssessmentService(object):
         """
         with session_scope() as session:
             stmt = select(ProgramCourseAssessment).where(
-                (ProgramCourseAssessment.uid == uid) & (ProgramCourseAssessment.deleted_at.is_(None)))
+                (ProgramCourseAssessment.uid == uid) & ProgramCourseAssessment.deleted_at.is_(None))
             result = session.scalars(stmt)
             return result.first()
 
-    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[List[ProgramCourseAssessmentNode]]:
+    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[
+        ProgramCourseAssessmentListNode]:
         """
-        Register Course Assessment
+        Register Program Course Assessment
         :param inputs:
-        :return:
+        :return Response[ProgramCourseAssessmentListNode]:
         """
         program_course_assessment_list = []
+        action_type = "Register"
         with session_scope() as session:
-            # Check if the course assessment already exist using uid
-            existed_program_course_assessment_list = self.get_program_course_assessment_by_uids(
-                [program_course_assessment.uid for program_course_assessment in inputs if
-                 program_course_assessment.uid is None])
-            if existed_program_course_assessment_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_program_course_assessment_list,
-                                message="Course Assessment Already Exists")
             # check for existing course using uid
             existed_program_course_assessment = self.get_program_course_assessment_by_uids(
                 [inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
+                # Verify and get supplied Program course uid. and get existed program course id from returned program model
+                try:
+                    program_course = ProgramCourseService.get_program_course_by_uid(inputItem.program_course_uid)
+                    if program_course is None:
+                        raise ValueError("You have submitted incorrect programs course details")
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                                    message="You have submitted incorrect programs course details")
+
                 if inputItem.uid is None:
                     program_course_assessment = ProgramCourseAssessment(
-                        program_course_id=inputItem.program_course_id,
+                        program_course=program_course,
                         exam_category_uid=inputItem.exam_category_uid,
                         minimum_exams=inputItem.minimum_exams,
                         can_exceed_minimum_by=inputItem.can_exceed_minimum_by,
                         maximum_score=inputItem.maximum_score
                     )
-                    program_course_assessment_list.append(program_course_assessment)
+                    local_object = session.merge(program_course_assessment)
+                    session.add(local_object)
+                    session.commit()
+                    program_course_assessment_list.append(local_object)
                 else:
+                    action_type = "Update"
                     program_course_assessment = next(filter(
-                        lambda program_course_assessment: str(program_course_assessment.uid) == str(inputItem.uid),
+                        lambda course_assessment: str(course_assessment.uid) == str(inputItem.uid),
                         existed_program_course_assessment), None)
                     if program_course_assessment:
-                        program_course_assessment.program_course_id = inputItem.program_course_id,
-                        program_course_assessment.exam_category_uid = inputItem.exam_category_uid,
-                        program_course_assessment.minimum_exams = inputItem.minimum_exams,
-                        program_course_assessment.can_exceed_minimum_by = inputItem.can_exceed_minimum_by,
-                        program_course_assessment.maximum_score = inputItem.maximum_score
-                        program_course_assessment_list.append(program_course_assessment)
+                        obj_data = jsonable_encoder(inputItem)
+                        # # Replace referenced uids field with model required ids field
+                        obj_data['program_course'] = program_course
+
+                        for key, value in obj_data.items():
+                            setattr(program_course_assessment, key, value)
+                        local_object = session.merge(program_course_assessment)
+                        session.add(local_object)
+                        session.commit()
+                        program_course_assessment_list.append(local_object)
+                    program_course_assessment_list.append(program_course_assessment)
             session.add_all(program_course_assessment_list)
+            count = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).count()
             session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=program_course_assessment_list,
-                            message="Successfully Submitted Course Assessment")
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=ProgramCourseAssessmentListNode(items=program_course_assessment_list,
+                                                                 total_count=count),
+                            message=f"Successfully to {action_type} Program Course")
 
     # Delete Function
     @staticmethod
@@ -111,3 +135,6 @@ class ProgramCourseAssessmentService(object):
             session.query(ProgramCourseAssessment).filter_by(uid=uid).update(
                 {ProgramCourseAssessment.deleted_at: pendulum.now()})
             session.commit()
+
+
+ProgramCourseAssessmentCrud = ProgramCourseAssessmentService(ProgramCourseAssessment)

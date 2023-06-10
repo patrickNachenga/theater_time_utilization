@@ -2,38 +2,79 @@ from typing import List
 
 import strawberry
 
-from src.modules.course_learn_outcome.service import CourseLearnOutcomeService
+from src.models import CourseLearnOutcome
+from src.modules.course_learn_outcome.service import CourseLearnOutcomeService, CourseLearnOutcomeCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseLearnOutcomeNode, CourseLearnOutcomeInput
+from src.types import CourseLearnOutcomeNode, CourseLearnOutcomeInput, PaginationInput, CourseLearnOutcomeListNode
 
 
 @strawberry.type
 class CourseLearnOutcomeQuery:
+    # @strawberry.field
+    # def get_course_learn_outcomes(self, pagination: PaginationInput) -> Response[CourseLearnOutcomeListNode]:
+    #     try:
+    #         result = CourseLearnOutcomeCrud.get_multi_paginated(pagination, [],CourseLearnOutcomeListNode)
+    #     except Exception as e:
+    #         print(e)
+    #         result = CourseLearnOutcomeListNode(items=[], total_count=0)
+    #     return Response(
+    #         status=True,
+    #         code=ResponseCode.SUCCESS,
+    #         message="Successfully Retrieve Course Learn Outcome",
+    #         data=result)
+
     @strawberry.field
-    def get_course_learn_outcome(self) -> Response[List[CourseLearnOutcomeNode]]:
+    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
         try:
-            result = CourseLearnOutcomeService.get_course_learn_outcome()
+            result = CourseLearnOutcomeService.get_course_learn_outcome_by_course(course_uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Course Learn Outcome",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Successfully Retrieve Course Learn Outcome",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Learn Outcome not found",
+                data=[])
+
+    @strawberry.field
+    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
+        try:
+            result = CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course Learn Outcome Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Learn Outcome not found",
+                data=None)
 
 
 @strawberry.type
 class CourseLearnOutcomeMutation:
     @strawberry.field
-    def register_course_learn_outcome(self, inputs: List[CourseLearnOutcomeInput]) -> Response[List[CourseLearnOutcomeNode]]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode | None]:
         try:
-            return CourseLearnOutcomeService().register_course_learn_outcome(inputs)
+            return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed made Change on course learn outcome",
-                            data=[])
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course learn outcome",
+                            data=None)
 
     # Delete programs type function
     @strawberry.mutation
@@ -44,7 +85,7 @@ class CourseLearnOutcomeMutation:
         :return:
         """
         try:
-            CourseLearnOutcomeService().remove_course_learn_outcome(uid)
+            CourseLearnOutcomeService.remove_course_learn_outcome(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

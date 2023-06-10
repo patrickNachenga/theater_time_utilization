@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     HOST_HTTP: str = os.environ.get("HOST_HTTP", "http://")
     HOST_URL: str = os.environ.get("HOST_URL")
     HOST_PORT: int = int(os.environ.get("HOST_PORT"))
+
     BASE_URL: str = HOST_HTTP + HOST_URL + ":" + str(HOST_PORT)
     POSTGRES_USER: str = os.environ.get("POSTGRES_USER", )
     POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD")
@@ -32,6 +33,8 @@ class Settings(BaseSettings):
     REDIS_HOST = os.environ.get("REDIS_HOST")
     REDIS_PORT = os.environ.get("REDIS_PORT")
     LOGGING_FILE_NAME = 'logs'
+
+    UAA_URi = "http://45.61.55.203:8001"
 
 
 settings = Settings()
