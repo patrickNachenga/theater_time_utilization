@@ -151,7 +151,7 @@ class Sr2ApiCalls(object):
        """
         with session_scope() as session:
             try:
-                stmt = select(ControlNumber).where((ControlNumber.registration_number.in_(registration_number)) & (ControlNumber.deleted_at.is_(None)))
+                stmt = select(ControlNumber).where((ControlNumber.registration_number == registration_number) & (ControlNumber.deleted_at.is_(None)))
                 result = session.scalars(stmt)
                 return result.all()
             except Exception as e:
