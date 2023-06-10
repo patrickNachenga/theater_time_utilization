@@ -117,16 +117,26 @@ class Sr2ApiCalls(object):
        :return Optional[str]:
        """
         with session_scope() as session:
+
+            return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                            data=None, message="Program Not Found")
             try:
+                program = session.query(FeeStructure).filter(FeeStructure.fee_name == input.fee_name,
+                                                                   FeeStructure.study_year).first()
+                if not program:
+                    return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                    data=None, message="Program Not Found")
+
+
                 control_number = ControlNumber(
                     registration_number=input.registration_number,
                     bill_id=input.billid,
-                    fee_name=input.fee_name,
-                    amount=input.amount,
                     control_number=input.control_number,
-                    currency=input.currency,
                     pay_type=input.pay_type,
-                    academic_year=input.academic_year,
+                    # academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,
                 )
                 session.add(control_number)
                 session.commit()
@@ -139,7 +149,28 @@ class Sr2ApiCalls(object):
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Failed to register control number",
+                    message="Failed to register control number",# acade# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,mic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,
                     data=None)
 
     @staticmethod
