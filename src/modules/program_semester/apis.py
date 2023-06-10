@@ -12,17 +12,37 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 @strawberry.type
 class ProgramSemesterQuery:
     @strawberry.field
-    def get_program_semester(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
+    def get_program_semesters(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
         try:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, [], ProgramSemesterListNode)
         except Exception as e:
             print(e)
-            result = []
+            result = ProgramSemesterListNode(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Program Semesters",
             data=result)
+
+    @strawberry.field
+    def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode | None]:
+        try:
+            result = ProgramSemesterService.get_program_semester_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Semester retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Semester not found",
+                data=None)
 
 
 @strawberry.type
@@ -33,7 +53,7 @@ class ProgramSemesterMutation:
             return ProgramSemesterService(ProgramSemester).register_program_semesters(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Semester",
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Program Semester",
                             data=ProgramSemesterListNode(items=[], total_count=0),)
 
     # Delete programs type function

@@ -6,7 +6,6 @@ from src.models import BaseModel
 
 class Program(BaseModel):
     __tablename__ = "programs"
-    id: int = Column(Integer, primary_key=True, index=True)
     code: str = Column(String, nullable=False, unique=False)
     tcu_code: str = Column(String, nullable=True, unique=False)
     nacte_code: str = Column(String, nullable=True, unique=False)
@@ -14,20 +13,21 @@ class Program(BaseModel):
     name: str = Column(String, nullable=False)
     short_name: str = Column(String, nullable=False, unique=False)
     duration: int = Column(Integer, nullable=False)
+    moodle_id: str = Column(String, nullable=True)
+
+    program_id = Column(Integer, index=True)
     # ---------------Mapped Columns ---------------------
-    program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=True, index=True)
+    program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False)
     program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
 
-    department_uid: str = Column(String, nullable=True, index=True)
+    department_uid: str = Column(String, nullable=True)
 
     campus_uid: str = Column(String, nullable=True)
 
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
-
-
-
-
+    fee_structures = relationship("FeeStructure", lazy='subquery', back_populates="program")
+    program_capacities = relationship('ProgramCapacity', lazy='subquery', back_populates="program")
 
 
 

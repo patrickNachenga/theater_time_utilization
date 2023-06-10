@@ -34,5 +34,7 @@ class Settings(BaseSettings):
     REDIS_PORT = os.environ.get("REDIS_PORT")
     LOGGING_FILE_NAME = 'logs'
 
+    UAA_URi = "http://45.61.55.203:8001"
+
 
 settings = Settings()

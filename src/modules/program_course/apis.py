@@ -1,28 +1,49 @@
 from typing import List
 
 import strawberry
+from sqlalchemy import inspect
 
 from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput
+from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode
 
 
 @strawberry.type
 class ProgramCourseQuery:
     @strawberry.field
-    def get_program_course(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
+    def get_program_courses(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
         try:
-            result = ProgramCourseCrud.get_multi_paginated(pagination, ['name', 'short_name'], ProgramCourseListNode)
+            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode, ["course", "course_category", "program_semester"])
         except Exception as e:
             print(e)
-            result = []
+            result = ProgramCourseListNode(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
             message="Successfully Retrieve Program Courses",
             data=result)
+
+    @strawberry.field
+    def get_program_course(self, uid: str) -> Response[ProgramCourseNode | None]:
+        try:
+            result = ProgramCourseService.get_program_course_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Successfully Retrieve Program Course",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Course not found",
+                data=None)
 
 
 @strawberry.type
@@ -38,7 +59,7 @@ class ProgramCourseMutation:
             return ProgramCourseService(ProgramCourse).register_program_courses(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Change Program Courses",
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Change Program Courses",
                             data=ProgramCourseListNode(items=[], total_count=0), )
 
     # Delete programs type function

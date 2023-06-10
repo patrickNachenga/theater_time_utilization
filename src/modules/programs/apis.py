@@ -6,7 +6,7 @@ from src.models import Program
 from src.modules.programs.service import ProgramService, ProgramCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramInput, PaginationInput, ProgramListNode
+from src.types import ProgramInput, PaginationInput, ProgramListNode, ProgramNode
 
 
 @strawberry.type
@@ -14,15 +14,84 @@ class ProgramQuery:
     @strawberry.field
     def get_programs(self, pagination: PaginationInput) -> Response[ProgramListNode]:
         try:
-            result = ProgramCrud.get_multi_paginated(pagination, ['name', 'short_name'], ProgramListNode)
+            result = ProgramCrud.get_multi_paginated(pagination,
+                                                     ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
+                                                      'registration_code'], ProgramListNode, ["program_category"])
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)
-        return Response(
-            status=False,
-            code=ResponseCode.FAILURE,
-            message="Program retrieved successfully",
-            data=result)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=result)
+
+    @strawberry.field
+    def get_program(self, uid: str) -> Response[ProgramNode | None]:
+        try:
+            result = ProgramService.get_program_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=None)
+
+    @strawberry.field
+    def get_programs_by_program_category_uid(self, program_category_uid: str) -> Response[ProgramListNode]:
+        try:
+            result = ProgramService(Program).get_programs_by_category(program_category_uid)
+        except Exception as e:
+            print(e)
+            result = ProgramListNode(items=[], total_count=0)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=None)
+
+    @strawberry.field
+    def get_programs_by_department_uid(self, department_uid: str) -> Response[ProgramListNode]:
+        try:
+            result = ProgramService(Program).get_programs_by_department(department_uid)
+        except Exception as e:
+            print(e)
+            result = ProgramListNode(items=[], total_count=0)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=None)
 
 
 @strawberry.type

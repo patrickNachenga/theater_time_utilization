@@ -13,7 +13,6 @@ engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(autocommit=False, expire_on_commit=False, autoflush=False, bind=engine)
 
-
 @contextmanager
 def session_scope():
     """Provide a transactional scope around a series of operations."""

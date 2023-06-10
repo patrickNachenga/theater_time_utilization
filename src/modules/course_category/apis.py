@@ -6,16 +6,16 @@ from src.models import CourseCategory
 from src.modules.course_category.service import CourseCategoryService, CourseCategoryCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseCategoryInput, CourseCategoryNode, PaginatedCourseCategory, PaginationInput
+from src.types import CourseCategoryInput, CourseCategoryNode, CourseCategoryListNode, PaginationInput
 
 
 @strawberry.type
 class CourseCategoryQuery:
     @strawberry.field
-    def get_course_categories(self, pagination: PaginationInput) -> Response[PaginatedCourseCategory]:
+    def get_course_categories(self, pagination: PaginationInput) -> Response[CourseCategoryListNode]:
         try:
             result = CourseCategoryCrud.get_multi_paginated(pagination, ['program_courses', 'code', 'description'],
-                                                            PaginatedCourseCategory)
+                                                            CourseCategoryListNode)
         except Exception as e:
             print(e)
             result = []
@@ -26,30 +26,39 @@ class CourseCategoryQuery:
             data=result)
 
     @strawberry.field
-    def get_course_category(self, uid: str) -> Response[CourseCategoryNode]:
+    def get_course_category(self, uid: str) -> Response[CourseCategoryNode | None]:
         try:
             result = CourseCategoryService(CourseCategory).get_course_category_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Course Category Retrieved successfully",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course Category Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Category not found",
+                data=None)
 
 
 @strawberry.type
 class CourseCategoryMutation:
     @strawberry.field
-    def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[List[CourseCategoryNode]]:
+    def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[CourseCategoryListNode]:
         try:
             return CourseCategoryService(CourseCategory).register_course_categories(inputs)
-
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Course C  ategory",
-                            data=[])
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Category not found",
+                data=None)
 
     @strawberry.mutation
     async def remove_course_category(self, uid: str) -> Response[None]:
@@ -59,7 +68,7 @@ class CourseCategoryMutation:
         :return:
         """
         try:
-            result = CourseCategoryService().remove_course_category(uid)
+            CourseCategoryService.remove_course_category(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

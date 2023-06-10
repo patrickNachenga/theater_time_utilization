@@ -14,7 +14,7 @@ class ProgramCategoryQuery:
     @strawberry.field
     def get_program_categories(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
         try:
-            result = ProgramCategoryCrud.get_multi_paginated(pagination, ['name', 'short_name'],
+            result = ProgramCategoryCrud.get_multi_paginated(pagination, [],
                                                              ProgramCategoryListNode)
         except Exception as e:
             print(e)
@@ -26,17 +26,24 @@ class ProgramCategoryQuery:
             data=result)
 
     @strawberry.field
-    def get_program_category(self, uid: str) -> Response[ProgramCategoryNode]:
+    def get_program_category(self, uid: str) -> Response[ProgramCategoryNode | None]:
         try:
             result = ProgramCategoryService(ProgramCategory).get_program_category_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Program Category Retrieved successfully",
-            data=result)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Category Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Category not found",
+                data=None)
 
 
 @strawberry.type
@@ -47,8 +54,9 @@ class ProgramCategoryMutation:
             return ProgramCategoryService(ProgramCategory).register_program_categories(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to Register Program Category",
-                            data=[])
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            data=ProgramCategoryListNode(items=[], total_count=0),
+                            message="Failed to Register Program Category")
 
     # Delete programs type function
     @strawberry.mutation
@@ -59,7 +67,7 @@ class ProgramCategoryMutation:
         :return:
         """
         try:
-            ProgramCategoryService().remove_program_category(uid)
+            ProgramCategoryService.remove_program_category(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
