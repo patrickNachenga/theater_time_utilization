@@ -29,12 +29,6 @@ class Sr2ApiCalls(object):
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
-            # Check if the program code already exists in the fee structure table
-            existing_fee_structure = session.query(FeeStructure).filter(FeeStructure.program == program, FeeStructure.study_year == inputs.year_of_study).all()
-            if existing_fee_structure:
-                return Response(status=True, code=ResponseCode.SUCCESS,
-                                data=existing_fee_structure,
-                                message="Fee structure for %s was Retrieved Successful" % program.short_name)
 
             # Set the request payload
             payload = {
@@ -50,7 +44,7 @@ class Sr2ApiCalls(object):
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
-                fee_structure = []
+                fee_structure: FeeStructureNode
                 for structure in response_data["data"]:
                     fee_structure.append(
                         FeeStructure(
@@ -59,13 +53,12 @@ class Sr2ApiCalls(object):
                             study_year=inputs.year_of_study,
                             min_amount=float(structure["min_amount"]),
                             currency=structure["currency"],
-                            program=program
                         )
                     )
                 session.add_all(fee_structure)
                 session.commit()
                 return Response(status=True, code=ResponseCode.SUCCESS,
-                                data=fee_structure, message="Fee Successfully Retrieved")
+                                data=fee_structure, message="Fee structure for %s was Retrieved Successful" % program.short_name)
             else:
                 print(response)
                 return Response(
