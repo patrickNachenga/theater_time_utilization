@@ -490,7 +490,7 @@ class ControlNumberNode:
     currency: str
     pay_type: str
     academic_year: str
-    billid: str
+    bill_id: str
 
 
 LoginResult = strawberry.union("LoginResult", types=(LoginSuccess, LoginError))
