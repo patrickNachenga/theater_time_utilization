@@ -447,6 +447,7 @@ class FeeStructureNode:
     currency: str
     program: ProgramNode
 
+
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
     program_uid: str
@@ -515,3 +516,43 @@ class ProgramCapacityInputNode:
     academic_year_uid: str
     is_active: bool
     uid: Optional[str]
+
+
+@strawberry.type(description="Semester registration")
+class SemesterRegistrationNode:
+    student_uid: str
+    study_year: int
+    semester_program: ProgramSemesterNode
+
+
+@strawberry.type(description="Semester registration list")
+class SemesterRegistrationListNode:
+    items: List[SemesterRegistrationNode]
+    total_count: int
+
+
+@strawberry.input(description="Register student to semester")
+class StudentSemesterRegistrationInputNode:
+    student_uid: str
+    study_year: int
+    program_semester_uid: str
+
+
+@strawberry.type(description="Course registration Node")
+class CourseRegistrationNode:
+    student_uid: str
+    core_elective: str
+    program_course: ProgramCourseNode
+
+
+@strawberry.type(description="Course registration list")
+class CourseRegistrationListNode:
+    items: List[CourseRegistrationNode]
+    total_count: int
+
+
+@strawberry.input(description="Course registration input")
+class CourseRegistrationInputNode:
+    student_uid: str
+    core_elective: int
+    program_course_uid: str
