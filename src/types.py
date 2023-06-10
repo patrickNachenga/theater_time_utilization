@@ -446,6 +446,7 @@ class FeeStructureNode:
     min_amount: float
     currency: str
     program: ProgramNode
+    study_year: int
 
 
 @strawberry.input(description="Request Control Numbers Input")

@@ -30,23 +30,23 @@ class Sr2ApiCalls(object):
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
             # Check if the program code already exists in the fee structure table
-            existing_fee_structure = session.query(FeeStructure).filter_by(program=program).first()
+            existing_fee_structure = session.query(FeeStructure).filter(FeeStructure.program == program, FeeStructure.study_year == inputs.year_of_study).all()
+            if existing_fee_structure:
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=existing_fee_structure,
+                                message="Fee structure for %s was Retrieved Successful" % program.short_name)
 
-            if not existing_fee_structure:
-                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
-                                data=None, message="Fee structure for %s was Not Found" % program.code)
             # Set the request payload
             payload = {
                 "program_code": program.code,
                 "year_of_study": inputs.year_of_study,
-                "study_level": program.program_category.code,
+                "study_level": program.program_category.short_name,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
             encoded_params = urlencode(payload)
             # Send the Get request
             response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}")
-
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
@@ -151,7 +151,8 @@ class Sr2ApiCalls(object):
        """
         with session_scope() as session:
             try:
-                stmt = select(ControlNumber).where((ControlNumber.registration_number == registration_number) & (ControlNumber.deleted_at.is_(None)))
+                stmt = select(ControlNumber).where(
+                    (ControlNumber.registration_number == registration_number) & (ControlNumber.deleted_at.is_(None)))
                 result = session.scalars(stmt)
                 return result.all()
             except Exception as e:
