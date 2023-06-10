@@ -1,15 +1,38 @@
-from typing import List
+from typing import List, Any, Optional
 
 import strawberry
 
 from src.modules.sr2_api_calls.service import Sr2ApiCalls
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, FeeStructureNode, ControlNumberInput
+from src.types import FeeStructureInput, FeeStructureNode, RequestControlNumberInput, ControlNumberNode
 
 
 @strawberry.type
-class FeeStructureMutation:
+class Sr2ApiCallQuery:
+    @strawberry.field
+    def get_control_numbers(self, registration_number: str) -> Response[List[ControlNumberNode] | None]:
+        try:
+            result = Sr2ApiCalls.get_student_control_number(registration_number)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Control Numbers Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Control Number not found",
+                data=None)
+
+
+@strawberry.type
+class Sr2ApiCallMutation:
     @strawberry.field
     def request_fee_structure(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode] | None]:
         try:
@@ -23,7 +46,7 @@ class FeeStructureMutation:
                 data=None)
 
     @strawberry.field
-    def request_control_number(self, inputs: ControlNumberInput) -> Response[None]:
+    def request_control_number(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
         try:
             return Sr2ApiCalls.request_control_numbers(inputs)
         except Exception as e:

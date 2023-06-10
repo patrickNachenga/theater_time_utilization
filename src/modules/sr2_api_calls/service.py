@@ -1,15 +1,17 @@
-from typing import List
+from typing import List, Optional
 from urllib.parse import urlencode
 
 import requests
+from sqlalchemy import desc, select
 
 from src.db.session import session_scope
 from src.models import Program
+from src.models.control_number import ControlNumber
 from src.models.fee_structure import FeeStructure
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, ControlNumberInput
-from src.types import FeeStructureNode, ControlNumberNode
+from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode, ControlNumberInput
+from src.types import FeeStructureNode, RequestControlNumberNode
 
 
 class Sr2ApiCalls(object):
@@ -18,12 +20,12 @@ class Sr2ApiCalls(object):
 
     @staticmethod
     def request_fee_structure(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]] | None:
-        '''
+        """
         This is a function to request program fee structure  from SR2
-        '''
+        """
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            program = session.query(Program).filter_by(code=inputs.program_code).first()
+            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
@@ -35,9 +37,9 @@ class Sr2ApiCalls(object):
                                 data=None, message="Fee structure for %s was Not Found" % program.code)
             # Set the request payload
             payload = {
-                "program_code": inputs.program_code,
+                "program_code": program.code,
                 "year_of_study": inputs.year_of_study,
-                "study_level": inputs.study_level,
+                "study_level": program.program_category.code,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
@@ -73,33 +75,24 @@ class Sr2ApiCalls(object):
                     data=None)
 
     @staticmethod
-    def request_control_numbers(inputs: ControlNumberInput) -> Response[List[ControlNumberNode]] | None:
+    def request_control_numbers(inputs: RequestControlNumberInput) -> Response[Optional[str]]:
 
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            '''
-            program = session.query(Program).filter_by(code=inputs.program_code).first()
+            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
-            
-            # Check if the program code already exists in the fee structure table
-            existing_fee_structure = session.query(FeeStructure).filter_by(program=program).first()
-
-            if not existing_fee_structure:
-                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
-                                data=None, message="Fee structure for %s was Not Found" % program.code)
-            '''
 
             # Set the request payload
             payload = {
-                "program_code": inputs.program_code,
+                "program_code": program.code,
+                "study_level": program.program_category.short_name,
+                "program_name": program.name,
                 "year_of_study": inputs.year_of_study,
-                "study_level": inputs.study_level,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "program_name": inputs.program_name,
                 "system": inputs.system,
             }
 
@@ -109,12 +102,58 @@ class Sr2ApiCalls(object):
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
-                #print(response_data["message"])
+                # print(response_data["message"])
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=None, message="Control number request generated successfully")
             else:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=None, message="Failed to generate control number request")
+
+    @staticmethod
+    def register_control_numbers(input: ControlNumberInput) -> Response[Optional[str]]:
+        """
+       Register control number to db generated form sr2
+       :param input:
+       :return Optional[str]:
+       """
+        with session_scope() as session:
+            try:
+                control_number = ControlNumber(
+                    registration_number=input.registration_number,
+                    bill_id=input.billid,
+                    fee_name=input.fee_name,
+                    amount=input.amount,
+                    control_number=input.control_number,
+                    currency=input.currency,
+                    pay_type=input.pay_type,
+                    academic_year=input.academic_year,
+                )
+                session.add(control_number)
+                session.commit()
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Control number registered successful",
+                    data=None)
+            except Exception as e:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Failed to generate control number request",
+                    message="Failed to register control number",
                     data=None)
+
+    @staticmethod
+    def get_student_control_number(registration_number: str) -> List[ControlNumberNode] | None:
+        """
+       Get Student saved control number
+       :param registration_number:
+       :return Optional[str]:
+       """
+        with session_scope() as session:
+            try:
+                stmt = select(ControlNumber).where((ControlNumber.registration_number.in_(registration_number)) & (ControlNumber.deleted_at.is_(None)))
+                result = session.scalars(stmt)
+                return result.all()
+            except Exception as e:
+                print(e)
+                return None

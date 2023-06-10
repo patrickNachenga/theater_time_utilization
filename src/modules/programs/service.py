@@ -4,6 +4,7 @@ import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
+from src.core.moodle_api import MoodleApi
 from src.db.session import session_scope
 from src.models.program import Program
 from src.modules import CRUDBase
