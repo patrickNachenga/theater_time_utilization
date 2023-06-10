@@ -21,6 +21,7 @@ class FeeStructure(BaseModel):
 
         Index(
             'ix_unique_primary_content',  # Index name
+            'name',
             'study_year',
             'program_id',  # Columns which are part of the index
             unique=True,

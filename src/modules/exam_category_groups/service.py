@@ -1,5 +1,6 @@
 from typing import List
 
+import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
@@ -107,3 +108,16 @@ class ExamCategoryGroupsService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=exam_category_groups_list,
                             message="Successfully Submitted")
+
+    @staticmethod
+    def remove_exam_category_group(uid: str):
+        """
+        Remove Exam Category Group
+        :param uid:
+        :return:
+        """
+        print("This is your the deleted uid", uid)
+        with session_scope() as session:
+            session.query(ExamCategoryGroup).filter_by(uid=uid).update({ExamCategoryGroup.deleted_at: pendulum.now()})
+            session.commit()
+

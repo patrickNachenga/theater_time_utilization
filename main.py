@@ -39,7 +39,7 @@ async def startup():
 
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
-    await redis_dependency.init()
+    # await redis_dependency.init()
 
     # background_tasks = BackgroundTasks()
     # background_tasks.add_task(process_data)

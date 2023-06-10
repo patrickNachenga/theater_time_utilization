@@ -30,23 +30,23 @@ class Sr2ApiCalls(object):
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
             # Check if the program code already exists in the fee structure table
-            existing_fee_structure = session.query(FeeStructure).filter_by(program=program).first()
+            existing_fee_structure = session.query(FeeStructure).filter(FeeStructure.program == program, FeeStructure.study_year == inputs.year_of_study).all()
+            if existing_fee_structure:
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=existing_fee_structure,
+                                message="Fee structure for %s was Retrieved Successful" % program.short_name)
 
-            if not existing_fee_structure:
-                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
-                                data=None, message="Fee structure for %s was Not Found" % program.code)
             # Set the request payload
             payload = {
                 "program_code": program.code,
                 "year_of_study": inputs.year_of_study,
-                "study_level": program.program_category.code,
+                "study_level": program.program_category.short_name,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
             encoded_params = urlencode(payload)
             # Send the Get request
             response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}")
-
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
@@ -117,16 +117,26 @@ class Sr2ApiCalls(object):
        :return Optional[str]:
        """
         with session_scope() as session:
+
+            return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                            data=None, message="Program Not Found")
             try:
+                program = session.query(FeeStructure).filter(FeeStructure.fee_name == input.fee_name,
+                                                                   FeeStructure.study_year).first()
+                if not program:
+                    return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                    data=None, message="Program Not Found")
+
+
                 control_number = ControlNumber(
                     registration_number=input.registration_number,
                     bill_id=input.billid,
-                    fee_name=input.fee_name,
-                    amount=input.amount,
                     control_number=input.control_number,
-                    currency=input.currency,
                     pay_type=input.pay_type,
-                    academic_year=input.academic_year,
+                    # academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,
                 )
                 session.add(control_number)
                 session.commit()
@@ -139,7 +149,28 @@ class Sr2ApiCalls(object):
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Failed to register control number",
+                    message="Failed to register control number",# acade# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,# academic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,mic_year=input.academic_year,
+                    # fee_name=input.fee_name,
+                    # amount=input.amount,
+                    # currency=input.currency,
                     data=None)
 
     @staticmethod
@@ -151,7 +182,8 @@ class Sr2ApiCalls(object):
        """
         with session_scope() as session:
             try:
-                stmt = select(ControlNumber).where((ControlNumber.registration_number.in_(registration_number)) & (ControlNumber.deleted_at.is_(None)))
+                stmt = select(ControlNumber).where(
+                    (ControlNumber.registration_number == registration_number) & (ControlNumber.deleted_at.is_(None)))
                 result = session.scalars(stmt)
                 return result.all()
             except Exception as e:

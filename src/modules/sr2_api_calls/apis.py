@@ -11,6 +11,18 @@ from src.types import FeeStructureInput, FeeStructureNode, RequestControlNumberI
 @strawberry.type
 class Sr2ApiCallQuery:
     @strawberry.field
+    def get_fee_structure(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode] | None]:
+        try:
+            return Sr2ApiCalls.request_fee_structure(inputs)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve fee structure",
+                data=None)
+
+    @strawberry.field
     def get_control_numbers(self, registration_number: str) -> Response[List[ControlNumberNode] | None]:
         try:
             result = Sr2ApiCalls.get_student_control_number(registration_number)
@@ -33,17 +45,6 @@ class Sr2ApiCallQuery:
 
 @strawberry.type
 class Sr2ApiCallMutation:
-    @strawberry.field
-    def request_fee_structure(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode] | None]:
-        try:
-            return Sr2ApiCalls.request_fee_structure(inputs)
-        except Exception as e:
-            print(e)
-            return Response(
-                status=False,
-                code=ResponseCode.FAILURE,
-                message="Failed to retrieve fee structure",
-                data=None)
 
     @strawberry.field
     def request_control_number(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
