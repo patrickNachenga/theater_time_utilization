@@ -125,7 +125,7 @@ class Sr2ApiCalls(object):
                         currency=structure["currency"],
                         pay_type=structure["pay_type"],
                         academic_year=structure["academic_year"],
-                        bill_id=structure["bill_id"],
+                        bill_id=structure["billid"],
                     )
                     control_number_list.append(control_number)
                 return
