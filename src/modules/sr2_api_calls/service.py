@@ -117,6 +117,7 @@ class Sr2ApiCalls(object):
                 response_data = response.json()
                 control_number_list = []
                 for structure in response_data["data"]:
+                    print(structure)
                     control_number = ControlNumberNode(
                         registration_number=structure["registration_number"],
                         fee_name=structure["fee_name"],
@@ -125,10 +126,10 @@ class Sr2ApiCalls(object):
                         currency=structure["currency"],
                         pay_type=structure["pay_type"],
                         academic_year=structure["academic_year"],
-                        bill_id=structure["bill_id"],
+                        bill_id=structure["billid"],
                     )
                     control_number_list.append(control_number)
-                return
+                return control_number_list
             else:
                 return None
         except Exception as e:
