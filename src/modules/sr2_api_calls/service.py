@@ -12,9 +12,7 @@ from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumbe
 from src.types import FeeStructureNode
 
 
-
-
-class Sr2ApiCalls(object):R
+class Sr2ApiCalls(object):
     token = '9454c6efdb94236e618c9a7b1a67138b'
     site_url = 'http://197.250.34.41:4747/api/v2/'
 
