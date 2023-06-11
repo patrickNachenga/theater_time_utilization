@@ -36,6 +36,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ExamCategoryGroupsMutation, ExamCategoryMutation,
                   ExamResultsMutation, ExamSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
-
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation,StudentMutation):
     pass
