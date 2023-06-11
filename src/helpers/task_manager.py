@@ -102,3 +102,48 @@ class TaskManager:
                         raise RuntimeError("Fail to register course to moodle")
                 except Exception as e:
                     print('--- Failure to create course to Moodle --- ', course.code)
+
+    @staticmethod
+    async def create_program_course_to_moodle():
+        with session_scope() as session:
+            return 1
+            # # Get only one at a time
+            # course = session.query(Course).filter(
+            #     and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).first()
+            # if course:
+            #     """
+            #     Call Department moodle id for uuid
+            #     """
+            #     try:
+            #         response = requests.get(Settings.UAA_URi+f"department/{course.department_uid}")
+            #         if response.status_code == 200:
+            #             responseData = response.json()
+            #             if responseData["status"]:
+            #                 raise RuntimeError("Fail to register course to moodle")
+            #             moodle = MoodleApi()
+            #             moodle_unit_id = moodle.createCourse(
+            #                 departmentId=responseData["moodle_id"],
+            #                 courseFullName=course.name,
+            #                 courseDescription=course.description,
+            #                 courseShortName=course.code,
+            #             )
+            #
+            #             # TODO: add program to moodle
+            #             moodle = MoodleApi()
+            #             moodle_id = moodle.create_group(
+            #                 course_id=4,
+            #                 group_name=program_semester.academic_year.name,
+            #                 group_description="to be done "
+            #             )
+            #
+            #             if moodle_unit_id != 0:
+            #                 course.moodle_id = moodle_unit_id
+            #                 session.add(course)
+            #                 session.commit()
+            #                 print('--- Successfully added course %s to Moodle ---' % course.code)
+            #             else:
+            #                 print('--- Failure to create course to Moodle --- ', moodle_unit_id)
+            #         else:
+            #             raise RuntimeError("Fail to register course to moodle")
+            #     except Exception as e:
+            #         print('--- Failure to create course to Moodle --- ', course.code)

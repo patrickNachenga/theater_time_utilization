@@ -145,15 +145,6 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     local_object = session.merge(program_course)
                     session.add(local_object)
                     session.commit()
-
-                    # TODO: add program to moodle
-                    moodle = MoodleApi()
-                    moodle_id = moodle.create_group(
-                        course_id=4,
-                        group_name=program_semester.academic_year.name,
-                        group_description="to be done "
-                    )
-                    print(moodle_id)
                     program_course_list.append(local_object)
                 else:
                     action_type = "Update"

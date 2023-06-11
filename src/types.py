@@ -216,12 +216,14 @@ class ProgramNode:
     code: str
     name: str
     short_name: str
-    tcu_code: str
-    nacte_code: str
-    duration: int
+    tcu_code: Optional[str]
+    nacte_code: Optional[str]
+    duration: Optional[int]
     registration_code: str
     program_category: ProgramCategoryNode
     department_uid: str
+    moodle_id: Optional[str]
+    registration_code: Optional[str]
 
 
 @strawberry.type(description="Program paginated Output")
