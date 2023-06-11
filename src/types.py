@@ -557,3 +557,13 @@ class CourseRegistrationInputNode:
     student_uid: str
     core_elective: int
     program_course_uid: str
+@strawberry.type
+class StudentUaaData:
+    registration_number: str
+
+@strawberry.type
+class UaaDataResponse:
+    status: bool
+    message: str
+    code: int
+    data: List[StudentUaaData]

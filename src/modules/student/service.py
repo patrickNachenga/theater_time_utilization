@@ -1,7 +1,13 @@
-from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramSemester, AcademicYear
+import json
+from typing import List
+
+import requests
+from sqlalchemy.orm import sessionmaker
+
+from src.db.session import session_scope, uaa_engine
+from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, BaseModel
 from src.models.student_course_registration import StudentCourseRegistration
-from src.types import CourseRegistrationListNode
+from src.types import CourseRegistrationListNode, UaaDataResponse, StudentUaaData
 
 
 class StudentService:
@@ -11,14 +17,14 @@ class StudentService:
 
     def get_student_current_course_registration(self, student_uid) -> CourseRegistrationListNode:
         with session_scope() as session:
-            result = session.query(StudentCourseRegistration) \
-                .join(ProgramCourse) \
-                .join(ProgramSemester) \
-                .join(AcademicYear) \
-                .filter(StudentCourseRegistration.student_uid == student_uid) \
-                .filter(StudentCourseRegistration.deleted_at.is_(None)) \
-                .filter(AcademicYear.status.is_(1)) \
-                .all()
+            result = session.query(StudentCourseRegistration). \
+                join(ProgramCourse). \
+                join(ProgramSemester). \
+                join(AcademicYear). \
+                filter(StudentCourseRegistration.student_uid == student_uid). \
+                filter(AcademicYear.status == 1). \
+                all()
+
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
     def register_student_course(self, inputs) -> CourseRegistrationListNode:
@@ -30,18 +36,59 @@ class StudentService:
 
         with session_scope() as session:
             for data in inputs:
+
                 program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == data.program_course_uid,
                                                                      ProgramCourse.deleted_at.is_(None)).first()
-                # Check if program course already exist
-                if program_course is None:
-                    return CourseRegistrationListNode(items=[], total_count=0)
-                course_registration = StudentCourseRegistration(
-                    student_uid=data.student_uid,
-                    core_elective=data.core_elective,
-                    program_course=program_course
-                )
-                session.add(course_registration)
+
+                if program_course:
+                    course_registration = session.query(StudentCourseRegistration).filter(StudentCourseRegistration.program_course == program_course,
+                                                                     StudentCourseRegistration.student_uid==data.student_uid,StudentCourseRegistration.deleted_at.is_(None)).first()
+                # Check if registered course already exist, so that not to register once again
+
+                    if course_registration is None:
+                        course_registration = StudentCourseRegistration(
+                            student_uid=data.student_uid,
+                            core_elective=data.core_elective,
+                            program_course=program_course
+                        )
+
+                        session.add(course_registration)
             session.commit()
             result = session.query(StudentCourseRegistration).filter(
                 StudentCourseRegistration.deleted_at.is_(None)).order_by(StudentCourseRegistration.id.desc()).all()
+
             return CourseRegistrationListNode(items=result, total_count=len(result))
+
+    def get_allocation_students(self, allocation_uid) -> [StudentUaaData]:
+
+        with session_scope() as session:
+            student_uids = session.query(StudentCourseRegistration.student_uid). \
+                join(ProgramCourse). \
+                join(CourseAllocation). \
+                filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
+                all()
+
+            # Extract the student UIDs from the query result
+            student_uids = [uid for uid, in student_uids]
+
+            data_obj = {
+                "uids": student_uids
+            }
+            try:
+                # Serialize the data to JSON
+                data_json = json.dumps(data_obj)
+
+                # Set the Content-Type header to indicate that the request body is JSON
+                headers = {
+                    "Content-Type": "application/json"
+                }
+
+                response = requests.post('http://127.0.0.1:8000/students-details-by-uids', data=data_json,
+                                         headers=headers)
+            except Exception as e:
+                print(e)
+                response = None
+            if response.status_code == 200:
+                data = response.json()
+
+        return data
