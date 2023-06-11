@@ -19,12 +19,6 @@ class BaseModel(Base):
     created_by = Column(Integer, nullable=True)
 
 
-from .fee_structure import FeeStructure
-
-
-from .control_number import ControlNumber
-
-from .fee_structure import FeeStructure
 from .program_category import ProgramCategory
 from .course import Course
 from .course_learn_outcome import CourseLearnOutcome

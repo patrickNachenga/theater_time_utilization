@@ -460,6 +460,7 @@ class FeeStructureNode:
     min_amount: float
     currency: str
     program: ProgramNode
+    study_year: int
 
 
 @strawberry.input(description="Request Control Numbers Input")
@@ -570,3 +571,13 @@ class CourseRegistrationInputNode:
     student_uid: str
     core_elective: int
     program_course_uid: str
+@strawberry.type
+class StudentUaaData:
+    registration_number: str
+
+@strawberry.type
+class UaaDataResponse:
+    status: bool
+    message: str
+    code: int
+    data: List[StudentUaaData]

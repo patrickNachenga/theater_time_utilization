@@ -18,7 +18,7 @@ from src.modules.program_semester.apis import ProgramSemesterQuery, ProgramSemes
 from src.modules.programs.apis import ProgramQuery, ProgramMutation
 from src.modules.semester_registration.apis import SemesterRegistrationQuery
 from src.modules.sr2_api_calls.apis import Sr2ApiCallQuery, Sr2ApiCallMutation
-from src.modules.student.apis import StudentQuery
+from src.modules.student.apis import StudentQuery, StudentMutation
 
 
 @strawberry.type
@@ -37,5 +37,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ExamResultsMutation, ExamSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
 
-                  ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation):
+                  ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation,StudentMutation):
     pass

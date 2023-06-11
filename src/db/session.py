@@ -10,6 +10,7 @@ from src.core.config import settings
 metadata = sqlalchemy.MetaData()
 database = databases.Database(settings.DATABASE_URL)
 engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+uaa_engine = create_engine(settings.UAA_DATABASE_URL, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(autocommit=False, expire_on_commit=False, autoflush=False, bind=engine)
 
