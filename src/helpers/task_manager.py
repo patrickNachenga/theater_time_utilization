@@ -106,7 +106,7 @@ class TaskManager:
     @staticmethod
     async def create_program_course_to_moodle():
         with session_scope() as session:
-            return 1
+            return None
             # # Get only one at a time
             # course = session.query(Course).filter(
             #     and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).first()

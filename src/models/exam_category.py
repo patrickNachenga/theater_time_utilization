@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from src.models import BaseModel
 
 
-class ExamCategories(BaseModel):
+class ExamCategory(BaseModel):
     __tablename__ = "exam_categories"
     code: str = Column(String, nullable=False, unique=False)
     name: str = Column(String, nullable=False, unique=False)

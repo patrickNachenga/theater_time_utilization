@@ -49,7 +49,7 @@ class ExamCategoryGroupsNode:
 
 
 @strawberry.input(description="Exam Category Input")
-class ExamCategoriesInput:
+class ExamCategoryInput:
     uid: Optional[str] = None
     name: str
     code: str
@@ -57,7 +57,7 @@ class ExamCategoriesInput:
 
 
 @strawberry.type(description="Exam Category Output")
-class ExamCategoriesNode:
+class ExamCategoryNode:
     uid: str
     name: str
     code: str
@@ -193,6 +193,20 @@ class ProgramCategoryNode:
 class ProgramCategoryListNode:
     items: List[ProgramCategoryNode]
     total_count: int
+
+@strawberry.type(description="Exam Category Output")
+class ExamCategoryNode:
+    uid: str
+    name: str
+    code: str
+    exam_category_group: ExamCategoryGroupsNode
+
+@strawberry.type(description="Exam Category paginated Output")
+class ExamCategoryListNode:
+    items: List[ExamCategoryNode]
+    total_count: int
+
+
 
 
 @strawberry.input(description="Program Input")
