@@ -5,6 +5,7 @@ from sqlalchemy import inspect
 
 from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
+from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode
@@ -15,7 +16,36 @@ class ProgramCourseQuery:
     @strawberry.field
     def get_program_courses(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
         try:
-            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode, ["course", "course_category", "program_semester"])
+            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode,
+                                                           ["course", "course_category", "program_semester"])
+        except Exception as e:
+            print(e)
+            result = ProgramCourseListNode(items=[], total_count=0)
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Successfully Retrieve Program Courses",
+            data=result)
+
+    @strawberry.field
+    def get_program_courses_by_semesters(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
+        try:
+            # Verify and get supplied Program uid. and get existed program model
+            try:
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(pagination.search)
+                if program_semester is None:
+                    raise ValueError("You have submitted incorrect programs semester details")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=ProgramSemesterListNode(items=[], total_count=0),
+                    message="You have submitted incorrect programs semester details"
+                )
+
+            result = ProgramCourseCrud.get_multi_paginated(pagination, ['program_semester_id'], ProgramCourseListNode,
+                                                           ["course", "course_category", "program_semester"])
         except Exception as e:
             print(e)
             result = ProgramCourseListNode(items=[], total_count=0)

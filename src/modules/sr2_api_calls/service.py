@@ -8,7 +8,7 @@ from src.db.session import session_scope
 from src.models import Program
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode
+from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode, RewControlNumberInput
 from src.types import FeeStructureNode
 
 
@@ -99,6 +99,28 @@ class Sr2ApiCalls(object):
             else:
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None, message="Failed to generate control number request")
+
+    @staticmethod
+    def renew_control_number(inputs: RewControlNumberInput) -> Response[Optional[str]]:
+        # Set the request payload
+        payload = {
+            "pay_type": inputs.pay_type,
+            "registration_number": inputs.registration_number,
+            "billid": inputs.bill_id,
+            "service+type": "refresh"
+        }
+
+        # Send the Get request
+        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
+        # Check for errors
+        if response.status_code == 200:
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=None, message="Request Submited Successful")
+        else:
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            data=None, message="Failed to refresh number request")
+
+
 
     @staticmethod
     def get_student_control_number(registration_number: str) -> List[ControlNumberNode] | None:

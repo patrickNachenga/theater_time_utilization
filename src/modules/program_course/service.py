@@ -14,7 +14,7 @@ from src.modules.course_category.service import CourseCategoryService
 from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode
+from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode, PaginationInput
 
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):

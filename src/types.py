@@ -194,6 +194,7 @@ class ProgramCategoryListNode:
     items: List[ProgramCategoryNode]
     total_count: int
 
+
 @strawberry.type(description="Exam Category Output")
 class ExamCategoryNode:
     uid: str
@@ -201,12 +202,11 @@ class ExamCategoryNode:
     code: str
     exam_category_group: ExamCategoryGroupsNode
 
+
 @strawberry.type(description="Exam Category paginated Output")
 class ExamCategoryListNode:
     items: List[ExamCategoryNode]
     total_count: int
-
-
 
 
 @strawberry.input(description="Program Input")
@@ -465,6 +465,13 @@ class FeeStructureNode:
     study_year: int
 
 
+@strawberry.input(description="Renew Control Numbers Input")
+class RewControlNumberInput:
+    registration_number: str
+    pay_type: str
+    bill_id: str
+
+
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
     program_uid: str
@@ -573,9 +580,12 @@ class CourseRegistrationInputNode:
     student_uid: str
     core_elective: int
     program_course_uid: str
+
+
 @strawberry.type
 class StudentUaaData:
     registration_number: str
+
 
 @strawberry.type
 class UaaDataResponse:
