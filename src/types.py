@@ -294,6 +294,15 @@ class CourseCategoryListNode:
     total_count: int
 
 
+
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -309,13 +318,6 @@ class ProgramCourseInput:
     pass_hours: Optional[float] = 0.0
     moodle_id: Optional[str] = None
 
-@strawberry.type(description="Program Course Assessment Output")
-class ProgramCourseAssessmentNode2:
-    uid: str
-    exam_category_uid: str
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
@@ -373,7 +375,7 @@ class ProgramCourseAssessmentInput:
 class ProgramCourseAssessmentNode:
     uid: str
     program_course: ProgramCourseNode
-    exam_category_uid: str
+    exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
@@ -434,7 +436,6 @@ class PaginatedProgramCourseAssessment:
     total_count: int
 
 
-
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str
@@ -461,7 +462,7 @@ class FeeStructureInput:
     program_uid: str
     year_of_study: int
     student_status: str
-    countrycode: int
+    countrycode: str
 
 
 @strawberry.type(description="Fee Structure Output")

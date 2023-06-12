@@ -19,7 +19,7 @@ class ProgramCourseAssessmentQuery:
                                                                                   'can_exceed_minimum_by',
                                                                                   'maximum_score'],
                                                                      PaginatedProgramCourseAssessment,
-                                                                     ["program_course"])
+                                                                     ["program_course", "exam_category"])
         except Exception as e:
             print(e)
             result = []

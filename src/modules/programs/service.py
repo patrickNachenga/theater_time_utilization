@@ -209,13 +209,15 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             for inputItem in inputs:
                 # Verify and get supplied program category uid. and get existed year id from returned Program Category model
                 try:
-                    program_category = ProgramCategoryService.get_program_category_by_uid(
-                        inputItem.program_category_uid)
+                    program_category = ProgramCategoryService.get_program_category_by_uid(inputItem.program_category_uid)
+                    if program_category is None:
+                        raise ValueError("You have submitted incorrect programs category details")
                 except Exception as e:
                     print(e)
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramListNode(items=[], total_count=0),
                                     message="You have submitted incorrect program category details")
+
                 if inputItem.uid is None:
                     program = Program(
                         code=inputItem.code,
