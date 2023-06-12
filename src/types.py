@@ -330,7 +330,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
-    program_course_assessments: ProgramCourseAssessmentNode2
+    program_course_assessments: List[ProgramCourseAssessmentNode2]
 
 
 @strawberry.type(description="Program Course paginated Output")
