@@ -48,7 +48,7 @@ class Sr2ApiCallQuery:
 class Sr2ApiCallMutation:
 
     @strawberry.field
-    def request_control_number(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
+    def request_fee_structure_control_numbers(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
         try:
             return Sr2ApiCalls.request_control_numbers(inputs)
         except Exception as e:

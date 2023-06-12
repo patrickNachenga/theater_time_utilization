@@ -15,8 +15,7 @@ class CourseQuery:
     @strawberry.field
     def get_courses(self, pagination: PaginationInput) -> Response[PaginatedCourse]:
         try:
-            result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description', 'exam_category_uid',
-                                                                 'can_exceed_minimum_by'], PaginatedCourse)
+            result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
         except Exception as e:
             print(e)
             result = PaginatedCourse(items=[], total_count=0)

@@ -62,9 +62,9 @@ class ExamResultsService(object):
         exam_results_list = []
         with session_scope() as session:
             # Check if exam_results already exist using id
-            #existed_exam_results_list = self.get_exam_results_by_ids(
+            # existed_exam_results_list = self.get_exam_results_by_ids(
             #    [exam_results_list for exam_results in inputs if exam_results.id is None])
-            #if existed_exam_results_list:
+            # if existed_exam_results_list:
             #    return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_exam_results_list,
             #                   message="Exam Results Already Exists")
 
@@ -72,16 +72,16 @@ class ExamResultsService(object):
             existed_exam_results = self.get_exam_results_by_ids([item.uid for item in inputs])
             for item in inputs:
                 exam_results = ExamResults(
-                                id=item.id,
-                                student_id=item.student_id,
-                                program_course_id=item.program_course_id,
-                                assess_no=item.assess_no,
-                                exam_cat_id=item.exam_cat_id,
-                                status=item.status,
-                                score=item.score,
-                                weight=item.weight,
-                                out_of=item.out_of,
-                                publish=item.publish,
+                    id=item.id,
+                    student_id=item.student_id,
+                    program_course_id=item.program_course_id,
+                    assess_no=item.assess_no,
+                    exam_cat_id=item.exam_cat_id,
+                    status=item.status,
+                    score=item.score,
+                    weight=item.weight,
+                    out_of=item.out_of,
+                    publish=item.publish,
                 )
                 exam_results_list.append(exam_results)
 
@@ -89,7 +89,6 @@ class ExamResultsService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=exam_results_list,
                             message="Successfully Submitted")
-
 
     @staticmethod
     def remove_exam_results(uid: str):
