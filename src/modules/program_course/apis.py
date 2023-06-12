@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 from sqlalchemy import inspect
 
 from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
+from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode
@@ -13,9 +14,32 @@ from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput
 @strawberry.type
 class ProgramCourseQuery:
     @strawberry.field
-    def get_program_courses(self, pagination: PaginationInput) -> Response[ProgramCourseListNode]:
+    def get_program_courses(self, pagination: PaginationInput, program_semester: Optional[str] = None) -> Response[
+        ProgramCourseListNode]:
         try:
-            result = ProgramCourseCrud.get_multi_paginated(pagination, [], ProgramCourseListNode, ["course", "course_category", "program_semester"])
+            unique_list = []
+            # Verify and get supplied Program uid. and get existed program model
+            if program_semester:
+                try:
+                    prog_sem = ProgramSemesterService.get_program_semester_by_uid(program_semester)
+                    unique_list.append({"program_semester_id": prog_sem.id})
+                    if prog_sem is None:
+                        raise ValueError("You have submitted incorrect programs semester details")
+                except Exception as e:
+                    print(e)
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=ProgramCourseListNode(items=[], total_count=0),
+                        message="You have submitted incorrect programs semester details"
+                    )
+            result = ProgramCourseCrud.get_multi_paginated(pagination,
+                                                           ['credit', 'independent_study_hours', 'pass_hours',
+                                                            'lecture_hours', 'seminar_hours', 'practical_hours',
+                                                            'assignment_hours', 'assignment_hours', 'assignment_hours'],
+                                                           ProgramCourseListNode,
+                                                           ["course", "course_category", "program_semester"],
+                                                           unique_list)
         except Exception as e:
             print(e)
             result = ProgramCourseListNode(items=[], total_count=0)

@@ -14,7 +14,7 @@ class CourseCategoryQuery:
     @strawberry.field
     def get_course_categories(self, pagination: PaginationInput) -> Response[CourseCategoryListNode]:
         try:
-            result = CourseCategoryCrud.get_multi_paginated(pagination, ['program_courses', 'code', 'description'],
+            result = CourseCategoryCrud.get_multi_paginated(pagination, ["description", "name"],
                                                             CourseCategoryListNode)
         except Exception as e:
             print(e)
