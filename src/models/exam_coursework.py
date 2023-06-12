@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
 
@@ -14,3 +15,6 @@ class ExamCoursework(BaseModel):
     weight: float = Column(Float, nullable=False)
     overall_marks: float = Column(Float, nullable=False)
 
+    exam_coursework = relationship("ExamCategory", lazy="subquery", back_populates="exam_category")
+
+    exam_category = relationship("ExamCoursework", lazy="subquery", back_populates="exam_coursework")
