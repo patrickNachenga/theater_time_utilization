@@ -585,6 +585,7 @@ class CourseRegistrationInputNode:
 @strawberry.type
 class StudentUaaData:
     registration_number: str
+    full_name: str
 
 
 @strawberry.type

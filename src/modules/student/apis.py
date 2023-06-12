@@ -40,7 +40,7 @@ class StudentQuery:
                 status=True,
                 code=ResponseCode.SUCCESS,
                 message="Successfully Retrieved",
-                data=[StudentUaaData(registration_number=item['registration_number']) for item in result['data']]
+                data=[StudentUaaData(registration_number=item['registration_number'],full_name=item['full_name']) for item in result['data']]
             )
 
             return response
