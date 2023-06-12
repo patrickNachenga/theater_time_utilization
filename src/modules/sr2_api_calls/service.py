@@ -84,7 +84,7 @@ class Sr2ApiCalls(object):
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "system": inputs.system,
+                "system": "uqf",
             }
 
             # Send the Get request
@@ -115,7 +115,7 @@ class Sr2ApiCalls(object):
         # Check for errors
         if response.status_code == 200:
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=None, message="Request Submited Successful")
+                            data=None, message="Request Submitted Successful")
         else:
             return Response(status=False, code=ResponseCode.FAILURE,
                             data=None, message="Failed to refresh number request")
