@@ -63,7 +63,7 @@ class ExamCategoryGroupsService(object):
     @staticmethod
     def get_exam_category_groups_by_uid(uid: str) -> ExamCategoryGroup:
         """
-        Get exam_category_groups by id
+        Get exam_category_groups by uid
         :param uid:
         :return:
         """
@@ -75,18 +75,12 @@ class ExamCategoryGroupsService(object):
 
     def register_exam_category_groups(self, inputs: List[ExamCategoryGroupsInput]) -> Response[List[ExamCategoryGroupsNode]]:
         """
-        Register ExamCategoryGroup Category
+        Register Exam Category Group
         :param inputs:
         :return:
         """
         exam_category_groups_list = []
         with session_scope() as session:
-            # Check if exam_category_groups already exist using id
-            # existed_exam_cat_groups_list = self.get_exam_cat_groups_by_ids(
-            #     [exam_category_groups.id for exam_category_groups in inputs if exam_category_groups.uid is None])
-            # if existed_exam_cat_groups_list:
-            #     return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_exam_cat_groups_list,
-            #                     message="Exam Category Group Already Exists")
             existed_exam_category_group = self.get_exam_category_groups_by_uids([item.uid for item in inputs])
             # create new exam category group
             for inputItem in inputs:
@@ -116,7 +110,6 @@ class ExamCategoryGroupsService(object):
         :param uid:
         :return:
         """
-        print("This is your the deleted uid", uid)
         with session_scope() as session:
             session.query(ExamCategoryGroup).filter_by(uid=uid).update({ExamCategoryGroup.deleted_at: pendulum.now()})
             session.commit()
