@@ -309,6 +309,13 @@ class ProgramCourseInput:
     pass_hours: Optional[float] = 0.0
     moodle_id: Optional[str] = None
 
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
@@ -323,6 +330,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
+    program_course_assessments: ProgramCourseAssessmentNode2
 
 
 @strawberry.type(description="Program Course paginated Output")
@@ -424,6 +432,7 @@ class PaginatedProgramCourse:
 class PaginatedProgramCourseAssessment:
     items: List[ProgramCourseAssessmentNode]
     total_count: int
+
 
 
 @strawberry.type(description="User Token")

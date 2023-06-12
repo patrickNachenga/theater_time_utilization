@@ -63,8 +63,6 @@ class ExamCategoryService(object):
         :return:
         """
         exam_categories_list = []
-        #print("Inputs list:", inputs)
-
         with session_scope() as session:
             # Check if Exam Category already exists using code
             existing_codes = [exam_categories.code for exam_categories in session.query(ExamCategory).all()]
@@ -82,11 +80,9 @@ class ExamCategoryService(object):
             existed_exam_categories = self.get_exam_categories_by_uids([item.uid for item in inputs])
 
             for inputItem in inputs:
-                print("Input Item:", inputItem)
                 exam_category_group = session.query(ExamCategoryGroup).filter(
                     ExamCategoryGroup.uid == inputItem.exam_category_group_uid
                 ).first()
-                print("Exam Category Group:", exam_category_group)
 
                 if exam_category_group:
                     if inputItem.uid is None:
@@ -115,18 +111,13 @@ class ExamCategoryService(object):
                         data=duplicate_categories,
                         message="Please used valid exam category details",
                     )
-            print("Before commit, exam_categories_list:", exam_categories_list)
 
             session.add_all(exam_categories_list)
             session.commit()
 
-            print("After commit, exam_categories_list:", exam_categories_list)
-
             # Refresh the relationships for the newly added instances
             for exam_categories in exam_categories_list:
                 session.refresh(exam_categories)
-
-            print("After refresh, exam_categories_list:", exam_categories_list)
 
         return Response(
             status=True,
