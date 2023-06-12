@@ -488,7 +488,6 @@ class RequestControlNumberInput:
     student_status: str
     countrycode: int
     registration_number: str
-    system: str
 
 
 @strawberry.type(description="Request Control Numbers Output")
