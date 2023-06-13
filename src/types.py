@@ -3,7 +3,12 @@ from datetime import datetime
 from typing import Optional, List
 
 import strawberry
+from pydantic import BaseModel
 
+
+class ProgramCodeInput(BaseModel):
+    code: Optional[str]
+    uid: Optional[str]
 
 @strawberry.input
 class PaginationInput:
@@ -611,9 +616,7 @@ class RequestProgramSemester:
 
 @strawberry.type
 class InnerStudentProgramSemester:
-    registration_number: Optional[str]
     program_id: int
     academic_year_id: int
     study_year: int
     semester: int
-    program_semester_id: int
