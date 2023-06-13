@@ -294,7 +294,6 @@ class CourseCategoryListNode:
     total_count: int
 
 
-
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode2:
     uid: str
@@ -302,6 +301,7 @@ class ProgramCourseAssessmentNode2:
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
+
 
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
@@ -603,3 +603,22 @@ class UaaDataResponse:
     message: str
     code: int
     data: List[StudentUaaData]
+
+
+@strawberry.input
+class RequestProgramSemester:
+    registration_number: str
+    program_uid: str
+    academic_year_uid: str
+    study_year: int
+    semester: int
+
+
+@strawberry.type
+class InnerStudentProgramSemester:
+    registration_number: Optional[str]
+    program_id: int
+    academic_year_id: int
+    study_year: int
+    semester: int
+    program_semester_id: int
