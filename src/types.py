@@ -319,6 +319,17 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
+
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
+
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
     uid: str
@@ -605,6 +616,23 @@ class UaaDataResponse:
     data: List[StudentUaaData]
 
 
+@strawberry.input(description="Allocation template input")
+class AllocationTemplateNode:
+    allocation_uid: str
+    assessment_number: int
+
+
+@strawberry.scalar
+class Base64String:
+    @staticmethod
+    def serialize(value):
+        return value
+
+
+@strawberry.type
+class ExcelFile:
+    base64_data: Base64String
+
 @strawberry.input
 class RequestProgramSemester:
     registration_number: str
@@ -620,3 +648,4 @@ class InnerStudentProgramSemester:
     academic_year_id: int
     study_year: int
     semester: int
+

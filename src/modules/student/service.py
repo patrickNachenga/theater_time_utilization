@@ -94,37 +94,3 @@ class StudentService:
                 data = response.json()
 
         return data
-
-    def get_allocation_accessment_template(self, allocation_uid, assessment_number) -> [StudentUaaData]:
-
-        with session_scope() as session:
-            student_uids = session.query(StudentCourseRegistration.student_uid). \
-                join(ProgramCourse). \
-                join(CourseAllocation). \
-                filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
-                all()
-
-            # Extract the student UIDs from the query result
-            student_uids = [uid for uid, in student_uids]
-
-            data_obj = {
-                "uids": student_uids
-            }
-            try:
-                # Serialize the data to JSON
-                data_json = json.dumps(data_obj)
-
-                # Set the Content-Type header to indicate that the request body is JSON
-                headers = {
-                    "Content-Type": "application/json"
-                }
-
-                response = requests.post('http://127.0.0.1:8000/students-details-by-uids', data=data_json,
-                                         headers=headers)
-            except Exception as e:
-                print(e)
-                response = None
-            if response.status_code == 200:
-                data = response.json()
-
-        return data
