@@ -3,6 +3,7 @@ from typing import List
 import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
+
 from src.db.session import session_scope
 from src.models import Program, AcademicYear
 from src.models.program_semester import ProgramSemester
@@ -11,7 +12,7 @@ from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramSemesterInput, ProgramSemesterListNode, RequestProgramSemester, InnerStudentProgramSemester
+from src.types import ProgramSemesterInput, ProgramSemesterListNode, InnerStudentProgramSemester
 
 
 class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, ProgramSemesterInput]):

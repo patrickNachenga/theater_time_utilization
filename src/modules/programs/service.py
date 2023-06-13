@@ -11,7 +11,7 @@ from src.modules import CRUDBase
 from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramInput, ProgramListNode
+from src.types import ProgramInput, ProgramListNode, ProgramCodeInput
 
 
 class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
@@ -209,7 +209,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             for inputItem in inputs:
                 # Verify and get supplied program category uid. and get existed year id from returned Program Category model
                 try:
-                    program_category = ProgramCategoryService.get_program_category_by_uid(inputItem.program_category_uid)
+                    program_category = ProgramCategoryService.get_program_category_by_uid(
+                        inputItem.program_category_uid)
                     if program_category is None:
                         raise ValueError("You have submitted incorrect programs category details")
                 except Exception as e:
@@ -265,25 +266,31 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             session.commit()
 
     @staticmethod
-    async def api_get_program_by_code(code: str) -> Response:
+    async def api_get_program_by_code(parm: ProgramCodeInput) -> Response:
         """
             Get programs by codes
-        :param code:
+        :param:
         """
         try:
-            program = ProgramService.get_program_by_code(code)
-            print(program.uid)
+
+            if parm.code:
+                program = ProgramService.get_program_by_code(parm.code)
+            elif parm.uid:
+                program = ProgramService.get_program_by_uid(parm.uid)
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,
                 "name": program.name,
                 "short_name": program.short_name,
-                "department_uid": program.department_uid
+                "department_uid": program.department_uid,
+                "program_category_name": program.program_category.name,
+                "program_category_short_name": program.program_category.short_name,
+
             }, message="Program retrieved Successfully")
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
-                            message=f"fail to find program with code : {code}", data={})
+                            message=f"fail to find program", data={})
 
     @staticmethod
     async def api_get_programs() -> Response:
