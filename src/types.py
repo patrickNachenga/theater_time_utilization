@@ -10,6 +10,7 @@ class ProgramCodeInput(BaseModel):
     code: Optional[str]
     uid: Optional[str]
 
+
 @strawberry.input
 class PaginationInput:
     offset: int = 0
@@ -319,7 +320,6 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
-
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode2:
     uid: str
@@ -327,7 +327,6 @@ class ProgramCourseAssessmentNode2:
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
-
 
 
 @strawberry.type(description="Program Course outputs")
@@ -633,6 +632,7 @@ class Base64String:
 class ExcelFile:
     base64_data: Base64String
 
+
 @strawberry.input
 class RequestProgramSemester:
     registration_number: str
@@ -649,3 +649,8 @@ class InnerStudentProgramSemester:
     study_year: int
     semester: int
 
+
+@strawberry.input(description="Staff Allocation input")
+class StaffAllocationInputNode:
+    program_course_uid: Optional[str]
+    staff_uid: str

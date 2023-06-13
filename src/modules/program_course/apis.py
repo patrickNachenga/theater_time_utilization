@@ -74,6 +74,30 @@ class ProgramCourseQuery:
                 message="Program Course not found",
                 data=None)
 
+    @strawberry.field
+    async def get_student_program_course(self, input: RequestProgramSemester) -> Response[List[ProgramCourseNode]]:
+
+        try:
+            result = ProgramCourseService.get_program_courses()
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Successfully Retrieve Program Courses",
+            data=result)
+
+        # for the rest of the process handling exceptions
+        try:
+            return ProgramCourseService.fetch_student_program_courses(input)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Unable to retrieve student program courses",
+                data=[])
 
 @strawberry.type
 class ProgramCourseMutation:
@@ -115,28 +139,3 @@ class ProgramCourseMutation:
                 message="Failed to Course Program Course",
                 data=None
             )
-
-    @strawberry.mutation
-    async def get_student_program_course(self, input: RequestProgramSemester) -> Response[List[ProgramCourseNode]]:
-
-        try:
-            result = ProgramCourseService.get_program_courses()
-        except Exception as e:
-            print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Program Courses",
-            data=result)
-
-        # for the rest of the process handling exceptions
-        try:
-            return ProgramCourseService.fetch_student_program_courses(input)
-        except Exception as e:
-            print(e)
-            return Response(
-                status=False,
-                code=ResponseCode.FAILURE,
-                message="Unable to retrieve student program courses",
-                data=[])

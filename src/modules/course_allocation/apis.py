@@ -7,7 +7,7 @@ from src.modules.course_allocation.service import CourseAllocationService, Cours
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode, PaginatedCourse, PaginationInput, \
-    CourseAllocationListNode
+    CourseAllocationListNode, StaffAllocationInputNode
 
 
 @strawberry.type
@@ -30,6 +30,27 @@ class CourseAllocationQuery:
     def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
         try:
             result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Successfully Retrieve Course Allocation",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Allocation not found",
+                data=result)
+
+    @strawberry.field
+    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationNode]:
+        try:
+            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
+
         except Exception as e:
             print(e)
             result = None
