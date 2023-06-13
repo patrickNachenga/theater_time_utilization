@@ -1,5 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Integer, Float
 from sqlalchemy.orm import relationship
+
 from src.models import BaseModel
 
 
@@ -13,7 +14,6 @@ class ExamResult(BaseModel):
     weight: int = Column(Integer, nullable=False, unique=False)
     overall_marks: float = Column(Integer, nullable=False)
 
-    exam_result_program_course = relationship("ExamResult", lazy="subquery", back_populates="program_course_exam_result")
+    program_course_exam_result = relationship("ProgramCourse", lazy="subquery", back_populates="exam_result")
 
-    exam_result_exam_category = relationship("ExamResult", lazy="subquery", back_populates="exam_category_exam_result")
-
+    exam_category_exam_result = relationship("ExamCategory", lazy="subquery", back_populates="exam_result")

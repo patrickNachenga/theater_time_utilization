@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, Float, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -20,8 +20,8 @@ class ExamCoursework(BaseModel):
 
     # ___________________________Relationships__________________________________________________#
 
-    exam_coursework_program_course = relationship("ExamCoursework", lazy="subquery",
-                                                  back_populates="program_course_exam_coursework")
+    program_course_exam_coursework = relationship("ProgramCourse", lazy="subquery",
+                                                  back_populates="exam_coursework")
 
-    exam_coursework_exam_category = relationship("ExamCoursework", lazy="subquery",
-                                                 back_populates="exam_category_exam_coursework")
+    exam_category_exam_coursework = relationship("ExamCategory", lazy="subquery",
+                                                 back_populates="exam_coursework")

@@ -64,32 +64,27 @@ class ExamCategoryNode:
     exam_category_group: ExamCategoryGroupsNode
 
 
-@strawberry.input(description="Exam Category Groups Input")
-class ExamResultsInput:
+@strawberry.input(description="Exam Result Input")
+class ExamResultInput:
     uid: Optional[str] = None
-    id: int
-    student_id: int
+    student_uid: str
     program_course_id: int
-    exam_cat_id: int
-    assess_no: int
+    exam_category_id: int
     score: float
     out_of: float
     weight: int
-    status: int
-    publish: int
+    overall_marks: int
 
 
-@strawberry.type(description="Exam Category Groups Output")
-class ExamResultsNode:
-    student_id: int
+@strawberry.type(description="Exam Result Output | Node")
+class ExamResultNode:
+    student_uid: str
     program_course_id: int
-    exam_cat_id: int
-    assess_no: int
+    exam_category_id: int
     score: float
     out_of: float
     weight: int
-    status: int
-    publish: int
+    overall_marks: float
 
 
 @strawberry.input(description="Exam Category Groups Input")

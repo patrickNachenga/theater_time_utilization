@@ -13,25 +13,22 @@ class ExamCategory(BaseModel):
 
     exam_category_group_id: int = Column(Integer, ForeignKey("exam_category_groups.id"), nullable=False)
 
-
     # _____________________________Relationships____________________________________#
 
     exam_category_group = relationship('ExamCategoryGroup', lazy='subquery',
                                        back_populates="exam_categories")
 
-    exam_category_exam_result_summary = relationship("ExamCategory", lazy="subquery",
-                                                     back_populates="exam_result_summary_exam_category")
+    exam_result_summary_exam_category = relationship("ExamResultSummary", lazy="subquery",
+                                                     back_populates="exam_category")
 
-    exam_category_exam_result = relationship("ExamCategory", lazy="subquery",
-                                             back_populates="exam_result_exam_category")
+    exam_result_exam_category = relationship("ExamResult", lazy="subquery",
+                                             back_populates="exam_category")
 
-    exam_category_exam_coursework = relationship("ExamCategory", lazy="subquery",
-                                                 back_populates="exam_coursework_exam_category")
+    exam_coursework_exam_category = relationship("ExamCoursework", lazy="subquery",
+                                                 back_populates="exam_category")
 
-    exam_category_student_exam_registration = relationship("ExamCategory", lazy="subquery",
-                                                           back_populates="student_exam_registration_exam_category")
+    student_exam_registration_exam_category = relationship("StudentExamRegistration", lazy="subquery",
+                                                           back_populates="exam_category")
 
-    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery', back_populates="exam_category")
-
-
-
+    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
+                                              back_populates="exam_category")

@@ -7,27 +7,14 @@ from src.db.session import session_scope
 from src.models.exam_result import ExamResult
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultsInput, ExamResultsNode
+from src.types import ExamResultInput, ExamResultNode
 
 
-class ExamResultsService(object):
+class ExamResultService(object):
     @staticmethod
     def get_exam_results() -> List[ExamResult]:
         with session_scope() as session:
-            result = session.query(
-                ExamResult.id,
-                ExamResult.student_id,
-                ExamResult.program_course_id,
-                ExamResult.exam_cat_id,
-                ExamResult.publish,
-                ExamResult.score,
-                ExamResult.assess_no,
-                ExamResult.out_of,
-                ExamResult.weight,
-                ExamResult.status,
-                ExamResult.created_at,
-                ExamResult.updated_at,
-            ).filter(ExamResult.deleted_at.is_(None)).all()
+            result = session.query(ExamResult).filter(ExamResult.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
@@ -53,7 +40,7 @@ class ExamResultsService(object):
             result = session.scalars(stmt)
             return result.first()
 
-    def register_exam_results(self, inputs: List[ExamResultsInput]) -> Response[List[ExamResultsNode]]:
+    def register_exam_results(self, inputs: List[ExamResultInput]) -> Response[List[ExamResultNode]]:
         """
         Save Exam Results
         :param inputs:

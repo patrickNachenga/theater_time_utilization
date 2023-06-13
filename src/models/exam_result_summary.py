@@ -6,9 +6,8 @@ from src.models import BaseModel
 
 
 class ExamResultSummary(BaseModel):
-    __tablename__ = "exam_results"
-    program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False)
-    exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"), nullable=False)
+    __tablename__ = "exam_result_summaries"
+
     student_uid: str = Column(String, nullable=False, unique=True)
     grade: str = Column(String, nullable=False, unique=False)
     grade_point: float = Column(Float, nullable=False, unique=False)
@@ -17,9 +16,15 @@ class ExamResultSummary(BaseModel):
     publisher: str = Column(String, nullable=False)
     publish_date: Date = Column(Date, default=func.now(), nullable=False)
 
-    exam_result_summary_program_course = relationship("ExamResultSummary", lazy="subquery",
-                                                      back_populates="program_course_exam_result_summary")
+    # _________________________Foreign Keys________________________________________________#
 
-    exam_result_summary_exam_category = relationship("ExamResultSummary", lazy="subquery",
-                                                     back_populates="exam_category_exam_result_summary")
+    program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False)
+    exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"), nullable=False)
 
+    # __________________________Relationships_______________________________________________#
+
+    program_course_exam_result_summary = relationship("ProgramCourse", lazy="subquery",
+                                                      back_populates="exam_result_summary")
+
+    exam_category_exam_result_summary = relationship("ExamCategory", lazy="subquery",
+                                                     back_populates="exam_result_summary")

@@ -22,7 +22,7 @@ class ProgramCourse(BaseModel):
 
     course_id: int = Column(Integer, ForeignKey("courses.id"), nullable=False)
 
-    # ____________________________Relationships ______________________#
+    # ______________________________________Relationships ____________________________________________#
     course = relationship('Course', lazy='subquery', back_populates="program_courses")
     course_category = relationship('CourseCategory', lazy='subquery', back_populates="program_courses")
 
@@ -34,16 +34,15 @@ class ProgramCourse(BaseModel):
 
     student_course_registrations = relationship("StudentCourseRegistration", lazy="subquery",
                                                 back_populates="program_course")
-    exam_result_summary = relationship("ExamResultSummary", lazy="subquery", back_populates="program_course")
 
-    program_course_exam_registration = relationship("StudentExamRegistration", lazy="subquery",
-                                                    back_populates="student_exam_registrations")
+    student_exam_registration_program_course = relationship("StudentExamRegistration", lazy="subquery",
+                                                            back_populates="program_course_student_exam_registration")
 
-    program_course_exam_result_summary = relationship("ProgramCourse", lazy="subquery",
-                                                      back_populates="exam_result_summary_program_course")
+    exam_result_summary_program_course = relationship("ExamResultSummary", lazy="subquery",
+                                                      back_populates="program_course_exam_result_summary")
 
-    program_course_exam_result = relationship("ProgramCourse", lazy="subquery",
-                                              back_populates="exam_result_program_course")
+    exam_result_program_course = relationship("ExamResult", lazy="subquery",
+                                              back_populates="program_course_exam_result")
 
-    program_course_exam_coursework = relationship("ProgramCourse", lazy="subquery",
-                                                  back_populates="exam_coursework_program_course")
+    exam_coursework_program_course = relationship("ExamCoursework", lazy="subquery",
+                                                  back_populates="program_course_exam_coursework")
