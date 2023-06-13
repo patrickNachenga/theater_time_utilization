@@ -1,7 +1,7 @@
 import base64
 import io
 from typing import List
-from openpyxl.styles import Alignment, Font, Border, Side
+from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from io import BytesIO
 
 import strawberry
@@ -13,11 +13,30 @@ from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
-    CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile
+    CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
+    CourseRegisterInputNode
 
 
 @strawberry.type
 class StudentQuery:
+    @strawberry.field
+    def get_student_course_to_register(self, program_register: CourseRegisterInputNode) -> Response[ProgramCourseListNode]:
+        try:
+            result = StudentService().get_student_course_to_register(program_register)
+
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program courses Retrieved successfully",
+                data=result)
+        except Exception as e:
+            print(e)
+            result = CourseRegistrationListNode(items=[], total_count=0)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Registration not found",
+                data=result)
     @strawberry.field
     def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
         try:
@@ -151,9 +170,23 @@ class StudentMutation:
                 cell.alignment = Alignment(horizontal='center', vertical='center')
                 cell.font = font
                 cell.border = border
+                # Set the specific column where cells should be non-editable (except column D)
+            editable_column = 'D'
+
+            # Iterate over rows in the worksheet
+            for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
+                                           max_col=worksheet.max_column):
+                for cell in row:
+                    # Check if the current column is the editable column
+                    if cell.column_letter == editable_column:
+                        # Set protection to False for the editable column
+                        cell.protection = Protection(locked=False)
+                    else:
+                        # Set protection to True for other columns
+                        cell.protection = Protection(locked=True)
 
         # Save the workbook
-        workbook.save("layout.xlsx")
+        # workbook.save("layout.xlsx")
 
         # Save the workbook to a BytesIO buffer
         file_buffer = BytesIO()

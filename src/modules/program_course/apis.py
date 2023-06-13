@@ -1,17 +1,14 @@
 from typing import List, Optional
 
 import strawberry
-from sqlalchemy import inspect
 
-from src.models import ProgramCourse, Program, AcademicYear
-from src.modules.academic_year.service import AcademicYearService
+from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.modules.program_semester.service import ProgramSemesterService
-from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode, \
-    RequestProgramSemester, InnerStudentProgramSemester
+    RequestProgramSemester
 
 
 @strawberry.type

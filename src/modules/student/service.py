@@ -5,9 +5,9 @@ import requests
 from sqlalchemy.orm import sessionmaker
 
 from src.db.session import session_scope, uaa_engine
-from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, BaseModel
+from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, BaseModel, Program
 from src.models.student_course_registration import StudentCourseRegistration
-from src.types import CourseRegistrationListNode, UaaDataResponse, StudentUaaData
+from src.types import CourseRegistrationListNode, UaaDataResponse, StudentUaaData, ProgramCourseListNode
 
 
 class StudentService:
@@ -62,7 +62,9 @@ class StudentService:
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
     def get_allocation_students(self, allocation_uid) -> [StudentUaaData]:
-
+        """
+        Retrieve all students located to a particular allocation
+        """
         with session_scope() as session:
             student_uids = session.query(StudentCourseRegistration.student_uid). \
                 join(ProgramCourse). \
@@ -94,3 +96,13 @@ class StudentService:
                 data = response.json()
 
         return data
+
+    def get_student_course_to_register(self, inputs) -> ProgramCourseListNode:
+        with session_scope() as session:
+            program_courses = session.query(ProgramCourse). \
+                join(ProgramSemester). \
+                join(Program). \
+                filter(Program.uid == inputs.program_uid). \
+                filter(ProgramSemester.study_year == inputs.study_year).all()
+            total_count = len(program_courses)
+            return ProgramCourseListNode(items=program_courses, total_count=total_count)

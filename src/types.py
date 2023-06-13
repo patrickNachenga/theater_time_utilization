@@ -654,3 +654,9 @@ class InnerStudentProgramSemester:
 class StaffAllocationInputNode:
     program_course_uid: Optional[str]
     staff_uid: str
+
+
+@strawberry.input(description="Course to register input")
+class CourseRegisterInputNode:
+    study_year: str
+    program_uid: str
