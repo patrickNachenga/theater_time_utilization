@@ -3,12 +3,15 @@ from typing import List, Optional
 import strawberry
 from sqlalchemy import inspect
 
-from src.models import ProgramCourse
+from src.models import ProgramCourse, Program, AcademicYear
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.modules.program_semester.service import ProgramSemesterService
+from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode
+from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode, \
+    RequestProgramSemester, InnerStudentProgramSemester
 
 
 @strawberry.type
@@ -22,16 +25,18 @@ class ProgramCourseQuery:
             if program_semester:
                 try:
                     prog_sem = ProgramSemesterService.get_program_semester_by_uid(program_semester)
-                    unique_list.append({"program_semester_id": prog_sem.id})
                     if prog_sem is None:
-                        raise ValueError("You have submitted incorrect programs semester details")
+                        raise ValueError("no data found from supplied details")
+                    else:
+                        unique_list.append({"program_semester_id": prog_sem.id})
+
                 except Exception as e:
                     print(e)
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
                         data=ProgramCourseListNode(items=[], total_count=0),
-                        message="You have submitted incorrect programs semester details"
+                        message="no data found from supplied details"
                     )
             result = ProgramCourseCrud.get_multi_paginated(pagination,
                                                            ['credit', 'independent_study_hours', 'pass_hours',
@@ -110,3 +115,22 @@ class ProgramCourseMutation:
                 message="Failed to Course Program Course",
                 data=None
             )
+
+    @strawberry.mutation
+    async def get_student_program_course(self, input: RequestProgramSemester) -> Response[List[ProgramCourseNode]]:
+        """
+        Remove program course By UID
+        :param :
+        :return:
+        """
+
+        try:
+            result = ProgramCourseService.get_program_courses()
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Successfully Retrieve Program Courses",
+            data=result)

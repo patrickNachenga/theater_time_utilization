@@ -13,6 +13,7 @@ class ExamCategory(BaseModel):
 
     exam_category_group_id: int = Column(Integer, ForeignKey("exam_category_groups.id"), nullable=False)
 
+
     # _____________________________Relationships____________________________________#
 
     exam_category_group = relationship('ExamCategoryGroup', lazy='subquery',
@@ -29,3 +30,8 @@ class ExamCategory(BaseModel):
 
     exam_category_student_exam_registration = relationship("ExamCategory", lazy="subquery",
                                                            back_populates="student_exam_registration_exam_category")
+
+    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery', back_populates="exam_category")
+
+
+

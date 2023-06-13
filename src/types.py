@@ -294,6 +294,15 @@ class CourseCategoryListNode:
     total_count: int
 
 
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -309,13 +318,6 @@ class ProgramCourseInput:
     pass_hours: Optional[float] = 0.0
     moodle_id: Optional[str] = None
 
-@strawberry.type(description="Program Course Assessment Output")
-class ProgramCourseAssessmentNode2:
-    uid: str
-    exam_category_uid: str
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
@@ -330,7 +332,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
-    program_course_assessments: ProgramCourseAssessmentNode2
+    program_course_assessments: List[ProgramCourseAssessmentNode2]
 
 
 @strawberry.type(description="Program Course paginated Output")
@@ -373,7 +375,7 @@ class ProgramCourseAssessmentInput:
 class ProgramCourseAssessmentNode:
     uid: str
     program_course: ProgramCourseNode
-    exam_category_uid: str
+    exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
@@ -460,7 +462,7 @@ class FeeStructureInput:
     program_uid: str
     year_of_study: int
     student_status: str
-    countrycode: int
+    countrycode: str
 
 
 @strawberry.type(description="Fee Structure Output")
@@ -487,7 +489,6 @@ class RequestControlNumberInput:
     student_status: str
     countrycode: int
     registration_number: str
-    system: str
 
 
 @strawberry.type(description="Request Control Numbers Output")
@@ -593,6 +594,7 @@ class CourseRegistrationInputNode:
 @strawberry.type
 class StudentUaaData:
     registration_number: str
+    full_name: str
 
 
 @strawberry.type
@@ -601,3 +603,22 @@ class UaaDataResponse:
     message: str
     code: int
     data: List[StudentUaaData]
+
+
+@strawberry.input
+class RequestProgramSemester:
+    registration_number: str
+    program_uid: str
+    academic_year_uid: str
+    study_year: int
+    semester: int
+
+
+@strawberry.type
+class InnerStudentProgramSemester:
+    registration_number: Optional[str]
+    program_id: int
+    academic_year_id: int
+    study_year: int
+    semester: int
+    program_semester_id: int

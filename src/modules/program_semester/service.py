@@ -11,7 +11,7 @@ from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramSemesterInput, ProgramSemesterListNode
+from src.types import ProgramSemesterInput, ProgramSemesterListNode, RequestProgramSemester, InnerStudentProgramSemester
 
 
 class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, ProgramSemesterInput]):
@@ -58,6 +58,21 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 (ProgramSemester.uid.in_(uids)) & (ProgramSemester.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
+
+    @staticmethod
+    def get_student_semester(input: InnerStudentProgramSemester) -> ProgramSemester:
+        """
+        Get programs semester
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.program_id.is_(input.program_id)) & (
+                    ProgramSemester.academic_year_id.is_(input.academic_year_id)) &
+                (ProgramSemester.study_year.is_(input.study_year)) & (ProgramSemester.semester.is_(input.semester)) &
+                (ProgramSemester.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
 
     @staticmethod
     def check_uniqueness(academic_year_id: int, program_id: int, study_year: int, semester: int) -> ProgramSemester:
