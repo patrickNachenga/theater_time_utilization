@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Float
+from sqlalchemy import Column, Integer, Float, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -17,3 +17,5 @@ class ExamResult(BaseModel):
     program_course_exam_result = relationship("ProgramCourse", lazy="subquery", back_populates="exam_result")
 
     exam_category_exam_result = relationship("ExamCategory", lazy="subquery", back_populates="exam_result")
+
+    exam_category = relationship("ExamCategory", lazy="subquery", back_populates="exam_results")

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Date
+from sqlalchemy import Column, Boolean, String, Integer, Float, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -28,3 +28,5 @@ class ExamResultSummary(BaseModel):
 
     exam_category_exam_result_summary = relationship("ExamCategory", lazy="subquery",
                                                      back_populates="exam_result_summary")
+
+    exam_category = relationship("ExamCategory", lazy="subquery", back_populates="exam_result_summaries")
