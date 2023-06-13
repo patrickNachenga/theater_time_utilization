@@ -14,6 +14,6 @@ class ExamResult(BaseModel):
     weight: int = Column(Integer, nullable=False, unique=False)
     overall_marks: float = Column(Integer, nullable=False)
 
-    program_course_exam_result = relationship("ProgramCourse", lazy="subquery", back_populates="exam_result")
+    program_course = relationship("ProgramCourse", lazy="subquery", back_populates="exam_results")
 
-    exam_category_exam_result = relationship("ExamCategory", lazy="subquery", back_populates="exam_result")
+    exam_category = relationship("ExamCategory", lazy="subquery", back_populates="exam_results")

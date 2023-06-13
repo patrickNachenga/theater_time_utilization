@@ -18,16 +18,15 @@ class ExamCategory(BaseModel):
     exam_category_group = relationship('ExamCategoryGroup', lazy='subquery',
                                        back_populates="exam_categories")
 
-    exam_result_summary_exam_category = relationship("ExamResultSummary", lazy="subquery",
-                                                     back_populates="exam_category")
 
-    exam_result_exam_category = relationship("ExamResult", lazy="subquery",
+
+    exam_results = relationship("ExamResult", lazy="subquery",
                                              back_populates="exam_category")
 
-    exam_coursework_exam_category = relationship("ExamCoursework", lazy="subquery",
+    exam_courseworks = relationship("ExamCoursework", lazy="subquery",
                                                  back_populates="exam_category")
 
-    student_exam_registration_exam_category = relationship("StudentExamRegistration", lazy="subquery",
+    student_exam_registrations = relationship("StudentExamRegistration", lazy="subquery",
                                                            back_populates="exam_category")
 
     program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',

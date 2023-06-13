@@ -23,8 +23,4 @@ class ExamResultSummary(BaseModel):
 
     # __________________________Relationships_______________________________________________#
 
-    program_course_exam_result_summary = relationship("ProgramCourse", lazy="subquery",
-                                                      back_populates="exam_result_summary")
 
-    exam_category_exam_result_summary = relationship("ExamCategory", lazy="subquery",
-                                                     back_populates="exam_result_summary")
