@@ -29,7 +29,7 @@ from .program_semester import ProgramSemester
 from .course_category import CourseCategory
 from .program_course import ProgramCourse
 from .exam_category import ExamCategory
-from .exam_result import ExamResults
+from .exam_result import ExamResult
 from .exam_summary import ExamSummary
 from .academic_year import AcademicYear
 from .program_course_assessment import ProgramCourseAssessment
