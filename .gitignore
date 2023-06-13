@@ -16,5 +16,5 @@ regenv
 .gitttt
 /alembic
 alembic.ini
-Dockerfile
 docker-compose.yml
+Dockerfile

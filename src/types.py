@@ -4,6 +4,7 @@ from typing import Optional, List
 
 import strawberry
 from pydantic import BaseModel
+from sqlalchemy import Date
 
 
 class ProgramCodeInput(BaseModel):
@@ -91,6 +92,43 @@ class ExamResultNode:
     out_of: float
     weight: int
     overall_marks: float
+
+
+@strawberry.input(description="Exam Result Summary Input")
+class ExamResultSummaryInput:
+    program_course_id: int
+    exam_category_id: int
+    student_uid: str
+    registration_number: str
+    student_name: str
+    gender: str
+    course_code: str
+    course_name: str
+    credit: float
+    grade: str
+    grade_point: float
+    grade_remark: str
+    publish_status: bool
+    publisher: str
+    publish_date: Date
+
+
+@strawberry.type(description="Exam Result Summary Node|Output")
+class ExamResultSummaryNode:
+    program_course_id: int
+    exam_category_id: int
+    student_uid: str
+    registration_number: str
+    student_name: str
+    gender: str
+    course_code: str
+    course_name: str
+    credit: float
+    grade: str
+    grade_point: float
+    grade_remark: str
+    publish_status: bool
+    publisher: str
 
 
 @strawberry.input(description="Exam Category Groups Input")
