@@ -309,6 +309,7 @@ class ProgramCourseInput:
     pass_hours: Optional[float] = 0.0
     moodle_id: Optional[str] = None
 
+
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode2:
     uid: str
@@ -316,6 +317,7 @@ class ProgramCourseAssessmentNode2:
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
+
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
@@ -432,7 +434,6 @@ class PaginatedProgramCourse:
 class PaginatedProgramCourseAssessment:
     items: List[ProgramCourseAssessmentNode]
     total_count: int
-
 
 
 @strawberry.type(description="User Token")
@@ -602,3 +603,21 @@ class UaaDataResponse:
     message: str
     code: int
     data: List[StudentUaaData]
+
+
+@strawberry.input(description="Allocation template input")
+class AllocationTemplateNode:
+    allocation_uid: str
+    assessment_number: int
+
+
+@strawberry.scalar
+class Base64String:
+    @staticmethod
+    def serialize(value):
+        return value
+
+
+@strawberry.type
+class ExcelFile:
+    base64_data: Base64String
