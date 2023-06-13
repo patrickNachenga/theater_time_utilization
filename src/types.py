@@ -434,7 +434,6 @@ class PaginatedProgramCourseAssessment:
     total_count: int
 
 
-
 @strawberry.type(description="User Token")
 class TokenNode:
     access_token: str
