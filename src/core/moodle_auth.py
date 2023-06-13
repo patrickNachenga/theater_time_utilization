@@ -20,7 +20,7 @@ class MoodleAuth:
             # check if key exists otherwise get it and store to redis
             auth_url = await self.redis.get(self.user_key)
             if not auth_url:
-                auth_url = self.moodle.get_login_url_auth(self.username)
+                auth_url = self.moodle.getloginurl(self.username)
                 if auth_url:
                     await self.redis.set(self.user_key, auth_url, MOODLE_EXPIRE_TIME)
                 else:

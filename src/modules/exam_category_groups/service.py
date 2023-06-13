@@ -69,7 +69,7 @@ class ExamCategoryGroupsService(object):
         """
         with session_scope() as session:
             stmt = select(ExamCategoryGroup).where(
-                (ExamCategoryGroup.id == id) & (ExamCategoryGroup.deleted_at.is_(None)))
+                (ExamCategoryGroup.uid == uid) & (ExamCategoryGroup.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 

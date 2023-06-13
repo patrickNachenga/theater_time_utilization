@@ -3,7 +3,12 @@ from datetime import datetime
 from typing import Optional, List
 
 import strawberry
+from pydantic import BaseModel
 
+
+class ProgramCodeInput(BaseModel):
+    code: Optional[str]
+    uid: Optional[str]
 
 @strawberry.input
 class PaginationInput:
@@ -64,32 +69,27 @@ class ExamCategoryNode:
     exam_category_group: ExamCategoryGroupsNode
 
 
-@strawberry.input(description="Exam Category Groups Input")
-class ExamResultsInput:
+@strawberry.input(description="Exam Result Input")
+class ExamResultInput:
     uid: Optional[str] = None
-    id: int
-    student_id: int
+    student_uid: str
     program_course_id: int
-    exam_cat_id: int
-    assess_no: int
+    exam_category_id: int
     score: float
     out_of: float
     weight: int
-    status: int
-    publish: int
+    overall_marks: int
 
 
-@strawberry.type(description="Exam Category Groups Output")
-class ExamResultsNode:
-    student_id: int
+@strawberry.type(description="Exam Result Output | Node")
+class ExamResultNode:
+    student_uid: str
     program_course_id: int
-    exam_cat_id: int
-    assess_no: int
+    exam_category_id: int
     score: float
     out_of: float
     weight: int
-    status: int
-    publish: int
+    overall_marks: float
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -294,6 +294,15 @@ class CourseCategoryListNode:
     total_count: int
 
 
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -310,6 +319,7 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
+
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode2:
     uid: str
@@ -317,6 +327,7 @@ class ProgramCourseAssessmentNode2:
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
+
 
 
 @strawberry.type(description="Program Course outputs")
@@ -375,7 +386,7 @@ class ProgramCourseAssessmentInput:
 class ProgramCourseAssessmentNode:
     uid: str
     program_course: ProgramCourseNode
-    exam_category_uid: str
+    exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
@@ -462,7 +473,7 @@ class FeeStructureInput:
     program_uid: str
     year_of_study: int
     student_status: str
-    countrycode: int
+    countrycode: str
 
 
 @strawberry.type(description="Fee Structure Output")
@@ -621,3 +632,20 @@ class Base64String:
 @strawberry.type
 class ExcelFile:
     base64_data: Base64String
+
+@strawberry.input
+class RequestProgramSemester:
+    registration_number: str
+    program_uid: str
+    academic_year_uid: str
+    study_year: int
+    semester: int
+
+
+@strawberry.type
+class InnerStudentProgramSemester:
+    program_id: int
+    academic_year_id: int
+    study_year: int
+    semester: int
+

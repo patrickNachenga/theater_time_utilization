@@ -7,10 +7,11 @@ from sqlalchemy import select, desc
 from src.db.session import session_scope
 from src.models import ProgramCourseAssessment
 from src.modules import CRUDBase
+from src.modules.exam_category.service import ExamCategoryService
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode, ProgramCourseAssessmentListNode
+from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentListNode
 
 
 class ProgramCourseAssessmentService(
@@ -18,7 +19,8 @@ class ProgramCourseAssessmentService(
     @staticmethod
     def get_program_course_assessment() -> List[ProgramCourseAssessment]:
         with session_scope() as session:
-            result = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).order_by(
+            result = session.query(ProgramCourseAssessment).filter(
+                ProgramCourseAssessment.deleted_at.is_(None)).order_by(
                 desc(ProgramCourseAssessment.updated_at)).all()
             return result
 
@@ -86,10 +88,20 @@ class ProgramCourseAssessmentService(
                                     data=ProgramCourseAssessmentListNode(items=[], total_count=0),
                                     message="You have submitted incorrect programs course details")
 
+                # Verify and get supplied Exam category and get existed  model
+                try:
+                    exam_category = ExamCategoryService.get_exam_categories_by_uid(inputItem.exam_category_uid)
+                    if exam_category is None:
+                        raise ValueError("You have submitted incorrect exam category details")
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                                    message="You have submitted incorrect exam category details")
                 if inputItem.uid is None:
                     program_course_assessment = ProgramCourseAssessment(
                         program_course=program_course,
-                        exam_category_uid=inputItem.exam_category_uid,
+                        exam_category=exam_category,
                         minimum_exams=inputItem.minimum_exams,
                         can_exceed_minimum_by=inputItem.can_exceed_minimum_by,
                         maximum_score=inputItem.maximum_score
@@ -107,6 +119,7 @@ class ProgramCourseAssessmentService(
                         obj_data = jsonable_encoder(inputItem)
                         # # Replace referenced uids field with model required ids field
                         obj_data['program_course'] = program_course
+                        obj_data['exam_category'] = exam_category
 
                         for key, value in obj_data.items():
                             setattr(program_course_assessment, key, value)

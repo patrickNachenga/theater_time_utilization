@@ -7,14 +7,17 @@ from sqlalchemy import select, desc
 from src.core.moodle_api import MoodleApi
 from src.core.redis import get_redis
 from src.db.session import session_scope
-from src.models import ProgramCourse
+from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration
 from src.modules import CRUDBase
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.course.service import CourseService
 from src.modules.course_category.service import CourseCategoryService
 from src.modules.program_semester.service import ProgramSemesterService
+from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode, PaginationInput
+from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode, ProgramSemesterInput, \
+    ProgramCourseNode, InnerStudentProgramSemester, RequestProgramSemester
 
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
@@ -169,6 +172,71 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=ProgramCourseListNode(items=program_course_list, total_count=count),
                             message=f"Successfully to {action_type} Program Course")
+
+    @staticmethod
+    async def fetch_student_program_courses(input: RequestProgramSemester) -> Response[List[ProgramCourseNode]]:
+        """
+        Register programs Course
+        :param input:
+        :return Response[List[ProgramCourseNode]]:
+        """
+        program_course_list = []
+        with session_scope() as session:
+            # Verify and get supplied Program uid and get existed program model
+            try:
+                program = ProgramService(Program).get(input.program_uid)
+                if program is None:
+                    raise ValueError("You have submitted incorrect program details")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=[],
+                    message="You have submitted incorrect program details"
+                )
+
+            # Verify and get supplied Academic year uid and get existed Academic year model
+            try:
+                academic_year = AcademicYearService(AcademicYear).get(input.academic_year_uid)
+                if academic_year is None:
+                    raise ValueError("You submitted incorrect academic year details")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=[],
+                    message="You submitted incorrect academic year details"
+                )
+
+            studentSemester: InnerStudentProgramSemester = InnerStudentProgramSemester()
+            studentSemester.semester = input.semester
+            studentSemester.program_id = program.id
+            studentSemester.academic_year_id = academic_year.id
+            studentSemester.study_year = input.study_year
+
+            prog_sem = ProgramSemesterService.get_student_semester(studentSemester)
+            if prog_sem is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=[],
+                    message="No Program Semester Found For Your Details"
+                )
+
+            result = session.query(ProgramCourse, StudentCourseRegistration).outerjoin(StudentCourseRegistration, ProgramCourse.id == StudentCourseRegistration.program_course).filter(ProgramCourse.program_semester_id == prog_sem.id).filter(StudentCourseRegistration.registration_number == input.registration_number).all()
+            if result:
+                return Response(
+                    status=True, code=ResponseCode.SUCCESS,
+                    data=result, message="student program course retrieve successful"
+                )
+            else:
+                return Response(
+                    status=False, code=ResponseCode.FAILURE,
+                    data=result, message="No Program Course For this Student"
+                )
+
 
     # Delete FUnction
     @staticmethod
