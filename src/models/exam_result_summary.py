@@ -8,6 +8,7 @@ from src.models import BaseModel
 class ExamResultSummary(BaseModel):
     __tablename__ = "exam_result_summaries"
 
+
     student_uid: str = Column(String, nullable=False, unique=True)
     grade: str = Column(String, nullable=False, unique=False)
     grade_point: float = Column(Float, nullable=False, unique=False)
