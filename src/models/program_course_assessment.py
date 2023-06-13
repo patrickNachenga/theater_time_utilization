@@ -9,7 +9,9 @@ class ProgramCourseAssessment(BaseModel):
     minimum_exams: int = Column(Integer, nullable=False, unique=False)
     can_exceed_minimum_by: int = Column(Integer, nullable=True, unique=False)
     maximum_score: int = Column(Integer, nullable=True, unique=False)
-    exam_category_uid: str = Column(String, nullable=False, unique=False)
+
+    exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"),  nullable=False, unique=False)
+    exam_category = relationship('ExamCategory', lazy='subquery', back_populates="program_course_assessments")
 
     program_course_id: int = Column(Integer, ForeignKey("program_courses.id"),  nullable=False, unique=False)
     program_course = relationship('ProgramCourse', lazy='subquery', back_populates="program_course_assessments")

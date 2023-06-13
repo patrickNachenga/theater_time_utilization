@@ -2,18 +2,18 @@ from typing import List
 
 import strawberry
 
-from src.modules.exam_category.service import ExamCategoriesService
+from src.modules.exam_category.service import ExamCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamCategoriesNode, ExamCategoriesInput
+from src.types import ExamCategoryNode, ExamCategoryInput
 
 
 @strawberry.type
-class ExamCategoriesQuery:
+class ExamCategoryQuery:
     @strawberry.field
-    def get_exam_categories(self) -> Response[List[ExamCategoriesNode]]:
+    def get_exam_categories(self) -> Response[List[ExamCategoryNode]]:
         try:
-            result = ExamCategoriesService.get_exam_categories()
+            result = ExamCategoryService.get_exam_categories()
         except Exception as e:
             print(e)
             result = []
@@ -25,11 +25,11 @@ class ExamCategoriesQuery:
 
 
 @strawberry.type
-class ExamCategoriesMutation:
+class ExamCategoryMutation:
     @strawberry.field
-    def register_exam_categories(self, inputs: List[ExamCategoriesInput]) -> Response[List[ExamCategoriesNode]]:
+    def register_exam_categories(self, inputs: List[ExamCategoryInput]) -> Response[List[ExamCategoryNode]]:
         try:
-            return ExamCategoriesService().register_exam_categories(inputs)
+            return ExamCategoryService().register_exam_categories(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register Examination Category",
@@ -44,7 +44,7 @@ class ExamCategoriesMutation:
         :return:
         """
         try:
-            ExamCategoriesService.remove_exam_categories(uid)
+            ExamCategoryService.remove_exam_categories(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

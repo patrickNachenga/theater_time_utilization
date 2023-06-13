@@ -15,4 +15,6 @@ src/core/.env
 regenv
 .gitttt
 /alembic
-#alembic.ini
+alembic.ini
+docker-compose.yml
+Dockerfile

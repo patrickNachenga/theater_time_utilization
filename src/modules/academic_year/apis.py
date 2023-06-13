@@ -14,7 +14,7 @@ class AcademicYearQuery:
     @strawberry.field
     def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
         try:
-            result = AcademicYearCrud.get_multi_paginated(pagination, ['name'], AcademicYearListNode)
+            result = AcademicYearCrud.get_multi_paginated(pagination, ['name','status', 'start_date', 'end_date'], AcademicYearListNode)
         except Exception as e:
             print(e)
             result = []

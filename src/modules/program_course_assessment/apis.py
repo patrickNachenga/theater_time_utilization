@@ -15,7 +15,11 @@ class ProgramCourseAssessmentQuery:
     @strawberry.field
     def get_program_course_assessments(self, pagination: PaginationInput) -> Response[PaginatedProgramCourseAssessment]:
         try:
-            result = ProgramCourseAssessmentCrud.get_multi_paginated(pagination, [], PaginatedProgramCourseAssessment, ["program_course"])
+            result = ProgramCourseAssessmentCrud.get_multi_paginated(pagination, ['minimum_exams'
+                                                                                  'can_exceed_minimum_by',
+                                                                                  'maximum_score'],
+                                                                     PaginatedProgramCourseAssessment,
+                                                                     ["program_course", "exam_category"])
         except Exception as e:
             print(e)
             result = []
@@ -28,7 +32,8 @@ class ProgramCourseAssessmentQuery:
     @strawberry.field
     def get_program_course_assessment(self, course_uid: str) -> Response[ProgramCourseAssessmentNode | None]:
         try:
-            result = ProgramCourseAssessmentService(ProgramCourseAssessment).get_program_course_assessment_by_uid(course_uid)
+            result = ProgramCourseAssessmentService(ProgramCourseAssessment).get_program_course_assessment_by_uid(
+                course_uid)
         except Exception as e:
             print(e)
             result = None
@@ -49,7 +54,8 @@ class ProgramCourseAssessmentQuery:
 @strawberry.type
 class ProgramCourseAssessmentMutation:
     @strawberry.field
-    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[ProgramCourseAssessmentListNode]:
+    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[
+        ProgramCourseAssessmentListNode]:
         try:
             return ProgramCourseAssessmentService(ProgramCourseAssessment).register_program_course_assessment(inputs)
 

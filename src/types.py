@@ -3,6 +3,13 @@ from datetime import datetime
 from typing import Optional, List
 
 import strawberry
+from pydantic import BaseModel
+from sqlalchemy import Date
+
+
+class ProgramCodeInput(BaseModel):
+    code: Optional[str]
+    uid: Optional[str]
 
 
 @strawberry.input
@@ -49,7 +56,7 @@ class ExamCategoryGroupsNode:
 
 
 @strawberry.input(description="Exam Category Input")
-class ExamCategoriesInput:
+class ExamCategoryInput:
     uid: Optional[str] = None
     name: str
     code: str
@@ -57,39 +64,71 @@ class ExamCategoriesInput:
 
 
 @strawberry.type(description="Exam Category Output")
-class ExamCategoriesNode:
+class ExamCategoryNode:
     uid: str
     name: str
     code: str
     exam_category_group: ExamCategoryGroupsNode
 
 
-@strawberry.input(description="Exam Category Groups Input")
-class ExamResultsInput:
+@strawberry.input(description="Exam Result Input")
+class ExamResultInput:
     uid: Optional[str] = None
-    id: int
-    student_id: int
+    student_uid: str
     program_course_id: int
-    exam_cat_id: int
-    assess_no: int
+    exam_category_id: int
     score: float
     out_of: float
     weight: int
-    status: int
-    publish: int
+    overall_marks: int
 
 
-@strawberry.type(description="Exam Category Groups Output")
-class ExamResultsNode:
-    student_id: int
+@strawberry.type(description="Exam Result Output | Node")
+class ExamResultNode:
+    student_uid: str
     program_course_id: int
-    exam_cat_id: int
-    assess_no: int
+    exam_category_id: int
     score: float
     out_of: float
     weight: int
-    status: int
-    publish: int
+    overall_marks: float
+
+
+@strawberry.input(description="Exam Result Summary Input")
+class ExamResultSummaryInput:
+    program_course_id: int
+    exam_category_id: int
+    student_uid: str
+    registration_number: str
+    student_name: str
+    gender: str
+    course_code: str
+    course_name: str
+    credit: float
+    grade: str
+    grade_point: float
+    grade_remark: str
+    publish_status: bool
+    publisher: str
+    publish_date: Date
+
+
+@strawberry.type(description="Exam Result Summary Node|Output")
+class ExamResultSummaryNode:
+    program_course_id: int
+    exam_category_id: int
+    student_uid: str
+    registration_number: str
+    student_name: str
+    gender: str
+    course_code: str
+    course_name: str
+    credit: float
+    grade: str
+    grade_point: float
+    grade_remark: str
+    publish_status: bool
+    publisher: str
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -195,6 +234,20 @@ class ProgramCategoryListNode:
     total_count: int
 
 
+@strawberry.type(description="Exam Category Output")
+class ExamCategoryNode:
+    uid: str
+    name: str
+    code: str
+    exam_category_group: ExamCategoryGroupsNode
+
+
+@strawberry.type(description="Exam Category paginated Output")
+class ExamCategoryListNode:
+    items: List[ExamCategoryNode]
+    total_count: int
+
+
 @strawberry.input(description="Program Input")
 class ProgramInput:
     uid: Optional[str] = None
@@ -216,12 +269,14 @@ class ProgramNode:
     code: str
     name: str
     short_name: str
-    tcu_code: str
-    nacte_code: str
-    duration: int
+    tcu_code: Optional[str]
+    nacte_code: Optional[str]
+    duration: Optional[int]
     registration_code: str
     program_category: ProgramCategoryNode
     department_uid: str
+    moodle_id: Optional[str]
+    registration_code: Optional[str]
 
 
 @strawberry.type(description="Program paginated Output")
@@ -278,6 +333,15 @@ class CourseCategoryListNode:
     total_count: int
 
 
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -294,6 +358,15 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode2:
+    uid: str
+    exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
     uid: str
@@ -307,6 +380,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
+    program_course_assessments: List[ProgramCourseAssessmentNode2]
 
 
 @strawberry.type(description="Program Course paginated Output")
@@ -349,7 +423,7 @@ class ProgramCourseAssessmentInput:
 class ProgramCourseAssessmentNode:
     uid: str
     program_course: ProgramCourseNode
-    exam_category_uid: str
+    exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
@@ -436,7 +510,7 @@ class FeeStructureInput:
     program_uid: str
     year_of_study: int
     student_status: str
-    countrycode: int
+    countrycode: str
 
 
 @strawberry.type(description="Fee Structure Output")
@@ -449,6 +523,13 @@ class FeeStructureNode:
     study_year: int
 
 
+@strawberry.input(description="Renew Control Numbers Input")
+class RewControlNumberInput:
+    registration_number: str
+    pay_type: str
+    bill_id: str
+
+
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
     program_uid: str
@@ -456,7 +537,6 @@ class RequestControlNumberInput:
     student_status: str
     countrycode: int
     registration_number: str
-    system: str
 
 
 @strawberry.type(description="Request Control Numbers Output")
@@ -557,9 +637,13 @@ class CourseRegistrationInputNode:
     student_uid: str
     core_elective: int
     program_course_uid: str
+
+
 @strawberry.type
 class StudentUaaData:
     registration_number: str
+    full_name: str
+
 
 @strawberry.type
 class UaaDataResponse:
@@ -567,3 +651,50 @@ class UaaDataResponse:
     message: str
     code: int
     data: List[StudentUaaData]
+
+
+@strawberry.input(description="Allocation template input")
+class AllocationTemplateNode:
+    allocation_uid: str
+    assessment_number: int
+
+
+@strawberry.scalar
+class Base64String:
+    @staticmethod
+    def serialize(value):
+        return value
+
+
+@strawberry.type
+class ExcelFile:
+    base64_data: Base64String
+
+
+@strawberry.input
+class RequestProgramSemester:
+    registration_number: str
+    program_uid: str
+    academic_year_uid: str
+    study_year: int
+    semester: int
+
+
+@strawberry.type
+class InnerStudentProgramSemester:
+    program_id: int
+    academic_year_id: int
+    study_year: int
+    semester: int
+
+
+@strawberry.input(description="Staff Allocation input")
+class StaffAllocationInputNode:
+    program_course_uid: Optional[str]
+    staff_uid: str
+
+
+@strawberry.input(description="Course to register input")
+class CourseRegisterInputNode:
+    study_year: str
+    program_uid: str

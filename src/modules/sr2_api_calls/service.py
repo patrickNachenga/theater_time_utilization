@@ -8,7 +8,7 @@ from src.db.session import session_scope
 from src.models import Program
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode
+from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode, RewControlNumberInput
 from src.types import FeeStructureNode
 
 
@@ -84,7 +84,7 @@ class Sr2ApiCalls(object):
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "system": inputs.system,
+                "system": "uqf",
             }
 
             # Send the Get request
@@ -99,6 +99,28 @@ class Sr2ApiCalls(object):
             else:
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None, message="Failed to generate control number request")
+
+    @staticmethod
+    def renew_control_number(inputs: RewControlNumberInput) -> Response[Optional[str]]:
+        # Set the request payload
+        payload = {
+            "pay_type": inputs.pay_type,
+            "registration_number": inputs.registration_number,
+            "billid": inputs.bill_id,
+            "service+type": "refresh"
+        }
+
+        # Send the Get request
+        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
+        # Check for errors
+        if response.status_code == 200:
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=None, message="Request Submitted Successful")
+        else:
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            data=None, message="Failed to refresh number request")
+
+
 
     @staticmethod
     def get_student_control_number(registration_number: str) -> List[ControlNumberNode] | None:
@@ -117,6 +139,7 @@ class Sr2ApiCalls(object):
                 response_data = response.json()
                 control_number_list = []
                 for structure in response_data["data"]:
+                    print(structure)
                     control_number = ControlNumberNode(
                         registration_number=structure["registration_number"],
                         fee_name=structure["fee_name"],
@@ -125,10 +148,10 @@ class Sr2ApiCalls(object):
                         currency=structure["currency"],
                         pay_type=structure["pay_type"],
                         academic_year=structure["academic_year"],
-                        bill_id=structure["bill_id"],
+                        bill_id=structure["billid"],
                     )
                     control_number_list.append(control_number)
-                return
+                return control_number_list
             else:
                 return None
         except Exception as e:

@@ -5,8 +5,8 @@ class MoodleApi:
     TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
     # SITE_URL = 'http://offline-sua.ac.tz/webservice/rest/server.php'
     # SITE_DOMAIN = 'http://offline-sua.ac.tz'
-    SITE_URL = 'http://192.168.173.238/webservice/rest/server.php'
-    SITE_DOMAIN = 'http://192.168.173.238'
+    SITE_URL = 'http://45.132.242.170/webservice/rest/server.php'
+    SITE_DOMAIN = 'http://45.132.242.170'
 
     def sendRequest(self, data, url=None):
         if url is None:
@@ -464,8 +464,6 @@ class MoodleApi:
         }
 
         serverUrl = self.SITE_DOMAIN + '/webservice/rest/server.php' + '?wstoken=' + self.TOKEN + '&wsfunction=' + functionname + '&moodlewsrestformat=json'
-        # serverurl = 'http://192.168.50.238/webservice/rest/server.php?wstoken=9454c6efdb94236e618c9a7b1a67138b&wsfunction=auth_userkey_request_login_url&moodlewsrestformat=json'
-
         response = self.sendRequest(param, serverUrl)
         if response is False:
             return False

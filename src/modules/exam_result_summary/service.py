@@ -4,43 +4,44 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
+from src.models import ExamResultSummary
 from src.models.exam_result import ExamResult
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamResultInput, ExamResultNode
 
 
-class ExamResultService(object):
+class ExamResultSummaryService(object):
     @staticmethod
-    def get_exam_results() -> List[ExamResult]:
+    def get_exam_results() -> List[ExamResultSummary]:
         with session_scope() as session:
-            result = session.query(ExamResult).filter(ExamResult.deleted_at.is_(None)).all()
+            result = session.query(ExamResultSummary).filter(ExamResultSummary.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
-    def get_exam_results_by_ids(ids: List[str]) -> List[ExamResult]:
+    def get_exam_results_by_ids(ids: List[str]) -> List[ExamResultSummary]:
         """
         Get exam_results by ids
         :return:
         """
         with session_scope() as session:
-            stmt = select(ExamResult).where((ExamResult.id.in_(ids)) & (ExamResult.deleted_at.is_(None)))
+            stmt = select(ExamResultSummary).where((ExamResultSummary.id.in_(ids)) & (ExamResultSummary.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
     @staticmethod
-    def get_exam_results_id(id: int) -> ExamResult:
+    def get_exam_results_id(id: int) -> ExamResultSummary:
         """
         Get exam_results by id
         :param id:
         :return:
         """
         with session_scope() as session:
-            stmt = select(ExamResult).where((ExamResult.id == id) & (ExamResult.deleted_at.is_(None)))
+            stmt = select(ExamResultSummary).where((ExamResultSummary.id == id) & (ExamResultSummary.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
-    def register_exam_results(self, inputs: List[ExamResultInput]) -> Response[List[ExamResultNode]]:
+    def register_exam_results(self, inputs: List[ExamResultSummaryInput]) -> Response[List[ExamResultSummaryNode]]:
         """
         Save Exam Results
         :param inputs:
@@ -58,7 +59,7 @@ class ExamResultService(object):
             # create new Exam Results
             existed_exam_results = self.get_exam_results_by_ids([item.uid for item in inputs])
             for item in inputs:
-                exam_results = ExamResult(
+                exam_results = ExamResultSummary(
                     id=item.id,
                     student_id=item.student_id,
                     program_course_id=item.program_course_id,
@@ -85,5 +86,5 @@ class ExamResultService(object):
         :return:
         """
         with session_scope() as session:
-            session.query(ExamResult).filter_by(uid=uid).update({ExamResult.deleted_at: pendulum.now()})
+            session.query(ExamResultSummary).filter_by(uid=uid).update({ExamResultSummary.deleted_at: pendulum.now()})
             session.commit()

@@ -1,17 +1,19 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Integer, Float, ForeignKey, String
 from sqlalchemy.orm import relationship
+
 from src.models import BaseModel
 
 
-class ExamResults(BaseModel):
+class ExamResult(BaseModel):
     __tablename__ = "exam_results"
-    id: int = Column(Integer, primary_key=True, index=True)
-    program_course_id: int = Column(Integer, nullable=False, unique=False)
-    exam_cat_id: int = Column(Integer, nullable=False, unique=False)
-    student_id: int = Column(Integer, nullable=False, unique=False)
-    assess_no: int = Column(Integer, nullable=False, unique=False)
-    score: float = Column(Integer, nullable=False, unique=False)
-    out_of: float = Column(Integer, nullable=False, unique=False)
+    program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False, unique=False)
+    exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"), nullable=False, unique=False)
+    student_uid: int = Column(Integer, nullable=False, unique=False)
+    score: float = Column(Float, nullable=False, unique=False)
+    out_of: float = Column(Float, nullable=False, unique=False)
     weight: int = Column(Integer, nullable=False, unique=False)
-    status: int = Column(Integer, nullable=False, unique=False)
-    publish: int = Column(Integer, nullable=False, unique=False)
+    overall_marks: float = Column(Integer, nullable=False)
+
+    program_course = relationship("ProgramCourse", lazy="subquery", back_populates="exam_results")
+
+    exam_category = relationship("ExamCategory", lazy="subquery", back_populates="exam_results")
