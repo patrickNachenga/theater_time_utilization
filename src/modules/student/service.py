@@ -1,13 +1,11 @@
 import json
-from typing import List
 
 import requests
-from sqlalchemy.orm import sessionmaker
 
 from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, BaseModel, Program
+from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation
 from src.models.student_course_registration import StudentCourseRegistration
-from src.types import CourseRegistrationListNode, UaaDataResponse, StudentUaaData, ProgramCourseListNode
+from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode
 
 
 class StudentService:
