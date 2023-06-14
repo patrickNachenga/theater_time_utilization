@@ -43,8 +43,6 @@ class AcademicYearListNode:
     total_count: int
 
 
-
-
 @strawberry.input(description="Academic Year Input")
 class AcademicYearSemesterInput:
     uid: Optional[str] = None
@@ -55,6 +53,7 @@ class AcademicYearSemesterInput:
     exam_start_date: str
     exam_ticket_date: str
     semester: int
+    academic_year_uid: str
 
 
 @strawberry.type(description="Academic Year")
@@ -67,13 +66,13 @@ class AcademicYearSemesterNode:
     exam_start_date: str
     exam_ticket_date: str
     semester: int
+    academic_year: AcademicYearNode
 
 
 @strawberry.type(description="AcademicYear Country")
 class AcademicYearSemesterListNode:
     items: List[AcademicYearSemesterNode]
     total_count: int
-
 
 
 @strawberry.input(description="Exam Category Groups Input")

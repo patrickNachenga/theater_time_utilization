@@ -16,8 +16,11 @@ class AcademicYearSemesterQuery:
     @strawberry.field
     def get_academic_year_semesters(self, pagination: PaginationInput) -> Response[AcademicYearSemesterListNode]:
         try:
-            result = AcademicYearSemesterCrud.get_multi_paginated(pagination, [], AcademicYearSemesterListNode,
-                                                                  ['academic_year_semester'])
+            result = AcademicYearSemesterCrud.get_multi_paginated(pagination,
+                                                                  ["oddStartDate", "oddEndDate", "evenStartDate",
+                                                                   "evenStartDate"
+                                                                   "examStartDate", "examTicketDate"],
+                                                                  AcademicYearSemesterListNode, ['academic_year'])
         except Exception as e:
             print(e)
             result = AcademicYearSemesterListNode(items=[], total_count=0)
@@ -47,11 +50,24 @@ class AcademicYearSemesterQuery:
                 message="Academic Year Semester not found",
                 data=result)
 
+    @strawberry.field
+    def get_academic_year_semester_by_academic_year(self, academic_year_uid: str) -> Response[List[AcademicYearSemesterNode]]:
+        try:
+            return AcademicYearSemesterService.get_academic_year_semesters_by_academic_year(academic_year_uid)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Failed to Retrieve Academic Year Semester",
+                data=[])
+
 
 @strawberry.type
 class AcademicYearSemesterMutation:
     @strawberry.field
-    def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[AcademicYearSemesterListNode]:
+    def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[
+        AcademicYearSemesterListNode]:
         try:
             return AcademicYearSemesterService(AcademicYearSemester).register_academic_semesters(inputs)
 
