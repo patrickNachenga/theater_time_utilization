@@ -35,7 +35,7 @@ class StudentQuery:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="Course Registration not found",
+                message="Program courses not found",
                 data=result)
     @strawberry.field
     def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
