@@ -272,7 +272,6 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :param:
         """
         try:
-
             if parm.code:
                 program = ProgramService.get_program_by_code(parm.code)
             elif parm.uid:
