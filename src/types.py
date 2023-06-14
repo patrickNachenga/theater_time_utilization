@@ -43,6 +43,39 @@ class AcademicYearListNode:
     total_count: int
 
 
+
+
+@strawberry.input(description="Academic Year Input")
+class AcademicYearSemesterInput:
+    uid: Optional[str] = None
+    odd_start_date: str
+    odd_end_date: str
+    even_start_date: str
+    even_end_date: str
+    exam_start_date: str
+    exam_ticket_date: str
+    semester: int
+
+
+@strawberry.type(description="Academic Year")
+class AcademicYearSemesterNode:
+    uid: Optional[str] = None
+    odd_start_date: str
+    odd_end_date: str
+    even_start_date: str
+    even_end_date: str
+    exam_start_date: str
+    exam_ticket_date: str
+    semester: int
+
+
+@strawberry.type(description="AcademicYear Country")
+class AcademicYearSemesterListNode:
+    items: List[AcademicYearSemesterNode]
+    total_count: int
+
+
+
 @strawberry.input(description="Exam Category Groups Input")
 class ExamCategoryGroupsInput:
     uid: Optional[str] = None
@@ -694,3 +727,9 @@ class InnerStudentProgramSemester:
 class StaffAllocationInputNode:
     program_course_uid: Optional[str]
     staff_uid: str
+
+
+@strawberry.input(description="Course to register input")
+class CourseRegisterInputNode:
+    study_year: str
+    program_uid: str
