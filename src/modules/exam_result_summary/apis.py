@@ -34,6 +34,26 @@ class ExamResultSummaryQuery:
             )
 
 
+    @strawberry.field
+    def get_exam_result_summaries_by_uids(self, uids: List[str]) -> \
+            Response[List[ExamResultSummaryNode]]:
+        try:
+            result = ExamResultSummaryService.get_exam_result_summaries_by_uids(uids)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Results Retrieved Successfully",
+                data=result
+                )
+        except Exception as e:
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve exam result summaries",
+                data=[]
+            )
+
+
 @strawberry.type
 class ExamResultSummaryMutation:
     @strawberry.field
@@ -54,6 +74,25 @@ class ExamResultSummaryMutation:
                 status=False,
                 code=ResponseCode.FAILURE,
                 message="Failed to register exam result summaries",
+                data=None,
+            )
+
+    @strawberry.field
+    def remove_exam_result_summary(self, uid: str) -> Response[None]:
+        try:
+            ExamResultSummaryService.remove_exam_result_summary(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Result Summary Removed Successfully",
+                data=None,
+            )
+        except Exception as e:
+            logger.error(f"Failed to remove exam result summary: {e}")
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to remove exam result summary",
                 data=None,
             )
 

@@ -13,7 +13,6 @@ from src.types import ExamResultSummaryInput, ExamResultSummaryNode
 class ExamResultSummaryService:
     @staticmethod
     def get_exam_result_summaries() -> List[ExamResultSummary]:
-        print("______________________________________________, I work")
         with session_scope() as session:
             result = session.query(ExamResultSummary).filter(ExamResultSummary.deleted_at.is_(None)).all()
             return result
@@ -86,3 +85,4 @@ class ExamResultSummaryService:
                     message="Exam Result Summary Not Found",
                     data=None
                 )
+
