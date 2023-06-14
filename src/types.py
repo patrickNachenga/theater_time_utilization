@@ -129,6 +129,7 @@ class ExamResultNode:
 
 @strawberry.input(description="Exam Result Summary Input")
 class ExamResultSummaryInput:
+    uid: str
     program_course_id: int
     exam_category_id: int
     student_uid: str
@@ -143,11 +144,12 @@ class ExamResultSummaryInput:
     grade_remark: str
     publish_status: bool
     publisher: str
-    publish_date: Date
+    publish_date: str
 
 
 @strawberry.type(description="Exam Result Summary Node|Output")
 class ExamResultSummaryNode:
+    uid: Optional[str] = None
     program_course_id: int
     exam_category_id: int
     student_uid: str
