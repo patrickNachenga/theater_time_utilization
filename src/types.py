@@ -4,11 +4,13 @@ from typing import Optional, List
 
 import strawberry
 from pydantic import BaseModel
+from sqlalchemy import Date
 
 
 class ProgramCodeInput(BaseModel):
     code: Optional[str]
     uid: Optional[str]
+
 
 @strawberry.input
 class PaginationInput:
@@ -123,6 +125,43 @@ class ExamResultNode:
     out_of: float
     weight: int
     overall_marks: float
+
+
+@strawberry.input(description="Exam Result Summary Input")
+class ExamResultSummaryInput:
+    program_course_id: int
+    exam_category_id: int
+    student_uid: str
+    registration_number: str
+    student_name: str
+    gender: str
+    course_code: str
+    course_name: str
+    credit: float
+    grade: str
+    grade_point: float
+    grade_remark: str
+    publish_status: bool
+    publisher: str
+    publish_date: Date
+
+
+@strawberry.type(description="Exam Result Summary Node|Output")
+class ExamResultSummaryNode:
+    program_course_id: int
+    exam_category_id: int
+    student_uid: str
+    registration_number: str
+    student_name: str
+    gender: str
+    course_code: str
+    course_name: str
+    credit: float
+    grade: str
+    grade_point: float
+    grade_remark: str
+    publish_status: bool
+    publisher: str
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -352,7 +391,6 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
-
 @strawberry.type(description="Program Course Assessment Output")
 class ProgramCourseAssessmentNode2:
     uid: str
@@ -360,7 +398,6 @@ class ProgramCourseAssessmentNode2:
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
-
 
 
 @strawberry.type(description="Program Course outputs")
@@ -666,6 +703,7 @@ class Base64String:
 class ExcelFile:
     base64_data: Base64String
 
+
 @strawberry.input
 class RequestProgramSemester:
     registration_number: str
@@ -682,3 +720,14 @@ class InnerStudentProgramSemester:
     study_year: int
     semester: int
 
+
+@strawberry.input(description="Staff Allocation input")
+class StaffAllocationInputNode:
+    program_course_uid: Optional[str]
+    staff_uid: str
+
+
+@strawberry.input(description="Course to register input")
+class CourseRegisterInputNode:
+    study_year: str
+    program_uid: str

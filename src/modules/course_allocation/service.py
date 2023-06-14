@@ -11,7 +11,7 @@ from src.modules import CRUDBase
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationNode, CourseAllocationListNode
+from src.types import CourseAllocationInput, CourseAllocationNode, CourseAllocationListNode, StaffAllocationInputNode
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -51,13 +51,18 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
     def get_staff_course_allocation(inputs) -> CourseAllocation:
         """
         Get staff course allocation
-        :param staff_uid and program_course_uid:
+        :param inputs:containing staff_uid and program_course_uid
         :return:
         """
         with session_scope() as session:
-            result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
-                                                            CourseAllocation.program_course_uid == inputs.program_course_uid,
-                                                            CourseAllocation.deleted_at.is_(None))
+            if inputs.program_course_uid:
+                result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
+                                                                CourseAllocation.program_course_uid == inputs.program_course_uid,
+                                                                CourseAllocation.deleted_at.is_(None))
+            else:
+
+                result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
+                                                                CourseAllocation.deleted_at.is_(None))
             return result.first()
 
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:

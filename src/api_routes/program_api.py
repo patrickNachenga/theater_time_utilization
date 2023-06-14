@@ -6,7 +6,7 @@ from typing import List, Optional
 
 
 from fastapi import APIRouter
-from openpyxl.styles import Alignment, Font, Border, Side
+from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from pydantic import BaseModel
 
 from src.modules.programs.service import ProgramService
@@ -128,9 +128,25 @@ def generate_allocation_xls_template(allocation_uid: str):
             cell.alignment = Alignment(horizontal='center', vertical='center')
             cell.font = font
             cell.border = border
+        # Set the specific column where cells should be non-editable (except column D)
+        editable_column = 'D'
+
+        # Iterate over rows in the worksheet
+        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+            for cell in row:
+                # Check if the current column is the editable column
+                if cell.column_letter == editable_column:
+                    # Set protection to False for the editable column
+                    cell.protection = Protection(locked=False)
+                else:
+                    # Set protection to True for other columns
+                    cell.protection = Protection(locked=True)
+
+        # Protect the worksheet to make cells not editable
+        worksheet.protection.sheet = True
 
     # Save the workbook
-    workbook.save("layout.xlsx")
+    # workbook.save("layout.xlsx")
 
     # Save the workbook to a BytesIO buffer
     file_buffer = BytesIO()
