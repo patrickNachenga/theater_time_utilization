@@ -7,7 +7,7 @@ from src.modules.course_category.apis import CourseCategoryQuery, CourseCategory
 from src.modules.course_learn_outcome.apis import CourseLearnOutcomeQuery, CourseLearnOutcomeMutation
 from src.modules.exam_category.apis import ExamCategoryQuery, ExamCategoryMutation
 from src.modules.exam_category_groups.apis import ExamCategoryGroupsQuery, ExamCategoryGroupsMutation
-from src.modules.exam_results.apis import ExamResultQuery, ExamResultMutation
+from src.modules.exam_result_summary.apis import ExamResultSummaryQuery, ExamResultSummaryMutation
 from src.modules.groups.apis import GroupQuery, GroupMutation
 from src.modules.program_capacity.apis import ProgramCapacityMutation, ProgramCapacityQuery
 from src.modules.program_category.apis import ProgramCategoryQuery, ProgramCategoryMutation
@@ -23,7 +23,7 @@ from src.modules.student.apis import StudentQuery, StudentMutation
 @strawberry.type
 class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocationQuery,
                CourseCategoryQuery, GroupQuery, ProgramQuery, ExamCategoryQuery, ExamCategoryGroupsQuery,
-               ExamResultQuery,
+               ExamResultSummaryQuery,
                AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery):
     pass
@@ -33,7 +33,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
 class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutation,
                   CourseCategoryMutation, GroupMutation,
                   ExamCategoryGroupsMutation, ExamCategoryMutation,
-                  ExamResultMutation, AcademicYearMutation,
+                  ExamResultSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation):
     pass

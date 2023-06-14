@@ -9,7 +9,7 @@ class ExamResultSummary(BaseModel):
     __tablename__ = "exam_result_summaries"
 
     program_course_id: int = Column(Integer, nullable=False, unique=True)
-    exam_category_id: int = Column(Integer, nullable=False, unique=True)
+    exam_category_id: int = Column(Integer, nullable=False, unique=False)
     student_uid: str = Column(String, nullable=False, unique=True)
     registration_number: str = Column(String, nullable=False, unique=True)
     student_name: str = Column(String, nullable=False)
