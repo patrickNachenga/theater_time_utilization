@@ -5,86 +5,84 @@ from sqlalchemy import select
 
 from src.db.session import session_scope
 from src.models import ExamResultSummary
-from src.models.exam_result import ExamResult
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultInput, ExamResultNode
+from src.types import ExamResultSummaryInput, ExamResultSummaryNode
 
 
-class ExamResultSummaryService(object):
+class ExamResultSummaryService:
     @staticmethod
-    def get_exam_results() -> List[ExamResultSummary]:
+    def get_exam_result_summaries() -> List[ExamResultSummary]:
         with session_scope() as session:
             result = session.query(ExamResultSummary).filter(ExamResultSummary.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
-    def get_exam_results_by_ids(ids: List[str]) -> List[ExamResultSummary]:
-        """
-        Get exam_results by ids
-        :return:
-        """
+    def get_exam_result_summaries_by_uids(uids: List[str]) -> List[ExamResultSummary]:
         with session_scope() as session:
-            stmt = select(ExamResultSummary).where((ExamResultSummary.id.in_(ids)) & (ExamResultSummary.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.all()
+            stmt = select(ExamResultSummary).where((ExamResultSummary.uid.in_(uids)) & (ExamResultSummary.deleted_at.is_(None)))
+            result = session.execute(stmt).scalars().all()
+            return result
 
     @staticmethod
-    def get_exam_results_id(id: int) -> ExamResultSummary:
-        """
-        Get exam_results by id
-        :param id:
-        :return:
-        """
+    def get_exam_result_summary_by_id(id: int) -> ExamResultSummary:
         with session_scope() as session:
             stmt = select(ExamResultSummary).where((ExamResultSummary.id == id) & (ExamResultSummary.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.first()
+            result = session.execute(stmt).scalars().first()
+            return result
 
-    def register_exam_results(self, inputs: List[ExamResultSummaryInput]) -> Response[List[ExamResultSummaryNode]]:
-        """
-        Save Exam Results
-        :param inputs:
-        :return:
-        """
-        exam_results_list = []
+    def register_exam_result_summaries(self, inputs: List[ExamResultSummaryInput]) -> \
+            Response[List[ExamResultSummaryNode] | None]:
+        exam_result_summaries_list = []
+
         with session_scope() as session:
-            # Check if exam_results already exist using id
-            # existed_exam_results_list = self.get_exam_results_by_ids(
-            #    [exam_results_list for exam_results in inputs if exam_results.id is None])
-            # if existed_exam_results_list:
-            #    return Response(status=False, code=ResponseCode.DUPLICATE, data=existed_exam_results_list,
-            #                   message="Exam Results Already Exists")
+            existing_exam_results = self.get_exam_result_summaries_by_uids([item.uid for item in inputs])
+            if existing_exam_results:
+                return Response(status=False, code=ResponseCode.DUPLICATE,
+                                message="Exam Result Summaries Already Exist", data=None)
+            else:
+                for item in inputs:
+                    exam_result_summary = ExamResultSummary(
+                        uid=item.uid,
+                        student_uid=item.student_uid,
+                        program_course_id=item.program_course_id,
+                        exam_category_id=item.exam_category_id,
+                        registration_number=item.registration_number,
+                        student_name=item.student_name,
+                        gender=item.gender,
+                        course_code=item.course_code,
+                        course_name=item.course_name,
+                        credit=item.credit,
+                        grade=item.grade,
+                        grade_point=item.grade_point,
+                        grade_remark=item.grade_remark,
+                        publish_status=item.publish_status,
+                        publisher=item.publisher
+                    )
+                    exam_result_summaries_list.append(exam_result_summary)
 
-            # create new Exam Results
-            existed_exam_results = self.get_exam_results_by_ids([item.uid for item in inputs])
-            for item in inputs:
-                exam_results = ExamResultSummary(
-                    id=item.id,
-                    student_id=item.student_id,
-                    program_course_id=item.program_course_id,
-                    assess_no=item.assess_no,
-                    exam_cat_id=item.exam_cat_id,
-                    status=item.status,
-                    score=item.score,
-                    weight=item.weight,
-                    out_of=item.out_of,
-                    publish=item.publish,
-                )
-                exam_results_list.append(exam_results)
+                session.add_all(exam_result_summaries_list)
+                session.commit()
 
-            session.add_all(exam_results_list)
-            session.commit()
-            return Response(status=True, code=ResponseCode.SUCCESS, data=exam_results_list,
-                            message="Successfully Submitted")
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Exam Result Successfully Submitted",
+            data=exam_result_summaries_list
+        )
 
     @staticmethod
-    def remove_exam_results(uid: str):
-        """
-        Remove Programme by UID
-        :param uid:
-        :return:
-        """
+    def remove_exam_result_summary(uid: str):
         with session_scope() as session:
-            session.query(ExamResultSummary).filter_by(uid=uid).update({ExamResultSummary.deleted_at: pendulum.now()})
-            session.commit()
+            exam_result_summary = session.query(ExamResultSummary).filter_by(uid=uid).first()
+            if exam_result_summary:
+                exam_result_summary.deleted_at = pendulum.now()
+                session.commit()
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Exam Result Summary Not Found",
+                    data=None
+                )
+

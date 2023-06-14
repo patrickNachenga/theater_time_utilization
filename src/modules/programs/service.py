@@ -266,17 +266,16 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             session.commit()
 
     @staticmethod
-    async def api_get_program_by_code(parm: ProgramCodeInput) -> Response:
+    async def api_get_program_by_code(code: str | None = None, uid: str | None = None) -> Response:
         """
             Get programs by codes
         :param:
         """
         try:
-
-            if parm.code:
-                program = ProgramService.get_program_by_code(parm.code)
-            elif parm.uid:
-                program = ProgramService.get_program_by_uid(parm.uid)
+            if code:
+                program = ProgramService.get_program_by_code(code)
+            elif uid:
+                program = ProgramService.get_program_by_uid(uid)
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,

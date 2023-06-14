@@ -43,6 +43,38 @@ class AcademicYearListNode:
     total_count: int
 
 
+@strawberry.input(description="Academic Year Input")
+class AcademicYearSemesterInput:
+    uid: Optional[str] = None
+    odd_start_date: str
+    odd_end_date: str
+    even_start_date: str
+    even_end_date: str
+    exam_start_date: str
+    exam_ticket_date: str
+    semester: int
+    academic_year_uid: str
+
+
+@strawberry.type(description="Academic Year")
+class AcademicYearSemesterNode:
+    uid: Optional[str] = None
+    odd_start_date: str
+    odd_end_date: str
+    even_start_date: str
+    even_end_date: str
+    exam_start_date: str
+    exam_ticket_date: str
+    semester: int
+    academic_year: AcademicYearNode
+
+
+@strawberry.type(description="AcademicYear Country")
+class AcademicYearSemesterListNode:
+    items: List[AcademicYearSemesterNode]
+    total_count: int
+
+
 @strawberry.input(description="Exam Category Groups Input")
 class ExamCategoryGroupsInput:
     uid: Optional[str] = None
@@ -96,6 +128,7 @@ class ExamResultNode:
 
 @strawberry.input(description="Exam Result Summary Input")
 class ExamResultSummaryInput:
+    uid: str
     program_course_id: int
     exam_category_id: int
     student_uid: str
@@ -110,11 +143,12 @@ class ExamResultSummaryInput:
     grade_remark: str
     publish_status: bool
     publisher: str
-    publish_date: Date
+    publish_date: str
 
 
 @strawberry.type(description="Exam Result Summary Node|Output")
 class ExamResultSummaryNode:
+    uid: Optional[str] = None
     program_course_id: int
     exam_category_id: int
     student_uid: str
@@ -197,11 +231,11 @@ class GroupNode:
 class CourseInput:
     uid: Optional[str] = None
     code: str
-    description: Optional[str] = None
+    description: Optional[str] = ""
     name: str
     offered: Optional[int] = 1
     department_uid: str
-    moodle_id: Optional[str] = None
+    moodle_id: Optional[str] = ""
 
 
 @strawberry.type(description="Course Output")

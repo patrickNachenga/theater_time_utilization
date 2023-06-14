@@ -41,3 +41,4 @@ from .exam_category import ExamCategory
 from .exam_coursework import ExamCoursework
 from .exam_result import ExamResult
 from .exam_result_summary import ExamResultSummary
+from .academic_year_semester import AcademicYearSemester

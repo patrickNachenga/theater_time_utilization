@@ -40,6 +40,7 @@ class ExamResultService(object):
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
     def register_exam_results(self, inputs: List[ExamResultInput]) -> Response[List[ExamResultNode]]:
         """
         Save Exam Results
