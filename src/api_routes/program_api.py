@@ -40,6 +40,7 @@ class ProgramDepartmentInput(BaseModel):
 
 @program_router.get("/program")
 async def get_program_data(parm: ProgramCodeInput):
+    print(parm)
     return await ProgramService.api_get_program_by_code(parm)
 
 

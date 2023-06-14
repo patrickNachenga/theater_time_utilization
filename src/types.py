@@ -230,11 +230,11 @@ class GroupNode:
 class CourseInput:
     uid: Optional[str] = None
     code: str
-    description: Optional[str] = None
+    description: Optional[str] = ""
     name: str
     offered: Optional[int] = 1
     department_uid: str
-    moodle_id: Optional[str] = None
+    moodle_id: Optional[str] = ""
 
 
 @strawberry.type(description="Course Output")
