@@ -40,6 +40,37 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             return result.first()
 
     @staticmethod
+    def get_program_course_by_program_semester_uid(uid: str) -> Response[ProgramCourseListNode]:
+        """
+        Get Program Course by program semester uid
+        :return:
+        """
+        with session_scope() as session:
+            try:
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(uid)
+                if program_semester is None:
+                    raise ValueError("You have submitted incorrect programs semester details")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=ProgramCourseListNode(items=[], total_count=0),
+                    message="You have submitted incorrect programs semester details"
+                )
+            stmt = select(ProgramCourse).where((ProgramCourse.program_semester_id == program_semester.id) & (ProgramCourse.deleted_at.is_(None)))
+            result_raw = session.scalars(stmt)
+            result = result_raw.all()
+            count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=ProgramCourseListNode(items=result, total_count=count),
+                message="Program Course Retrieved Successful"
+            )
+
+
+    @staticmethod
     def get_program_courses_by_uids(uids: List[str]) -> List[ProgramCourse]:
         """
         Get programs course by uids
@@ -103,7 +134,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
-                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        data=ProgramCourseListNode(items=[], total_count=0),
                         message="You have submitted incorrect courses details"
                     )
 

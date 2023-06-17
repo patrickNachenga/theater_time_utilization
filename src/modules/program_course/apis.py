@@ -72,6 +72,22 @@ class ProgramCourseQuery:
                 data=None)
 
     @strawberry.field
+    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[ProgramCourseListNode]:
+        try:
+            program_courses = ProgramCourseService.get_program_course_by_program_semester_uid(program_semester_uid)
+            if program_courses:
+                return program_courses
+            raise ValueError("Unable to retrieve program courses")
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                data=ProgramCourseListNode(items=[], total_count=0),
+                message="Unable to retrieve program courses"
+            )
+
+    @strawberry.field
     async def get_student_program_course(self, input: RequestProgramSemester) -> Response[List[ProgramCourseNode]]:
 
         try:
@@ -95,6 +111,7 @@ class ProgramCourseQuery:
                 code=ResponseCode.FAILURE,
                 message="Unable to retrieve student program courses",
                 data=[])
+
 
 @strawberry.type
 class ProgramCourseMutation:

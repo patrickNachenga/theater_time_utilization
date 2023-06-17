@@ -281,6 +281,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 "code": program.code,
                 "name": program.name,
                 "short_name": program.short_name,
+                "duration":program.duration,
                 "department_uid": program.department_uid,
                 "program_category_name": program.program_category.name,
                 "program_category_short_name": program.program_category.short_name,
@@ -305,7 +306,10 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     "code": programItems.code,
                     "name": programItems.name,
                     "short_name": programItems.short_name,
-                    "department_uid": programItems.department_uid
+                    "department_uid": programItems.department_uid,
+                    "duration": programItems.duration,
+                    "program_category_name": programItems.program_category.name,
+                    "program_category_short_name": programItems.program_category.short_name,
                 } for programItems in program],
                                 message="Program retrieved Successfully")
             else:

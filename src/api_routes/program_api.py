@@ -1,9 +1,7 @@
-
 from io import BytesIO
 from typing import List
 
 from typing import List, Optional
-
 
 from fastapi import APIRouter
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
@@ -12,9 +10,10 @@ from pydantic import BaseModel
 from src.modules.programs.service import ProgramService
 
 from src.modules.student.service import StudentService
+from src.shared.response import Response
+from src.shared.response_code import ResponseCode
 
 from src.types import ProgramCodeInput
-
 
 program_router = APIRouter()
 root_path = "/program"
@@ -31,7 +30,8 @@ async def get_program_data(code: str | None = None, uid: str | None = None):
     elif uid:
         return await ProgramService.api_get_program_by_code(uid=uid)
     else:
-        return await ProgramService.api_get_programs()
+        return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                        message="Program Not Found", data=None)
 
 
 class ProgramDepartmentInput(BaseModel):
@@ -53,7 +53,6 @@ async def get_program_data():
 @program_router.post("/program/department")
 async def get_program_data(parm: ProgramDepartmentInput):
     return ProgramService.api_get_program_by_departments(parm.departments)
-
 
 
 @program_router.get("/generate-allocation-template/{allocation_uid}")
@@ -162,4 +161,3 @@ def generate_allocation_xls_template(allocation_uid: str):
 
     # Return the workbook as a streaming response
     return StreamingResponse(content=file_buffer, headers=headers)
-

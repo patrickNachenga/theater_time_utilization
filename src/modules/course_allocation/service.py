@@ -11,7 +11,7 @@ from src.modules import CRUDBase
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationNode, CourseAllocationListNode, StaffAllocationInputNode
+from src.types import CourseAllocationInput, CourseAllocationListNode
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -64,6 +64,38 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                 result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
                                                                 CourseAllocation.deleted_at.is_(None))
             return result.first()
+
+
+    @staticmethod
+    def get_course_allocation_by_program_course_uid(uid: str) -> Response[CourseAllocationListNode]:
+        """
+        Get Course  Allocation by program semester uid
+        :return:
+        """
+        with session_scope() as session:
+            try:
+                program_course = ProgramCourseService.get_program_course_by_uid(uid)
+                if program_course is None:
+                    raise ValueError("You have submitted incorrect programs course details")
+            except Exception as e:
+                print(e)
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=CourseAllocationListNode(items=[], total_count=0),
+                                message="You have submitted incorrect programs course details")
+
+            stmt = select(CourseAllocation).where(
+                (CourseAllocation.program_course_id == program_course.id) & (
+                    CourseAllocation.deleted_at.is_(None)))
+            result_raw = session.scalars(stmt)
+            result = result_raw.all()
+            count = session.query(CourseAllocation).filter(CourseAllocation.deleted_at.is_(None)).count()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=CourseAllocationListNode(items=result, total_count=count),
+                message="Course Allocations Retrieved Successful"
+            )
+
 
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
         """
