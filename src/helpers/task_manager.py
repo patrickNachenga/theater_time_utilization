@@ -5,7 +5,7 @@ import aioredis
 from pydantic import BaseModel
 from sqlalchemy import and_
 import requests
-from src.core.config import settings, Settings
+from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.db.session import session_scope
 from src.models import Course
@@ -79,10 +79,10 @@ class TaskManager:
                 Call Department moodle id for uuid
                 """
                 try:
-                    response = requests.get(Settings.UAA_URi+f"department/{course.department_uid}")
+                    response = requests.get(settings.UAA_URi+f"/department/{course.department_uid}")
                     if response.status_code == 200:
                         responseData = response.json()
-                        if responseData["status"]:
+                        if not responseData["status"]:
                             raise RuntimeError("Fail to register course to moodle")
                         moodle = MoodleApi()
                         moodle_unit_id = moodle.createCourse(
@@ -108,14 +108,13 @@ class TaskManager:
         with session_scope() as session:
             return None
             # # Get only one at a time
-            # course = session.query(Course).filter(
-            #     and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).first()
+            # course = session.query(Course).filter((Course.moodle_id.is_(None), (Course.deleted_at.is_(None))).first()
             # if course:
             #     """
             #     Call Department moodle id for uuid
             #     """
             #     try:
-            #         response = requests.get(Settings.UAA_URi+f"department/{course.department_uid}")
+            #         response = requests.get(settings.UAA_URi+f"department/{course.department_uid}")
             #         if response.status_code == 200:
             #             responseData = response.json()
             #             if responseData["status"]:
