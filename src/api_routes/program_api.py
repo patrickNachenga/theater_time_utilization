@@ -1,26 +1,23 @@
+
+import io
 from io import BytesIO
 from typing import List
 
-from typing import List, Optional
-
-from fastapi import APIRouter
+import openpyxl
+from fastapi import APIRouter, UploadFile, File
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from pydantic import BaseModel
 
 from src.modules.programs.service import ProgramService
-
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-
-from src.types import ProgramCodeInput
 
 program_router = APIRouter()
 root_path = "/program"
 
 from starlette.responses import StreamingResponse
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 
 
 @program_router.get(root_path)
@@ -161,3 +158,39 @@ def generate_allocation_xls_template(allocation_uid: str):
 
     # Return the workbook as a streaming response
     return StreamingResponse(content=file_buffer, headers=headers)
+
+@program_router.post("/extract-data")
+async def extract_data(file: UploadFile = File(...)):
+    contents = await file.read()
+
+    # Load the workbook from the file contents
+    workbook = openpyxl.load_workbook(io.BytesIO(contents))
+
+    # Get the desired worksheet by name or index
+    worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
+
+    # Assuming the data is in a specific sheet and columns
+    sn_column = 1  # Assuming SN is in column A
+    reg_no_column = 2  # Assuming Reg No is in column B
+    name_column = 3  # Assuming Name is in column C
+    marks_column = 4  # Assuming Marks is in column D
+
+    # Extract the data from the columns
+    data = []
+    for row in worksheet.iter_rows(min_row=10, values_only=True):
+        print("SN",row[sn_column - 1])
+        print("Reg No", row[reg_no_column - 1],)
+        print("Marks", row[marks_column - 1])
+        #
+        # data.append({
+        #     "sn": row[sn_column - 1],
+        #     "reg_no": row[reg_no_column - 1],
+        #     "name": row[name_column - 1],
+        #     "marks": row[marks_column - 1]
+        # })
+
+    # Save the extracted data in the database
+    # ...
+
+    return {"message": "Data extracted successfully"}
+

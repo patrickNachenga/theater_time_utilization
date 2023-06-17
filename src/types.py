@@ -478,9 +478,15 @@ class CourseAllocationInput:
 
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
-    uid: str
-    program_course: ProgramCourseNode
-    staff_uid: str
+
+    # uid: str
+    # program_course: ProgramCourseNode
+    # staff_uid: str
+
+    uid: str | None
+    program_course_uid: str|None
+    program_course: ProgramCourseNode | None
+    staff_uid: str | None
 
 
 @strawberry.type(description="Program Allocation Assessment paginated Output")
