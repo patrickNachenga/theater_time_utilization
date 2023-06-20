@@ -6,8 +6,10 @@ from sqlalchemy import select, desc
 
 from src.core.moodle_api import MoodleApi
 from src.db.session import session_scope
+from src.models import AcademicYear
 from src.models.program import Program
 from src.modules import CRUDBase
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -266,7 +268,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             session.commit()
 
     @staticmethod
-    async def api_get_program_by_code(code: str | None = None, uid: str | None = None) -> Response:
+    async def api_get_program_by(code: str | None = None, uid: str | None = None) -> Response:
         """
             Get programs by codes
         :param:
@@ -276,6 +278,11 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 program = ProgramService.get_program_by_code(code)
             elif uid:
                 program = ProgramService.get_program_by_uid(uid)
+
+            # academic_year:AcademicYear
+            # if program:
+            #     academic_year = AcademicYearService.get_active_academic_year()
+            #
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,
@@ -285,6 +292,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 "department_uid": program.department_uid,
                 "program_category_name": program.program_category.name,
                 "program_category_short_name": program.program_category.short_name,
+                # "active_academic_year": academic_year.name,
+                # "active_academic_year_uid": academic_year.uid
 
             }, message="Program retrieved Successfully")
         except Exception as e:

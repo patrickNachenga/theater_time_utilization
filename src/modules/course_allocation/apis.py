@@ -69,11 +69,11 @@ class CourseAllocationQuery:
                 data=CourseAllocationNode(uid="",program_course_uid='',program_course=None,staff_uid=""))
 
     @strawberry.field
-    async def get_course_allocation_by_program_course_uid(self, program_courser_uid: str) -> Response[
+    async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
         CourseAllocationListNode]:
         try:
             course_allocation = CourseAllocationService.get_course_allocation_by_program_course_uid(
-                program_courser_uid)
+                program_course_uid)
             if course_allocation:
                 return course_allocation
             raise ValueError("Unable to retrieve course allocation")

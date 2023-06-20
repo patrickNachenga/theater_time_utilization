@@ -23,9 +23,9 @@ from openpyxl import Workbook
 @program_router.get(root_path)
 async def get_program_data(code: str | None = None, uid: str | None = None):
     if code:
-        return await ProgramService.api_get_program_by_code(code=code)
+        return await ProgramService.api_get_program_by(code=code)
     elif uid:
-        return await ProgramService.api_get_program_by_code(uid=uid)
+        return await ProgramService.api_get_program_by(uid=uid)
     else:
         return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                         message="Program Not Found", data=None)
