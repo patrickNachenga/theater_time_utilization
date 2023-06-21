@@ -280,9 +280,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 program = ProgramService.get_program_by_uid(uid)
 
             # academic_year:AcademicYear
-            # if program:
-            #     academic_year = AcademicYearService.get_active_academic_year()
-            #
+            academic_year = AcademicYearService.get_active_academic_year()
+
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,
@@ -292,8 +291,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 "department_uid": program.department_uid,
                 "program_category_name": program.program_category.name,
                 "program_category_short_name": program.program_category.short_name,
-                # "active_academic_year": academic_year.name,
-                # "active_academic_year_uid": academic_year.uid
+                "active_academic_year": academic_year.name,
+                "active_academic_year_uid": academic_year.uid
 
             }, message="Program retrieved Successfully")
         except Exception as e:
