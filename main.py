@@ -1,3 +1,4 @@
+from starlette.background import BackgroundTasks
 from starlette.middleware.cors import CORSMiddleware
 
 from src.app import RegistrationApp
@@ -39,11 +40,11 @@ async def startup():
 
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
-    # await redis_dependency.init()
+    await redis_dependency.init()
 
-    # background_tasks = BackgroundTasks()
-    # background_tasks.add_task(process_data)
-    # await background_tasks()
+    background_tasks = BackgroundTasks()
+    background_tasks.add_task(process_data)
+    await background_tasks()
 
 
 @app.on_event("shutdown")

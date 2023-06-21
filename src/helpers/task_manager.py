@@ -3,12 +3,13 @@ import json
 
 import aioredis
 from pydantic import BaseModel
-from sqlalchemy import and_
+from sqlalchemy import and_, desc
 import requests
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.db.session import session_scope
 from src.models import Course
+from src.modules.course.service import CourseService
 
 
 class TaskManager:
@@ -16,7 +17,7 @@ class TaskManager:
         self.redis_url = redis_url
         self.task_queue = asyncio.Queue()
         self.redis_pool = None
-        self._queue_interval_seconds: int = 60 * 1
+        self._queue_interval_seconds: int = 1
         self.task_type_mapping = {}
         self.moodle = MoodleApi()
 
@@ -85,8 +86,10 @@ class TaskManager:
                         if not responseData["status"]:
                             raise RuntimeError("Fail to register course to moodle")
                         moodle = MoodleApi()
+                        print(course.department_uid)
+                        print(responseData)
                         moodle_unit_id = moodle.createCourse(
-                            departmentId=responseData["moodle_id"],
+                            departmentId=responseData["data"]['moodle_id'] or 0,
                             courseFullName=course.name,
                             courseDescription=course.description,
                             courseShortName=course.code,
@@ -96,23 +99,24 @@ class TaskManager:
                             session.add(course)
                             session.commit()
                             print('--- Successfully added course %s to Moodle ---' % course.code)
+                            return True
                         else:
+                            print()
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
+                            return False
                     else:
                         raise RuntimeError("Fail to register course to moodle")
                 except Exception as e:
                     print('--- Failure to create course to Moodle --- ', course.code)
+                    return False
 
     @staticmethod
     async def create_program_course_to_moodle():
         with session_scope() as session:
-            return None
+            return 0
             # # Get only one at a time
-            # course = session.query(Course).filter((Course.moodle_id.is_(None), (Course.deleted_at.is_(None))).first()
+            # course = CourseService.get_unregister_moodle_course()
             # if course:
-            #     """
-            #     Call Department moodle id for uuid
-            #     """
             #     try:
             #         response = requests.get(settings.UAA_URi+f"department/{course.department_uid}")
             #         if response.status_code == 200:
