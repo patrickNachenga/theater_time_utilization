@@ -4,35 +4,35 @@ import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models import ExamResultSummary
+from src.models import ExamResult
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultSummaryInput, ExamResultSummaryNode
+from src.types import ExamResultInput, ExamResultNode
 
 
-class ExamResultSummaryService:
+class ExamResultService:
     @staticmethod
-    def get_exam_result_summaries() -> List[ExamResultSummary]:
+    def get_exam_results() -> List[ExamResult]:
         with session_scope() as session:
-            result = session.query(ExamResultSummary).filter(ExamResultSummary.deleted_at.is_(None)).all()
+            result = session.query(ExamResult).filter(ExamResult.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
-    def get_exam_result_summaries_by_uids(uids: List[str]) -> List[ExamResultSummary]:
+    def get_exam_results_by_uids(uids: List[str]) -> List[ExamResult]:
         with session_scope() as session:
-            stmt = select(ExamResultSummary).where((ExamResultSummary.uid.in_(uids)) & (ExamResultSummary.deleted_at.is_(None)))
+            stmt = select(ExamResult).where((ExamResult.uid.in_(uids)) & (ExamResult.deleted_at.is_(None)))
             result = session.execute(stmt).scalars().all()
             return result
 
     @staticmethod
-    def get_exam_result_summary_by_id(id: int) -> ExamResultSummary:
+    def get_exam_result_by_id(id: int) -> ExamResult:
         with session_scope() as session:
-            stmt = select(ExamResultSummary).where((ExamResultSummary.id == id) & (ExamResultSummary.deleted_at.is_(None)))
+            stmt = select(ExamResult).where((ExamResult.id == id) & (ExamResult.deleted_at.is_(None)))
             result = session.execute(stmt).scalars().first()
             return result
 
-    def register_exam_result_summaries(self, inputs: List[ExamResultSummaryInput]) -> \
-            Response[List[ExamResultSummaryNode] | None]:
+    def register_exam_results(self, inputs: List[ExamResultInput]) -> \
+            Response[List[ExamResultNode] | None]:
         exam_result_summaries_list = []
 
         with session_scope() as session:
@@ -42,7 +42,7 @@ class ExamResultSummaryService:
                                 message="Exam Result Summaries Already Exist", data=None)
             else:
                 for item in inputs:
-                    exam_result_summary = ExamResultSummary(
+                    exam_result_summary = ExamResult(
                         uid=item.uid,
                         student_uid=item.student_uid,
                         program_course_id=item.program_course_id,
@@ -74,7 +74,7 @@ class ExamResultSummaryService:
     @staticmethod
     def remove_exam_result_summary(uid: str):
         with session_scope() as session:
-            exam_result_summary = session.query(ExamResultSummary).filter_by(uid=uid).first()
+            exam_result_summary = session.query(ExamResult).filter_by(uid=uid).first()
             if exam_result_summary:
                 exam_result_summary.deleted_at = pendulum.now()
                 session.commit()
