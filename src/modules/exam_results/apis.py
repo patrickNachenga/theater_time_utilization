@@ -56,9 +56,8 @@ class ExamResultQuery:
 @strawberry.type
 class ExamResultMutation:
     @strawberry.field
-    def register_exam_results(
-            self, inputs: List[ExamResultInput]
-    ) -> Response[List[ExamResultNode] | None]:
+    def register_exam_results(self, inputs: List[ExamResultInput]) -> \
+            Response[List[ExamResultNode] | None]:
         try:
             result = ExamResultService().get_exam_results()
             return Response(

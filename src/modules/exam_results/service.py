@@ -36,7 +36,7 @@ class ExamResultService:
         exam_result_summaries_list = []
 
         with session_scope() as session:
-            existing_exam_results = self.get_exam_result_by_uids([item.uid for item in inputs])
+            existing_exam_results = self.get_exam_results_by_uids([item.uid for item in inputs])
             if existing_exam_results:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
                                 message="Exam Result Summaries Already Exist", data=None)
