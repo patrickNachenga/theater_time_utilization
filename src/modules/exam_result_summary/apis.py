@@ -33,7 +33,6 @@ class ExamResultSummaryQuery:
                 data=[],
             )
 
-
     @strawberry.field
     def get_exam_result_summaries_by_uids(self, uids: List[str]) -> \
             Response[List[ExamResultSummaryNode]]:

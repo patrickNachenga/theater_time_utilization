@@ -1,38 +1,99 @@
+import logging
 from typing import List
 
 import strawberry
 
-from src.modules.exam_results.service import ExamResultService
+from src.modules.exam_result_summary.service import ExamResultSummaryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultInput, ExamResultNode
+from src.types import ExamResultSummaryNode, ExamResultSummaryInput
+
+logger = logging.getLogger(__name__)
 
 
 @strawberry.type
-class ExamResultQuery:
+class ExamResultSummaryQuery:
     @strawberry.field
-    def get_exam_results(self) -> Response[List[ExamResultNode]]:
+    def get_exam_result_summaries(self) -> Response[List[ExamResultSummaryNode]]:
         try:
-            result = ExamResultService.get_exam_results()
+            result = ExamResultSummaryService.get_exam_result_summaries()
+            print("Data inserted", result)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Results Retrieved Successfully",
+                data=result,
+            )
         except Exception as e:
-            print(e)
+            logger.error(f"Failed to retrieve exam result summaries: {e}")
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve exam result summaries",
+                data=[],
+            )
 
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Exam Results Retrieved Successfully",
-            data=result)
+    @strawberry.field
+    def get_exam_result_summaries_by_uids(self, uids: List[str]) -> \
+            Response[List[ExamResultSummaryNode]]:
+        try:
+            result = ExamResultSummaryService.get_exam_result_summaries_by_uids(uids)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Results Retrieved Successfully",
+                data=result
+                )
+        except Exception as e:
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve exam result summaries",
+                data=[]
+            )
+
 
 @strawberry.type
-class ExamResultMutation:
+class ExamResultSummaryMutation:
     @strawberry.field
-    def register_exam_results(self, inputs: List[ExamResultInput]) -> Response[List[ExamResultNode]]:
+    def register_exam_result_summaries(
+            self, inputs: List[ExamResultSummaryInput]
+    ) -> Response[List[ExamResultSummaryNode] | None]:
         try:
-            result = ExamResultService().register_exam_results(inputs)
-            return Response(status=True, message="Record successfully", code=ResponseCode.SUCCESS,
-                            data=result)
+            result = ExamResultSummaryService().register_exam_result_summaries(inputs)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Result Summaries Registered Successfully",
+                data=result,
+            )
         except Exception as e:
-            print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register Exam results", data=[])
+            logger.error(f"Failed to register exam result summaries: {e}")
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to register exam result summaries",
+                data=None,
+            )
 
+    @strawberry.field
+    def remove_exam_result_summary(self, uid: str) -> Response[None]:
+        try:
+            ExamResultSummaryService.remove_exam_result_summary(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Result Summary Removed Successfully",
+                data=None,
+            )
+        except Exception as e:
+            logger.error(f"Failed to remove exam result summary: {e}")
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to remove exam result summary",
+                data=None,
+            )
+
+
+schema = strawberry.Schema(query=ExamResultSummaryQuery, mutation=ExamResultSummaryMutation)
