@@ -6,8 +6,10 @@ from sqlalchemy import select, desc
 
 from src.core.moodle_api import MoodleApi
 from src.db.session import session_scope
+from src.models import AcademicYear
 from src.models.program import Program
 from src.modules import CRUDBase
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -266,24 +268,31 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             session.commit()
 
     @staticmethod
-    async def api_get_program_by_code(parm: ProgramCodeInput) -> Response:
+    async def api_get_program_by(code: str | None = None, uid: str | None = None) -> Response:
         """
             Get programs by codes
         :param:
         """
         try:
-            if parm.code:
-                program = ProgramService.get_program_by_code(parm.code)
-            elif parm.uid:
-                program = ProgramService.get_program_by_uid(parm.uid)
+            if code:
+                program = ProgramService.get_program_by_code(code)
+            elif uid:
+                program = ProgramService.get_program_by_uid(uid)
+
+            # academic_year:AcademicYear
+            academic_year = AcademicYearService.get_active_academic_year()
+
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,
                 "name": program.name,
                 "short_name": program.short_name,
+                "duration":program.duration,
                 "department_uid": program.department_uid,
                 "program_category_name": program.program_category.name,
                 "program_category_short_name": program.program_category.short_name,
+                "active_academic_year": academic_year.name,
+                "active_academic_year_uid": academic_year.uid
 
             }, message="Program retrieved Successfully")
         except Exception as e:
@@ -305,7 +314,10 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     "code": programItems.code,
                     "name": programItems.name,
                     "short_name": programItems.short_name,
-                    "department_uid": programItems.department_uid
+                    "department_uid": programItems.department_uid,
+                    "duration": programItems.duration,
+                    "program_category_name": programItems.program_category.name,
+                    "program_category_short_name": programItems.program_category.short_name,
                 } for programItems in program],
                                 message="Program retrieved Successfully")
             else:

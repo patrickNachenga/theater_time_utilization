@@ -6,8 +6,8 @@ from src.models import CourseAllocation
 from src.modules.course_allocation.service import CourseAllocationService, CourseAllocationCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationNode, PaginatedCourse, PaginationInput, \
-    CourseAllocationListNode, StaffAllocationInputNode
+from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInput, CourseAllocationListNode, \
+    StaffAllocationInputNode
 
 
 @strawberry.type
@@ -48,12 +48,13 @@ class CourseAllocationQuery:
 
     @strawberry.field
     def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationNode]:
+        result = None
         try:
             result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
 
         except Exception as e:
             print(e)
-            result = None
+
         if result:
             return Response(
                 status=True,
@@ -65,7 +66,25 @@ class CourseAllocationQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Course Allocation not found",
-                data=result)
+                data=CourseAllocationNode(uid="",program_course_uid='',program_course=None,staff_uid=""))
+
+    @strawberry.field
+    async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
+        CourseAllocationListNode]:
+        try:
+            course_allocation = CourseAllocationService.get_course_allocation_by_program_course_uid(
+                program_course_uid)
+            if course_allocation:
+                return course_allocation
+            raise ValueError("Unable to retrieve course allocation")
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                data=CourseAllocationListNode(items=[], total_count=0),
+                message="Unable to retrieve course allocation"
+            )
 
 
 @strawberry.type

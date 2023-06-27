@@ -66,6 +66,18 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def get_active_academic_year() -> AcademicYear:
+        """
+        Get Active Academic Year
+        :param:
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(AcademicYear).where((AcademicYear.status == 1) & (AcademicYear.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
+
     def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         """
         Register Academic Year

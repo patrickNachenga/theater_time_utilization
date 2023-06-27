@@ -6,19 +6,19 @@ from src.models import ProgramCourseAssessment
 from src.modules.program_course_assessment.service import ProgramCourseAssessmentService, ProgramCourseAssessmentCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode, PaginatedProgramCourseAssessment, \
-    PaginationInput, ProgramCourseAssessmentListNode
+from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode, PaginationInput, \
+    ProgramCourseAssessmentListNode
 
 
 @strawberry.type
 class ProgramCourseAssessmentQuery:
     @strawberry.field
-    def get_program_course_assessments(self, pagination: PaginationInput) -> Response[PaginatedProgramCourseAssessment]:
+    def get_program_course_assessments(self, pagination: PaginationInput) -> Response[ProgramCourseAssessmentListNode]:
         try:
             result = ProgramCourseAssessmentCrud.get_multi_paginated(pagination, ['minimum_exams'
                                                                                   'can_exceed_minimum_by',
                                                                                   'maximum_score'],
-                                                                     PaginatedProgramCourseAssessment,
+                                                                     ProgramCourseAssessmentListNode,
                                                                      ["program_course", "exam_category"])
         except Exception as e:
             print(e)
@@ -49,6 +49,24 @@ class ProgramCourseAssessmentQuery:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program Course Assessment not found",
                 data=None)
+
+    @strawberry.field
+    async def get_program_course_assessment_by_program_course_uid(self, program_courser_uid: str) -> Response[
+        ProgramCourseAssessmentListNode]:
+        try:
+            program_course_assessment = ProgramCourseAssessmentService.get_program_course_assessment_by_program_course_uid(
+                program_courser_uid)
+            if program_course_assessment:
+                return program_course_assessment
+            raise ValueError("Unable to retrieve program course assessment")
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                message="Unable to retrieve program course assessment"
+            )
 
 
 @strawberry.type

@@ -14,7 +14,8 @@ class AcademicYearQuery:
     @strawberry.field
     def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
         try:
-            result = AcademicYearCrud.get_multi_paginated(pagination, ['name','status', 'start_date', 'end_date'], AcademicYearListNode)
+            result = AcademicYearCrud.get_multi_paginated(pagination, ['name', 'status', 'start_date', 'end_date'],
+                                                          AcademicYearListNode)
         except Exception as e:
             print(e)
             result = []
@@ -45,6 +46,27 @@ class AcademicYearQuery:
                 message="Academic year not found",
                 data=None)
 
+    @strawberry.field
+    def get_academic_year(self) -> Response[AcademicYearNode | None]:
+        try:
+            result = AcademicYearService.get_active_academic_year()
+        except Exception as e:
+            print(e)
+            result = []
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Active Academic Year retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Active Academic year not found",
+                data=None)
+
 
 @strawberry.type
 class AcademicYearMutation:
@@ -54,7 +76,8 @@ class AcademicYearMutation:
             return AcademicYearService(AcademicYear).register_academic_year(inputs)
         except Exception as e:
             print(e)
-            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add Academic Year", data=AcademicYearListNode(items=[], total_count=0))
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add Academic Year",
+                            data=AcademicYearListNode(items=[], total_count=0))
 
     @strawberry.mutation
     async def remove_academic_year(self, uid: str) -> Response[None]:

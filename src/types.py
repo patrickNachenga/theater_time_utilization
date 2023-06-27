@@ -43,8 +43,6 @@ class AcademicYearListNode:
     total_count: int
 
 
-
-
 @strawberry.input(description="Academic Year Input")
 class AcademicYearSemesterInput:
     uid: Optional[str] = None
@@ -55,6 +53,7 @@ class AcademicYearSemesterInput:
     exam_start_date: str
     exam_ticket_date: str
     semester: int
+    academic_year_uid: str
 
 
 @strawberry.type(description="Academic Year")
@@ -67,13 +66,13 @@ class AcademicYearSemesterNode:
     exam_start_date: str
     exam_ticket_date: str
     semester: int
+    academic_year: AcademicYearNode
 
 
 @strawberry.type(description="AcademicYear Country")
 class AcademicYearSemesterListNode:
     items: List[AcademicYearSemesterNode]
     total_count: int
-
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -479,10 +478,15 @@ class CourseAllocationInput:
 
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
-    uid: str
-    program_course_uid: str
-    program_course: ProgramCourseNode
-    staff_uid: str
+
+    # uid: str
+    # program_course: ProgramCourseNode
+    # staff_uid: str
+
+    uid: str | None
+    program_course_uid: str|None
+    program_course: ProgramCourseNode | None
+    staff_uid: str | None
 
 
 @strawberry.type(description="Program Allocation Assessment paginated Output")
@@ -502,20 +506,6 @@ class PaginationInput:
 @strawberry.type(description="Paginated Course")
 class PaginatedCourse:
     items: List[CourseNode]
-    total_count: int
-
-
-############ An output for Paginated Course #######################
-@strawberry.type(description="Paginated Program Course Outcome")
-class PaginatedProgramCourse:
-    items: List[ProgramCourseNode]
-    total_count: int
-
-
-############ An output for Paginated Course Allocation ############
-@strawberry.type(description="Paginated Course Allocation")
-class PaginatedProgramCourseAssessment:
-    items: List[ProgramCourseAssessmentNode]
     total_count: int
 
 

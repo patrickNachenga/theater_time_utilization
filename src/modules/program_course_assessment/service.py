@@ -63,6 +63,36 @@ class ProgramCourseAssessmentService(
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[ProgramCourseAssessmentListNode]:
+        """
+        Get Program Course by program semester uid
+        :return:
+        """
+        with session_scope() as session:
+            try:
+                program_course = ProgramCourseService.get_program_course_by_uid(uid)
+                if program_course is None:
+                    raise ValueError("You have submitted incorrect programs course details")
+            except Exception as e:
+                print(e)
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                                message="You have submitted incorrect programs course details")
+
+            stmt = select(ProgramCourseAssessment).where(
+                (ProgramCourseAssessment.program_course_id == program_course.id) & (
+                    ProgramCourseAssessment.deleted_at.is_(None)))
+            result_raw = session.scalars(stmt)
+            result = result_raw.all()
+            count = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).count()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=ProgramCourseAssessmentListNode(items=result, total_count=count),
+                message="Program Course Assessment Retrieved Successful"
+            )
+
     def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[
         ProgramCourseAssessmentListNode]:
         """
