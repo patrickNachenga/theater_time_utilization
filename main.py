@@ -26,6 +26,7 @@ async def process_data():
     task_manager = TaskManager(redis_url=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
     await task_manager.start_processing()
     await task_manager.enqueue_task("create_course_to_moodle")
+    await task_manager.enqueue_task("create_group_to_moodle")
 
 
 @app.on_event("startup")

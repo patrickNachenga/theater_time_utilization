@@ -281,5 +281,20 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             session.query(ProgramCourse).filter_by(uid=uid).update({ProgramCourse.deleted_at: pendulum.now()})
             session.commit()
 
+    @staticmethod
+    def get_unregister_moodle_program_course_by_course_id(course_id: int) -> ProgramCourseNode:
+        """
+        Get Program Course with null moodle id that belong to course with passed course id
+        :return ProgramCourseNode:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramCourse).where(
+                (ProgramCourse.course_id == course_id) &
+                (ProgramCourse.moodle_id.is_(None)) &
+                (ProgramCourse.deleted_at.is_(None))
+            )
+            result = session.scalars(stmt)
+            return result.first()
+
 
 ProgramCourseCrud = ProgramCourseService(ProgramCourse)

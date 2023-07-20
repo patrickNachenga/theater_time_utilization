@@ -73,6 +73,18 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
         with session_scope() as session:
             stmt = select(Course).where((Course.moodle_id.is_(None)) & (Course.deleted_at.is_(None)))
             result = session.scalars(stmt)
+            return result.first()    \
+
+    @staticmethod
+    def get_register_moodle_course() -> Course | None:
+        """
+        Get course with null moodle id
+        :param:
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(Course).where((Course.moodle_id.isnot(None)) & (Course.deleted_at.is_(None)))
+            result = session.scalars(stmt)
             return result.first()
 
     def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:

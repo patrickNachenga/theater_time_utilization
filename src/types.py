@@ -238,6 +238,7 @@ class CourseInput:
     moodle_id: Optional[str] = ""
 
 
+
 @strawberry.type(description="Course Output")
 class CourseNode:
     uid: str

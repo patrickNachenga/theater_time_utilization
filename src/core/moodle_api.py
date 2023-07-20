@@ -239,6 +239,8 @@ class MoodleApi:
             'courses[0][summary]': courseDescription
         }
 
+        print(data)
+
         response = self.sendRequest(data)
 
         if response is False:
@@ -248,17 +250,17 @@ class MoodleApi:
         responseData = response.json()
 
         if 'exception' in responseData:
-            # print('API Error:', responseData['message'])
+            print('API Error:', responseData['message'])
             return 0
         else:
             if responseData:
                 if 'id' in responseData[0]:
                     return responseData[0]['id']
                 else:
-                    # print('Unable to retrieve the course ID.')
+                    print('Unable to retrieve the course ID.')
                     return 0
             else:
-                # print('Empty response received.')
+                print('Empty response received.')
                 return 0
 
     def create_group(self, course_id, group_name, group_description):
