@@ -96,7 +96,7 @@ class ExamCategoryGroupsService(object):
                                existed_exam_category_group), None)
 
                     if exam_category_groups:
-                        exam_category_groups.name = inputItem.name,
+                        exam_category_groups.name = inputItem.name
                         exam_category_groups_list.append(exam_category_groups)
             session.add_all(exam_category_groups_list)
             session.commit()
