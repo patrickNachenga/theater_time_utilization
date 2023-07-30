@@ -56,9 +56,13 @@ class Sr2ApiCalls(object):
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=fee_structure_list,
                                 message="Fee structure for %s was Retrieved Successfully" % program.short_name)
-
+            elif response.status_code == 404:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message=response.json()["message"],
+                    data=None)
             else:
-                print(response)
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
