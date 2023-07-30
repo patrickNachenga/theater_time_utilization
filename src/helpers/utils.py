@@ -1,7 +1,10 @@
 import dataclasses
 import re
+from typing import List
 
 from passlib.context import CryptContext
+
+from src.core.security import Info
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -29,3 +32,15 @@ def decode_ldap_attributes(ldap_string):
 def camel_to_snake(name: str) -> str:
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def auth_user_has_permission(info: Info, required_permissions: List[str]):
+    """
+    Check if login user has supplied permissions
+    """
+    if info.context.user:
+        for perm in required_permissions:
+            print(info.context.user.authorities)
+            if perm in info.context.user.authorities:
+                return True
+    return False

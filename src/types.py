@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Optional, List
 
 import strawberry
@@ -10,6 +11,12 @@ from sqlalchemy import Date
 class ProgramCodeInput(BaseModel):
     code: Optional[str]
     uid: Optional[str]
+
+
+@strawberry.enum
+class Gender(str, Enum):
+    Male = 'Male'
+    Female = "Female"
 
 
 @strawberry.input
@@ -236,7 +243,6 @@ class CourseInput:
     offered: Optional[int] = 1
     department_uid: str
     moodle_id: Optional[str] = ""
-
 
 
 @strawberry.type(description="Course Output")
@@ -479,13 +485,12 @@ class CourseAllocationInput:
 
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
-
     # uid: str
     # program_course: ProgramCourseNode
     # staff_uid: str
 
     uid: str | None
-    program_course_uid: str|None
+    program_course_uid: str | None
     program_course: ProgramCourseNode | None
     staff_uid: str | None
 
