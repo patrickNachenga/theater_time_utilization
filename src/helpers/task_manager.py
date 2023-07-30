@@ -103,7 +103,6 @@ class TaskManager:
                             print('--- Successfully added course %s to Moodle ---' % course.code)
                             return True
                         else:
-                            print()
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
                             return False
                     else:
