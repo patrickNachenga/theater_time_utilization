@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     RABBIT_PASSWORD = os.environ.get("RABBIT_PASSWORD")
 
 
+
 settings = Settings()
 
 QUEUES = [

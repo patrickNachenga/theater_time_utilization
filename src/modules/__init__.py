@@ -152,6 +152,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 query = query.filter(or_(*filter_conditions))
 
             total_count = query.count()
+            print('trace')
+            print('check',query.all())
+
             # Apply pagination
             query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
             # Fetch items and total count
