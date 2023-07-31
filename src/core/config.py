@@ -33,13 +33,13 @@ class Settings(BaseSettings):
     REDIS_HOST = os.environ.get("REDIS_HOST")
     REDIS_PORT = os.environ.get("REDIS_PORT")
     LOGGING_FILE_NAME = 'logs'
-
-    UAA_URi = "http://45.61.55.203:8001"
+    UAA_URi = os.environ.get("UAA_URi")
 
     """ -------- MOODLE ENDPOINT  -------"""
     SITE_URL = 'http://45.132.242.170/webservice/rest/server.php'
     SITE_DOMAIN = 'http://45.132.242.170'
     TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
+
 
 
 settings = Settings()

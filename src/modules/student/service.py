@@ -2,6 +2,7 @@ import json
 
 import requests
 
+from src.core.config import settings
 from src.db.session import session_scope
 from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation
 from src.models.student_course_registration import StudentCourseRegistration
@@ -85,7 +86,7 @@ class StudentService:
                     "Content-Type": "application/json"
                 }
 
-                response = requests.post('http://127.0.0.1:8000/students-details-by-uids', data=data_json,
+                response = requests.post(settings.UAA_URi+'/students-details-by-uids', data=data_json,
                                          headers=headers)
             except Exception as e:
                 print(e)
