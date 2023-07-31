@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models.academic_year_semester import AcademicYearSemester
 from src.modules.academic_year_semester.service import AcademicYearSemesterCrud, AcademicYearSemesterService
 from src.shared.response import Response
@@ -13,8 +14,8 @@ from src.types import PaginationInput, \
 @strawberry.type
 class AcademicYearSemesterQuery:
 
-    @strawberry.field
-    def get_academic_year_semesters(self, pagination: PaginationInput) -> Response[AcademicYearSemesterListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTERS"])])
+    def get_academic_year_semesters(self, pagination: PaginationInput) -> Response[Optional[AcademicYearSemesterListNode]]:
         try:
             result = AcademicYearSemesterCrud.get_multi_paginated(pagination,
                                                                   ["oddStartDate", "oddEndDate", "evenStartDate",
@@ -30,8 +31,8 @@ class AcademicYearSemesterQuery:
             message="Academic Year Semester Retrieved successfully",
             data=result)
 
-    @strawberry.field
-    def get_academic_year_semester(self, uid: str) -> Response[AcademicYearSemesterNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTERS"])])
+    def get_academic_year_semester(self, uid: str) -> Response[Optional[AcademicYearSemesterNode]]:
         try:
             result = AcademicYearSemesterService.get_academic_year_semesters_by_uid(uid)
         except Exception as e:
@@ -50,8 +51,8 @@ class AcademicYearSemesterQuery:
                 message="Academic Year Semester not found",
                 data=result)
 
-    @strawberry.field
-    def get_academic_year_semester_by_academic_year(self, academic_year_uid: str) -> Response[List[AcademicYearSemesterNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTER"])])
+    def get_academic_year_semester_by_academic_year(self, academic_year_uid: str) -> Response[Optional[List[AcademicYearSemesterNode]]]:
         try:
             return AcademicYearSemesterService.get_academic_year_semesters_by_academic_year(academic_year_uid)
         except Exception as e:
@@ -65,9 +66,8 @@ class AcademicYearSemesterQuery:
 
 @strawberry.type
 class AcademicYearSemesterMutation:
-    @strawberry.field
-    def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[
-        AcademicYearSemesterListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEAR_SEMESTER"])])
+    def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[AcademicYearSemesterListNode]:
         try:
             return AcademicYearSemesterService(AcademicYearSemester).register_academic_semesters(inputs)
 
@@ -76,7 +76,7 @@ class AcademicYearSemesterMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Academic Year Semester",
                             data=AcademicYearSemesterListNode(items=[], total_count=0), )
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_ACADEMIC_YEAR_SEMESTER"])])
     async def remove_academic_year_semester(self, uid: str) -> Response[None]:
         """
         Remove academic year semester

@@ -46,6 +46,7 @@ async def startup():
     background_tasks = BackgroundTasks()
     background_tasks.add_task(process_data)
     await background_tasks()
+    await app.initialize_async()
 
 
 @app.on_event("shutdown")

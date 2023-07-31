@@ -1,3 +1,5 @@
+import dataclasses
+import json
 import os
 
 from dotenv import load_dotenv
@@ -44,6 +46,31 @@ class Settings(BaseSettings):
     SR2_URL = 'http://197.250.34.41:4747/api/v2/'
     SR2_TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
 
+    # SR2_SERVICE_URL = os.environ.get("SR2_SERVICE_URL")
+    # MOODLE_SITE_URL = os.environ.get("MOODLE_SITE_URL")
+    # MOODLE_SITE_DOMAIN = os.environ.get("MOODLE_SITE_DOMAIN")
+    # MOODLE_TOKEN = os.environ.get("MOODLE_TOKEN")
+    RABBIT_HOST = os.environ.get("RABBIT_HOST")
+    RABBIT_PORT = int(os.environ.get("RABBIT_PORT"))
+    RABBIT_USERNAME = os.environ.get("RABBIT_USERNAME")
+    RABBIT_PASSWORD = os.environ.get("RABBIT_PASSWORD")
+
 
 
 settings = Settings()
+
+QUEUES = [
+    {
+        "name": "sua-esb-permission-queue",
+        "exchange": "sua-esb-permission-exchange",
+        "routing_key": "sua-esb-permission-routing-key",
+        "type": "fanout"
+    },
+]
+
+
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
