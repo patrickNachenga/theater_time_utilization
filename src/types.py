@@ -727,5 +727,6 @@ class StaffAllocationInputNode:
 
 @strawberry.input(description="Course to register input")
 class CourseRegisterInputNode:
-    study_year: str
+    study_year: int
     program_uid: str
+    semester: int
