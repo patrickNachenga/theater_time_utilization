@@ -2,6 +2,7 @@ from typing import List
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import AcademicYear
 from src.modules.academic_year.service import AcademicYearService, AcademicYearCrud
 from src.shared.response import Response
@@ -11,8 +12,8 @@ from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode, 
 
 @strawberry.type
 class AcademicYearQuery:
-    @strawberry.field
-    def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
+    def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode | None]:
         try:
             result = AcademicYearCrud.get_multi_paginated(pagination, ['name', 'status', 'start_date', 'end_date'],
                                                           AcademicYearListNode)
@@ -23,9 +24,10 @@ class AcademicYearQuery:
             status=True,
             code=ResponseCode.SUCCESS,
             message="Academic Year retrieved successfully",
-            data=result)
+            data=result,
+        )
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
     def get_academic_year(self, uid: str) -> Response[AcademicYearNode | None]:
         try:
             result = AcademicYearService.get_academic_year_by_uid(uid)
@@ -46,8 +48,8 @@ class AcademicYearQuery:
                 message="Academic year not found",
                 data=None)
 
-    @strawberry.field
-    def get_academic_year(self) -> Response[AcademicYearNode | None]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
+    def get_active_academic_year(self) -> Response[AcademicYearNode | None]:
         try:
             result = AcademicYearService.get_active_academic_year()
         except Exception as e:
@@ -70,7 +72,7 @@ class AcademicYearQuery:
 
 @strawberry.type
 class AcademicYearMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEARS"])])
     def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         try:
             return AcademicYearService(AcademicYear).register_academic_year(inputs)
@@ -79,7 +81,7 @@ class AcademicYearMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add Academic Year",
                             data=AcademicYearListNode(items=[], total_count=0))
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_ACADEMIC_YEAR"])])
     async def remove_academic_year(self, uid: str) -> Response[None]:
         """
         Remove Academic Year By UID

@@ -167,19 +167,29 @@ class Sr2ApiCalls(object):
         """
         # Set the request payload
         payload = {
-            "registration_number": registration_number
+            "registration_number": registration_number,
+            "type": "generate"
         }
         encoded_params = urlencode(payload)
         response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}")
         # Check for errors
         if response.status_code == 200:
-            response_data = response.json()
-            return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=response_data["data"], message="Request Submitted Successful")
-        elif response.status_code == 404:
+            payload["type"] = "get"
+            encoded_params = urlencode(payload)
+            response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}")
+            # Check for errors
+            if response.status_code == 200:
+                response_data = response.json()
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=response_data["data"], message="Request Submitted Successful")
+            elif response.status_code == 404:
+                response_data = response.json()
+                return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
+                                data=None, message=response_data["message"])
+            else:
+                return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
+                                data=None, message="Failed To Retrieve Student Financial Statements")
+        else:
             response_data = response.json()
             return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
                             data=None, message=response_data["message"])
-        else:
-            return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
-                            data=None, message="Failed To Retrieve Student Financial Statements")

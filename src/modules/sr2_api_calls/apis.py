@@ -2,6 +2,7 @@ from typing import List, Any, Optional
 
 import strawberry
 
+from src.core.security import LoginRequiredExtension
 from src.modules.sr2_api_calls.service import Sr2ApiCalls
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -11,12 +12,11 @@ from src.types import FeeStructureInput, FeeStructureNode, RequestControlNumberI
 
 @strawberry.type
 class Sr2ApiCallQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_fee_structure(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode] | None]:
         try:
             return Sr2ApiCalls.get_fee_structures(inputs)
         except Exception as e:
-            print(e)
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,

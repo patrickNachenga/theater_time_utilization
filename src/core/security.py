@@ -28,19 +28,18 @@ def fetch_user(token: str) -> UserAuthenticatedModel | None:
     :return:
     """
     resp = requests.get(
-        f"{settings.API_GATEWAY}/uaa/user",
+        f"{settings.UAA_URi}/uaa/user",
         headers={"Authorization": f"Bearer {token}"},
     )
-    if resp.status_code == 401:
-        return None
-    return UserAuthenticatedModel(**resp.json())
+    if resp.status_code == 200 and resp.json():
+        return UserAuthenticatedModel(**resp.json())
+    return None
 
 
 class IsAuthenticated(BasePermission):
     message = "Unauthorized"
 
     def has_permission(self, source: typing.Any, info: Info, **kwargs) -> bool:
-        request: typing.Union[Request, WebSocket] = info.context.request
         if info.context.user:
             return True
         return False
@@ -73,7 +72,7 @@ class CustomPermissionExtension(FieldExtension):
                 message=is_authenticated.message,
                 data=None)
         else:
-            # return next(root, info, **kwargs)
+            return next(root, info, **kwargs)
             from src.helpers.utils import auth_user_has_permission
             if auth_user_has_permission(info, self.required_permissions):
                 return next(root, info, **kwargs)
@@ -115,16 +114,40 @@ async def get_context() -> Context:
 
 permissions: typing.List[Permission] = [
     Permission(
-        code="VIEW_STAFFS",
-        name="View Staffs",
-        description="Can View Staffs",
-        service="uaa",
+        code="VIEW_ACADEMIC_YEARS",
+        name="View Academic Years",
+        description="Can View Academic Years",
+        service="registration",
     ),
     Permission(
-        code="REGISTER_STAFFS",
-        name="Register Staffs",
-        description="Can Register Staffs",
-        service="uaa",
+        code="REGISTER_ACADEMIC_YEARS",
+        name="Register Academic Years",
+        description="Can Register Academic Years",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_ACADEMIC_YEAR",
+        name="Remove Academic Years",
+        description="Can Remove Academic Years",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_ACADEMIC_YEAR_SEMESTER",
+        name="View Academic Year Semeter",
+        description="Can View Academic Year Semeter",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_ACADEMIC_YEAR_SEMESTER",
+        name="Register Academic Year Semeter",
+        description="Can Register Academic Year Semeter",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_ACADEMIC_YEAR_SEMESTER",
+        name="Remove Academic Year Semeter",
+        description="Can Remove Academic Year Semeter",
+        service="registration",
     )
 
 ]
