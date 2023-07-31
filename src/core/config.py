@@ -41,5 +41,9 @@ class Settings(BaseSettings):
     SITE_DOMAIN = 'http://45.132.242.170'
     TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
 
+    """ -------- SR2 ENDPOINT  -------"""
+    SR2_URL = 'http://197.250.34.41:4747/api/v2/'
+    SR2_TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
+
 
 settings = Settings()

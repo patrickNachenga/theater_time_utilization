@@ -43,6 +43,18 @@ class Sr2ApiCallQuery:
                 message="Control Number not found",
                 data=None)
 
+    @strawberry.field
+    def get_financial_statement(self, registration_number: str) -> Response[str | None]:
+        try:
+            return Sr2ApiCalls.get_financial_statement(registration_number)
+        except Exception as e:
+            return Response(
+                status=True,
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve financial Statement",
+                data=None,
+            )
+
 
 @strawberry.type
 class Sr2ApiCallMutation:
@@ -57,7 +69,7 @@ class Sr2ApiCallMutation:
                 status=False,
                 code=ResponseCode.FAILURE,
                 message="Failed to generate control number request",
-                data=None
+                data=None,
             )
 
     @strawberry.field

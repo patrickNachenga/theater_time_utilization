@@ -2,8 +2,8 @@ from typing import List, Optional
 from urllib.parse import urlencode
 
 import requests
-from sqlalchemy import desc, select
 
+from src.core.config import settings
 from src.db.session import session_scope
 from src.models import Program
 from src.shared.response import Response
@@ -13,8 +13,8 @@ from src.types import FeeStructureNode
 
 
 class Sr2ApiCalls(object):
-    token = '9454c6efdb94236e618c9a7b1a67138b'
-    site_url = 'http://197.250.34.41:4747/api/v2/'
+    token = settings.SR2_TOKEN
+    site_url = settings.SR2_URL
 
     @staticmethod
     def get_fee_structures(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]] | None:
@@ -96,7 +96,7 @@ class Sr2ApiCalls(object):
 
             # Check for errors
             if response.status_code == 200:
-                response_data = response.json()
+                # response_data = response.json()
                 # print(response_data["message"])
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=None, message="Control number request generated successfully")
@@ -123,8 +123,6 @@ class Sr2ApiCalls(object):
         else:
             return Response(status=False, code=ResponseCode.FAILURE,
                             data=None, message="Failed to refresh number request")
-
-
 
     @staticmethod
     def get_student_control_number(registration_number: str) -> List[ControlNumberNode] | None:
@@ -161,3 +159,27 @@ class Sr2ApiCalls(object):
         except Exception as e:
             print(e)
             return None
+
+    @staticmethod
+    def get_financial_statement(registration_number: str) -> Response[str | None]:
+        """
+        This is a function to request student financial statement  from SR2
+        """
+        # Set the request payload
+        payload = {
+            "registration_number": registration_number
+        }
+        encoded_params = urlencode(payload)
+        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}")
+        # Check for errors
+        if response.status_code == 200:
+            response_data = response.json()
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=response_data["data"], message="Request Submitted Successful")
+        elif response.status_code == 404:
+            response_data = response.json()
+            return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
+                            data=None, message=response_data["message"])
+        else:
+            return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
+                            data=None, message="Failed To Retrieve Student Financial Statements")
