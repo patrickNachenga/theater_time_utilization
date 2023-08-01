@@ -148,6 +148,95 @@ permissions: typing.List[Permission] = [
         name="Remove Academic Year Semeter",
         description="Can Remove Academic Year Semeter",
         service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_CATEGORY",
+        name="View Exam Category",
+        description="Can View Exam Category",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_CATEGORY",
+        name="Register Exam Category",
+        description="Can Register Exam Category",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_CATEGORY",
+        name="Remove Exam Category",
+        description="Can Remove Exam Category",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_CATEGORY_GROUPS",
+        name="View Exam Category Groups",
+        description="Can View Exam Category Groups",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_CATEGORY_GROUPS",
+        name="Register Exam Category Groups",
+        description="Can Register Exam Category Groups",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_CATEGORY_GROUPS",
+        name="Remove Exam Category Groups",
+        description="Can Remove Exam Category Groups",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_COURSEWORK",
+        name="View Exam Coursework",
+        description="Can View Exam Coursework",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_COURSEWORK",
+        name="Register Exam Coursework",
+        description="Can Register Exam Coursework",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_COURSEWORK",
+        name="Remove Exam Coursework",
+        description="Can Remove Exam Coursework",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_RESULT_SUMMARY",
+        name="View Exam Result Summary",
+        description="Can View Exam Result Summary",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_RESULT_SUMMARY",
+        name="Register Exam Result Summary",
+        description="Can Register Exam Result Summary",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_RESULT_SUMMARY",
+        name="Remove Exam Result Summary",
+        description="Can Remove Exam Result Summary",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_RESULTS",
+        name="View Exam Results",
+        description="Can View Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_RESULTS",
+        name="Register Exam Results",
+        description="Can Register Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_RESULTS",
+        name="Remove Exam Results",
+        description="Can Remove Exam Results",
+        service="registration",
     )
-
 ]
