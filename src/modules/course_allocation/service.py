@@ -12,7 +12,8 @@ from src.modules import CRUDBase
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationListNode
+from src.types import CourseAllocationInput, CourseAllocationListNode, CourseAllocationStaffUpdateInput, \
+    CourseAllocationNode
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -59,7 +60,8 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         with session_scope() as session:
             if inputs.program_course_uid:
                 result = session.query(CourseAllocation) \
-                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == inputs.is_current)\
+                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(
+                    AcademicYear.status == inputs.is_current) \
                     .filter(
                     CourseAllocation.staff_uid == inputs.staff_uid,
                     CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
@@ -70,9 +72,8 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(
                     AcademicYear.status == inputs.is_current) \
                     .filter(CourseAllocation.staff_uid == inputs.staff_uid,
-                                                                CourseAllocation.deleted_at.is_(None))
-            return result.first()
-
+                            CourseAllocation.deleted_at.is_(None))
+            return result
 
     @staticmethod
     def get_course_allocation_by_program_course_uid(uid: str) -> Response[CourseAllocationListNode]:
@@ -103,7 +104,6 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                 data=CourseAllocationListNode(items=result, total_count=count),
                 message="Course Allocations Retrieved Successful"
             )
-
 
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
         """
@@ -170,9 +170,10 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             session.query(CourseAllocation).filter_by(uid=uid).update({CourseAllocation.deleted_at: pendulum.now()})
             session.commit()
 
-    def staff_update_allocation_assessment_item(self, inputs) -> int:
+    @staticmethod
+    def staff_update_allocation_assessment_item(inputs) -> int:
         """
-        Staff update "can_exceed_minimum_by" to increase number of assessment
+        this enable Staff to update "can_exceed_minimum_by" to increase number of assessment
         input assessment items uid
         """
         with session_scope() as session:
@@ -183,6 +184,18 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             can_exceed_minimum_by = session.query(ProgramCourseAssessment.can_exceed_minimum_by).filter(
                 ProgramCourseAssessment.uid == inputs.uid).first()
             return can_exceed_minimum_by[0]
+
+    @staticmethod
+    def update_course_allocation_staff(inputs: CourseAllocationStaffUpdateInput) -> CourseAllocationNode:
+        # update/change staff in a particular course allocation
+        with session_scope() as session:
+            session.query(CourseAllocation).filter_by(uid=inputs.uid).update(
+                {"staff_uid": inputs.staff_uid}
+            )
+            session.commit()
+            course_allocations = session.query(CourseAllocation).filter(CourseAllocation.uid == inputs.uid,
+                                                                        CourseAllocation.deleted_at.is_(None)).first()
+            return course_allocations
 
 
 CourseAllocationCrud = CourseAllocationService(CourseAllocation)
