@@ -20,9 +20,9 @@ from src.types import CourseRegistrationListNode, \
 @strawberry.type
 class StudentQuery:
     @strawberry.field
-    def get_student_course_to_register(self, program_register: CourseRegisterInputNode) -> Response[ProgramCourseListNode]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[ProgramCourseListNode]:
         try:
-            result = StudentService().get_student_course_to_register(program_register)
+            result = StudentService().get_student_course_to_register(inputs)
 
             return Response(
                 status=True,

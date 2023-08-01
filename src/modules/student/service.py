@@ -4,7 +4,7 @@ import requests
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation
+from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester
 from src.models.student_course_registration import StudentCourseRegistration
 from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode
 
@@ -97,15 +97,15 @@ class StudentService:
         return data
 
     def get_student_course_to_register(self, inputs) -> ProgramCourseListNode:
-        # with session_scope() as session:
-        #     program_courses = session.query(ProgramCourse). \
-        #         join(ProgramSemester). \
-        #         join(Program). \
-        #         join(AcademicYear).\
-        #         join(AcademicYearSemester).\
-        #         filter(AcademicYear.statu==1)
-        #         filter(Program.uid == inputs.program_uid). \
-        #         filter(ProgramSemester.study_year == inputs.study_year,ProgramSemester.semester==AcademicYearSemester.semester).all()
-        #     total_count = len(program_courses)
-        #     return ProgramCourseListNode(items=program_courses, total_count=total_count)
+        with session_scope() as session:
+            program_courses = session.query(ProgramCourse). \
+                join(ProgramSemester). \
+                join(Program). \
+                join(AcademicYear).\
+                filter(AcademicYear.status==1).\
+                filter(Program.uid == inputs.program_uid). \
+                filter(ProgramSemester.study_year == inputs.study_year).all()
+            total_count = len(program_courses)
+
+            return ProgramCourseListNode(items=program_courses, total_count=total_count)
         pass
