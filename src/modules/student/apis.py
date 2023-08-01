@@ -14,13 +14,13 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
-    CourseRegisterInputNode
+    CourseRegisterInputNode, StudentProgramCourseListNode
 
 
 @strawberry.type
 class StudentQuery:
     @strawberry.field
-    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[ProgramCourseListNode]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
 

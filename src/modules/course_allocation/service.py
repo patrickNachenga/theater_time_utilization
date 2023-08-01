@@ -6,7 +6,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.orm import aliased
 
 from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramCourseAssessment
+from src.models import ProgramCourse, ProgramCourseAssessment, ProgramSemester, AcademicYear
 from src.models.course_allocation import CourseAllocation
 from src.modules import CRUDBase
 from src.modules.program_course.service import ProgramCourseService
@@ -55,16 +55,21 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         :param inputs:containing staff_uid and program_course_uid
         :return:
         """
+
         with session_scope() as session:
             if inputs.program_course_uid:
-
-                result = session.query(CourseAllocation).filter(
+                result = session.query(CourseAllocation) \
+                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == inputs.is_current)\
+                    .filter(
                     CourseAllocation.staff_uid == inputs.staff_uid,
                     CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
                     CourseAllocation.deleted_at.is_(None))
             else:
 
-                result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
+                result = session.query(CourseAllocation) \
+                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(
+                    AcademicYear.status == inputs.is_current) \
+                    .filter(CourseAllocation.staff_uid == inputs.staff_uid,
                                                                 CourseAllocation.deleted_at.is_(None))
             return result.first()
 
@@ -167,7 +172,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
 
     def staff_update_allocation_assessment_item(self, inputs) -> int:
         """
-        Staff update can_exceed_minimum_by to increase number of assessment
+        Staff update "can_exceed_minimum_by" to increase number of assessment
         input assessment items uid
         """
         with session_scope() as session:
