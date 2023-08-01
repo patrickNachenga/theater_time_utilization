@@ -3,6 +3,7 @@ from typing import List
 import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
+from sqlalchemy.orm import aliased
 
 from src.db.session import session_scope
 from src.models import ProgramCourse, ProgramCourseAssessment
@@ -56,9 +57,11 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         """
         with session_scope() as session:
             if inputs.program_course_uid:
-                result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
-                                                                CourseAllocation.program_course_uid == inputs.program_course_uid,
-                                                                CourseAllocation.deleted_at.is_(None))
+
+                result = session.query(CourseAllocation).filter(
+                    CourseAllocation.staff_uid == inputs.staff_uid,
+                    CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
+                    CourseAllocation.deleted_at.is_(None))
             else:
 
                 result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
