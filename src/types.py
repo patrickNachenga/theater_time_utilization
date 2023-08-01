@@ -424,10 +424,7 @@ class ProgramCourseNode:
     program_course_assessments: List[ProgramCourseAssessmentNode2]
 
 
-@strawberry.type(description="Program Course paginated Output")
-class ProgramCourseListNode:
-    items: List[ProgramCourseNode]
-    total_count: int
+
 
 
 @strawberry.input(description="Course Learn Outcome Input")
@@ -730,3 +727,10 @@ class CourseRegisterInputNode:
     study_year: int
     program_uid: str
     semester: int
+    student_uid: str
+
+@strawberry.type(description="Program Course paginated Output")
+class ProgramCourseListNode:
+    course_to_register: List[ProgramCourseNode]
+    total_count: int
+    course_registered: List[CourseRegistrationNode]

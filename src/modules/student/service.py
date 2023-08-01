@@ -104,8 +104,13 @@ class StudentService:
                 join(AcademicYear).\
                 filter(AcademicYear.status==1).\
                 filter(Program.uid == inputs.program_uid). \
+                filter(ProgramSemester.semester==inputs.semester).\
                 filter(ProgramSemester.study_year == inputs.study_year).all()
             total_count = len(program_courses)
+            registered_course = session.query(StudentCourseRegistration).\
+                join(ProgramCourse).join(ProgramSemester).join(AcademicYear). filter(AcademicYear.status==1).\
+                filter(StudentCourseRegistration.student_uid == inputs.student_uid). \
+                filter(ProgramSemester.semester==inputs.semester).all()
 
-            return ProgramCourseListNode(items=program_courses, total_count=total_count)
+            return ProgramCourseListNode(course_to_register=program_courses, total_count=total_count,course_registered=registered_course)
         pass
