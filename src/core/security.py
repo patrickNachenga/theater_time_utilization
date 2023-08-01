@@ -4,10 +4,8 @@ import typing
 
 import requests
 from fastapi import APIRouter
-from starlette.websockets import WebSocket
 from strawberry import BasePermission
 from strawberry.fastapi import BaseContext
-from strawberry.http.typevars import Request
 from strawberry.types import Info as _Info
 from strawberry.types.info import RootValueType
 from strawberry.utils.cached_property import cached_property
@@ -31,6 +29,7 @@ def fetch_user(token: str) -> UserAuthenticatedModel | None:
         f"{settings.UAA_URi}/uaa/user",
         headers={"Authorization": f"Bearer {token}"},
     )
+    print(resp.json())
     if resp.status_code == 200 and resp.json():
         return UserAuthenticatedModel(**resp.json())
     return None

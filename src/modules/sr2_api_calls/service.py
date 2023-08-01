@@ -177,6 +177,7 @@ class Sr2ApiCalls(object):
             payload["type"] = "get"
             encoded_params = urlencode(payload)
             response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}")
+            response_data = response.json()
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
@@ -188,7 +189,7 @@ class Sr2ApiCalls(object):
                                 data=None, message=response_data["message"])
             else:
                 return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
-                                data=None, message="Failed To Retrieve Student Financial Statements")
+                                data=None, message=response_data["message"])
         else:
             response_data = response.json()
             return Response(status=True, code=ResponseCode.NO_RECORD_FOUND,
