@@ -148,6 +148,24 @@ permissions: typing.List[Permission] = [
         name="Remove Academic Year Semeter",
         description="Can Remove Academic Year Semeter",
         service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_CATEGORY",
+        name="View Exam Category",
+        description="Can View Exam Category",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_CATEGORY",
+        name="Register Exam Category",
+        description="Can Register Exam Category",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_CATEGORY",
+        name="Remove Exam Category",
+        description="Can Remove Exam Category",
+        service="registration",
     )
 
 ]

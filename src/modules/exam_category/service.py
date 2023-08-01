@@ -121,7 +121,7 @@ class ExamCategoryService(object):
 
                     if exam_category:
                         obj_data = jsonable_encoder(inputItem)
-                        # # Replace referenced uids field with model required ids field
+                        # Replace referenced uids field with model required ids field
                         obj_data['exam_category_group'] = exam_category_group
                         for key, value in obj_data.items():
                             setattr(exam_category, key, value)
