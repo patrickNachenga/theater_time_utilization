@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     LOGGING_FILE_NAME = 'logs'
     UAA_URi = os.environ.get("UAA_URi")
     SR2_TOKEN = os.environ.get("SR2_TOKEN")
-    SR2_SERVICE_URL = os.environ.get("SR2_SERVIE_URL")
+    SR2_SERVICE_URL = os.environ.get("SR2_SERVICE_URL")
     MOODLE_SITE_URL = os.environ.get("MOODLE_SITE_URL")
     MOODLE_SITE_DOMAIN = os.environ.get("MOODLE_SITE_DOMAIN")
     MOODLE_TOKEN = os.environ.get("MOODLE_TOKEN")
