@@ -39,18 +39,21 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result.all()
 
     @staticmethod
-    def get_course_by_uid(uid: str) -> CourseAllocation:
+    def get_course_by_uid(uid: str) -> CourseAllocation| None:
         """
         Get course category by uid
         :param uid:
         :return:
         """
         with session_scope() as session:
-            stmt = select(CourseAllocation).where(
-                (CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.first()
-
+            print('test')
+            # stmt = select(CourseAllocation).where(
+            #     (CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
+            # result = session.scalars(stmt)
+            # return result.first()
+            result = session.query(CourseAllocation).filter(CourseAllocation.uid == uid,CourseAllocation.deleted_at.is_(None)).first()
+            print("Course Allocation,",result)
+            return result
     @staticmethod
     def get_staff_course_allocation(inputs) -> CourseAllocation:
         """
@@ -151,6 +154,16 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     )
 
                 if inputItem.uid is None:
+                    exist_course_allocation = session.query(CourseAllocation).filter(CourseAllocation.staff_uid==inputItem.staff_uid,
+                                                                                     CourseAllocation.program_course.has(ProgramCourse.uid==inputItem.program_course_uid),
+                                                                                     CourseAllocation.deleted_at.is_(None)).all()
+                    if exist_course_allocation:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.FAILURE,
+                            data=CourseAllocationListNode(items=[], total_count=0),
+                            message="Staff has this course already"
+                        )
                     course_allocation = CourseAllocation(
                         program_course=program_course,
                         staff_uid=inputItem.staff_uid,
