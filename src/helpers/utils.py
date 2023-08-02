@@ -4,7 +4,7 @@ from typing import List
 
 import requests
 from passlib.context import CryptContext
-from sqlalchemy import and_
+from sqlalchemy import and_, desc
 
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
@@ -58,7 +58,7 @@ def create_course_to_moodle():
     with session_scope() as session:
         # Get only one at a time
         course = session.query(Course).filter(
-            and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).first()
+            and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).first()
         if course:
             """
             Call Department moodle id for uuid
@@ -67,33 +67,26 @@ def create_course_to_moodle():
                 response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}")
                 if response.status_code == 200:
                     responseData = response.json()
-                    if not responseData["status"]:
-                        raise RuntimeError("Fail to register course to moodle")
-                    moodle = MoodleApi()
-                    moodle_unit_id = moodle.createCourse(
-                        departmentId=responseData["data"]['moodle_id'] or 0,
-                        courseFullName=course.name,
-                        courseDescription=course.description,
-                        courseShortName=course.code,
-                    )
-                    if moodle_unit_id != 0:
-                        course.moodle_id = moodle_unit_id
-                        session.add(course)
-                        session.commit()
-                        print('--- Successfully added course %s to Moodle ---' % course.code)
-                        return True
-                    else:
-                        print('--- Failure to create course to Moodle --- ', moodle_unit_id)
-                        return False
-                else:
-                    raise RuntimeError("Fail to register course to moodle")
+                    if responseData["status"] and responseData["data"]['moodle_id']:
+                        moodle = MoodleApi()
+                        moodle_unit_id = moodle.createCourse(
+                            departmentId=responseData["data"]['moodle_id'],
+                            courseFullName=course.name,
+                            courseDescription=course.description,
+                            courseShortName=course.code,
+                        )
+                        if moodle_unit_id != 0:
+                            course.moodle_id = moodle_unit_id
+                            session.add(course)
+                            session.commit()
+                        else:
+                            print('--- Failure to create course to Moodle --- ', moodle_unit_id)
             except Exception as e:
-                print('--- Failure to create course to Moodle --- ', course.code)
-                return False
+                print('--- Exception Occurred while adding Course to Moodle. course ', str(e))
 
 
 """
-Create program_course to moodle
+Create program_course to moodleComputer Application
 """
 
 
