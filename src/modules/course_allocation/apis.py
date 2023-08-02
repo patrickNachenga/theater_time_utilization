@@ -7,7 +7,7 @@ from src.modules.course_allocation.service import CourseAllocationService, Cours
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInput, CourseAllocationListNode, \
-    StaffAllocationInputNode
+    StaffAllocationInputNode, CourseAllocationStaffUpdateInput
 
 
 @strawberry.type
@@ -47,7 +47,7 @@ class CourseAllocationQuery:
                 data=result)
 
     @strawberry.field
-    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationNode]:
+    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[List[CourseAllocationNode]]:
         result = None
         try:
             result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
@@ -66,7 +66,7 @@ class CourseAllocationQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Course Allocation not found",
-                data=CourseAllocationNode(uid="",program_course_uid='',program_course=None,staff_uid=""))
+                data=List[CourseAllocationNode(uid="",program_course_uid='',program_course=None,staff_uid="")])
 
     @strawberry.field
     async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
@@ -123,3 +123,16 @@ class CourseAllocationMutation:
                 message="Failed to Remove Course Allocation",
                 data=None
             )
+
+    @strawberry.field
+    def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> Response[CourseAllocationNode]:
+        try:
+            course_allocations = CourseAllocationService(CourseAllocation).update_course_allocation_staff(inputs)
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=course_allocations,
+                            message=f"Successfully updated Course Allocation Staff")
+
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to update course allocation staff",
+                            data=CourseAllocationNode(None))

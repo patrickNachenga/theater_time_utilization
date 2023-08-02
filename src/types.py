@@ -725,6 +725,7 @@ class InnerStudentProgramSemester:
 class StaffAllocationInputNode:
     program_course_uid: Optional[str]
     staff_uid: str
+    is_current: int
 
 
 @strawberry.input(description="Course to register input")
@@ -736,7 +737,19 @@ class CourseRegisterInputNode:
 
 
 @strawberry.type(description="Program Course paginated Output")
-class ProgramCourseListNode:
+class StudentProgramCourseListNode:
     course_to_register: List[ProgramCourseNode]
     total_count: int
     course_registered: List[CourseRegistrationNode]
+
+
+@strawberry.type(description="Program Course paginated Output")
+class ProgramCourseListNode:
+    items: List[ProgramCourseNode]
+    total_count: int
+
+
+@strawberry.input(description="Course Allocation Staff update Input")
+class CourseAllocationStaffUpdateInput:
+    uid: str
+    staff_uid: str

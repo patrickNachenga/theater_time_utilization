@@ -6,14 +6,15 @@ from sqlalchemy import select, desc
 from sqlalchemy.orm import aliased
 
 from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramCourseAssessment, AcademicYear
+from src.models import ProgramCourse, ProgramCourseAssessment, ProgramSemester, AcademicYear
 from src.models.course_allocation import CourseAllocation
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationListNode, RequestStaffCourseAllocation
+from src.types import CourseAllocationInput, CourseAllocationListNode, RequestStaffCourseAllocation, \
+    CourseAllocationStaffUpdateInput, CourseAllocationNode
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -56,18 +57,23 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         :param inputs:containing staff_uid and program_course_uid
         :return:
         """
+
         with session_scope() as session:
             if inputs.program_course_uid:
-
-                result = session.query(CourseAllocation).filter(
+                result = session.query(CourseAllocation) \
+                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(
+                    AcademicYear.status == inputs.is_current) \
+                    .filter(
                     CourseAllocation.staff_uid == inputs.staff_uid,
                     CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
                     CourseAllocation.deleted_at.is_(None))
             else:
-
-                result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
-                                                                CourseAllocation.deleted_at.is_(None))
-            return result.first()
+                result = session.query(CourseAllocation) \
+                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(
+                    AcademicYear.status == inputs.is_current) \
+                    .filter(CourseAllocation.staff_uid == inputs.staff_uid,
+                            CourseAllocation.deleted_at.is_(None))
+            return result
 
     @staticmethod
     def get_staff_course_allocation_by_Academic_year_semesters(inputs: RequestStaffCourseAllocation) -> Response[
@@ -220,9 +226,10 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             session.query(CourseAllocation).filter_by(uid=uid).update({CourseAllocation.deleted_at: pendulum.now()})
             session.commit()
 
-    def staff_update_allocation_assessment_item(self, inputs) -> int:
+    @staticmethod
+    def staff_update_allocation_assessment_item(inputs) -> int:
         """
-        Staff update can_exceed_minimum_by to increase number of assessment
+        this enable Staff to update "can_exceed_minimum_by" to increase number of assessment
         input assessment items uid
         """
         with session_scope() as session:
@@ -233,6 +240,18 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             can_exceed_minimum_by = session.query(ProgramCourseAssessment.can_exceed_minimum_by).filter(
                 ProgramCourseAssessment.uid == inputs.uid).first()
             return can_exceed_minimum_by[0]
+
+    @staticmethod
+    def update_course_allocation_staff(inputs: CourseAllocationStaffUpdateInput) -> CourseAllocationNode:
+        # update/change staff in a particular course allocation
+        with session_scope() as session:
+            session.query(CourseAllocation).filter_by(uid=inputs.uid).update(
+                {"staff_uid": inputs.staff_uid}
+            )
+            session.commit()
+            course_allocations = session.query(CourseAllocation).filter(CourseAllocation.uid == inputs.uid,
+                                                                        CourseAllocation.deleted_at.is_(None)).first()
+            return course_allocations
 
 
 CourseAllocationCrud = CourseAllocationService(CourseAllocation)
