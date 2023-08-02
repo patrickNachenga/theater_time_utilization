@@ -705,6 +705,14 @@ class RequestProgramSemester:
     semester: int
 
 
+@strawberry.input
+class RequestStaffCourseAllocation:
+    program_semester_uid: str
+    program_semester_uid: str
+    academic_year_uid: str
+    semester: int
+
+
 @strawberry.type
 class InnerStudentProgramSemester:
     program_id: int

@@ -3,7 +3,6 @@ from typing import List
 
 import strawberry  # For building graphQL APIs
 
-from src.helpers.task_manager import TaskManager
 from src.models import Course
 from src.modules.course.service import CourseService, CourseCrud
 from src.shared.response import Response
@@ -53,7 +52,6 @@ class CourseMutation:
     @strawberry.field
     async def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
         try:
-            await TaskManager.create_course_to_moodle()
             return CourseService(Course).register_courses(inputs)
         except Exception as e:
             print(e)
