@@ -27,10 +27,17 @@ class TokenDetailsModel(BaseModel):
     grant_type: Optional[str] = None
     username: Optional[str] = None
 
+#
+# class UserAuthenticatedModel(BaseModel):
+#     authorities: Optional[List[AuthorityModel]] = None
+#     details: Optional[TokenDetailsModel] = None
+#     authenticated: Optional[bool] = None
+#     credentials: Optional[str] = None
+#     name: Optional[str] = None
+
 
 class UserAuthenticatedModel(BaseModel):
-    authorities: Optional[List[AuthorityModel]] = None
-    details: Optional[TokenDetailsModel] = None
-    authenticated: Optional[bool] = None
+    authorities: Optional[List[str]] = None
     credentials: Optional[str] = None
     name: Optional[str] = None
+

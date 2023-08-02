@@ -29,7 +29,6 @@ def fetch_user(token: str) -> UserAuthenticatedModel | None:
         f"{settings.UAA_URi}/uaa/user",
         headers={"Authorization": f"Bearer {token}"},
     )
-    print(resp.json())
     if resp.status_code == 200 and resp.json():
         return UserAuthenticatedModel(**resp.json())
     return None
