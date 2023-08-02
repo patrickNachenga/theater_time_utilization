@@ -79,15 +79,12 @@ def create_course_to_moodle():
                             course.moodle_id = moodle_unit_id
                             session.add(course)
                             session.commit()
-                            print('--- Successfully added course %s to Moodle ---' % course.code)
-                            return True
                         else:
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
-                            return False
                 else:
                     raise RuntimeError("Fail to register course to moodle")
             except Exception as e:
-                print('--- Failure to create course to Moodle --- ',)
+                print('--- Exception Occurred while adding Course to Moodle. course ', course.code)
 
 
 """

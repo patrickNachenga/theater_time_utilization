@@ -22,7 +22,6 @@ app.include_router(program_router)
 app.include_router(sr2_router)
 
 
-
 @app.on_event("startup")
 async def startup():
     """
