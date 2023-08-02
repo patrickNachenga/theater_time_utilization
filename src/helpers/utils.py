@@ -112,11 +112,9 @@ def create_group_to_moodle():
                             programCourse.moodle_id = moodle_unit_id
                             session.add(programCourse)
                             session.commit()
-                            print(
-                                '--- %s group  Successfully Generated to Moodle ---' % program_course.program_semester.academic_year.name)
                         else:
                             print('--- Failure to Save Moodle id to registration Service. ID: %s  --- ', moodle_unit_id)
                     else:
-                        print('--- Failure to create group to Moodle --- ')
+                        print('--- Failure to create group to Moodle. Moodle return 0 --- ')
             except Exception as e:
-                print('--- An Exception Occurred While create group to Moodle --- ', course.code)
+                print('--- An Exception Occurred While create group to Moodle --- ', str(e))
