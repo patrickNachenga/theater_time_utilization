@@ -378,6 +378,7 @@ class CourseCategoryListNode:
 class ProgramCourseAssessmentNode2:
     uid: str
     exam_category_uid: str
+    exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
@@ -403,6 +404,7 @@ class ProgramCourseInput:
 class ProgramCourseAssessmentNode2:
     uid: str
     exam_category_uid: str
+    exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int

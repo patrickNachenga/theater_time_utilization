@@ -45,13 +45,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         :return:
         """
         with session_scope() as session:
-            print('test')
-            # stmt = select(CourseAllocation).where(
-            #     (CourseAllocation.uid == uid) & (CourseAllocation.deleted_at.is_(None)))
-            # result = session.scalars(stmt)
-            # return result.first()
             result = session.query(CourseAllocation).filter(CourseAllocation.uid == uid,CourseAllocation.deleted_at.is_(None)).first()
-            print("Course Allocation,",result)
             return result
     @staticmethod
     def get_staff_course_allocation(inputs) -> CourseAllocation:
