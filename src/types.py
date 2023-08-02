@@ -424,12 +424,6 @@ class ProgramCourseNode:
     program_course_assessments: List[ProgramCourseAssessmentNode2]
 
 
-@strawberry.type(description="Program Course paginated Output")
-class ProgramCourseListNode:
-    items: List[ProgramCourseNode]
-    total_count: int
-
-
 @strawberry.input(description="Course Learn Outcome Input")
 class CourseLearnOutcomeInput:
     uid: Optional[str] = None
@@ -711,6 +705,14 @@ class RequestProgramSemester:
     semester: int
 
 
+@strawberry.input
+class RequestStaffCourseAllocation:
+    program_semester_uid: str
+    program_semester_uid: str
+    academic_year_uid: str
+    semester: int
+
+
 @strawberry.type
 class InnerStudentProgramSemester:
     program_id: int
@@ -727,5 +729,14 @@ class StaffAllocationInputNode:
 
 @strawberry.input(description="Course to register input")
 class CourseRegisterInputNode:
-    study_year: str
+    study_year: int
     program_uid: str
+    semester: int
+    student_uid: str
+
+
+@strawberry.type(description="Program Course paginated Output")
+class ProgramCourseListNode:
+    course_to_register: List[ProgramCourseNode]
+    total_count: int
+    course_registered: List[CourseRegistrationNode]

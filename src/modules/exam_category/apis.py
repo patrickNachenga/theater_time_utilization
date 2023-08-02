@@ -2,6 +2,7 @@ from typing import List
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.modules.exam_category.service import ExamCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -10,7 +11,7 @@ from src.types import ExamCategoryNode, ExamCategoryInput
 
 @strawberry.type
 class ExamCategoryQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_CATEGORY"])])
     def get_exam_categories(self) -> Response[List[ExamCategoryNode]]:
         try:
             result = ExamCategoryService.get_exam_categories()
@@ -26,7 +27,7 @@ class ExamCategoryQuery:
 
 @strawberry.type
 class ExamCategoryMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_CATEGORY"])])
     def register_exam_categories(self, inputs: List[ExamCategoryInput]) -> Response[List[ExamCategoryNode]]:
         try:
             return ExamCategoryService().register_exam_categories(inputs)
@@ -36,7 +37,7 @@ class ExamCategoryMutation:
                             data=[])
 
     # delete programme
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_EXAM_CATEGORY"])])
     async def remove_exam_categories(self, uid: str) -> Response[None]:
         """
         Remove Exam Category By UID

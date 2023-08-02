@@ -2,6 +2,7 @@ from typing import List
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.modules.exam_category_groups.service import ExamCategoryGroupsService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -10,7 +11,7 @@ from src.types import ExamCategoryGroupsInput, ExamCategoryGroupsNode
 
 @strawberry.type
 class ExamCategoryGroupsQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_CATEGORY_GROUPS"])])
     def get_exam_category_groups(self) -> Response[List[ExamCategoryGroupsNode]]:
         try:
             result = ExamCategoryGroupsService.get_exam_category_groups()

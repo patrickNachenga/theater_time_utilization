@@ -2,9 +2,17 @@ import dataclasses
 import re
 from typing import List
 
+import requests
 from passlib.context import CryptContext
+from sqlalchemy import and_
 
+from src.core.config import settings
+from src.core.moodle_api import MoodleApi
 from src.core.security import Info
+from src.db.session import session_scope
+from src.models import Course
+from src.modules.course.service import CourseService
+from src.modules.program_course.service import ProgramCourseService
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -44,3 +52,78 @@ def auth_user_has_permission(info: Info, required_permissions: List[str]):
             if perm in info.context.user.authorities:
                 return True
     return False
+
+
+def create_course_to_moodle():
+    with session_scope() as session:
+        # Get only one at a time
+        course = session.query(Course).filter(
+            and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).first()
+        if course:
+            """
+            Call Department moodle id for uuid
+            """
+            try:
+                response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}")
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if not responseData["status"]:
+                        raise RuntimeError("Fail to register course to moodle")
+                    moodle = MoodleApi()
+                    moodle_unit_id = moodle.createCourse(
+                        departmentId=responseData["data"]['moodle_id'] or 0,
+                        courseFullName=course.name,
+                        courseDescription=course.description,
+                        courseShortName=course.code,
+                    )
+                    if moodle_unit_id != 0:
+                        course.moodle_id = moodle_unit_id
+                        session.add(course)
+                        session.commit()
+                        print('--- Successfully added course %s to Moodle ---' % course.code)
+                        return True
+                    else:
+                        print('--- Failure to create course to Moodle --- ', moodle_unit_id)
+                        return False
+                else:
+                    raise RuntimeError("Fail to register course to moodle")
+            except Exception as e:
+                print('--- Failure to create course to Moodle --- ', course.code)
+                return False
+
+
+"""
+Create program_course to moodle
+"""
+
+
+def create_group_to_moodle():
+    with session_scope() as session:
+        # Get only one at a time
+        course = CourseService.get_register_moodle_course()
+        if course:
+            try:
+                # If there are existing course check for program course it belong that has null moodle id
+                program_course = ProgramCourseService.get_unregister_moodle_program_course_by_course_id(course.id)
+                if program_course:
+                    # Attempt to create_group to moodle
+                    moodle = MoodleApi()
+                    moodle_unit_id = moodle.create_group(
+                        course_id=course.id,
+                        group_name=program_course.program_semester.academic_year.name,
+                        group_description=program_course.program_semester.semester,
+                    )
+                    if moodle_unit_id != 0:
+                        programCourse = ProgramCourseService.get_program_course_by_uid(program_course.uid)
+                        if programCourse:
+                            programCourse.moodle_id = moodle_unit_id
+                            session.add(programCourse)
+                            session.commit()
+                            print(
+                                '--- %s group  Successfully Generated to Moodle ---' % program_course.program_semester.academic_year.name)
+                        else:
+                            print('--- Failure to Save Moodle id to registration Service. ID: %s  --- ', moodle_unit_id)
+                    else:
+                        print('--- Failure to create group to Moodle --- ')
+            except Exception as e:
+                print('--- An Exception Occurred While create group to Moodle --- ', course.code)

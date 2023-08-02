@@ -36,25 +36,15 @@ class Settings(BaseSettings):
     REDIS_PORT = os.environ.get("REDIS_PORT")
     LOGGING_FILE_NAME = 'logs'
     UAA_URi = os.environ.get("UAA_URi")
-
-    """ -------- MOODLE ENDPOINT  -------"""
-    SITE_URL = 'http://45.132.242.170/webservice/rest/server.php'
-    SITE_DOMAIN = 'http://45.132.242.170'
-    TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
-
-    """ -------- SR2 ENDPOINT  -------"""
-    SR2_URL = 'http://197.250.34.41:4747/api/v2/'
-    SR2_TOKEN = '9454c6efdb94236e618c9a7b1a67138b'
-
-    # SR2_SERVICE_URL = os.environ.get("SR2_SERVICE_URL")
-    # MOODLE_SITE_URL = os.environ.get("MOODLE_SITE_URL")
-    # MOODLE_SITE_DOMAIN = os.environ.get("MOODLE_SITE_DOMAIN")
-    # MOODLE_TOKEN = os.environ.get("MOODLE_TOKEN")
+    SR2_TOKEN = os.environ.get("SR2_TOKEN")
+    SR2_SERVICE_URL = os.environ.get("SR2_SERVIE_URL")
+    MOODLE_SITE_URL = os.environ.get("MOODLE_SITE_URL")
+    MOODLE_SITE_DOMAIN = os.environ.get("MOODLE_SITE_DOMAIN")
+    MOODLE_TOKEN = os.environ.get("MOODLE_TOKEN")
     RABBIT_HOST = os.environ.get("RABBIT_HOST")
     RABBIT_PORT = int(os.environ.get("RABBIT_PORT"))
     RABBIT_USERNAME = os.environ.get("RABBIT_USERNAME")
     RABBIT_PASSWORD = os.environ.get("RABBIT_PASSWORD")
-
 
 
 settings = Settings()

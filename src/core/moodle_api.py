@@ -7,13 +7,13 @@ class MoodleApi:
 
     def sendRequest(self, data, url=None):
         if url is None:
-            url = settings.SITE_URL
+            url = settings.MOODLE_SITE_URL
         response = requests.post(url, data=data)
         return response
 
     def createFalcuty(self, shortname, fullname, description):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_create_categories',
             'moodlewsrestformat': 'json',
             'categories[0][name]': fullname,
@@ -41,7 +41,7 @@ class MoodleApi:
 
     def updateFaculty(self, facultyId, shortname, fullname, description):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_update_categories',
             'moodlewsrestformat': 'json',
             'categories[0][id]': facultyId,
@@ -61,7 +61,7 @@ class MoodleApi:
 
     def createDepartment(self, facultyId, departmentName, departmentDescription):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_create_categories',
             'moodlewsrestformat': 'json',
             'categories[0][name]': departmentName,
@@ -87,7 +87,7 @@ class MoodleApi:
 
     def updateDepartment(self, departmentId, newName, newDescription):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_update_categories',
             'moodlewsrestformat': 'json',
             'categories[0][id]': departmentId,
@@ -131,7 +131,7 @@ class MoodleApi:
 
     def createCustomCategory(self, parentId, categoryName, categoryDescription):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_create_categories',
             'moodlewsrestformat': 'json',
             'categories[0][name]': categoryName,
@@ -164,7 +164,7 @@ class MoodleApi:
 
     def updateCustomCategory(self, categoryId, newName, newDescription):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_update_categories',
             'moodlewsrestformat': 'json',
             'categories[0][id]': categoryId,
@@ -230,7 +230,7 @@ class MoodleApi:
 
     def createCourse(self, departmentId, courseFullName, courseShortName, courseDescription):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_create_courses',
             'moodlewsrestformat': 'json',
             'courses[0][fullname]': courseFullName,
@@ -239,12 +239,10 @@ class MoodleApi:
             'courses[0][summary]': courseDescription
         }
 
-        print(data)
-
         response = self.sendRequest(data)
 
         if response is False:
-            # print('cURL Error: Failed to send the request.')
+            print('cURL Error: Failed to send the request.')
             return 0
 
         responseData = response.json()
@@ -265,7 +263,7 @@ class MoodleApi:
 
     def create_group(self, course_id, group_name, group_description):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_group_create_groups',
             'moodlewsrestformat': 'json',
             'groups[0][courseid]': course_id,
@@ -301,7 +299,7 @@ class MoodleApi:
 
     def add_member_to_group(self, group_id, user_id):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_group_add_group_members',
             'moodlewsrestformat': 'json',
             'members[0][groupid]': group_id,
@@ -357,7 +355,7 @@ class MoodleApi:
 
     def updateCourse(self, courseId, newFullName, newShortName, newDescription):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_update_courses',
             'moodlewsrestformat': 'json',
             'courses[0][id]': courseId,
@@ -390,7 +388,7 @@ class MoodleApi:
 
     def deleteCourse(self, courseId):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_course_delete_courses',
             'moodlewsrestformat': 'json',
             'courseids[0]': courseId
@@ -420,7 +418,7 @@ class MoodleApi:
 
     def createUser(self, username, password, firstname, lastname, email):
         data = {
-            'wstoken': settings.TOKEN,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'core_user_create_users',
             'moodlewsrestformat': 'json',
             'users[0][username]': username,
@@ -462,7 +460,7 @@ class MoodleApi:
             'user[username]': username
         }
 
-        serverUrl = settings.SITE_DOMAIN + '/webservice/rest/server.php' + '?wstoken=' + settings.TOKEN + '&wsfunction=' + functionname + '&moodlewsrestformat=json'
+        serverUrl = settings.SITE_DOMAIN + '/webservice/rest/server.php' + '?wstoken=' + settings.MOODLE_TOKEN + '&wsfunction=' + functionname + '&moodlewsrestformat=json'
         response = self.sendRequest(param, serverUrl)
         if response is False:
             return False

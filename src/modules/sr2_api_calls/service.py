@@ -14,7 +14,7 @@ from src.types import FeeStructureNode
 
 class Sr2ApiCalls(object):
     token = settings.SR2_TOKEN
-    site_url = settings.SR2_URL
+    site_url = settings.SR2_SERVICE_URL
 
     @staticmethod
     def get_fee_structures(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]] | None:

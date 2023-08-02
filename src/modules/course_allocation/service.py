@@ -3,15 +3,17 @@ from typing import List
 import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
+from sqlalchemy.orm import aliased
 
 from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramCourseAssessment
+from src.models import ProgramCourse, ProgramCourseAssessment, AcademicYear
 from src.models.course_allocation import CourseAllocation
 from src.modules import CRUDBase
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationListNode
+from src.types import CourseAllocationInput, CourseAllocationListNode, RequestStaffCourseAllocation
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -56,15 +58,72 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         """
         with session_scope() as session:
             if inputs.program_course_uid:
-                result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
-                                                                CourseAllocation.program_course_uid == inputs.program_course_uid,
-                                                                CourseAllocation.deleted_at.is_(None))
+
+                result = session.query(CourseAllocation).filter(
+                    CourseAllocation.staff_uid == inputs.staff_uid,
+                    CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
+                    CourseAllocation.deleted_at.is_(None))
             else:
 
                 result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
                                                                 CourseAllocation.deleted_at.is_(None))
             return result.first()
 
+    @staticmethod
+    def get_staff_course_allocation_by_Academic_year_semesters(inputs: RequestStaffCourseAllocation) -> Response[
+        CourseAllocationListNode]:
+        """
+        Get Course  Allocation by Academic Year semester uid, academic year and semester
+        :return:
+        """
+        with session_scope() as session:
+            try:
+                if inputs:
+                    # Verify and get supplied Academic year uid and get existed Academic year model
+                    try:
+                        academic_year = AcademicYearService(AcademicYear).get(inputs.academic_year_uid)
+                        if academic_year is None:
+                            raise ValueError("You submitted incorrect academic year details")
+                    except Exception as e:
+                        print(e)
+                        return Response(
+                            status=False,
+                            code=ResponseCode.FAILURE,
+                            data=None,
+                            message="You submitted incorrect academic year details"
+                        )
+
+                    result = session.query(CourseAllocation).filter(
+                        CourseAllocation.staff_uid == inputs.staff_uid,
+                        CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
+                        CourseAllocation.deleted_at.is_(None))
+                else:
+
+                    result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
+                                                                    CourseAllocation.deleted_at.is_(None))
+                return result.first()
+
+                program_course = ProgramCourseService.get_program_course_by_uid(uid)
+                if program_course is None:
+                    raise ValueError("You have submitted incorrect programs course details")
+            except Exception as e:
+                print(e)
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=CourseAllocationListNode(items=[], total_count=0),
+                                message="You have submitted incorrect programs course details")
+
+            stmt = select(CourseAllocation).where(
+                (CourseAllocation.program_course_id == program_course.id) & (
+                    CourseAllocation.deleted_at.is_(None)))
+            result_raw = session.scalars(stmt)
+            result = result_raw.all()
+            count = session.query(CourseAllocation).filter(CourseAllocation.deleted_at.is_(None)).count()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=CourseAllocationListNode(items=result, total_count=count),
+                message="Course Allocations Retrieved Successful"
+            )
 
     @staticmethod
     def get_course_allocation_by_program_course_uid(uid: str) -> Response[CourseAllocationListNode]:
@@ -95,7 +154,6 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                 data=CourseAllocationListNode(items=result, total_count=count),
                 message="Course Allocations Retrieved Successful"
             )
-
 
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
         """
