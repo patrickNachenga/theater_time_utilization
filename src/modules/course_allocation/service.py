@@ -1,4 +1,5 @@
-from typing import List
+from optparse import Option
+from typing import List, Optional
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
@@ -76,60 +77,26 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result
 
     @staticmethod
-    def get_staff_course_allocation_by_Academic_year_semesters(inputs: RequestStaffCourseAllocation) -> Response[
-        CourseAllocationListNode]:
+    def get_staff_course_allocation_by_Academic_year_semesters(inputs: RequestStaffCourseAllocation) -> Optional[CourseAllocationListNode]:
         """
         Get Course  Allocation by Academic Year semester uid, academic year and semester
         :return:
         """
         with session_scope() as session:
-            try:
-                if inputs:
-                    # Verify and get supplied Academic year uid and get existed Academic year model
-                    try:
-                        academic_year = AcademicYearService(AcademicYear).get(inputs.academic_year_uid)
-                        if academic_year is None:
-                            raise ValueError("You submitted incorrect academic year details")
-                    except Exception as e:
-                        print(e)
-                        return Response(
-                            status=False,
-                            code=ResponseCode.FAILURE,
-                            data=None,
-                            message="You submitted incorrect academic year details"
-                        )
+            if inputs:
+                # Verify and get supplied Academic year uid and get existed Academic year model
+                academic_year = AcademicYearService(AcademicYear).get(inputs.academic_year_uid)
+                if academic_year is None:
+                    return None
 
-                    result = session.query(CourseAllocation).filter(
-                        CourseAllocation.staff_uid == inputs.staff_uid,
-                        CourseAllocation.program_course.has(ProgramCourse.uid == inputs.program_course_uid),
-                        CourseAllocation.deleted_at.is_(None))
-                else:
-
-                    result = session.query(CourseAllocation).filter(CourseAllocation.staff_uid == inputs.staff_uid,
-                                                                    CourseAllocation.deleted_at.is_(None))
-                return result.first()
-
-                program_course = ProgramCourseService.get_program_course_by_uid(uid)
-                if program_course is None:
-                    raise ValueError("You have submitted incorrect programs course details")
-            except Exception as e:
-                print(e)
-                return Response(status=False, code=ResponseCode.FAILURE,
-                                data=CourseAllocationListNode(items=[], total_count=0),
-                                message="You have submitted incorrect programs course details")
-
-            stmt = select(CourseAllocation).where(
-                (CourseAllocation.program_course_id == program_course.id) & (
-                    CourseAllocation.deleted_at.is_(None)))
-            result_raw = session.scalars(stmt)
-            result = result_raw.all()
-            count = session.query(CourseAllocation).filter(CourseAllocation.deleted_at.is_(None)).count()
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                data=CourseAllocationListNode(items=result, total_count=count),
-                message="Course Allocations Retrieved Successful"
-            )
+                result = session.query(CourseAllocation) \
+                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear) \
+                    .filter(AcademicYear.uid == inputs.academic_year_uid) \
+                    .filter(CourseAllocation.staff_uid == inputs.staff_uid) \
+                    .filter(CourseAllocation.program_course.has(ProgramCourse.semester == inputs.semester),CourseAllocation.deleted_at.is_(None))
+                return result
+            else:
+                return None
 
     @staticmethod
     def get_course_allocation_by_program_course_uid(uid: str) -> Response[CourseAllocationListNode]:

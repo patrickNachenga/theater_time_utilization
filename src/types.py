@@ -707,7 +707,7 @@ class RequestProgramSemester:
 
 @strawberry.input
 class RequestStaffCourseAllocation:
-    program_semester_uid: str
+    Staff_uid: str
     program_semester_uid: str
     academic_year_uid: str
     semester: int

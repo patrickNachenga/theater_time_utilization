@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
@@ -27,7 +27,7 @@ class CourseAllocationQuery:
             data=result)
 
     @strawberry.field
-    def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
+    def get_course_allocation(self, uid: str) -> Response[Optional[CourseAllocationNode]]:
         try:
             result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
         except Exception as e:
@@ -67,6 +67,30 @@ class CourseAllocationQuery:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Course Allocation not found",
                 data=List[CourseAllocationNode(uid="",program_course_uid='',program_course=None,staff_uid="")])
+
+
+    @strawberry.field
+    def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffAllocationInputNode) -> Response[List[CourseAllocationNode]]:
+        result = None
+        try:
+            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
+
+        except Exception as e:
+            print(e)
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Successfully Retrieve Course Allocation",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Allocation not found",
+                data=List[CourseAllocationNode(uid="",program_course_uid='',program_course=None,staff_uid="")])
+
 
     @strawberry.field
     async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
