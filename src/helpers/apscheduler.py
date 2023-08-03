@@ -9,6 +9,6 @@ scheduler = BackgroundScheduler()
 # add required operation on job
 scheduler.add_job(create_course_to_moodle, 'interval', seconds=60)
 scheduler.add_job(create_group_to_moodle, 'interval', seconds=70)
-scheduler.add_job(enroll_staff_to_moodle_course, 'interval', seconds=5)
+scheduler.add_job(enroll_staff_to_moodle_course, 'interval', seconds=80)
 scheduler.add_job(enroll_student_to_moodle_course, 'interval', seconds=90)
 scheduler.add_job(enroll_student_to_moodle_group, 'interval', seconds=100)
