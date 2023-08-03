@@ -71,7 +71,8 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     AcademicYear.status == inputs.is_current) \
                     .filter(CourseAllocation.staff_uid == inputs.staff_uid,
                             CourseAllocation.deleted_at.is_(None))
-            return result
+
+            return result.all()
 
     @staticmethod
     def get_staff_course_allocation_by_Academic_year_semesters(inputs: RequestStaffCourseAllocation) -> Optional[CourseAllocationListNode]:

@@ -60,6 +60,7 @@ class StudentQuery:
     def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
+
             if result:
                 response = UaaDataResponse(
                     status=True,
@@ -76,6 +77,7 @@ class StudentQuery:
                     message="Failed to retrieve",
                     data=[])
         except Exception as e:
+            print('some thing happen')
             print(e)
             return UaaDataResponse(
                 status=False,
