@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
@@ -64,7 +64,8 @@ class ProgramCourseAssessmentService(
             return result.first()
 
     @staticmethod
-    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[ProgramCourseAssessmentListNode]:
+    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[
+        Optional[ProgramCourseAssessmentListNode]]:
         """
         Get Program Course by program semester uid
         :return:

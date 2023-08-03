@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -10,6 +10,8 @@ class StudentCourseRegistration(BaseModel):
     """
     __tablename__ = "course_registrations"
     student_uid: str = Column(String, nullable=False)
+    moodle_course_enrollment_status: bool = Column(Boolean, default=False)
+    moodle_group_enrollment_status: bool = Column(Boolean, default=False)
     # core is 1,elective is 2
     core_elective: int = Column(Integer, nullable=False)
 
