@@ -73,7 +73,7 @@ class StudentService:
 
             # Extract the student UIDs from the query result
             student_uids = [uid for uid, in student_uids]
-
+            data = None
             data_obj = {
                 "uids": student_uids
             }

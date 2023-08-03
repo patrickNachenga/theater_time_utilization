@@ -60,15 +60,21 @@ class StudentQuery:
     def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
-            response = UaaDataResponse(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Successfully Retrieved",
-                data=[StudentUaaData(registration_number=item['registration_number'],full_name=item['full_name']) for item in result['data']]
-            )
+            if result:
+                response = UaaDataResponse(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully Retrieved",
+                    data=[StudentUaaData(registration_number=item['registration_number'],full_name=item['full_name']) for item in result['data']]
+                )
 
-            return response
-
+                return response
+            else:
+                return UaaDataResponse(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Failed to retrieve",
+                    data=[])
         except Exception as e:
             print(e)
             return UaaDataResponse(
