@@ -70,8 +70,8 @@ class StudentService:
                 join(CourseAllocation). \
                 filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
                 all()
-
             # Extract the student UIDs from the query result
+            # print('student_uids',student_uids)
             student_uids = [uid for uid, in student_uids]
             data = None
             data_obj = {

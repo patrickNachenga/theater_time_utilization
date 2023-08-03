@@ -49,26 +49,32 @@ class CourseAllocationQuery:
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
     @strawberry.field
-    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[List[CourseAllocationNode]]:
+    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationListNode]:
         result = None
         try:
             result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully Retrieve Course Allocation",
+                    data=CourseAllocationListNode(items=result,total_count=len(result)))
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Course Allocation not found",
+                    data=CourseAllocationListNode(items=[],total_count=0))
 
         except Exception as e:
             print(e)
-
-        if result:
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Successfully Retrieve Course Allocation",
-                data=result)
-        else:
             return Response(
                 status=False,
-                code=ResponseCode.NO_RECORD_FOUND,
-                message="Course Allocation not found",
-                data=List[CourseAllocationNode(uid="", program_course_uid='', program_course=None, staff_uid="")])
+                code=ResponseCode.FAILURE,
+                message="Course Allocation not found, An exception occurred",
+                data=CourseAllocationListNode(items=[],total_count=0))
+
+
 
     @strawberry.field
     def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffCourseAllocationBySemesterInputs) -> Response[
