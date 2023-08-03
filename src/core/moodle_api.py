@@ -106,10 +106,10 @@ class MoodleApi:
 
     def get_role_id_by_short_name(self, role_short_name):
         data = {
-            'wstoken': 'YOUR_TOKEN',
+            'wstoken': settings.MOODLE_TOKEN,
             'moodlewsrestformat': 'json',
             'wsfunction': 'local_wsgetroles_get_roles',
-            'shortnames': [role_short_name]
+            'shortnames[0]': role_short_name,
         }
         response = self.sendRequest(data)
         response_data = response.json()
@@ -312,7 +312,8 @@ class MoodleApi:
             # Handle the error condition
             print('cURL Error: Failed to send the request.')
             return False
-
+        if response.status_code == 200:
+            return True
         response_data = response.json()
 
         if 'exception' in response_data:
@@ -323,29 +324,24 @@ class MoodleApi:
             return True
 
     def enroll_user_as_user(self, user_id, course_id, role_name):
-        enrollment_data = [
-            {
-                'roleid': self.get_role_id_by_short_name(role_name),
-                'userid': user_id,
-                'courseid': course_id,
-            }
-        ]
         data = {
-            'wstoken': 'YOUR_TOKEN',
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'enrol_manual_enrol_users',
             'moodlewsrestformat': 'json',
-            'enrolments': enrollment_data
+            'enrolments[0][roleid]':  self.get_role_id_by_short_name(role_name),
+            'enrolments[0][userid]': user_id,
+            'enrolments[0][courseid]': course_id
         }
 
         response = self.sendRequest(data)
-
         if response is False:
             # Handle the error condition
             print('Failed to enroll user.')
             return False
 
+        if response.status_code == 200:
+            return True
         response_data = response.json()
-
         if 'exception' in response_data:
             # Handle the API error condition
             print('API Error:', response_data['message'])

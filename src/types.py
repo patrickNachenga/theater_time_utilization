@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional, List
 
 import strawberry
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from sqlalchemy import Date
 
 
@@ -708,11 +708,18 @@ class RequestProgramSemester:
 
 
 @strawberry.input
-class RequestStaffCourseAllocation:
-    Staff_uid: str
-    program_semester_uid: str
-    academic_year_uid: str
+class StaffCourseAllocationBySemesterInputs:
+    staff_uid: str
+    is_current: int
     semester: int
+
+
+@strawberry.type(description="Course Allocation By semester")
+class StaffCourseAllocationBySemesterNode:
+    uid: str | None
+    program_course_uid: str | None
+    program_course: ProgramCourseNode | None
+    staff_uid: str | None
 
 
 @strawberry.type

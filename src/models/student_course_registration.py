@@ -8,7 +8,7 @@ class StudentCourseRegistration(BaseModel):
     """
     In every semester a student is registering a particular course from a specific program course
     """
-    __tablename__ = "course_registrations"
+    __tablename__ = "student_course_registrations"
     student_uid: str = Column(String, nullable=False)
     moodle_course_enrollment_status: bool = Column(Boolean, default=False)
     moodle_group_enrollment_status: bool = Column(Boolean, default=False)

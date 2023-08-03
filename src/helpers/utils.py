@@ -130,10 +130,10 @@ def enroll_student_to_moodle_course():
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
-                    if responseData and responseData["data"]['moodle_id']:
+                    if responseData and responseData["user"]['moodle_id']:
                         moodle = MoodleApi()
                         enrollment_status: bool = moodle.enroll_user_as_user(
-                            user_id=responseData["data"]['moodle_id'],
+                            user_id=responseData["user"]['moodle_id'],
                             course_id=student_course_registration.program_course.course.moodle_id,
                             role_name="student",
                         )
@@ -157,16 +157,17 @@ def enroll_staff_to_moodle_course():
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
+
             if course_allocation:
                 params = {"uid": course_allocation.staff_uid}
                 response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
-                    if responseData and responseData["data"]['moodle_id']:
+                    if responseData and responseData['user']['moodle_id']:
                         moodle = MoodleApi()
-                        enrollment_status: bool = moodle.enroll_user_as_user(
-                            user_id=responseData["data"]['moodle_id'],
+                        enrollment_status = moodle.enroll_user_as_user(
+                            user_id=responseData['user']['moodle_id'],
                             course_id=course_allocation.program_course.course.moodle_id,
                             role_name="editingteacher",
                         )
@@ -199,10 +200,10 @@ def enroll_student_to_moodle_group():
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
-                    if responseData and responseData["data"]['moodle_id']:
+                    if responseData and responseData['user']['moodle_id']:
                         moodle = MoodleApi()
                         enrollment_status: bool = moodle.add_member_to_group(
-                            user_id=responseData["data"]['moodle_id'],
+                            user_id=responseData['user']['moodle_id'],
                             group_id=student_course_registration.program_course.moodle_id,
                         )
                         if enrollment_status:
