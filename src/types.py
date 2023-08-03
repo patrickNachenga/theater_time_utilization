@@ -755,3 +755,27 @@ class ProgramCourseListNode:
 class CourseAllocationStaffUpdateInput:
     uid: str
     staff_uid: str
+
+
+@strawberry.input(description="Program Course update can_exceed_minimum_by input")
+class ProgramCourseAssessmentUpdateExceedInput:
+    program_course_assessment_uid: str
+    can_exceed_minimum_by: str
+
+
+@strawberry.input(description="Exam registration input")
+class ExamRegistrationInput:
+    exam_category_uid: str
+    course_registration_uid: str
+
+
+@strawberry.type(description="Exam registration Output")
+class ExamRegistrationNode:
+    exam_category: ExamCategoryNode
+    student_course_registration: CourseRegistrationNode
+
+
+@strawberry.type(description="Exam registration Output")
+class ExamRegistrationListNode:
+    items: List[ExamRegistrationNode]
+    total_count: int

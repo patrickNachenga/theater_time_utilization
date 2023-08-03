@@ -7,7 +7,8 @@ from src.modules.course_allocation.service import CourseAllocationService, Cours
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInput, CourseAllocationListNode, \
-    StaffAllocationInputNode, CourseAllocationStaffUpdateInput
+    StaffAllocationInputNode, CourseAllocationStaffUpdateInput, ProgramCourseAssessmentNode, \
+    ProgramCourseAssessmentUpdateExceedInput
 
 
 @strawberry.type
@@ -57,13 +58,13 @@ class CourseAllocationQuery:
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieve Course Allocation",
-                    data=CourseAllocationListNode(items=result,total_count=len(result)))
+                    data=CourseAllocationListNode(items=result, total_count=len(result)))
             else:
                 return Response(
                     status=False,
                     code=ResponseCode.NO_RECORD_FOUND,
                     message="Course Allocation not found",
-                    data=CourseAllocationListNode(items=[],total_count=0))
+                    data=CourseAllocationListNode(items=[], total_count=0))
 
         except Exception as e:
             print(e)
@@ -71,9 +72,7 @@ class CourseAllocationQuery:
                 status=False,
                 code=ResponseCode.FAILURE,
                 message="Course Allocation not found, An exception occurred",
-                data=CourseAllocationListNode(items=[],total_count=0))
-
-
+                data=CourseAllocationListNode(items=[], total_count=0))
 
     @strawberry.field
     def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffAllocationInputNode) -> Response[
@@ -100,7 +99,8 @@ class CourseAllocationQuery:
                 data=List[CourseAllocationNode(uid="", program_course_uid='', program_course=None, staff_uid="")])
 
     @strawberry.field
-    async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[CourseAllocationListNode]:
+    async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
+        CourseAllocationListNode]:
         try:
             course_allocation = CourseAllocationService.get_course_allocation_by_program_course_uid(
                 program_course_uid)
@@ -166,4 +166,24 @@ class CourseAllocationMutation:
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to update course allocation staff",
-                            data=CourseAllocationNode(None))
+                            data=CourseAllocationNode(None)) @ strawberry.field
+
+    @strawberry.field
+    def staff_update_allocation_assessment_item(self, inputs: ProgramCourseAssessmentUpdateExceedInput) -> Response[ProgramCourseAssessmentNode]:
+        try:
+            program_course_assessment = CourseAllocationService(
+                CourseAllocation).staff_update_allocation_assessment_item(
+                inputs)
+            if program_course_assessment:
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=program_course_assessment,
+                                message=f"Successfully updated")
+            else:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=[],
+                                message=f"Failed to updated")
+
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to update",
+                            data=[])

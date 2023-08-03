@@ -4,9 +4,12 @@ import requests
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester
+from src.helpers.utils import get_current_semester
+from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester, \
+    StudentExamRegistration, ExamCategory
 from src.models.student_course_registration import StudentCourseRegistration
-from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode, StudentProgramCourseListNode
+from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode, StudentProgramCourseListNode, \
+    ExamRegistrationListNode
 
 
 class StudentService:
@@ -16,12 +19,15 @@ class StudentService:
 
     def get_student_current_course_registration(self, student_uid) -> CourseRegistrationListNode:
         with session_scope() as session:
+            semester = get_current_semester()
+
             result = session.query(StudentCourseRegistration). \
                 join(ProgramCourse). \
                 join(ProgramSemester). \
                 join(AcademicYear). \
                 filter(StudentCourseRegistration.student_uid == student_uid). \
                 filter(AcademicYear.status == 1). \
+                filter(ProgramSemester.semester == semester). \
                 all()
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
@@ -34,6 +40,7 @@ class StudentService:
         """
 
         with session_scope() as session:
+            final_student_uid = None
             for data in inputs:
 
                 program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == data.program_course_uid,
@@ -52,10 +59,19 @@ class StudentService:
                             core_elective=data.core_elective,
                             program_course=program_course
                         )
-
+                        final_student_uid = data.student_uid
                         session.add(course_registration)
             session.commit()
-            result = session.query(StudentCourseRegistration).filter(
+            # getting current semester
+
+            semester = get_current_semester()
+
+            # getting student current semester course registration
+            result = session.query(StudentCourseRegistration) \
+                .join(ProgramCourse) \
+                .join(ProgramSemester) \
+                .filter(ProgramSemester.semester == semester) \
+                .filter(StudentCourseRegistration.student_uid==final_student_uid,
                 StudentCourseRegistration.deleted_at.is_(None)).order_by(StudentCourseRegistration.id.desc()).all()
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
@@ -114,3 +130,42 @@ class StudentService:
 
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,course_registered=registered_course)
         pass
+
+    def register_student_exam(self, inputs) -> ExamRegistrationListNode:
+        """
+        Register student exam
+        :param inputs: exam_category and student_course_registration
+        :return:ExamRegistrationListNode
+        """
+
+        with session_scope() as session:
+            for data in inputs:
+
+                course_registration = session.query(StudentCourseRegistration).filter(StudentCourseRegistration.uid == data.course_registration_uid,
+                                                                     StudentCourseRegistration.deleted_at.is_(None)).first()
+
+                if course_registration:
+                    exam_registration = session.query(StudentExamRegistration).filter(
+                        StudentExamRegistration.student_course_registration == course_registration,
+                        StudentExamRegistration.exam_category.has(ExamCategory.uid) == data.exam_category_uid,
+                        StudentExamRegistration.deleted_at.is_(None)).first()
+                    # Check if registered course already exist, so that not to register once again
+
+                    if exam_registration is None:
+                        exam_registration = StudentExamRegistration(
+                            exam_category=data.student_uid,
+                            student_course_registration=data.core_elective
+                        )
+
+                        session.add(exam_registration)
+            session.commit()
+
+            semester = get_current_semester()
+            result = session.query(StudentExamRegistration).join(StudentCourseRegistration)\
+                .join(ProgramCourse)\
+                .join(ProgramSemester)\
+                .filter(ProgramSemester.semester==semester)\
+                .filter(
+                StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
+
+            return ExamRegistrationListNode(items=result, total_count=len(result))

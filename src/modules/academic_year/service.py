@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, update
 
 from src.db.session import session_scope
-from src.models import AcademicYear
+from src.models import AcademicYear, AcademicYearSemester
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode

@@ -14,7 +14,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
-    CourseRegisterInputNode, StudentProgramCourseListNode
+    CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode
 
 
 @strawberry.type
@@ -207,3 +207,17 @@ class StudentMutation:
 
         # Return the Base64 string as the result
         return ExcelFile(base64_data=base64_data)
+
+    @strawberry.field
+    def register_student_exam(self,inputs: ExamRegistrationInput)-> Response[ExamRegistrationListNode]:
+        try:
+            result = StudentService().register_student_exam(inputs)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Registered successfully",
+                data=result)
+        except Exception as e:
+            print(e)
+            result = ExamRegistrationListNode(items=[], total_count=0)
+        return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
