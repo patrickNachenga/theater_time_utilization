@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
@@ -51,11 +51,10 @@ class ProgramCourseAssessmentQuery:
                 data=None)
 
     @strawberry.field
-    async def get_program_course_assessment_by_program_course_uid(self, program_courser_uid: str) -> Response[
-        ProgramCourseAssessmentListNode]:
+    async def get_program_course_assessment_by_program_course_uid(self, program_course_uid: str) -> Response[Optional[ProgramCourseAssessmentListNode]]:
         try:
             program_course_assessment = ProgramCourseAssessmentService.get_program_course_assessment_by_program_course_uid(
-                program_courser_uid)
+                program_course_uid)
             if program_course_assessment:
                 return program_course_assessment
             raise ValueError("Unable to retrieve program course assessment")
@@ -64,7 +63,7 @@ class ProgramCourseAssessmentQuery:
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,
-                data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                data=ProgramCourseAssessmentListNode(items=None, total_count=0),
                 message="Unable to retrieve program course assessment"
             )
 

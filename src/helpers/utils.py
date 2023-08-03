@@ -10,7 +10,7 @@ from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
-from src.models import Course, ProgramCourse, ProgramSemester
+from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -83,11 +83,6 @@ def create_course_to_moodle():
                 print('--- Exception Occurred while adding Course to Moodle. course ', str(e))
 
 
-"""
-Create program_course to moodleComputer Application
-"""
-
-
 def create_group_to_moodle():
     with session_scope() as session:
         try:
@@ -99,7 +94,6 @@ def create_group_to_moodle():
                 .first()
 
             if program_course:
-                print("In function")
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
 
@@ -109,7 +103,6 @@ def create_group_to_moodle():
                     group_description=program_course.program_semester.semester,
                 )
                 if moodle_unit_id != 0:
-                    print("Success")
                     program_course.moodle_id = moodle_unit_id
                     session.add(program_course)
                     session.commit()
@@ -117,3 +110,108 @@ def create_group_to_moodle():
                     print('--- Failure to create group to Moodle. Moodle return 0 --- ')
         except Exception as e:
             print('--- Exception Occurred while adding Groups to Moodle.  ', str(e))
+
+
+def enroll_student_to_moodle_course():
+    with session_scope() as session:
+        try:
+            # Get data that student course registration not on moodle and program course already on moodle
+            student_course_registration: StudentCourseRegistration = session.query(StudentCourseRegistration).join(
+                ProgramCourse) \
+                .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(False)) \
+                .filter(StudentCourseRegistration.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
+                .order_by(desc(StudentCourseRegistration.created_at)) \
+                .first()
+
+            if student_course_registration:
+                params = {"uid": student_course_registration.student_uid}
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if responseData and responseData["data"]['moodle_id']:
+                        moodle = MoodleApi()
+                        enrollment_status: bool = moodle.enroll_user_as_user(
+                            user_id=responseData["data"]['moodle_id'],
+                            course_id=student_course_registration.program_course.course.moodle_id,
+                            role_name="student",
+                        )
+                        if enrollment_status:
+                            student_course_registration.moodle_course_enrollment_status = True
+                            session.add(student_course_registration)
+                            session.commit()
+                        else:
+                            print('--- Fail to Enroll Student to Moodle Course --- on student_course_registration_uid:',
+                                  student_course_registration.uid)
+        except Exception as e:
+            print('--- Exception Occurred while enrolling student to Moodle.  ', str(e))
+
+
+def enroll_staff_to_moodle_course():
+    with session_scope() as session:
+        try:
+            # Get data that course allocation not on moodle and program course already on moodle
+            course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse) \
+                .filter(CourseAllocation.moodle_enrollment_status.is_(False)) \
+                .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
+                .order_by(desc(CourseAllocation.created_at)) \
+                .first()
+            if course_allocation:
+                params = {"uid": course_allocation.staff_uid}
+                response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if responseData and responseData["data"]['moodle_id']:
+                        moodle = MoodleApi()
+                        enrollment_status: bool = moodle.enroll_user_as_user(
+                            user_id=responseData["data"]['moodle_id'],
+                            course_id=course_allocation.program_course.course.moodle_id,
+                            role_name="editingteacher",
+                        )
+                        if enrollment_status:
+                            course_allocation.moodle_enrollment_status = True
+                            session.add(course_allocation)
+                            session.commit()
+                        else:
+                            print('--- Fail to Enroll Teacher to Moodle Course --- on course_allocation:',
+                                  course_allocation.uid)
+        except Exception as e:
+            print('--- Exception Occurred while enrolling Teacher to Moodle Course.  ', str(e))
+
+
+def enroll_student_to_moodle_group():
+    with session_scope() as session:
+        try:
+            # Get data that student group registration not on moodle and program course already on moodle
+            student_course_registration: StudentCourseRegistration = session.query(StudentCourseRegistration).join(
+                ProgramCourse) \
+                .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(True)) \
+                .filter(StudentCourseRegistration.moodle_group_enrollment_status.is_(False)) \
+                .filter(StudentCourseRegistration.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
+                .order_by(desc(StudentCourseRegistration.created_at)) \
+                .first()
+
+            if student_course_registration:
+                params = {"uid": student_course_registration.student_uid}
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if responseData and responseData["data"]['moodle_id']:
+                        moodle = MoodleApi()
+                        enrollment_status: bool = moodle.add_member_to_group(
+                            user_id=responseData["data"]['moodle_id'],
+                            group_id=student_course_registration.program_course.moodle_id,
+                        )
+                        if enrollment_status:
+                            student_course_registration.moodle_group_enrollment_status = True
+                            session.add(student_course_registration)
+                            session.commit()
+                        else:
+                            print('--- Fail to Enroll Student to Moodle Group --- on student_course_registration_uid:',
+                                  student_course_registration.uid)
+        except Exception as e:
+            print('--- Exception Occurred while enrolling student to Group.  ', str(e))
+
+
