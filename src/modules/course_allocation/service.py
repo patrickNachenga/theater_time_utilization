@@ -14,8 +14,8 @@ from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationListNode, RequestStaffCourseAllocation, \
-    CourseAllocationStaffUpdateInput, CourseAllocationNode
+from src.types import CourseAllocationInput, CourseAllocationListNode, CourseAllocationStaffUpdateInput, \
+    CourseAllocationNode, StaffCourseAllocationBySemesterInputs
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -39,15 +39,17 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result.all()
 
     @staticmethod
-    def get_course_by_uid(uid: str) -> CourseAllocation| None:
+    def get_course_by_uid(uid: str) -> CourseAllocation | None:
         """
         Get course category by uid
         :param uid:
         :return:
         """
         with session_scope() as session:
-            result = session.query(CourseAllocation).filter(CourseAllocation.uid == uid,CourseAllocation.deleted_at.is_(None)).first()
+            result = session.query(CourseAllocation).filter(CourseAllocation.uid == uid,
+                                                            CourseAllocation.deleted_at.is_(None)).first()
             return result
+
     @staticmethod
     def get_staff_course_allocation(inputs) -> CourseAllocation:
         """
@@ -74,23 +76,27 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result
 
     @staticmethod
-    def get_staff_course_allocation_by_Academic_year_semesters(inputs: RequestStaffCourseAllocation) -> Optional[CourseAllocationListNode]:
+    def get_staff_course_allocation_by_Academic_year_semesters(inputs) -> Optional[
+        Optional[StaffCourseAllocationBySemesterInputs]]:
         """
-        Get Course  Allocation by Academic Year semester uid, academic year and semester
+        Get staff course allocation filter with semester
+        :param inputs:containing staff_uid and program_course_uid
         :return:
         """
         with session_scope() as session:
             if inputs:
-                # Verify and get supplied Academic year uid and get existed Academic year model
-                academic_year = AcademicYearService(AcademicYear).get(inputs.academic_year_uid)
-                if academic_year is None:
-                    return None
+                if inputs.semester == 1:
+                    semesters = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+                else:  # Assuming inputs.semester == 2
+                    semesters = [2, 4, 6, 8, 10, 12, 14, 16, 18]
 
-                result = session.query(CourseAllocation) \
-                    .join(ProgramCourse).join(ProgramSemester).join(AcademicYear) \
-                    .filter(AcademicYear.uid == inputs.academic_year_uid) \
+                result = session.query(CourseAllocation).join(ProgramCourse).join(ProgramSemester).join(AcademicYear) \
+                    .filter(AcademicYear.status == inputs.is_current) \
                     .filter(CourseAllocation.staff_uid == inputs.staff_uid) \
-                    .filter(CourseAllocation.program_course.has(ProgramCourse.semester == inputs.semester),CourseAllocation.deleted_at.is_(None))
+                    .filter(CourseAllocation.deleted_at.is_(None)) \
+                    .filter(ProgramSemester.semester.in_(semesters)) \
+                    .filter(CourseAllocation.staff_uid == inputs.staff_uid) \
+                    .filter(CourseAllocation.deleted_at.is_(None))
                 return result
             else:
                 return None
@@ -148,9 +154,10 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     )
 
                 if inputItem.uid is None:
-                    exist_course_allocation = session.query(CourseAllocation).filter(CourseAllocation.staff_uid==inputItem.staff_uid,
-                                                                                     CourseAllocation.program_course.has(ProgramCourse.uid==inputItem.program_course_uid),
-                                                                                     CourseAllocation.deleted_at.is_(None)).all()
+                    exist_course_allocation = session.query(CourseAllocation).filter(
+                        CourseAllocation.staff_uid == inputItem.staff_uid,
+                        CourseAllocation.program_course.has(ProgramCourse.uid == inputItem.program_course_uid),
+                        CourseAllocation.deleted_at.is_(None)).all()
                     if exist_course_allocation:
                         return Response(
                             status=False,

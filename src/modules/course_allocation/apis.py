@@ -7,7 +7,8 @@ from src.modules.course_allocation.service import CourseAllocationService, Cours
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInput, CourseAllocationListNode, \
-    StaffAllocationInputNode, CourseAllocationStaffUpdateInput
+    StaffAllocationInputNode, CourseAllocationStaffUpdateInput, StaffCourseAllocationBySemesterInputs, \
+    StaffCourseAllocationBySemesterNode
 
 
 @strawberry.type
@@ -70,12 +71,11 @@ class CourseAllocationQuery:
                 data=List[CourseAllocationNode(uid="", program_course_uid='', program_course=None, staff_uid="")])
 
     @strawberry.field
-    def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffAllocationInputNode) -> Response[
-        List[CourseAllocationNode]]:
+    def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffCourseAllocationBySemesterInputs) -> Response[
+        Optional[List[StaffCourseAllocationBySemesterNode]]]:
         result = None
         try:
-            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
-
+            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation_by_Academic_year_semesters(inputs)
         except Exception as e:
             print(e)
 
@@ -83,7 +83,7 @@ class CourseAllocationQuery:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Successfully Retrieve Course Allocation",
+                message="Successfully Retrieve Staff Course Allocation",
                 data=result,
             )
         else:
@@ -149,8 +149,7 @@ class CourseAllocationMutation:
             )
 
     @strawberry.field
-    def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> Response[
-        CourseAllocationNode]:
+    def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> Response[CourseAllocationNode]:
         try:
             course_allocations = CourseAllocationService(CourseAllocation).update_course_allocation_staff(inputs)
             return Response(status=True, code=ResponseCode.SUCCESS,
