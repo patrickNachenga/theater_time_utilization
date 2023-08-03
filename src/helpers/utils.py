@@ -4,15 +4,13 @@ from typing import List
 
 import requests
 from passlib.context import CryptContext
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, exists
 
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
-from src.models import Course
-from src.modules.course.service import CourseService
-from src.modules.program_course.service import ProgramCourseService
+from src.models import Course, ProgramCourse, ProgramSemester
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -92,29 +90,30 @@ Create program_course to moodleComputer Application
 
 def create_group_to_moodle():
     with session_scope() as session:
-        # Get only one at a time
-        course = CourseService.get_register_moodle_course()
-        if course:
-            try:
-                # If there are existing course check for program course it belong that has null moodle id
-                program_course = ProgramCourseService.get_unregister_moodle_program_course_by_course_id(course.id)
-                if program_course:
-                    # Attempt to create_group to moodle
-                    moodle = MoodleApi()
-                    moodle_unit_id = moodle.create_group(
-                        course_id=course.id,
-                        group_name=program_course.program_semester.academic_year.name,
-                        group_description=program_course.program_semester.semester,
-                    )
-                    if moodle_unit_id != 0:
-                        programCourse = ProgramCourseService.get_program_course_by_uid(program_course.uid)
-                        if programCourse:
-                            programCourse.moodle_id = moodle_unit_id
-                            session.add(programCourse)
-                            session.commit()
-                        else:
-                            print('--- Failure to Save Moodle id to registration Service. ID: %s  --- ', moodle_unit_id)
-                    else:
-                        print('--- Failure to create group to Moodle. Moodle return 0 --- ')
-            except Exception as e:
-                print('--- An Exception Occurred While create group to Moodle --- ', str(e))
+        try:
+            # Get only one at a time
+            program_course: ProgramCourse = session.query(ProgramCourse).join(Course).join(ProgramSemester) \
+                .filter(ProgramCourse.moodle_id.is_(None)) \
+                .filter(ProgramCourse.course.has(Course.moodle_id.isnot(None))) \
+                .order_by(desc(ProgramCourse.created_at)) \
+                .first()
+
+            if program_course:
+                print("In function")
+                # Attempt to create_group to moodle
+                moodle = MoodleApi()
+
+                moodle_unit_id = moodle.create_group(
+                    course_id=program_course.course.moodle_id,
+                    group_name=f"{program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
+                    group_description=program_course.program_semester.semester,
+                )
+                if moodle_unit_id != 0:
+                    print("Success")
+                    program_course.moodle_id = moodle_unit_id
+                    session.add(program_course)
+                    session.commit()
+                else:
+                    print('--- Failure to create group to Moodle. Moodle return 0 --- ')
+        except Exception as e:
+            print('--- Exception Occurred while adding Groups to Moodle.  ', str(e))
