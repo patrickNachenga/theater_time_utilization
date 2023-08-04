@@ -18,8 +18,12 @@ class StudentService:
     """
 
     def get_student_current_course_registration(self, student_uid) -> CourseRegistrationListNode:
+        print('datase')
         with session_scope() as session:
+            print('s')
             semester = get_current_semester()
+            print('sd')
+            print("semester",semester)
 
             result = session.query(StudentCourseRegistration). \
                 join(ProgramCourse). \
@@ -168,4 +172,4 @@ class StudentService:
                 .filter(
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
 
-            return ExamRegistrationListNode(items=result, total_count=len(result))
+            return ExamRegistrationListNode(items=[], total_count=len(result))
