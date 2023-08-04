@@ -10,7 +10,8 @@ from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
-from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation
+from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
+    AcademicYear, AcademicYearSemester
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -216,3 +217,10 @@ def enroll_student_to_moodle_group():
             print('--- Exception Occurred while enrolling student to Group.  ', str(e))
 
 
+def get_current_semester():
+    with session_scope() as session:
+        current_academic_year = session.query(AcademicYear).filter_by(status=1).first()
+        academic_year_semester = session.query(AcademicYearSemester).filter(
+            AcademicYearSemester.academic_year == current_academic_year).first()
+        semester = academic_year_semester.semester
+        return semester

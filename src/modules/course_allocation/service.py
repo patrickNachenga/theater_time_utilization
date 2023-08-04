@@ -77,8 +77,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result.all()
 
     @staticmethod
-    def get_staff_course_allocation_by_Academic_year_semesters(inputs) -> Optional[
-        Optional[StaffCourseAllocationBySemesterInputs]]:
+    def get_staff_course_allocation_by_Academic_year_semesters(inputs) -> Optional[List[CourseAllocation]]:
         """
         Get staff course allocation filter with semester
         :param inputs:containing staff_uid and program_course_uid
@@ -209,19 +208,19 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             session.commit()
 
     @staticmethod
-    def staff_update_allocation_assessment_item(inputs) -> int:
+    def staff_update_allocation_assessment_item(inputs) -> ProgramCourseAssessment:
         """
         this enable Staff to update "can_exceed_minimum_by" to increase number of assessment
         input assessment items uid
         """
         with session_scope() as session:
-            session.query(ProgramCourseAssessment).filter_by(uid=inputs.uid).update(
+            session.query(ProgramCourseAssessment).filter_by(uid=inputs.program_course_assessment_uid).update(
                 {"can_exceed_minimum_by": inputs.can_exceed_minimum_by}
             )
             session.commit()
-            can_exceed_minimum_by = session.query(ProgramCourseAssessment.can_exceed_minimum_by).filter(
-                ProgramCourseAssessment.uid == inputs.uid).first()
-            return can_exceed_minimum_by[0]
+            program_course_assessment = session.query(ProgramCourseAssessment).filter(
+                ProgramCourseAssessment.uid == inputs.program_course_assessment_uid).first()
+            return program_course_assessment
 
     @staticmethod
     def update_course_allocation_staff(inputs: CourseAllocationStaffUpdateInput) -> CourseAllocationNode:
