@@ -12,12 +12,12 @@ class StudentExamRegistration(BaseModel):
     # ______________________________Foreign Keys__________________________________________________#
 
     exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"), nullable=False)
-    student_course_registration_id: int = Column(Integer, ForeignKey("course_registrations.id"), nullable=False)
+    student_course_registration_id: int = Column(Integer, ForeignKey("student_course_registrations.id"), nullable=False)
 
     # _____________________________Relationships___________________________________________________#
 
     exam_category = relationship("ExamCategory", lazy="subquery",
                                                           back_populates="student_exam_registrations")
 
-    student_course_registration = relationship("StudentCourseRegistration", lazy="subquery",
+    student_course_registrations = relationship("StudentCourseRegistration", lazy="subquery",
                                                             back_populates="student_exam_registration")

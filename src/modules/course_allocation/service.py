@@ -51,7 +51,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result
 
     @staticmethod
-    def get_staff_course_allocation(inputs) -> CourseAllocation:
+    def get_staff_course_allocation(inputs) -> Optional[List[CourseAllocation]]:
         """
         Get staff course allocation
         :param inputs:containing staff_uid and program_course_uid
@@ -77,8 +77,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result.all()
 
     @staticmethod
-    def get_staff_course_allocation_by_Academic_year_semesters(inputs) -> Optional[
-        Optional[StaffCourseAllocationBySemesterInputs]]:
+    def get_staff_course_allocation_by_Academic_year_semesters(inputs) -> Optional[List[CourseAllocation]]:
         """
         Get staff course allocation filter with semester
         :param inputs:containing staff_uid and program_course_uid

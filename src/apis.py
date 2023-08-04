@@ -11,6 +11,7 @@ from src.modules.exam_category_groups.apis import ExamCategoryGroupsQuery, ExamC
 from src.modules.exam_result_summary.apis import ExamResultSummaryQuery, ExamResultSummaryMutation
 from src.modules.exam_results.apis import ExamResultQuery, ExamResultMutation
 from src.modules.groups.apis import GroupQuery, GroupMutation
+from src.modules.moodle_api_calls.apis import MoodleApiCallQuery
 from src.modules.program_capacity.apis import ProgramCapacityMutation, ProgramCapacityQuery
 from src.modules.program_category.apis import ProgramCategoryQuery, ProgramCategoryMutation
 from src.modules.program_course.apis import ProgramCourseQuery, ProgramCourseMutation
@@ -27,7 +28,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                CourseCategoryQuery, GroupQuery, ProgramQuery, ExamCategoryQuery, ExamCategoryGroupsQuery,
                ExamResultSummaryQuery, ExamResultQuery,
                AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
-               ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery, AcademicYearSemesterQuery):
+               ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery, AcademicYearSemesterQuery, MoodleApiCallQuery):
     pass
 
 

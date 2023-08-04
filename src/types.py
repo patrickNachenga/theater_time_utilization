@@ -764,6 +764,11 @@ class CourseAllocationStaffUpdateInput:
     staff_uid: str
 
 
+@strawberry.input(description="Get moodle url")
+class MoodleGetUrlInput:
+    moodle_username: str
+    course_moodle_id: Optional[str]
+
 @strawberry.input(description="Program Course update can_exceed_minimum_by input")
 class ProgramCourseAssessmentUpdateExceedInput:
     program_course_assessment_uid: str

@@ -19,4 +19,4 @@ class StudentCourseRegistration(BaseModel):
     program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False)
     program_course = relationship('ProgramCourse', lazy='subquery', back_populates="student_course_registrations")
     student_exam_registration = relationship("StudentExamRegistration", lazy="subquery",
-                                                           back_populates="student_course_registration")
+                                                           back_populates="student_course_registrations")
