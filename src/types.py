@@ -253,6 +253,7 @@ class CourseNode:
     name: str
     offered: int
     department_uid: str
+    moodle_id: Optional[str]
 
 
 @strawberry.input(description="Program Category Input")

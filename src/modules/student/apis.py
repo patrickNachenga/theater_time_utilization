@@ -31,7 +31,7 @@ class StudentQuery:
                 data=result)
         except Exception as e:
             print(e)
-            result = CourseRegistrationListNode(items=[], total_count=0)
+            result = [CourseRegistrationListNode(course_to_register=None, total_count=0,course_registered=None)]
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,

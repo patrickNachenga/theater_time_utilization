@@ -219,8 +219,11 @@ def enroll_student_to_moodle_group():
 
 def get_current_semester():
     with session_scope() as session:
-        current_academic_year = session.query(AcademicYear).filter_by(status=1).first()
-        academic_year_semester = session.query(AcademicYearSemester).filter(
-            AcademicYearSemester.academic_year == current_academic_year).first()
-        semester = academic_year_semester.semester
+        semester = None
+        current_academic_year = session.query(AcademicYear).filter(AcademicYear.status==1).first()
+        if current_academic_year:
+            academic_year_semester = session.query(AcademicYearSemester).filter(
+                AcademicYearSemester.academic_year == current_academic_year).first()
+        if academic_year_semester:
+            semester = academic_year_semester.semester
         return semester
