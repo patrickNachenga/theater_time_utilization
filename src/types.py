@@ -762,3 +762,20 @@ class ProgramCourseListNode:
 class CourseAllocationStaffUpdateInput:
     uid: str
     staff_uid: str
+
+
+@strawberry.input(description="Get moodle url")
+class MoodleGetUrlInput:
+    moodle_username: str
+    course_moodle_id: Optional[str]
+
+# @strawberry.type(description="Control Numbers Output")
+# class ControlNumberNode:
+#     registration_number: str
+#     fee_name: str
+#     amount: float
+#     control_number: str
+#     currency: str
+#     pay_type: str
+#     academic_year: str
+#     bill_id: str

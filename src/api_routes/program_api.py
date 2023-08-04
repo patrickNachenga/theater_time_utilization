@@ -1,4 +1,3 @@
-
 import io
 from io import BytesIO
 from typing import List
@@ -159,6 +158,7 @@ def generate_allocation_xls_template(allocation_uid: str):
     # Return the workbook as a streaming response
     return StreamingResponse(content=file_buffer, headers=headers)
 
+
 @program_router.post("/extract-data")
 async def extract_data(file: UploadFile = File(...)):
     contents = await file.read()
@@ -178,8 +178,8 @@ async def extract_data(file: UploadFile = File(...)):
     # Extract the data from the columns
     data = []
     for row in worksheet.iter_rows(min_row=10, values_only=True):
-        print("SN",row[sn_column - 1])
-        print("Reg No", row[reg_no_column - 1],)
+        print("SN", row[sn_column - 1])
+        print("Reg No", row[reg_no_column - 1], )
         print("Marks", row[marks_column - 1])
         #
         # data.append({
@@ -193,4 +193,3 @@ async def extract_data(file: UploadFile = File(...)):
     # ...
 
     return {"message": "Data extracted successfully"}
-

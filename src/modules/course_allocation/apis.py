@@ -49,7 +49,7 @@ class CourseAllocationQuery:
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
     @strawberry.field
-    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationListNode]:
+    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[Optional[CourseAllocationListNode]]:
         result = None
         try:
             result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)

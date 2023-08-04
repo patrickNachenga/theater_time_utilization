@@ -456,13 +456,12 @@ class MoodleApi:
             'user[username]': username
         }
 
-        serverUrl = settings.SITE_DOMAIN + '/webservice/rest/server.php' + '?wstoken=' + settings.MOODLE_TOKEN + '&wsfunction=' + functionname + '&moodlewsrestformat=json'
+        serverUrl = settings.MOODLE_SITE_URL + '/webservice/rest/server.php' + '?wstoken=' + settings.MOODLE_TOKEN + '&wsfunction=' + functionname + '&moodlewsrestformat=json'
         response = self.sendRequest(param, serverUrl)
         if response is False:
             return False
 
         responseData = response.json()
-        print(responseData)
         if 'loginurl' in responseData:
             loginurl = responseData['loginurl']
         else:
@@ -470,13 +469,12 @@ class MoodleApi:
 
         path = ''
         if course_id is not None:
-            path = "&wantsurl="+settings.SITE_DOMAIN + '/course/view.php?id=' + str(course_id)
+            path = "&wantsurl="+settings.MOODLE_SITE_URL + '/course/view.php?id=' + str(course_id)
 
         # if 'modname' in locals() and 'activityid' in locals():
         #     path = self.SITE_DOMAIN + "/mod/" + str(modname) + "/view.php?id=" + str(activityid)
 
-        full_path =  loginurl + path
-        print(full_path)
+        full_path = loginurl + path
         return full_path
 
 # moodle_api = MoodleApi()

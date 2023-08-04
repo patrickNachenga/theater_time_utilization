@@ -51,7 +51,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result
 
     @staticmethod
-    def get_staff_course_allocation(inputs) -> CourseAllocation:
+    def get_staff_course_allocation(inputs) -> Optional[List[CourseAllocation]]:
         """
         Get staff course allocation
         :param inputs:containing staff_uid and program_course_uid
