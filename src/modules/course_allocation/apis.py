@@ -77,7 +77,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found, An exception occurred",
                 data=CourseAllocationListNode(items=[], total_count=0))
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
     def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffCourseAllocationBySemesterInputs) -> Response[
         Optional[List[StaffCourseAllocationBySemesterNode]]]:
         result = None
