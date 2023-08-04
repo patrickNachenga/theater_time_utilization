@@ -1,3 +1,6 @@
+# -------------------------  Version 3 ---------------------------------------
+
+
 import requests
 
 from src.core.config import settings
@@ -462,6 +465,7 @@ class MoodleApi:
             return False
 
         responseData = response.json()
+        # print(responseData)
         if 'loginurl' in responseData:
             loginurl = responseData['loginurl']
         else:
@@ -469,13 +473,82 @@ class MoodleApi:
 
         path = ''
         if course_id is not None:
-            path = "&wantsurl="+settings.MOODLE_SITE_URL + '/course/view.php?id=' + str(course_id)
+            path = "&wantsurl=" + settings.MOODLE_SITE_DOMAIN + '/course/view.php?id=' + str(course_id)
 
         # if 'modname' in locals() and 'activityid' in locals():
         #     path = self.SITE_DOMAIN + "/mod/" + str(modname) + "/view.php?id=" + str(activityid)
 
         full_path = loginurl + path
+        # print(full_path)
         return full_path
+
+    def get_quizzes_by_course(self, course_id):
+        data = {
+            'wstoken': settings.MOODLE_TOKEN,
+            'wsfunction': 'mod_quiz_get_quizzes_by_courses',
+            'moodlewsrestformat': 'json',
+            'courseids': [course_id]
+        }
+
+        response = self.sendRequest(data)
+
+        if response is False:
+            # Handle the error condition
+            # print('Failed to get quizzes for the course.')
+            return False
+
+        response_data = response.json()
+
+        if 'exception' in response_data:
+            # Handle the API error condition
+            # print('API Error: ' + response_data['message'])
+            return False
+        else:
+            if response_data:
+                # Check if the response contains the quizzes
+                if 'quizzes' in response_data and isinstance(response_data['quizzes'], list):
+                    return response_data['quizzes']  # Return the quizzes
+                else:
+                    # print('No quizzes found for the course.')
+                    return False
+            else:
+                # print('Empty response received.')
+                return False
+
+    def get_user_attempts_on_quiz(self, user_id, quiz_id):
+        data = {
+            'wstoken': settings.MOODLE_TOKEN,
+            'wsfunction': 'mod_quiz_get_user_attempts',
+            'moodlewsrestformat': 'json',
+            'userid': user_id,
+            'quizid': quiz_id
+        }
+
+        response = self.sendRequest(data)
+
+        if response is False:
+            # Handle the error condition
+            # print('Failed to get user attempts on the quiz.')
+            return False
+
+        response_data = response.json()
+
+        if 'exception' in response_data:
+            # Handle the API error condition
+            # print('API Error: ' + response_data['message'])
+            return False
+        else:
+            if response_data:
+                # Check if the response contains the attempts
+                if 'attempts' in response_data and isinstance(response_data['attempts'], list):
+                    return response_data['attempts']  # Return the attempts
+                else:
+                    # print('No attempts found for the user on the quiz.')
+                    return False
+            else:
+                # print('Empty response received.')
+                return False
+
 
 # moodle_api = MoodleApi()
 # login_url = moodle_api.getloginurl("admin")

@@ -374,16 +374,6 @@ class CourseCategoryListNode:
     total_count: int
 
 
-@strawberry.type(description="Program Course Assessment Output")
-class ProgramCourseAssessmentNode2:
-    uid: str
-    exam_category_uid: str
-    exam_category: ExamCategoryNode
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
-
-
 @strawberry.input(description="Program Course Input")
 class ProgramCourseInput:
     uid: Optional[str] = None
@@ -400,22 +390,38 @@ class ProgramCourseInput:
     moodle_id: Optional[str] = None
 
 
-@strawberry.type(description="Program Course Assessment Output")
-class ProgramCourseAssessmentNode2:
-    uid: str
+@strawberry.input(description="Program Course Assessment Input")
+class ProgramCourseAssessmentInput:
+    uid: Optional[str] = None
+    program_course_uid: str
     exam_category_uid: str
+    minimum_exams: int
+    can_exceed_minimum_by: Optional[int] = 0
+    maximum_score: int
+
+
+@strawberry.type(description="Program Course Assessment Output")
+class ProgramCourseAssessmentNode:
+    uid: str
+    program_course: "ProgramCourseNode"
     exam_category: ExamCategoryNode
     minimum_exams: int
     can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
 
 
+@strawberry.type(description="Program Course Assessment paginated Output")
+class ProgramCourseAssessmentListNode:
+    items: List[ProgramCourseAssessmentNode]
+    total_count: int
+
+
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
     uid: str
-    program_semester: ProgramSemesterNode
+    program_semester: "ProgramSemesterNode"
     course: CourseNode
-    course_category: CourseCategoryNode
+    course_category: "CourseCategoryNode"
     credit: float
     lecture_hours: float
     seminar_hours: float
@@ -423,7 +429,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
-    program_course_assessments: List[ProgramCourseAssessmentNode2]
+    program_course_assessments: List[ProgramCourseAssessmentNode]
 
 
 @strawberry.input(description="Course Learn Outcome Input")
@@ -446,31 +452,6 @@ class CourseLearnOutcomeListNode:
     total_count: int
 
 
-@strawberry.input(description="Program Course Assessment Input")
-class ProgramCourseAssessmentInput:
-    uid: Optional[str] = None
-    program_course_uid: str
-    exam_category_uid: str
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
-
-
-@strawberry.type(description="Program Course Assessment Output")
-class ProgramCourseAssessmentNode:
-    uid: str
-    program_course: ProgramCourseNode
-    exam_category: ExamCategoryNode
-    minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
-    maximum_score: int
-
-
-@strawberry.type(description="Program Course Assessment paginated Output")
-class ProgramCourseAssessmentListNode:
-    items: List[ProgramCourseAssessmentNode]
-    total_count: int
-
 
 @strawberry.input(description="Course Allocation Input")
 class CourseAllocationInput:
@@ -481,10 +462,6 @@ class CourseAllocationInput:
 
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
-    # uid: str
-    # program_course: ProgramCourseNode
-    # staff_uid: str
-
     uid: str | None
     program_course_uid: str | None
     program_course: ProgramCourseNode | None

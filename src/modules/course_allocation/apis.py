@@ -2,6 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import CourseAllocation
 from src.modules.course_allocation.service import CourseAllocationService, CourseAllocationCrud
 from src.shared.response import Response
@@ -16,7 +17,7 @@ from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInp
 @strawberry.type
 class CourseAllocationQuery:
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
     def get_course_allocations(self, pagination: PaginationInput) -> Response[CourseAllocationListNode]:
         try:
             result = CourseAllocationCrud.get_multi_paginated(pagination, [], CourseAllocationListNode)
@@ -29,7 +30,7 @@ class CourseAllocationQuery:
             message="Course Allocation Retrieved successfully",
             data=result)
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
     def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
         try:
             result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
@@ -50,7 +51,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found",
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
     def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[Optional[CourseAllocationListNode]]:
         result = None
         try:
@@ -99,7 +100,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found",
                 data=List[CourseAllocationNode(uid="", program_course_uid='', program_course=None, staff_uid="")])
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
     async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
         CourseAllocationListNode]:
         try:
@@ -120,7 +121,7 @@ class CourseAllocationQuery:
 
 @strawberry.type
 class CourseAllocationMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_ALLOCATION"])])
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
         try:
             return CourseAllocationService(CourseAllocation).register_course_allocations(inputs)
@@ -130,7 +131,7 @@ class CourseAllocationMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course Allocation",
                             data=CourseAllocationListNode(items=[], total_count=0), )
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
     async def remove_course_allocation(self, uid: str) -> Response[None]:
         """
         Remove course allocation by UID
@@ -155,7 +156,7 @@ class CourseAllocationMutation:
                 data=None
             )
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
     def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> Response[CourseAllocationNode]:
         try:
             course_allocations = CourseAllocationService(CourseAllocation).update_course_allocation_staff(inputs)
@@ -168,7 +169,7 @@ class CourseAllocationMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to update course allocation staff",
                             data=CourseAllocationNode(None)) @ strawberry.field
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
     def staff_update_allocation_assessment_item(self, inputs: ProgramCourseAssessmentUpdateExceedInput) -> Response[ProgramCourseAssessmentNode]:
         try:
             program_course_assessment = CourseAllocationService(

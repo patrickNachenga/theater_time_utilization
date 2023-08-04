@@ -3,6 +3,7 @@ from typing import List
 
 import strawberry  # For building graphQL APIs
 
+from src.core.security import CustomPermissionExtension
 from src.models import Course
 from src.modules.course.service import CourseService, CourseCrud
 from src.shared.response import Response
@@ -12,7 +13,7 @@ from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
 
 @strawberry.type
 class CourseQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE"])])
     def get_courses(self, pagination: PaginationInput) -> Response[PaginatedCourse]:
         try:
             result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
@@ -25,7 +26,7 @@ class CourseQuery:
             message="Courses Retrieved Successfully",
             data=result)
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE"])])
     def get_course(self, uid: str) -> Response[CourseNode | None]:
         try:
             result = CourseService.get_course_by_uid(uid)
@@ -49,7 +50,7 @@ class CourseQuery:
 
 @strawberry.type
 class CourseMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE"])])
     async def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
         try:
             return CourseService(Course).register_courses(inputs)
@@ -58,7 +59,7 @@ class CourseMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course",
                             data=PaginatedCourse(items=[], total_count=0))
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE"])])
     async def remove_course(self, uid: str) -> Response[None]:
         """
         Remove Course By UID
