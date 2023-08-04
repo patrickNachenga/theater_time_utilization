@@ -17,7 +17,7 @@ from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInp
 @strawberry.type
 class CourseAllocationQuery:
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
     def get_course_allocations(self, pagination: PaginationInput) -> Response[CourseAllocationListNode]:
         try:
             result = CourseAllocationCrud.get_multi_paginated(pagination, [], CourseAllocationListNode)
@@ -30,7 +30,7 @@ class CourseAllocationQuery:
             message="Course Allocation Retrieved successfully",
             data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
     def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
         try:
             result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
@@ -51,7 +51,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found",
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
     def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[Optional[CourseAllocationListNode]]:
         result = None
         try:
