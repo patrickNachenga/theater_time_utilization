@@ -375,22 +375,6 @@ class CourseCategoryListNode:
     total_count: int
 
 
-@strawberry.input(description="Program Course Input")
-class ProgramCourseInput:
-    uid: Optional[str] = None
-    program_semester_uid: str
-    course_uid: str
-    course_category_uid: str
-    credit: Optional[float] = 0.0
-    lecture_hours: Optional[float] = 0.0
-    seminar_hours: Optional[float] = 0.0
-    practical_hours: Optional[float] = 0.0
-    assignment_hours: Optional[float] = 0.0
-    independent_study_hours: Optional[float] = 0
-    pass_hours: Optional[float] = 0.0
-    moodle_id: Optional[str] = None
-
-
 @strawberry.input(description="Program Course Assessment Input")
 class ProgramCourseAssessmentInput:
     uid: Optional[str] = None
@@ -417,6 +401,22 @@ class ProgramCourseAssessmentListNode:
     total_count: int
 
 
+@strawberry.input(description="Program Course Input")
+class ProgramCourseInput:
+    uid: Optional[str] = None
+    program_semester_uid: str
+    course_uid: str
+    course_category_uid: str
+    credit: Optional[float] = 0.0
+    lecture_hours: Optional[float] = 0.0
+    seminar_hours: Optional[float] = 0.0
+    practical_hours: Optional[float] = 0.0
+    assignment_hours: Optional[float] = 0.0
+    independent_study_hours: Optional[float] = 0
+    pass_hours: Optional[float] = 0.0
+    moodle_id: Optional[str] = None
+
+
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
     uid: str
@@ -430,6 +430,7 @@ class ProgramCourseNode:
     assignment_hours: float
     independent_study_hours: float
     pass_hours: float
+    moodle_id: Optional[str]
     program_course_assessments: List[ProgramCourseAssessmentNode]
 
 
@@ -451,7 +452,6 @@ class CourseLearnOutcomeNode:
 class CourseLearnOutcomeListNode:
     items: List[CourseLearnOutcomeNode]
     total_count: int
-
 
 
 @strawberry.input(description="Course Allocation Input")
@@ -746,6 +746,7 @@ class CourseAllocationStaffUpdateInput:
 class MoodleGetUrlInput:
     moodle_username: str
     course_moodle_id: Optional[str]
+
 
 @strawberry.input(description="Program Course update can_exceed_minimum_by input")
 class ProgramCourseAssessmentUpdateExceedInput:

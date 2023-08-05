@@ -296,5 +296,128 @@ permissions: typing.List[Permission] = [
         name="Remove Course Category",
         description="Can Delete Course category",
         service="registration",
-    )
+    ),
+    Permission(
+        code="VIEW_PROGRAM_COURSE_ASSESSMENTS",
+        name="VIEW Program Course Assessments",
+        description="Can View Program Course Assessment",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_PROGRAM_COURSE_ASSESSMENTS",
+        name="Register Program Course Assessments",
+        description="Can register Program Course Assessments",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_PROGRAM_COURSE_ASSESSMENT",
+        name="Remove Program Course Assessment",
+        description="Can Delete Program Course Assessment",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_PROGRAMS",
+        name="View Programs",
+        description="Can View Programs",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_PROGRAMS",
+        name="Register Programs",
+        description="Can Register Programs",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_PROGRAM",
+        name="Remove Program",
+        description="Can Delete Program",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_PROGRAM_SEMESTERS",
+        name="View Program Semesters",
+        description="Can View Program Semesters",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_PROGRAM_SEMESTERS",
+        name="Register Program Semesters",
+        description="Can Register Program Semesters",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_PROGRAM_SEMESTERS",
+        name="Remove Program Semester",
+        description="Can Delete Program Semester",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_PROGRAM_COURSES",
+        name="View Program Courses",
+        description="Can View Program Courses",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_PROGRAM_COURSES",
+        name="Register Program Courses",
+        description="Can Register Program Courses",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_PROGRAM_COURSES",
+        name="REMOVE Program Courses",
+        description="Can Delete Program Courses",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_PROGRAM_CATEGORIES",
+        name="View Program Categories",
+        description="Can View Program Categories",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_PROGRAM_CATEGORIES",
+        name="Register Program Categories",
+        description="Can Register Program Categories",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_PROGRAM_CATEGORY",
+        name="REMOVE Program Category",
+        description="Can Delete Program Category",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_PROGRAM_CAPACITIES",
+        name="View Program Capacities",
+        description="Can View Program Capacity",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_PROGRAM_CAPACITIES",
+        name="Register Program Capacities",
+        description="Can Register Program Capacity",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_PROGRAM_CAPACITY",
+        name="REMOVE Program Capacities",
+        description="Can Delete Program Capacity",
+        service="registration",
+    ),
+
+
+
+    Permission(
+        code="VIEW_STUDENT_COURSE_REGISTRATIONS",
+        name="View Student Course Registration Information",
+        description="Can View Student Course Registration",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_STUDENT_COURSES",
+        name="Register Student Course",
+        description="Can Register Student Course",
+        service="registration",
+    ),
 ]
