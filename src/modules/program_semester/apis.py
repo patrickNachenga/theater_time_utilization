@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import ProgramSemester
 from src.modules.program_semester.service import ProgramSemesterService, ProgramSemesterCrud
 from src.shared.response import Response
@@ -11,8 +12,8 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 
 @strawberry.type
 class ProgramSemesterQuery:
-    @strawberry.field
-    def get_program_semesters(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    def get_program_semesters(self, pagination: PaginationInput) -> Response[Optional[ProgramSemesterListNode]]:
         try:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, ['study_year', 'semester', 'core_credits', 'elective_credits'], ProgramSemesterListNode, ['program', 'academic_year'])
         except Exception as e:
@@ -24,7 +25,7 @@ class ProgramSemesterQuery:
             message="Successfully Retrieve Program Semesters",
             data=result)
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
     def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode | None]:
         try:
             result = ProgramSemesterService.get_program_semester_by_uid(uid)
@@ -47,8 +48,8 @@ class ProgramSemesterQuery:
 
 @strawberry.type
 class ProgramSemesterMutation:
-    @strawberry.field
-    def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[ProgramSemesterListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_SEMESTERS"])])
+    def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[Optional[ProgramSemesterListNode]]:
         try:
             return ProgramSemesterService(ProgramSemester).register_program_semesters(inputs)
         except Exception as e:
@@ -57,7 +58,7 @@ class ProgramSemesterMutation:
                             data=ProgramSemesterListNode(items=[], total_count=0),)
 
     # Delete programs type function
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_SEMESTERS"])])
     async def remove_program_semester(self, uid: str) -> Response[None]:
         """
         Remove student By UID

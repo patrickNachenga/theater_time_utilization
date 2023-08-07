@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
@@ -11,13 +11,13 @@ from src.types import ExamCategoryNode, ExamCategoryInput
 
 @strawberry.type
 class ExamCategoryQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_CATEGORY"])])
-    def get_exam_categories(self) -> Response[List[ExamCategoryNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_CATEGORIES"])])
+    def get_exam_categories(self) -> Response[Optional[List[ExamCategoryNode]]]:
         try:
             result = ExamCategoryService.get_exam_categories()
         except Exception as e:
             print(e)
-            result = []
+            result = None
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
@@ -27,8 +27,8 @@ class ExamCategoryQuery:
 
 @strawberry.type
 class ExamCategoryMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_CATEGORY"])])
-    def register_exam_categories(self, inputs: List[ExamCategoryInput]) -> Response[List[ExamCategoryNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_CATEGORIES"])])
+    def register_exam_categories(self, inputs: List[ExamCategoryInput]) -> Response[Optional[List[ExamCategoryNode]]]:
         try:
             return ExamCategoryService().register_exam_categories(inputs)
         except Exception as e:

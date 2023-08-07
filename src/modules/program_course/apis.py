@@ -2,6 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.modules.program_semester.service import ProgramSemesterService
@@ -13,9 +14,9 @@ from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput
 
 @strawberry.type
 class ProgramCourseQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
     def get_program_courses(self, pagination: PaginationInput, program_semester: Optional[str] = None) -> Response[
-        ProgramCourseListNode]:
+        Optional[ProgramCourseListNode]]:
         try:
             unique_list = []
             # Verify and get supplied Program uid. and get existed program model
@@ -51,7 +52,7 @@ class ProgramCourseQuery:
             message="Successfully Retrieve Program Courses",
             data=result)
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
     def get_program_course(self, uid: str) -> Response[ProgramCourseNode | None]:
         try:
             result = ProgramCourseService.get_program_course_by_uid(uid)
@@ -71,8 +72,9 @@ class ProgramCourseQuery:
                 message="Program Course not found",
                 data=None)
 
-    @strawberry.field
-    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[ProgramCourseListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
+    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
+        Optional[ProgramCourseListNode]]:
         try:
             program_courses = ProgramCourseService.get_program_course_by_program_semester_uid(program_semester_uid)
             if program_courses:
@@ -87,7 +89,7 @@ class ProgramCourseQuery:
                 message="Unable to retrieve program courses"
             )
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
     async def get_student_program_course(self, input: RequestProgramSemester) -> Response[List[ProgramCourseNode]]:
 
         try:
@@ -115,8 +117,8 @@ class ProgramCourseQuery:
 
 @strawberry.type
 class ProgramCourseMutation:
-    @strawberry.field
-    def register_program_course(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_COURSES"])])
+    def register_program_course(self, inputs: List[ProgramCourseInput]) -> Response[Optional[ProgramCourseListNode]]:
         """
             register and update program courses
             :param inputs
@@ -130,7 +132,7 @@ class ProgramCourseMutation:
                             data=ProgramCourseListNode(items=[], total_count=0), )
 
     # Delete programs type function
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_COURSE"])])
     async def remove_program_course(self, uid: str) -> Response[None]:
         """
         Remove program course By UID

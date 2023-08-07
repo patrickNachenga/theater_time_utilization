@@ -23,7 +23,7 @@ class Sr2ApiCallQuery:
                 message="Failed to retrieve fee structure",
                 data=None)
 
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_control_numbers(self, registration_number: str) -> Response[List[ControlNumberNode] | None]:
         try:
             result = Sr2ApiCalls.get_student_control_number(registration_number)
@@ -43,7 +43,7 @@ class Sr2ApiCallQuery:
                 message="Control Number not found",
                 data=None)
 
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_financial_statement(self, registration_number: str) -> Response[str | None]:
         try:
             return Sr2ApiCalls.get_financial_statement(registration_number)
@@ -59,7 +59,7 @@ class Sr2ApiCallQuery:
 @strawberry.type
 class Sr2ApiCallMutation:
 
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def request_fee_structure_control_numbers(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
         try:
             return Sr2ApiCalls.request_control_numbers(inputs)
@@ -72,7 +72,7 @@ class Sr2ApiCallMutation:
                 data=None,
             )
 
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def renew_control_number(self, inputs: RewControlNumberInput) -> Response[Optional[str]]:
         try:
             return Sr2ApiCalls.renew_control_number(inputs)

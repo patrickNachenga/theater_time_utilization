@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
+from src.core.security import CustomPermissionExtension
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -19,7 +20,7 @@ from src.types import CourseRegistrationListNode, \
 
 @strawberry.type
 class StudentQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
     def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
@@ -31,13 +32,14 @@ class StudentQuery:
                 data=result)
         except Exception as e:
             print(e)
-            result = [CourseRegistrationListNode(course_to_register=None, total_count=0,course_registered=None)]
+            result = [CourseRegistrationListNode(course_to_register=None, total_count=0, course_registered=None)]
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program courses not found",
                 data=result)
-    @strawberry.field
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
     def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
@@ -56,7 +58,7 @@ class StudentQuery:
                 message="Course Registration not found",
                 data=result)
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
     def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
@@ -66,7 +68,8 @@ class StudentQuery:
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'],full_name=item['full_name']) for item in result['data']]
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'])
+                          for item in result['data']]
                 )
 
                 return response
@@ -112,8 +115,9 @@ class StudentQuery:
 
 @strawberry.type
 class StudentMutation:
-    @strawberry.field
-    def register_student_course(self, inputs: List[CourseRegistrationInputNode]) -> Response[CourseRegistrationListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
+    def register_student_course(self, inputs: List[CourseRegistrationInputNode]) -> Response[
+        CourseRegistrationListNode]:
         try:
             result = StudentService().register_student_course(inputs)
             return Response(
@@ -129,6 +133,7 @@ class StudentMutation:
     @strawberry.field
     def generate_allocation_xls_template(self, allocation_uid: str,out_off: int,exam_category: int) ->  ExcelFile:
         result = StudentService().get_allocation_students(allocation_uid,out_off,exam_category)
+
         file_buffer = io.BytesIO()
 
         # Create a new workbook
@@ -233,7 +238,7 @@ class StudentMutation:
         return ExcelFile(base64_data=base64_data)
 
     @strawberry.field
-    def register_student_exam(self,inputs: ExamRegistrationInput)-> Response[ExamRegistrationListNode]:
+    def register_student_exam(self, inputs: ExamRegistrationInput) -> Response[ExamRegistrationListNode]:
         try:
             result = StudentService().register_student_exam(inputs)
             return Response(
