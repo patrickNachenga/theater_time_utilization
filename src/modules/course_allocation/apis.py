@@ -18,7 +18,7 @@ from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInp
 class CourseAllocationQuery:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
-    def get_course_allocations(self, pagination: PaginationInput) -> Response[CourseAllocationListNode]:
+    def get_course_allocations(self, pagination: PaginationInput) -> Response[Optional[CourseAllocationListNode]]:
         try:
             result = CourseAllocationCrud.get_multi_paginated(pagination, [], CourseAllocationListNode)
         except Exception as e:
@@ -31,7 +31,7 @@ class CourseAllocationQuery:
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
-    def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
+    def get_course_allocation(self, uid: str) -> Response[Optional[CourseAllocationNode]]:
         try:
             result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
         except Exception as e:
@@ -102,7 +102,7 @@ class CourseAllocationQuery:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
     async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
-        CourseAllocationListNode]:
+        Optional[CourseAllocationListNode]]:
         try:
             course_allocation = CourseAllocationService.get_course_allocation_by_program_course_uid(
                 program_course_uid)
@@ -122,7 +122,7 @@ class CourseAllocationQuery:
 @strawberry.type
 class CourseAllocationMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_ALLOCATION"])])
-    def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
+    def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[Optional[CourseAllocationListNode]]:
         try:
             return CourseAllocationService(CourseAllocation).register_course_allocations(inputs)
 
@@ -157,7 +157,7 @@ class CourseAllocationMutation:
             )
 
     @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
-    def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> Response[CourseAllocationNode]:
+    def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> Response[Optional[CourseAllocationNode]]:
         try:
             course_allocations = CourseAllocationService(CourseAllocation).update_course_allocation_staff(inputs)
             return Response(status=True, code=ResponseCode.SUCCESS,
@@ -170,7 +170,7 @@ class CourseAllocationMutation:
                             data=CourseAllocationNode(None)) @ strawberry.field
 
     @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
-    def staff_update_allocation_assessment_item(self, inputs: ProgramCourseAssessmentUpdateExceedInput) -> Response[ProgramCourseAssessmentNode]:
+    def staff_update_allocation_assessment_item(self, inputs: ProgramCourseAssessmentUpdateExceedInput) -> Response[Optional[ProgramCourseAssessmentNode]]:
         try:
             program_course_assessment = CourseAllocationService(
                 CourseAllocation).staff_update_allocation_assessment_item(

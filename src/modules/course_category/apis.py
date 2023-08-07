@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
@@ -13,7 +13,7 @@ from src.types import CourseCategoryInput, CourseCategoryNode, CourseCategoryLis
 @strawberry.type
 class CourseCategoryQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_CATEGORIES"])])
-    def get_course_categories(self, pagination: PaginationInput) -> Response[CourseCategoryListNode]:
+    def get_course_categories(self, pagination: PaginationInput) -> Response[Optional[CourseCategoryListNode]]:
         try:
             result = CourseCategoryCrud.get_multi_paginated(pagination, ["description", "name"],
                                                             CourseCategoryListNode)
@@ -50,7 +50,7 @@ class CourseCategoryQuery:
 @strawberry.type
 class CourseCategoryMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_CATEGORIES"])])
-    def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[CourseCategoryListNode]:
+    def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[Optional[CourseCategoryListNode]]:
         try:
             return CourseCategoryService(CourseCategory).register_course_categories(inputs)
         except Exception as e:

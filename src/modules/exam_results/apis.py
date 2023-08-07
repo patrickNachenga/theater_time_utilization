@@ -3,6 +3,7 @@ from typing import List
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.modules.exam_results.service import ExamResultService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 @strawberry.type
 class ExamResultQuery:
-    @strawberry.field
-    def get_exam_results(self) -> Response[List[ExamResultNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])])
+    def get_exam_results(self) -> Response[List[ExamResultNode] | None]:
         try:
             result = ExamResultService.get_exam_results()
             print("Data inserted", result)
@@ -33,9 +34,9 @@ class ExamResultQuery:
                 data=[],
             )
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])])
     def get_exam_results_by_uids(self, uids: List[str]) -> \
-            Response[List[ExamResultNode]]:
+            Response[List[ExamResultNode] | None]:
         try:
             result = ExamResultService.get_exam_results_by_uids(uids)
             return Response(
@@ -55,7 +56,7 @@ class ExamResultQuery:
 
 @strawberry.type
 class ExamResultMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_RESULTS"])])
     def register_exam_results(self, inputs: List[ExamResultInput]) -> \
             Response[List[ExamResultNode] | None]:
         try:
@@ -75,7 +76,7 @@ class ExamResultMutation:
                 data=None,
             )
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REMOVE_EXAM_RESULT"])])
     def remove_exam_result(self, uid: str) -> Response[None]:
         try:
             ExamResultService.remove_exam_result_summary(uid)

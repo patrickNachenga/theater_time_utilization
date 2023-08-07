@@ -97,7 +97,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             result = session.scalars(stmt)
             return result.first()
 
-    async def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
+    def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
         """
         Register programs Course
         :param inputs:
@@ -110,13 +110,9 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 # Verify and get supplied Program uid. and get existed program model
-                try:
-                    program_semester = ProgramSemesterService.get_program_semester_by_uid(
-                        inputItem.program_semester_uid)
-                    if program_semester is None:
-                        raise ValueError("You have submitted incorrect programs semester details")
-                except Exception as e:
-                    print(e)
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(
+                    inputItem.program_semester_uid)
+                if program_semester is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -125,12 +121,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     )
 
                 # Verify and get supplied Course uid. and get existed Course id from returned Course model
-                try:
-                    course = CourseService.get_course_by_uid(inputItem.course_uid)
-                    if course is None:
-                        raise ValueError("You have submitted incorrect courses details")
-                except Exception as e:
-                    print(e)
+                course = CourseService.get_course_by_uid(inputItem.course_uid)
+                if course is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -139,12 +131,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     )
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
-                try:
-                    course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
-                    if course_category is None:
-                        raise ValueError("You have submitted incorrect courses category details")
-                except Exception as e:
-                    print(e)
+                course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
+                if course_category is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
