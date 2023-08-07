@@ -43,7 +43,6 @@ class CourseAllocationQuery:
                 message="Successfully Retrieve Course Allocation",
                 data=result)
         else:
-            print('test')
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
