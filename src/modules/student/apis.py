@@ -89,9 +89,9 @@ class StudentQuery:
                 data=[])
 
     @strawberry.field
-    def get_student_current_exam_registration(self, student_uid: str) -> Response[ExamRegistrationListNode]:
+    def get_student_current_registered_exam(self, student_uid: str) -> Response[ExamRegistrationListNode]:
         try:
-            result = StudentService().get_student_current_exam_registration(student_uid)
+            result = StudentService().get_student_current_registered_exam(student_uid)
             if result:
                 return Response(
                     status=True,

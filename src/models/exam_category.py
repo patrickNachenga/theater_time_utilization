@@ -26,8 +26,7 @@ class ExamCategory(BaseModel):
     exam_courseworks = relationship("ExamCoursework", lazy="subquery",
                                     back_populates="exam_category")
 
-    student_exam_registrations = relationship("StudentExamRegistration", lazy="subquery",
-                                              back_populates="exam_category")
+
 
     program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
                                               back_populates="exam_category")

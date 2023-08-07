@@ -130,17 +130,24 @@ class ProgramCourseAssessmentService(
                                     data=ProgramCourseAssessmentListNode(items=[], total_count=0),
                                     message="You have submitted incorrect exam category details")
                 if inputItem.uid is None:
-                    program_course_assessment = ProgramCourseAssessment(
-                        program_course=program_course,
-                        exam_category=exam_category,
-                        minimum_exams=inputItem.minimum_exams,
-                        can_exceed_minimum_by=inputItem.can_exceed_minimum_by,
-                        maximum_score=inputItem.maximum_score
-                    )
-                    local_object = session.merge(program_course_assessment)
-                    session.add(local_object)
-                    session.commit()
-                    program_course_assessment_list.append(local_object)
+                   if session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.program_course==program_course,
+                                                                  ProgramCourseAssessment.exam_category==exam_category).first():
+                       return Response(status=False, code=ResponseCode.FAILURE,
+                                       data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                                       message="Assessment of this category already exist")
+
+                   else:
+                        program_course_assessment = ProgramCourseAssessment(
+                            program_course=program_course,
+                            exam_category=exam_category,
+                            minimum_exams=inputItem.minimum_exams,
+                            can_exceed_minimum_by=inputItem.can_exceed_minimum_by,
+                            maximum_score=inputItem.maximum_score
+                        )
+                        local_object = session.merge(program_course_assessment)
+                        session.add(local_object)
+                        session.commit()
+                        program_course_assessment_list.append(local_object)
                 else:
                     action_type = "Update"
                     program_course_assessment = next(filter(

@@ -88,16 +88,13 @@ class StudentService:
                 filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
                 all()
             # Extract the student UIDs from the query result
-            allocation = session.query(CourseAllocation).filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)).first()
+            allocation = session.query(CourseAllocation).filter(CourseAllocation.uid == allocation_uid,
+                                                                CourseAllocation.deleted_at.is_(None)).first()
             program_course = None
 
             if allocation:
                 # Assuming CourseAllocation has a foreign key to ProgramCourse
                 program_course = allocation.program_course
-
-
-
-
 
             student_uids = [uid for uid, in student_uids]
             data = None
@@ -147,28 +144,28 @@ class StudentService:
     def register_student_exam(self, inputs) -> ExamRegistrationListNode:
         """
         Register student exam
-        :param inputs: exam_category and student_course_registration
+        :param inputs: exam type(1,2,3,4) and student_course_registration
         :return:ExamRegistrationListNode
         """
-
+        student_uid = None
         with session_scope() as session:
             for data in inputs:
 
                 course_registration = session.query(StudentCourseRegistration).filter(
                     StudentCourseRegistration.uid == data.course_registration_uid,
                     StudentCourseRegistration.deleted_at.is_(None)).first()
-                exam_category = session.query(ExamCategory).filter(ExamCategory.uid == data.exam_category_uid,
-                                                                   ExamCategory.deleted_at.is_(None)).first()
-                if course_registration and exam_category:
+
+                if course_registration:
+                    student_uid == course_registration.student_uid
                     exam_registration = session.query(StudentExamRegistration).filter(
                         StudentExamRegistration.student_course_registration == course_registration,
-                        StudentExamRegistration.exam_category == exam_category,
+                        StudentExamRegistration.type == data.type,
                         StudentExamRegistration.deleted_at.is_(None)).first()
                     # Check if exam already exist, so that not to register once again
 
                     if exam_registration is None:
                         exam_registration = StudentExamRegistration(
-                            exam_category=exam_category,
+                            type=data.type,
                             student_course_registrations=course_registration
                         )
 
@@ -179,13 +176,14 @@ class StudentService:
             result = session.query(StudentExamRegistration).join(StudentCourseRegistration) \
                 .join(ProgramCourse) \
                 .join(ProgramSemester) \
+                .filter(StudentCourseRegistration.student_uid == student_uid) \
                 .filter(ProgramSemester.semester == semester) \
                 .filter(
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
 
             return ExamRegistrationListNode(items=result, total_count=len(result))
 
-    def get_student_current_exam_registration(self, student_uid) -> StudentExamRegistration:
+    def get_student_current_registered_exam(self, student_uid) -> StudentExamRegistration:
         with session_scope() as session:
             semester = get_current_semester()
             result = session.query(StudentExamRegistration).join(StudentCourseRegistration) \
@@ -197,3 +195,5 @@ class StudentService:
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
             return result
 
+    def get_student_exam_to_register(self, student_uid) -> StudentCourseRegistration:
+        pass

@@ -757,7 +757,7 @@ class ProgramCourseAssessmentUpdateExceedInput:
 
 @strawberry.input(description="Exam registration input")
 class ExamRegistrationInput:
-    exam_category_uid: str
+    type: int
     course_registration_uid: str
 
 

@@ -42,3 +42,5 @@ from .exam_coursework import ExamCoursework
 from .exam_result import ExamResult
 from .exam_result_summary import ExamResultSummary
 from .academic_year_semester import AcademicYearSemester
+from .exam_failure import StudentExamFailure
+from .student_exam_postponement import StudentExamPostponement
