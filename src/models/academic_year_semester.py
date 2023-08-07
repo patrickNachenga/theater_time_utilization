@@ -13,6 +13,8 @@ class AcademicYearSemester(BaseModel):
     even_start_date: DateTime = Column(DateTime, nullable=True, unique=False)
     even_end_date: DateTime = Column(DateTime, nullable=True, unique=False)
     exam_start_date: DateTime = Column(DateTime, nullable=True, unique=False)
+    program_change_start_date: DateTime = Column(DateTime, nullable=True, unique=False)
+    program_change_end_date: DateTime = Column(DateTime, nullable=True, unique=False)
     exam_ticket_date: DateTime = Column(DateTime, nullable=True, unique=False)
     semester: int = Column(Integer, nullable=False)
 
