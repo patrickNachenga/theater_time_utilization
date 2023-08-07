@@ -1,6 +1,6 @@
 import base64
 import io
-from typing import List
+from typing import List, Optional
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from io import BytesIO
 
@@ -21,7 +21,7 @@ from src.types import CourseRegistrationListNode, \
 @strawberry.type
 class StudentQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[Optional[StudentProgramCourseListNode]]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
 
@@ -40,7 +40,7 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
+    def get_student_current_course_registration(self, student_uid: str) -> Response[Optional[CourseRegistrationListNode]]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
 
@@ -59,7 +59,7 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
+    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse | None:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
 
@@ -80,7 +80,6 @@ class StudentQuery:
                     message="Failed to retrieve",
                     data=[])
         except Exception as e:
-            print('some thing happen')
             print(e)
             return UaaDataResponse(
                 status=False,
@@ -106,7 +105,6 @@ class StudentQuery:
                     data=ExamRegistrationListNode(items=[], total_count=0))
         except Exception as e:
             print(e)
-
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
