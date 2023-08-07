@@ -122,7 +122,7 @@ class ProgramCourseMutation:
         """
             register and update program courses
             :param inputs
-            :return:List[ProgramCourseNode]
+            :return:Response[ProgramCourseListNode]
         """
         try:
             return ProgramCourseService(ProgramCourse).register_program_courses(inputs)
