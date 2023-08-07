@@ -278,6 +278,7 @@ class ProgramCategoryListNode:
 
 @strawberry.type(description="Exam Category Output")
 class ExamCategoryNode:
+    id: int
     uid: str
     name: str
     code: str
@@ -655,7 +656,7 @@ class UaaDataResponse:
     status: bool
     message: str
     code: int
-    data: List[StudentUaaData]
+    data: List[StudentUaaData] | None
 
 
 @strawberry.input(description="Allocation template input")

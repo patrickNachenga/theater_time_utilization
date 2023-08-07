@@ -51,8 +51,8 @@ async def get_program_data(parm: ProgramDepartmentInput):
     return ProgramService.api_get_program_by_departments(parm.departments)
 
 
-@program_router.get("/generate-allocation-template/{allocation_uid}")
-def generate_allocation_xls_template(allocation_uid: str):
+@program_router.post("/generate-allocation-template/")
+def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_category: int):
     result = StudentService().get_allocation_students(allocation_uid)
     # Create a new workbook
     workbook = Workbook()
@@ -82,8 +82,8 @@ def generate_allocation_xls_template(allocation_uid: str):
         "Academic Year": "2022/2023",
         "Study Year": "1",
         "Exam Category": "4",
-        "Assessment No": "1",
-        "Mark Out of": "100",
+        "Assessment No": str(exam_category),
+        "Mark Out of": str(out_off),
         "Assessment Weight": "1"
     }
     worksheet.sheet_view.showGridLines = False
@@ -94,11 +94,13 @@ def generate_allocation_xls_template(allocation_uid: str):
         cell.alignment = Alignment(horizontal='left')
         cell.font = font_border
         cell.border = None
+        cell.protection = Protection(locked=False)
     for row, value in enumerate(vertical_data, start=2):
         cell = worksheet[f"C{row}"]
         cell.value = value
         cell.font = font_border
         cell.border = None
+        cell.protection = Protection(locked=False)
     # Define the horizontal headers
     # worksheet.sheet_view.showGridLines = True
     horizontal_headers = ["SN", "Reg No", "Name", "Marks"]
@@ -124,19 +126,19 @@ def generate_allocation_xls_template(allocation_uid: str):
             cell.alignment = Alignment(horizontal='center', vertical='center')
             cell.font = font
             cell.border = border
-        # Set the specific column where cells should be non-editable (except column D)
-        editable_column = 'D'
+    # Set the specific column where cells should be non-editable (except column D)
+    editable_column = 'D'
 
-        # Iterate over rows in the worksheet
-        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
-            for cell in row:
-                # Check if the current column is the editable column
-                if cell.column_letter == editable_column:
-                    # Set protection to False for the editable column
-                    cell.protection = Protection(locked=False)
-                else:
-                    # Set protection to True for other columns
-                    cell.protection = Protection(locked=True)
+    # Iterate over rows in the worksheet
+    for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+        for cell in row:
+            # Check if the current column is the editable column
+            if cell.column_letter == editable_column:
+                # Set protection to False for the editable column
+                cell.protection = Protection(locked=False)
+            else:
+                # Set protection to True for other columns
+                cell.protection = Protection(locked=True)
 
         # Protect the worksheet to make cells not editable
         worksheet.protection.sheet = True

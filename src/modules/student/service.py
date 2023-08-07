@@ -18,12 +18,8 @@ class StudentService:
     """
 
     def get_student_current_course_registration(self, student_uid) -> CourseRegistrationListNode:
-        print('datase')
         with session_scope() as session:
-            print('s')
             semester = get_current_semester()
-            print('sd')
-            print("semester",semester)
 
             result = session.query(StudentCourseRegistration). \
                 join(ProgramCourse). \
@@ -75,8 +71,9 @@ class StudentService:
                 .join(ProgramCourse) \
                 .join(ProgramSemester) \
                 .filter(ProgramSemester.semester == semester) \
-                .filter(StudentCourseRegistration.student_uid==final_student_uid,
-                StudentCourseRegistration.deleted_at.is_(None)).order_by(StudentCourseRegistration.id.desc()).all()
+                .filter(StudentCourseRegistration.student_uid == final_student_uid,
+                        StudentCourseRegistration.deleted_at.is_(None)).order_by(
+                StudentCourseRegistration.id.desc()).all()
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
@@ -106,7 +103,7 @@ class StudentService:
                     "Content-Type": "application/json"
                 }
 
-                response = requests.post(settings.UAA_URi+'/students-details-by-uids', data=data_json,
+                response = requests.post(settings.UAA_URi + '/students-details-by-uids', data=data_json,
                                          headers=headers)
             except Exception as e:
                 print(e)
@@ -121,18 +118,19 @@ class StudentService:
             program_courses = session.query(ProgramCourse). \
                 join(ProgramSemester). \
                 join(Program). \
-                join(AcademicYear).\
-                filter(AcademicYear.status==1).\
+                join(AcademicYear). \
+                filter(AcademicYear.status == 1). \
                 filter(Program.uid == inputs.program_uid). \
-                filter(ProgramSemester.semester==inputs.semester).\
+                filter(ProgramSemester.semester == inputs.semester). \
                 filter(ProgramSemester.study_year == inputs.study_year).all()
             total_count = len(program_courses)
-            registered_course = session.query(StudentCourseRegistration).\
-                join(ProgramCourse).join(ProgramSemester).join(AcademicYear). filter(AcademicYear.status==1).\
+            registered_course = session.query(StudentCourseRegistration). \
+                join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == 1). \
                 filter(StudentCourseRegistration.student_uid == inputs.student_uid). \
-                filter(ProgramSemester.semester==inputs.semester).all()
+                filter(ProgramSemester.semester == inputs.semester).all()
 
-            return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,course_registered=registered_course)
+            return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,
+                                                course_registered=registered_course)
         pass
 
     def register_student_exam(self, inputs) -> ExamRegistrationListNode:
@@ -145,31 +143,46 @@ class StudentService:
         with session_scope() as session:
             for data in inputs:
 
-                course_registration = session.query(StudentCourseRegistration).filter(StudentCourseRegistration.uid == data.course_registration_uid,
-                                                                     StudentCourseRegistration.deleted_at.is_(None)).first()
-
-                if course_registration:
+                course_registration = session.query(StudentCourseRegistration).filter(
+                    StudentCourseRegistration.uid == data.course_registration_uid,
+                    StudentCourseRegistration.deleted_at.is_(None)).first()
+                exam_category = session.query(ExamCategory).filter(ExamCategory.uid == data.exam_category_uid,
+                                                                   ExamCategory.deleted_at.is_(None)).first()
+                if course_registration and exam_category:
                     exam_registration = session.query(StudentExamRegistration).filter(
                         StudentExamRegistration.student_course_registration == course_registration,
-                        StudentExamRegistration.exam_category.has(ExamCategory.uid) == data.exam_category_uid,
+                        StudentExamRegistration.exam_category == exam_category,
                         StudentExamRegistration.deleted_at.is_(None)).first()
-                    # Check if registered course already exist, so that not to register once again
+                    # Check if exam already exist, so that not to register once again
 
                     if exam_registration is None:
                         exam_registration = StudentExamRegistration(
-                            exam_category=data.student_uid,
-                            student_course_registration=data.core_elective
+                            exam_category=exam_category,
+                            student_course_registrations=course_registration
                         )
 
                         session.add(exam_registration)
             session.commit()
 
             semester = get_current_semester()
-            result = session.query(StudentExamRegistration).join(StudentCourseRegistration)\
-                .join(ProgramCourse)\
-                .join(ProgramSemester)\
-                .filter(ProgramSemester.semester==semester)\
+            result = session.query(StudentExamRegistration).join(StudentCourseRegistration) \
+                .join(ProgramCourse) \
+                .join(ProgramSemester) \
+                .filter(ProgramSemester.semester == semester) \
                 .filter(
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
 
-            return ExamRegistrationListNode(items=[], total_count=len(result))
+            return ExamRegistrationListNode(items=result, total_count=len(result))
+
+    def get_student_current_exam_registration(self, student_uid) -> StudentExamRegistration:
+        with session_scope() as session:
+            semester = get_current_semester()
+            result = session.query(StudentExamRegistration).join(StudentCourseRegistration) \
+                .join(ProgramCourse) \
+                .join(ProgramSemester) \
+                .filter(StudentCourseRegistration.student_uid == student_uid) \
+                .filter(ProgramSemester.semester == semester) \
+                .filter(
+                StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
+            return result
+
