@@ -7,6 +7,7 @@ from fastapi import APIRouter, UploadFile, File
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from pydantic import BaseModel
 
+from src.helpers.utils import get_current_academic_year
 from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -52,8 +53,9 @@ async def get_program_data(parm: ProgramDepartmentInput):
 
 
 @program_router.post("/generate-allocation-template/")
-def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_category: int):
+def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_category: int,assessment_number: int,assessment_weight: int):
     result = StudentService().get_allocation_students(allocation_uid)
+    print('program_course', result["program_course"].program_semester.academic_year.name)
     # Create a new workbook
     workbook = Workbook()
 
@@ -78,13 +80,13 @@ def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_categ
                         "Assessment Weight"]
     # Sample data for the vertical header
     data = {
-        "Program Code": "FOR",
-        "Academic Year": "2022/2023",
-        "Study Year": "1",
-        "Exam Category": "4",
-        "Assessment No": str(exam_category),
+        "Program Code": result["program_course"].course.code,
+        "Academic Year": result["program_course"].program_semester.academic_year.name,
+        "Study Year": str(result["program_course"].program_semester.study_year),
+        "Exam Category": str(exam_category),
+        "Assessment No": str(assessment_number),
         "Mark Out of": str(out_off),
-        "Assessment Weight": "1"
+        "Assessment Weight": str(assessment_weight)
     }
     worksheet.sheet_view.showGridLines = False
     # Generate the data for the vertical header
