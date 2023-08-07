@@ -130,7 +130,7 @@ class StudentMutation:
 
     @strawberry.field
     def generate_allocation_xls_template(self, allocation_uid: str,out_off: int,exam_category: int) ->  ExcelFile:
-        result = StudentService().get_allocation_students(allocation_uid,out_off,exam_category)
+        result = StudentService().get_allocation_students(allocation_uid)
 
         file_buffer = io.BytesIO()
 
