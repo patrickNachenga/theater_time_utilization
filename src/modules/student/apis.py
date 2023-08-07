@@ -162,9 +162,9 @@ class StudentMutation:
             "Program Code": "FOR",
             "Academic Year": "2022/2023",
             "Study Year": "1",
-            "Exam Category": int(exam_category),
+            "Exam Category": str(exam_category),
             "Assessment No": "1",
-            "Mark Out of": int(out_off),
+            "Mark Out of": str(out_off),
             "Assessment Weight": "1"
         }
         worksheet.sheet_view.showGridLines = False
