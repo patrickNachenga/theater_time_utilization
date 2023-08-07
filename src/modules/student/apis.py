@@ -10,6 +10,7 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension
+from src.helpers.utils import get_current_academic_year
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -129,9 +130,8 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
-    def generate_allocation_xls_template(self, allocation_uid: str,out_off: int,exam_category: int) ->  ExcelFile:
+    def generate_allocation_xls_template(self, allocation_uid: str,out_off: int,exam_category: int,assessment_number: int,assessment_weight: int) ->  ExcelFile:
         result = StudentService().get_allocation_students(allocation_uid)
-
         file_buffer = io.BytesIO()
 
         # Create a new workbook
@@ -159,13 +159,13 @@ class StudentMutation:
                             "Assessment Weight"]
         # Sample data for the vertical header
         data = {
-            "Program Code": "FOR",
-            "Academic Year": "2022/2023",
-            "Study Year": "1",
+            "Program Code": result["program_course"].course.code,
+            "Academic Year": result["program_course"].program_semester.academic_year.name,
+            "Study Year": str(result["program_course"].program_semester.study_year),
             "Exam Category": str(exam_category),
-            "Assessment No": "1",
+            "Assessment No": str(assessment_number),
             "Mark Out of": str(out_off),
-            "Assessment Weight": "1"
+            "Assessment Weight": str(assessment_weight)
         }
         worksheet.sheet_view.showGridLines = False
         # Generate the data for the vertical header

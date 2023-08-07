@@ -220,10 +220,20 @@ def enroll_student_to_moodle_group():
 def get_current_semester():
     with session_scope() as session:
         semester = None
-        current_academic_year = session.query(AcademicYear).filter(AcademicYear.status==1).first()
+        current_academic_year = session.query(AcademicYear).filter(AcademicYear.status == 1).first()
         if current_academic_year:
             academic_year_semester = session.query(AcademicYearSemester).filter(
                 AcademicYearSemester.academic_year == current_academic_year).first()
         if academic_year_semester:
             semester = academic_year_semester.semester
         return semester
+
+
+def get_current_academic_year():
+    with session_scope() as session:
+        name = None
+        current_academic_year = session.query(AcademicYear).filter(AcademicYear.status == 1).first()
+        if current_academic_year:
+            name = current_academic_year.name
+
+        return name

@@ -88,7 +88,17 @@ class StudentService:
                 filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
                 all()
             # Extract the student UIDs from the query result
-            # print('student_uids',student_uids)
+            allocation = session.query(CourseAllocation).filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)).first()
+            program_course = None
+
+            if allocation:
+                # Assuming CourseAllocation has a foreign key to ProgramCourse
+                program_course = allocation.program_course
+
+
+
+
+
             student_uids = [uid for uid, in student_uids]
             data = None
             data_obj = {
@@ -110,6 +120,7 @@ class StudentService:
                 response = None
             if response.status_code == 200:
                 data = response.json()
+                data["program_course"] = program_course
 
         return data
 
