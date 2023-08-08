@@ -45,7 +45,7 @@ class StudentService:
 
             # Update deleted_at for the specified uids
             session.query(StudentCourseRegistration).filter(StudentCourseRegistration.uid.in_(uids_to_update)). \
-                update({"deleted_at": datetime.datetime.now()})
+                update({"deleted_at": datetime.now()})
             # insert new one
             final_student_uid = None
             for data in inputs:

@@ -142,7 +142,7 @@ class StudentQuery:
 
 @strawberry.type
 class StudentMutation:
-    @strawberry.field()#extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])]
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
     def register_student_course(self, inputs: List[CourseRegistrationInputNode],remove: List[str]) -> Response[
         CourseRegistrationListNode]:
         try:
