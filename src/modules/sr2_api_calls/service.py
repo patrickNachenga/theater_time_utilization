@@ -17,7 +17,7 @@ class Sr2ApiCalls(object):
     site_url = settings.SR2_SERVICE_URL
 
     @staticmethod
-    def get_fee_structures(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]] | None:
+    def get_fee_structures(inputs: FeeStructureInput) -> Response[List[FeeStructureNode]]:
         """
         This is a function to request program fee structure  from SR2
         """

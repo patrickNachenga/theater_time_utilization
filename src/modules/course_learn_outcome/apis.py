@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import CourseLearnOutcome
 from src.modules.course_learn_outcome.service import CourseLearnOutcomeService, CourseLearnOutcomeCrud
 from src.shared.response import Response
@@ -24,8 +25,8 @@ class CourseLearnOutcomeQuery:
     #         message="Successfully Retrieve Course Learn Outcome",
     #         data=result)
 
-    @strawberry.field
-    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_LEARN_OUTCOMES"])])
+    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[Optional[List[CourseLearnOutcomeNode]]]:
         try:
             result = CourseLearnOutcomeService.get_course_learn_outcome_by_course(course_uid)
         except Exception as e:
@@ -44,7 +45,7 @@ class CourseLearnOutcomeQuery:
                 message="Course Learn Outcome not found",
                 data=[])
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_LEARN_OUTCOMES"])])
     def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
         try:
             result = CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_uid(uid)
@@ -67,7 +68,7 @@ class CourseLearnOutcomeQuery:
 
 @strawberry.type
 class CourseLearnOutcomeMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_LEARN_OUTCOMES"])])
     def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode | None]:
         try:
             return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
@@ -77,7 +78,7 @@ class CourseLearnOutcomeMutation:
                             data=None)
 
     # Delete programs type function
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_LEARN_OUTCOME"])])
     async def remove_course_learn_outcome(self, uid: str) -> Response[None]:
         """
         Remove student By UID

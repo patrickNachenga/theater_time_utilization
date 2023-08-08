@@ -1,6 +1,6 @@
 import base64
 import io
-from typing import List
+from typing import List, Optional
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from io import BytesIO
 
@@ -10,18 +10,21 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension
+from src.helpers.utils import get_current_academic_year
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
-    CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode
+    CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
+    ExamToRegister
 
 
 @strawberry.type
 class StudentQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[
+        Optional[StudentProgramCourseListNode]]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
 
@@ -40,7 +43,8 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
+    def get_student_current_course_registration(self, student_uid: str) -> Response[
+        Optional[CourseRegistrationListNode]]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
 
@@ -58,8 +62,8 @@ class StudentQuery:
                 message="Course Registration not found",
                 data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
+    @strawberry.field()
+    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse | None:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
 
@@ -80,7 +84,6 @@ class StudentQuery:
                     message="Failed to retrieve",
                     data=[])
         except Exception as e:
-            print('some thing happen')
             print(e)
             return UaaDataResponse(
                 status=False,
@@ -88,14 +91,62 @@ class StudentQuery:
                 message="Failed to retrieve",
                 data=[])
 
+    @strawberry.field
+    def get_student_current_registered_exam(self, student_uid: str) -> Response[ExamRegistrationListNode]:
+        try:
+            result = StudentService().get_student_current_registered_exam(student_uid)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Exam Registration Retrieved successfully",
+                    data=ExamRegistrationListNode(items=result, total_count=len(result)))
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Exam Registration not found",
+                    data=ExamRegistrationListNode(items=[], total_count=0))
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Exam Registration not found",
+                data=ExamRegistrationListNode(items=[], total_count=0))
+
+    @strawberry.field
+    def get_student_exam_to_register(self, student_uid: str) -> Response[ExamToRegister]:
+        try:
+            result = StudentService().get_student_exam_to_register(student_uid)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Exam Registration Retrieved successfully",
+                    data=result)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Exams not found",
+                    data=[])
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Exams not found",
+                data=[])
+
 
 @strawberry.type
 class StudentMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
-    def register_student_course(self, inputs: List[CourseRegistrationInputNode]) -> Response[
+    @strawberry.field()#extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])]
+    def register_student_course(self, inputs: List[CourseRegistrationInputNode],remove: List[str]) -> Response[
         CourseRegistrationListNode]:
         try:
-            result = StudentService().register_student_course(inputs)
+            result = StudentService().register_student_course(inputs, remove)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -107,7 +158,8 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
-    def generate_allocation_xls_template(self, allocation_uid: str) -> ExcelFile:
+    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category: int,
+                                         assessment_number: int, assessment_weight: int) -> ExcelFile:
         result = StudentService().get_allocation_students(allocation_uid)
         file_buffer = io.BytesIO()
 
@@ -136,13 +188,13 @@ class StudentMutation:
                             "Assessment Weight"]
         # Sample data for the vertical header
         data = {
-            "Program Code": "FOR",
-            "Academic Year": "2022/2023",
-            "Study Year": "1",
-            "Exam Category": "4",
-            "Assessment No": "1",
-            "Mark Out of": "100",
-            "Assessment Weight": "1"
+            "Program Code": result["program_course"].course.code,
+            "Academic Year": result["program_course"].program_semester.academic_year.name,
+            "Study Year": str(result["program_course"].program_semester.study_year),
+            "Exam Category": str(exam_category),
+            "Assessment No": str(assessment_number),
+            "Mark Out of": str(out_off),
+            "Assessment Weight": str(assessment_weight)
         }
         worksheet.sheet_view.showGridLines = False
         # Generate the data for the vertical header
@@ -182,20 +234,20 @@ class StudentMutation:
                 cell.alignment = Alignment(horizontal='center', vertical='center')
                 cell.font = font
                 cell.border = border
-                # Set the specific column where cells should be non-editable (except column D)
-            editable_column = 'D'
+        # Set the specific column where cells should be non-editable (except column D)
+        editable_column = 'D'
 
-            # Iterate over rows in the worksheet
-            for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
-                                           max_col=worksheet.max_column):
-                for cell in row:
-                    # Check if the current column is the editable column
-                    if cell.column_letter == editable_column:
-                        # Set protection to False for the editable column
-                        cell.protection = Protection(locked=False)
-                    else:
-                        # Set protection to True for other columns
-                        cell.protection = Protection(locked=True)
+        # Iterate over rows in the worksheet
+        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
+                                       max_col=worksheet.max_column):
+            for cell in row:
+                # Check if the current column is the editable column
+                if cell.column_letter == editable_column:
+                    # Set protection to False for the editable column
+                    cell.protection = Protection(locked=False)
+                else:
+                    # Set protection to True for other columns
+                    cell.protection = Protection(locked=True)
 
         # Save the workbook
         # workbook.save("layout.xlsx")

@@ -62,7 +62,6 @@ class CustomPermissionExtension(FieldExtension):
 
     def resolve_async(self, next, root, info, **kwargs):
         is_authenticated = IsAuthenticated()
-        # return next(root, info, **kwargs)
         if is_authenticated and not is_authenticated.has_permission(info=info, source=typing.Any):
             return Response(
                 status=False,
@@ -403,6 +402,84 @@ permissions: typing.List[Permission] = [
         code="REMOVE_PROGRAM_CAPACITY",
         name="REMOVE Program Capacities",
         description="Can Delete Program Capacity",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_COURSE_LEARN_OUTCOMES",
+        name="View Course Learning Outcome",
+        description="Can View Course  Learning Outcome",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_COURSE_LEARN_OUTCOMES",
+        name="Register Course Learning Outcome",
+        description="Can Register Course Learning Outcome",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_COURSE_LEARN_OUTCOME",
+        name="Remove Course Learning Outcome",
+        description="Can Delete Course Learning Outcome",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_RESULT_SUMMARIES",
+        name="View Exam Result Summaries",
+        description="Can View Exam Result Summaries",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_RESULT_SUMMARIES",
+        name="Register Exam Result Summaries",
+        description="Can Register Exam Result Summaries",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_RESULT_SUMMARY",
+        name="Remove Exam Result Summary",
+        description="Can Delete Exam Result Summary",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_STUDENT_SEMESTER_REGISTRATIONS",
+        name="View Student Semester Registration",
+        description="Can View Student Semester Registration",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_EXAM_RESULTS",
+        name="View Exam Result",
+        description="Can View Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_EXAM_RESULTS",
+        name="Register Exam Results",
+        description="Can Register Exam Result",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_EXAM_RESULT",
+        name="Remove Exam Results",
+        description="Can Delete Exam Result",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_GROUPS",
+        name="View Groups",
+        description="Can View Groups",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_GROUPS",
+        name="Register Groups",
+        description="Can Register Groups",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_GROUP",
+        name="Remove Groups",
+        description="Can Delete Groups",
         service="registration",
     ),
 

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
@@ -12,7 +12,7 @@ from src.types import ExamCategoryGroupsInput, ExamCategoryGroupsNode
 @strawberry.type
 class ExamCategoryGroupsQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_CATEGORY_GROUPS"])])
-    def get_exam_category_groups(self) -> Response[List[ExamCategoryGroupsNode]]:
+    def get_exam_category_groups(self) -> Response[Optional[List[ExamCategoryGroupsNode]]]:
         try:
             result = ExamCategoryGroupsService.get_exam_category_groups()
         except Exception as e:
@@ -24,17 +24,19 @@ class ExamCategoryGroupsQuery:
             message="Successfully Retrieve Exam Category Group Category",
             data=result)
 
+
 @strawberry.type
 class ExamCategoryGroupsMutation:
-    @strawberry.field
-    def register_exam_category_groups(self, inputs: List[ExamCategoryGroupsInput]) -> Response[List[ExamCategoryGroupsNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_CATEGORY_GROUPS"])])
+    def register_exam_category_groups(self, inputs: List[ExamCategoryGroupsInput]) -> Response[
+        Optional[List[ExamCategoryGroupsNode]]]:
         try:
             return ExamCategoryGroupsService().register_exam_category_groups(inputs)
         except Exception as e:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register Category", data=[])
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_EXAM_CATEGORY_GROUP"])])
     async def remove_exam_category_group(self, uid: str) -> Response[None]:
         """
         Remove exam category group By UID

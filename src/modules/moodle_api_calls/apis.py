@@ -12,7 +12,7 @@ from src.types import MoodleGetUrlInput
 
 @strawberry.type
 class MoodleApiCallQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_moodle_url(self, inputs: MoodleGetUrlInput) -> Response[Optional[str]]:
         try:
             moodle = MoodleApi()

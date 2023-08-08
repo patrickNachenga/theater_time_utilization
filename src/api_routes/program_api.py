@@ -7,6 +7,7 @@ from fastapi import APIRouter, UploadFile, File
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from pydantic import BaseModel
 
+from src.helpers.utils import get_current_academic_year
 from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -51,9 +52,10 @@ async def get_program_data(parm: ProgramDepartmentInput):
     return ProgramService.api_get_program_by_departments(parm.departments)
 
 
-@program_router.get("/generate-allocation-template/{allocation_uid}")
-def generate_allocation_xls_template(allocation_uid: str):
+@program_router.post("/generate-allocation-template/")
+def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_category: int,assessment_number: int,assessment_weight: int):
     result = StudentService().get_allocation_students(allocation_uid)
+    print('program_course', result["program_course"].program_semester.academic_year.name)
     # Create a new workbook
     workbook = Workbook()
 
@@ -78,13 +80,13 @@ def generate_allocation_xls_template(allocation_uid: str):
                         "Assessment Weight"]
     # Sample data for the vertical header
     data = {
-        "Program Code": "FOR",
-        "Academic Year": "2022/2023",
-        "Study Year": "1",
-        "Exam Category": "4",
-        "Assessment No": "1",
-        "Mark Out of": "100",
-        "Assessment Weight": "1"
+        "Program Code": result["program_course"].course.code,
+        "Academic Year": result["program_course"].program_semester.academic_year.name,
+        "Study Year": str(result["program_course"].program_semester.study_year),
+        "Exam Category": str(exam_category),
+        "Assessment No": str(assessment_number),
+        "Mark Out of": str(out_off),
+        "Assessment Weight": str(assessment_weight)
     }
     worksheet.sheet_view.showGridLines = False
     # Generate the data for the vertical header
@@ -94,11 +96,13 @@ def generate_allocation_xls_template(allocation_uid: str):
         cell.alignment = Alignment(horizontal='left')
         cell.font = font_border
         cell.border = None
+        cell.protection = Protection(locked=False)
     for row, value in enumerate(vertical_data, start=2):
         cell = worksheet[f"C{row}"]
         cell.value = value
         cell.font = font_border
         cell.border = None
+        cell.protection = Protection(locked=False)
     # Define the horizontal headers
     # worksheet.sheet_view.showGridLines = True
     horizontal_headers = ["SN", "Reg No", "Name", "Marks"]
@@ -124,19 +128,19 @@ def generate_allocation_xls_template(allocation_uid: str):
             cell.alignment = Alignment(horizontal='center', vertical='center')
             cell.font = font
             cell.border = border
-        # Set the specific column where cells should be non-editable (except column D)
-        editable_column = 'D'
+    # Set the specific column where cells should be non-editable (except column D)
+    editable_column = 'D'
 
-        # Iterate over rows in the worksheet
-        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
-            for cell in row:
-                # Check if the current column is the editable column
-                if cell.column_letter == editable_column:
-                    # Set protection to False for the editable column
-                    cell.protection = Protection(locked=False)
-                else:
-                    # Set protection to True for other columns
-                    cell.protection = Protection(locked=True)
+    # Iterate over rows in the worksheet
+    for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+        for cell in row:
+            # Check if the current column is the editable column
+            if cell.column_letter == editable_column:
+                # Set protection to False for the editable column
+                cell.protection = Protection(locked=False)
+            else:
+                # Set protection to True for other columns
+                cell.protection = Protection(locked=True)
 
         # Protect the worksheet to make cells not editable
         worksheet.protection.sheet = True
@@ -168,6 +172,9 @@ async def extract_data(file: UploadFile = File(...)):
 
     # Get the desired worksheet by name or index
     worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
+    exam_category = worksheet.cell(row=5, column=3).value
+    assessment_number = worksheet.cell(row=6, column=3).value
+    out_off = worksheet.cell(row=7, column=3).value
 
     # Assuming the data is in a specific sheet and columns
     sn_column = 1  # Assuming SN is in column A

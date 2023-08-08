@@ -1,5 +1,5 @@
 # Importing useful libraries
-from typing import List
+from typing import List, Optional
 
 import strawberry  # For building graphQL APIs
 
@@ -14,7 +14,7 @@ from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
 @strawberry.type
 class CourseQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE"])])
-    def get_courses(self, pagination: PaginationInput) -> Response[PaginatedCourse]:
+    def get_courses(self, pagination: PaginationInput) -> Response[Optional[PaginatedCourse]]:
         try:
             result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
         except Exception as e:
@@ -51,7 +51,7 @@ class CourseQuery:
 @strawberry.type
 class CourseMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE"])])
-    async def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
+    async def register_courses(self, inputs: List[CourseInput]) -> Response[Optional[PaginatedCourse]]:
         try:
             return CourseService(Course).register_courses(inputs)
         except Exception as e:
