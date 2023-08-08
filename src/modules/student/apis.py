@@ -248,6 +248,8 @@ class StudentMutation:
                 else:
                     # Set protection to True for other columns
                     cell.protection = Protection(locked=True)
+            # Protect the worksheet to make cells not editable
+            worksheet.protection.sheet = True
 
         # Save the workbook
         # workbook.save("layout.xlsx")

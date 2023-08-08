@@ -239,14 +239,15 @@ def get_current_academic_year():
         return name
 
 
-def insert_course_work(student_uid, program_course_uid, exam_category_id, assessment_number, score, weight) -> bool:
+def insert_course_work(student_uid, program_course_uid, exam_category_id, assessment_number, out_of,score, weight) -> bool:
     with session_scope() as session:
-        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid).first()
-        exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id).first()
+        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid, ProgramCourse.deleted_at.is_(None)).first()
+        exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id, ExamCategory.deleted_at.is_(None)).first()
         exam_course_work = session.query(ExamCoursework).filter(ExamCoursework.student_uid == student_uid,
                                                                 ExamCoursework.exam_category == program_course,
                                                                 ExamCoursework.exam_category == exam_category,
                                                                 ExamCoursework.assessment_number == assessment_number).first()
+        score = (score/out_of)*100
         if exam_course_work:
             exam_course_work.score = score
             exam_course_work.weight = weight
@@ -266,11 +267,12 @@ def insert_course_work(student_uid, program_course_uid, exam_category_id, assess
 
 def insert_exam_result(student_uid, program_course_uid, exam_category_id, score, out_of, weight) -> bool:
     with session_scope() as session:
-        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid).first()
-        exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id).first()
+        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid, ProgramCourse.deleted_at.is_(None)).first()
+        exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id, ExamCategory.deleted_at.is_(None)).first()
         exam_score = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
                                                       ExamResult.exam_category == program_course,
                                                       ExamResult.exam_category == exam_category).first()
+        score = (score/out_of)*100
         if exam_score:
             exam_score.score = score
             exam_score.out_of = out_of
@@ -281,7 +283,6 @@ def insert_exam_result(student_uid, program_course_uid, exam_category_id, score,
                 exam_category=exam_category,
                 program_course=program_course,
                 score=score,
-                out_of=out_of,
                 weight=weight
             )
             session.add(new_exam_result)
