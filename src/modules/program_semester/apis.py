@@ -45,7 +45,45 @@ class ProgramSemesterQuery:
                 message="Program Semester not found",
                 data=None)
 
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    def get_program_semester_by_program_id(self, program_id: str) -> Response[ProgramSemesterNode | None]:
+        try:
+            result = ProgramSemesterService.get_program_semester_by_program_id(program_id)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Semester retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Semester not found",
+                data=None)
 
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    def get_program_semester_by_program_uid(self, program_uid: str) -> Response[ProgramSemesterNode | None]:
+        try:
+            result = ProgramSemesterService.get_program_semester_by_program_uid(program_uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Semester retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Semester not found",
+                data=None)
 @strawberry.type
 class ProgramSemesterMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_SEMESTERS"])])

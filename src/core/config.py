@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     HOST_HTTP: str = os.environ.get("HOST_HTTP", "http://")
     HOST_URL: str = os.environ.get("HOST_URL")
     HOST_PORT: int = int(os.environ.get("HOST_PORT"))
-
+    os.environ["RABBIT_PORT"] = "5672"
     BASE_URL: str = HOST_HTTP + HOST_URL + ":" + str(HOST_PORT)
     POSTGRES_USER: str = os.environ.get("POSTGRES_USER", )
     POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD")
@@ -35,16 +35,16 @@ class Settings(BaseSettings):
     REDIS_HOST = os.environ.get("REDIS_HOST")
     REDIS_PORT = os.environ.get("REDIS_PORT")
     LOGGING_FILE_NAME = 'logs'
-    UAA_URi = os.environ.get("UAA_URi")
-    SR2_TOKEN = os.environ.get("SR2_TOKEN")
-    SR2_SERVICE_URL = os.environ.get("SR2_SERVICE_URL")
-    MOODLE_SITE_URL = os.environ.get("MOODLE_SITE_URL")
-    MOODLE_SITE_DOMAIN = os.environ.get("MOODLE_SITE_DOMAIN")
-    MOODLE_TOKEN = os.environ.get("MOODLE_TOKEN")
-    RABBIT_HOST = os.environ.get("RABBIT_HOST")
+    UAA_URi : str = os.environ.get("UAA_URi")
+    SR2_TOKEN : str = os.environ.get("SR2_TOKEN")
+    SR2_SERVICE_URL : str = os.environ.get("SR2_SERVICE_URL")
+    MOODLE_SITE_URL : str = os.environ.get("MOODLE_SITE_URL")
+    MOODLE_SITE_DOMAIN : str= os.environ.get("MOODLE_SITE_DOMAIN")
+    MOODLE_TOKEN : str = os.environ.get("MOODLE_TOKEN")
+    RABBIT_HOST : str = os.environ.get("RABBIT_HOST")
     RABBIT_PORT = int(os.environ.get("RABBIT_PORT"))
-    RABBIT_USERNAME = os.environ.get("RABBIT_USERNAME")
-    RABBIT_PASSWORD = os.environ.get("RABBIT_PASSWORD")
+    RABBIT_USERNAME : str = os.environ.get("RABBIT_USERNAME")
+    RABBIT_PASSWORD : str = os.environ.get("RABBIT_PASSWORD")
 
 
 settings = Settings()
