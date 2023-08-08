@@ -627,7 +627,7 @@ class StudentSemesterRegistrationInputNode:
 
 @strawberry.type(description="Course registration Node")
 class CourseRegistrationNode:
-    uuid: str
+    uid: str
     student_uid: str
     core_elective: str
     program_course: ProgramCourseNode
