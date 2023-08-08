@@ -16,13 +16,15 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
-    CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode
+    CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
+    ExamToRegister
 
 
 @strawberry.type
 class StudentQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[Optional[StudentProgramCourseListNode]]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[
+        Optional[StudentProgramCourseListNode]]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
 
@@ -41,7 +43,8 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
-    def get_student_current_course_registration(self, student_uid: str) -> Response[Optional[CourseRegistrationListNode]]:
+    def get_student_current_course_registration(self, student_uid: str) -> Response[
+        Optional[CourseRegistrationListNode]]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
 
@@ -97,7 +100,7 @@ class StudentQuery:
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Exam Registration Retrieved successfully",
-                    data= ExamRegistrationListNode(items=result,total_count=len(result)))
+                    data=ExamRegistrationListNode(items=result, total_count=len(result)))
             else:
                 return Response(
                     status=False,
@@ -111,6 +114,31 @@ class StudentQuery:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Exam Registration not found",
                 data=ExamRegistrationListNode(items=[], total_count=0))
+
+    @strawberry.field
+    def get_student_exam_to_register(self, student_uid: str) -> Response[ExamToRegister]:
+        try:
+            result = StudentService().get_student_exam_to_register(student_uid)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Exam Registration Retrieved successfully",
+                    data=result)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Exams not found",
+                    data=[])
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Exams not found",
+                data=[])
+
 
 @strawberry.type
 class StudentMutation:
@@ -130,7 +158,8 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
-    def generate_allocation_xls_template(self, allocation_uid: str,out_off: int,exam_category: int,assessment_number: int,assessment_weight: int) ->  ExcelFile:
+    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category: int,
+                                         assessment_number: int, assessment_weight: int) -> ExcelFile:
         result = StudentService().get_allocation_students(allocation_uid)
         file_buffer = io.BytesIO()
 

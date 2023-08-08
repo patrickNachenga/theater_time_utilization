@@ -21,7 +21,7 @@ class StudentExamPostponement(BaseModel):
 
     student_course_registrations = relationship("StudentCourseRegistration", lazy="subquery",
                                                 back_populates="student_exam_postponement")
-    is_resumed: Column(Boolean, default=False)
+    is_resumed: bool=Column(Boolean, default=False)
     reason: str = Column(String(600), nullable=False)
     approved_at = Column(DateTime, default=datetime.utcnow)
     # user who approved

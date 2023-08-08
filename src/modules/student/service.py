@@ -1,15 +1,16 @@
 import json
 
 import requests
+from sqlalchemy.orm import aliased
 
 from src.core.config import settings
 from src.db.session import session_scope
 from src.helpers.utils import get_current_semester
 from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester, \
-    StudentExamRegistration, ExamCategory
+    StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement
 from src.models.student_course_registration import StudentCourseRegistration
 from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode, StudentProgramCourseListNode, \
-    ExamRegistrationListNode
+    ExamRegistrationListNode, ExamToRegister
 
 
 class StudentService:
@@ -195,5 +196,30 @@ class StudentService:
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
             return result
 
-    def get_student_exam_to_register(self, student_uid) -> StudentCourseRegistration:
-        pass
+    def get_student_exam_to_register(self, student_uid) -> ExamToRegister:
+        scr = aliased(StudentCourseRegistration)
+        ser = aliased(StudentExamRegistration)
+
+        # Query for course registrations not present in StudentExamRegistration
+        with session_scope() as session:
+            query = session.query(scr).outerjoin(ser, ser.student_course_registration_id == scr.id).filter(
+                scr.student_uid == student_uid, ser.id.is_(None))
+
+            # Execute the query and get the results
+            first_sitting = query.all()
+            postponed_exams = session.query(StudentCourseRegistration). \
+                join(StudentExamPostponement) \
+                .filter(StudentExamPostponement.is_resumed == False, StudentExamPostponement.deleted_at.is_(None)) \
+                .filter(StudentCourseRegistration.student_uid == student_uid).all()
+
+            failure_exams = session.query(StudentCourseRegistration). \
+                join(StudentExamRegistration) \
+                .join(StudentExamFailure)\
+                .filter(StudentExamFailure.is_attended == False, StudentExamFailure.deleted_at.is_(None)) \
+                .filter(StudentCourseRegistration.student_uid == student_uid).all()
+
+            return ExamToRegister(
+                first_sitting=first_sitting,
+                failure=failure_exams,
+                postponed=postponed_exams
+            )
