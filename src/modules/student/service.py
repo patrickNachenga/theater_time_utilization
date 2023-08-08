@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 import requests
 from sqlalchemy.orm import aliased
@@ -33,14 +34,19 @@ class StudentService:
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
-    def register_student_course(self, inputs) -> CourseRegistrationListNode:
+    def register_student_course(self, inputs, uids_to_update) -> CourseRegistrationListNode:
         """
         Register Student course
-        :param inputs:
+        :param inputs, uids_to_update:
         :return:
         """
 
         with session_scope() as session:
+
+            # Update deleted_at for the specified uids
+            session.query(StudentCourseRegistration).filter(StudentCourseRegistration.uid.in_(uids_to_update)). \
+                update({"deleted_at": datetime.datetime.now()})
+            # insert new one
             final_student_uid = None
             for data in inputs:
 
@@ -113,6 +119,7 @@ class StudentService:
 
                 response = requests.post(settings.UAA_URi + '/students-details-by-uids', data=data_json,
                                          headers=headers)
+
             except Exception as e:
                 print(e)
                 response = None

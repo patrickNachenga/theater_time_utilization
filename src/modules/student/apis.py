@@ -62,7 +62,7 @@ class StudentQuery:
                 message="Course Registration not found",
                 data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
+    @strawberry.field()
     def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse | None:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
@@ -142,11 +142,11 @@ class StudentQuery:
 
 @strawberry.type
 class StudentMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
-    def register_student_course(self, inputs: List[CourseRegistrationInputNode]) -> Response[
+    @strawberry.field()#extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])]
+    def register_student_course(self, inputs: List[CourseRegistrationInputNode],remove: List[str]) -> Response[
         CourseRegistrationListNode]:
         try:
-            result = StudentService().register_student_course(inputs)
+            result = StudentService().register_student_course(inputs, remove)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
