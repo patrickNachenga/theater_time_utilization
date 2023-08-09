@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.helpers.utils import get_current_academic_year
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -22,7 +22,7 @@ from src.types import CourseRegistrationListNode, \
 
 @strawberry.type
 class StudentQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[
         Optional[StudentProgramCourseListNode]]:
         try:
@@ -42,7 +42,7 @@ class StudentQuery:
                 message="Program courses not found",
                 data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_CURRENT_COURSE_REGISTRATIONS"])])
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_student_current_course_registration(self, student_uid: str) -> Response[
         Optional[CourseRegistrationListNode]]:
         try:
