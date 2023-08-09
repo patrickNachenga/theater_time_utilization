@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import strawberry  # For building graphQL APIs
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 from src.models import Course
 from src.modules.course.service import CourseService, CourseCrud
 from src.shared.response import Response
@@ -14,9 +14,11 @@ from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
 @strawberry.type
 class CourseQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE"])])
-    def get_courses(self, pagination: PaginationInput) -> Response[Optional[PaginatedCourse]]:
+    def get_courses(self, pagination: PaginationInput, info: Info) -> Response[Optional[PaginatedCourse]]:
         try:
-            result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
+            # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
+            # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
+            result = CourseCrud.get_courses_with_headship(info, pagination, ['name', 'code', 'description'])
         except Exception as e:
             print(e)
             result = PaginatedCourse(items=[], total_count=0)

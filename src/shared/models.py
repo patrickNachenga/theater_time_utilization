@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -27,17 +28,25 @@ class TokenDetailsModel(BaseModel):
     grant_type: Optional[str] = None
     username: Optional[str] = None
 
-#
-# class UserAuthenticatedModel(BaseModel):
-#     authorities: Optional[List[AuthorityModel]] = None
-#     details: Optional[TokenDetailsModel] = None
-#     authenticated: Optional[bool] = None
-#     credentials: Optional[str] = None
-#     name: Optional[str] = None
+
+class UserModel(BaseModel):
+    uid: Optional[UUID] = None
+    email: Optional[str] = None
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    last_name: Optional[str] = None
+    moodle_id: Optional[int] = None
+
+
+class UserHeadshipsModel(BaseModel):
+    campus_headships: Optional[List[str]] = None
+    unit_headships: Optional[List[str]] = None
+    department_headships: Optional[List[str]] = None
+    program_headships: Optional[List[str]] = None
 
 
 class UserAuthenticatedModel(BaseModel):
     authorities: Optional[List[str]] = None
-    credentials: Optional[str] = None
-    name: Optional[str] = None
-
+    profile: Optional[UserModel] = None
+    headships: Optional[UserHeadshipsModel] = None
