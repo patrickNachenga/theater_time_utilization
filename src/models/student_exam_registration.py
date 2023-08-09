@@ -13,6 +13,7 @@ class StudentExamRegistration(BaseModel):
 
     # _____________________________Relationships___________________________________________________#
 
+
     # failure type 1 is first sitting, 2 probation, 3 third attempt, 4 retake
     type: int = Column(Integer, nullable=False)
 
