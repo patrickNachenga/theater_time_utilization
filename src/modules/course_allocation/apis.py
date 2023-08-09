@@ -50,7 +50,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found",
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STAFF_COURSE_ALLOCATIONS"])])
     def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[Optional[CourseAllocationListNode]]:
         result = None
         try:
@@ -76,7 +76,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found, An exception occurred",
                 data=CourseAllocationListNode(items=[], total_count=0))
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STAFF_COURSE_ALLOCATION_BY_ACADEMIC_YEAR"])])
     def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffCourseAllocationBySemesterInputs) -> Response[
         Optional[List[StaffCourseAllocationBySemesterNode]]]:
         result = None
@@ -99,7 +99,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found",
                 data=List[CourseAllocationNode(uid="", program_course_uid='', program_course=None, staff_uid="")])
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION_BY_PROGRAM_COURSE"])])
     async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> Response[
         Optional[CourseAllocationListNode]]:
         try:

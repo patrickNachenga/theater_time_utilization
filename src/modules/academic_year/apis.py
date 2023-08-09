@@ -48,13 +48,13 @@ class AcademicYearQuery:
                 message="Academic year not found",
                 data=None)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACTIVE_ACADEMIC_YEARS"])])
     def get_active_academic_year(self) -> Response[AcademicYearNode | None]:
         try:
             result = AcademicYearService.get_active_academic_year()
         except Exception as e:
             print(e)
-            result = []
+            result = None
 
         if result:
             return Response(
