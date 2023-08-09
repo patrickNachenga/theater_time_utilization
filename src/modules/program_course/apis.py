@@ -72,7 +72,7 @@ class ProgramCourseQuery:
                 message="Program Course not found",
                 data=None)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
     async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
         Optional[ProgramCourseListNode]]:
         try:

@@ -70,7 +70,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     student_uid=input.student_uid,
                     academic_year=academic_year,
                     current_program=current_program,
-                    new_program_uid=new_program.uid,
+                    new_program=new_program,
                     reason=input.reason,
                     approve_status="PENDING",
                     approve_remark="PENDING",
@@ -89,7 +89,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     # # Replace referenced uids field with model required ids field
                     obj_data['student_uid'] = input.student_uid
                     obj_data['current_program'] = current_program
-                    obj_data['new_program_uid'] = new_program.uid
+                    obj_data['new_program'] = new_program
                     obj_data['academic_year'] = academic_year
                     obj_data['reason'] = input.reason
                     obj_data['current_registration_number'] = input.registration_number
