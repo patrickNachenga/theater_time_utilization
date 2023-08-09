@@ -12,7 +12,7 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 
 @strawberry.type
 class ProgramSemesterQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    @strawberry.field
     def get_program_semesters(self, pagination: PaginationInput) -> Response[Optional[ProgramSemesterListNode]]:
         try:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, ['study_year', 'semester', 'core_credits', 'elective_credits'], ProgramSemesterListNode, ['program', 'academic_year'])
