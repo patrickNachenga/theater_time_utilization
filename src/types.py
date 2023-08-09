@@ -650,6 +650,7 @@ class StudentSemesterRegistrationInputNode:
 
 @strawberry.type(description="Course registration Node")
 class CourseRegistrationNode:
+    uid: str
     student_uid: str
     core_elective: str
     program_course: ProgramCourseNode
@@ -780,7 +781,7 @@ class ProgramCourseAssessmentUpdateExceedInput:
 
 @strawberry.input(description="Exam registration input")
 class ExamRegistrationInput:
-    exam_category_uid: str
+    type: int
     course_registration_uid: str
 
 
@@ -794,3 +795,26 @@ class ExamRegistrationNode:
 class ExamRegistrationListNode:
     items: List[ExamRegistrationNode]
     total_count: int
+
+
+@strawberry.type(description="Exam failure Output")
+class ExamFailureNode:
+    is_attended: bool
+    student_exam_registration: ExamRegistrationNode
+    type: int
+
+
+@strawberry.type(description="Exam Postponement Output")
+class ExamPostponementNode:
+    type: int
+    student_course_registrations: CourseRegistrationNode
+    is_resumed: bool
+    reason: str
+    approved_uid: str
+
+
+@strawberry.type(description="Exam to register Output")
+class ExamToRegister:
+    first_sitting: List[CourseRegistrationNode]
+    failure: List[ExamFailureNode]
+    postponed: List[ExamPostponementNode]

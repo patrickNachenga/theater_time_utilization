@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 from src.models import Program
 from src.modules.programs.service import ProgramService, ProgramCrud
 from src.shared.response import Response
@@ -13,11 +13,14 @@ from src.types import ProgramInput, PaginationInput, ProgramListNode, ProgramNod
 @strawberry.type
 class ProgramQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
-    def get_programs(self, pagination: PaginationInput) -> Response[Optional[ProgramListNode]]:
+    def get_programs(self, pagination: PaginationInput, info: Info) -> Response[Optional[ProgramListNode]]:
         try:
-            result = ProgramCrud.get_multi_paginated(pagination,
+            # result = ProgramCrud.get_multi_paginated(pagination,
+            #                                          ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
+            #                                           'registration_code'], ProgramListNode, ["program_category"])
+            result = ProgramCrud.get_programs_with_headship(info, pagination,
                                                      ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
-                                                      'registration_code'], ProgramListNode, ["program_category"])
+                                                      'registration_code'], ["program_category"])
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)
@@ -97,7 +100,7 @@ class ProgramQuery:
 
 @strawberry.type
 class ProgramMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAMS"])])
     def register_program(self, inputs: List[ProgramInput]) -> Response[Optional[ProgramListNode]]:
         try:
             return ProgramService(Program).register_program(inputs)

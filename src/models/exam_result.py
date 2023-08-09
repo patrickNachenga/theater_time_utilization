@@ -10,7 +10,7 @@ class ExamResult(BaseModel):
     exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"), nullable=False, unique=False)
     student_uid: int = Column(Integer, nullable=False, unique=False)
     score: float = Column(Float, nullable=False, unique=False)
-    out_of: float = Column(Float, nullable=False, unique=False)
+    # out_of: float = Column(Float, nullable=False, unique=False)
     weight: int = Column(Integer, nullable=False, unique=False)
     overall_marks: float = Column(Integer, nullable=False)
 
