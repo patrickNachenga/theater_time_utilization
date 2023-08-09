@@ -46,6 +46,7 @@ class ExamResultQuery:
                 data=result
                 )
         except Exception as e:
+            print(e)
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,

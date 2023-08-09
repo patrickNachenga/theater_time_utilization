@@ -378,6 +378,12 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
+        code="VIEW_PROGRAM_COURSES_BY_SEMESTER",
+        name="View Program Courses By Semester",
+        description="Can View Program Courses By Selected Semester",
+        service="registration",
+    ),
+    Permission(
         code="REGISTER_PROGRAM_COURSES",
         name="Register Program Courses",
         description="Can Register Program Courses",
