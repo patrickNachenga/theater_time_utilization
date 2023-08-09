@@ -245,8 +245,8 @@ def get_user_departments_headship(info: Info):
     d_list = []
     if len(info.context.user.headships.campus_headships) > 0:
         try:
-            # url = f"{settings.UAA_URi}/departments/campuses"
-            url = "http://127.0.0.1:8000/departments/campuses"
+            url = f"{settings.UAA_URi}/departments/campuses"
+            # url = "http://127.0.0.1:8000/departments/campuses"
             response = requests.post(url, json=info.context.user.headships.campus_headships)
             c_list = response.json()
             # print('c_list', c_list)
@@ -254,8 +254,8 @@ def get_user_departments_headship(info: Info):
             print(e)
     if len(info.context.user.headships.unit_headships) > 0:
         try:
-            # url = f"{settings.UAA_URi}/departments/units"
-            url = "http://127.0.0.1:8000/departments/units"
+            url = f"{settings.UAA_URi}/departments/units"
+            # url = "http://127.0.0.1:8000/departments/units"
             response = requests.post(url, json=info.context.user.headships.unit_headships)
             u_list = response.json()
         except Exception as e:

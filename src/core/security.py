@@ -25,14 +25,14 @@ def fetch_user(token: str) -> UserAuthenticatedModel | None:
     :param token:
     :return:
     """
-    # resp = requests.get(
-    #     f"{settings.UAA_URi}/uaa/user",
-    #     headers={"Authorization": f"Bearer {token}"},
-    # )
     resp = requests.get(
-        "http://127.0.0.1:8000/uaa/user",
+        f"{settings.UAA_URi}/uaa/user",
         headers={"Authorization": f"Bearer {token}"},
     )
+    # resp = requests.get(
+    #     "http://127.0.0.1:8000/uaa/user",
+    #     headers={"Authorization": f"Bearer {token}"},
+    # )
 
     if resp.status_code == 200 and resp.json():
         user_dict = {
