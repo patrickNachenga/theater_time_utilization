@@ -183,12 +183,13 @@ class StudentMutation:
                         bottom=Side(border_style="thin"))
 
         # Define the vertical headers
-        vertical_headers = ["Program Code", "Academic Year", "Study Year", "Exam Category", "Assessment No",
-                            "Mark Out of",
+        vertical_headers = ["Course Ante", "Program Code", "Academic Year", "Study Year", "Exam Category",
+                            "Assessment No", "Mark Out of",
                             "Assessment Weight"]
         # Sample data for the vertical header
         data = {
-            "Program Code": result["program_course"].course.code,
+            "Course Ante": result["program_course"].course.code,
+            "Program Code": result["program_course"].program_semester.program.code,
             "Academic Year": result["program_course"].program_semester.academic_year.name,
             "Study Year": str(result["program_course"].program_semester.study_year),
             "Exam Category": str(exam_category),
@@ -199,21 +200,23 @@ class StudentMutation:
         worksheet.sheet_view.showGridLines = False
         # Generate the data for the vertical header
         vertical_data = [data[header] for header in vertical_headers]
-        for row, header in enumerate(vertical_headers, start=2):
+        for row, header in enumerate(vertical_headers, start=1):
             cell = worksheet.cell(row=row, column=1, value=header)
             cell.alignment = Alignment(horizontal='left')
             cell.font = font_border
             cell.border = None
-        for row, value in enumerate(vertical_data, start=2):
+            cell.protection = Protection(locked=False)
+        for row, value in enumerate(vertical_data, start=1):
             cell = worksheet[f"C{row}"]
             cell.value = value
             cell.font = font_border
             cell.border = None
+            cell.protection = Protection(locked=False)
         # Define the horizontal headers
         # worksheet.sheet_view.showGridLines = True
         horizontal_headers = ["SN", "Reg No", "Name", "Marks"]
         start_col = 1  # Start column for horizontal headers
-        start_row = len(vertical_headers) + 2  # Start row for horizontal headers
+        start_row = len(vertical_headers) + 1  # Start row for horizontal headers
 
         for col, header in enumerate(horizontal_headers, start=start_col):
             cell = worksheet.cell(row=start_row, column=col, value=header)
