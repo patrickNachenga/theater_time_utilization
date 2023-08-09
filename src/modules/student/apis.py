@@ -142,7 +142,7 @@ class StudentQuery:
 
 @strawberry.type
 class StudentMutation:
-    @strawberry.field()#extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])]
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
     def register_student_course(self, inputs: List[CourseRegistrationInputNode],remove: List[str]) -> Response[
         CourseRegistrationListNode]:
         try:
@@ -248,6 +248,8 @@ class StudentMutation:
                 else:
                     # Set protection to True for other columns
                     cell.protection = Protection(locked=True)
+            # Protect the worksheet to make cells not editable
+            worksheet.protection.sheet = True
 
         # Save the workbook
         # workbook.save("layout.xlsx")

@@ -1,0 +1,109 @@
+from typing import Optional
+
+from fastapi.encoders import jsonable_encoder
+from requests import options
+from sqlalchemy import select, desc
+from sqlalchemy.orm import joinedload
+
+from src.db.session import session_scope
+from src.models import ProgramCourse, Program, AcademicYear, StudentProgramChange
+from src.modules import CRUDBase
+from src.modules.academic_year.service import AcademicYearService
+from src.modules.programs.service import ProgramService
+from src.shared.response import Response
+from src.shared.response_code import ResponseCode
+from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode
+
+
+class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramChangeInput, StudentProgramChangeInput]):
+    @staticmethod
+    def get_student_change_program_by_uid(uid: str) -> StudentProgramChange:
+        """
+        Get Student Program Change  by uid
+        :param uid:
+        :return StudentProgramChange:
+        """
+        with session_scope() as session:
+            result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
+                desc(StudentProgramChange.updated_at))
+            return result.first()
+
+    def student_change_program(self, input: StudentProgramChangeInput) -> Response[Optional[StudentProgramChangeNode]]:
+        """
+        Register Student Program Change
+        :param input:
+        :return Response[Optional[StudentProgramChangeNode]]:
+        """
+        with session_scope() as session:
+            # Verify and get supplied Current Program uid to get existed program model
+            current_program = ProgramService(Program).get_program_by_uid(input.current_program_uid)
+            print(current_program)
+            if current_program is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=None,
+                    message="You have submitted incorrect current program details"
+                )
+
+            # Verify and get supplied Program uid to get existed program model
+            new_program = ProgramService(Program).get_program_by_uid(input.new_program_uid)
+            if new_program is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=None,
+                    message="You have submitted incorrect new program details"
+                )
+            # Verify and get supplied Program uid to get existed program model
+            academic_year = AcademicYearService(AcademicYear).get_active_academic_year()
+            if academic_year is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=None,
+                    message="Sorry. Academic year is not saved Yet"
+                )
+
+            if input.uid is None:
+                student_program_change = StudentProgramChange(
+                    student_uid=input.student_uid,
+                    academic_year=academic_year,
+                    current_program=current_program,
+                    new_program_uid=new_program.uid,
+                    reason=input.reason,
+                    approve_status="PENDING",
+                    approve_remark="PENDING",
+                    current_registration_number=input.registration_number
+                )
+                local_object = session.merge(student_program_change)
+                session.add(local_object)
+                session.commit()
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=local_object,
+                                message=f"Your Request Submitted Successful")
+            else:
+                student_program_change = self.get_student_change_program_by_uid(input.uid)
+                if student_program_change:
+                    obj_data = jsonable_encoder(input)
+                    # # Replace referenced uids field with model required ids field
+                    obj_data['student_uid'] = input.student_uid
+                    obj_data['current_program'] = current_program
+                    obj_data['new_program_uid'] = new_program.uid
+                    obj_data['academic_year'] = academic_year
+                    obj_data['reason'] = input.reason
+                    obj_data['current_registration_number'] = input.registration_number
+                    local_object = session.merge(student_program_change)
+                    session.add(local_object)
+                    session.commit()
+                    student_program_change = self.get_student_change_program_by_uid(input.uid)
+                    return Response(status=True, code=ResponseCode.SUCCESS,
+                                    data=student_program_change,
+                                    message=f"Your Request Submitted Successful")
+                else:
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=None,
+                                    message=f"Your Request is Unsuccessful")
+
+
+ProgramCourseCrud = StudentProgramChangeService(StudentProgramChange)

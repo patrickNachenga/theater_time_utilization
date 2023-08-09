@@ -45,7 +45,7 @@ class StudentService:
 
             # Update deleted_at for the specified uids
             session.query(StudentCourseRegistration).filter(StudentCourseRegistration.uid.in_(uids_to_update)). \
-                update({"deleted_at": datetime.datetime.now()})
+                update({"deleted_at": datetime.now()})
             # insert new one
             final_student_uid = None
             for data in inputs:
@@ -142,7 +142,7 @@ class StudentService:
             total_count = len(program_courses)
             registered_course = session.query(StudentCourseRegistration). \
                 join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == 1). \
-                filter(StudentCourseRegistration.student_uid == inputs.student_uid). \
+                filter(StudentCourseRegistration.student_uid == inputs.student_uid, StudentCourseRegistration.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester).all()
 
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,

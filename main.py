@@ -36,6 +36,7 @@ async def startup():
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
     await redis_dependency.init()
+    await app.initialize_async()
 
 
 @app.on_event("shutdown")

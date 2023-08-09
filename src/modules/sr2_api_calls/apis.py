@@ -17,26 +17,20 @@ class Sr2ApiCallQuery:
         try:
             return Sr2ApiCalls.get_fee_structures(inputs)
         except Exception as e:
-            return Response(
-                status=False,
-                code=ResponseCode.FAILURE,
-                message="Failed to retrieve fee structure",
-                data=None)
+            print(e)
+
+        return Response(
+            status=False,
+            code=ResponseCode.FAILURE,
+            message="Failed to retrieve fee structure",
+            data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_control_numbers(self, registration_number: str) -> Response[List[ControlNumberNode] | None]:
+    def get_control_numbers(self, registration_number: str) -> Response[Optional[List[ControlNumberNode]]]:
         try:
-            result = Sr2ApiCalls.get_student_control_number(registration_number)
+            return Sr2ApiCalls.get_student_control_number(registration_number)
         except Exception as e:
             print(e)
-            result = None
-        if result:
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Control Numbers Retrieved successfully",
-                data=result)
-        else:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
@@ -48,6 +42,7 @@ class Sr2ApiCallQuery:
         try:
             return Sr2ApiCalls.get_financial_statement(registration_number)
         except Exception as e:
+            print(e)
             return Response(
                 status=True,
                 code=ResponseCode.FAILURE,

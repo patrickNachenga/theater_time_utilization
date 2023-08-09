@@ -12,7 +12,7 @@ from strawberry.utils.cached_property import cached_property
 from strawberry.extensions import FieldExtension
 
 from src.core.config import settings
-from src.shared.models import Permission, UserAuthenticatedModel
+from src.shared.models import Permission, UserAuthenticatedModel, UserHeadshipsModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 
@@ -29,8 +29,18 @@ def fetch_user(token: str) -> UserAuthenticatedModel | None:
         f"{settings.UAA_URi}/uaa/user",
         headers={"Authorization": f"Bearer {token}"},
     )
+    # resp = requests.get(
+    #     "http://127.0.0.1:8000/uaa/user",
+    #     headers={"Authorization": f"Bearer {token}"},
+    # )
+
     if resp.status_code == 200 and resp.json():
-        return UserAuthenticatedModel(**resp.json())
+        user_dict = {
+            "authorities": resp.json()["authorities"],
+            "profile": resp.json()["user"],
+            "headships": UserHeadshipsModel(**resp.json()['headships'])
+        }
+        return UserAuthenticatedModel(**user_dict)
     return None
 
 
@@ -61,22 +71,22 @@ class CustomPermissionExtension(FieldExtension):
         self.required_permissions = required_permissions
 
     def resolve_async(self, next, root, info, **kwargs):
-        is_authenticated = IsAuthenticated()
-        if is_authenticated and not is_authenticated.has_permission(info=info, source=typing.Any):
-            return Response(
-                status=False,
-                code=ResponseCode.RESTRICTED_ACCESS,
-                message=is_authenticated.message,
-                data=None)
-        else:
-            return next(root, info, **kwargs)
-            from src.helpers.utils import auth_user_has_permission
-            if auth_user_has_permission(info, self.required_permissions):
+        # return next(root, info, **kwargs)
+        if info.context.user:
+            # return next(root, info, **kwargs)
+            has_permission = any(perm in info.context.user.authorities for perm in self.required_permissions)
+            if has_permission:
                 return next(root, info, **kwargs)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message='Restricted Access',
+                    data=None)
         return Response(
             status=False,
             code=ResponseCode.RESTRICTED_ACCESS,
-            message=is_authenticated.message,
+            message='Unauthorized',
             data=None)
 
 
@@ -93,7 +103,6 @@ class Context(BaseContext):
         if authorization:
             return fetch_user(authorization.split(" ")[1])
         if self.request.get("access_token"):
-            print(self.request.get("access_token"))
             return fetch_user(self.request.get("access_token"))
         return None
 
@@ -482,8 +491,6 @@ permissions: typing.List[Permission] = [
         description="Can Delete Groups",
         service="registration",
     ),
-
-
 
     Permission(
         code="VIEW_STUDENT_COURSE_REGISTRATIONS",

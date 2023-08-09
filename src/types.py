@@ -483,11 +483,34 @@ class PaginationInput:
     search: Optional[str] = None
 
 
-############ An output for Paginated Course #######################
 @strawberry.type(description="Paginated Course")
 class PaginatedCourse:
     items: List[CourseNode]
     total_count: int
+
+
+@strawberry.input(description="Student Program Change Input")
+class StudentProgramChangeInput:
+    uid: Optional[str] = None
+    student_uid: str
+    current_program_uid: str
+    new_program_uid: str
+    reason: str
+    registration_number: str
+
+
+@strawberry.type(description="Student Program Change  outputs")
+class StudentProgramChangeNode:
+    uid: str
+    academic_year: "AcademicYearNode"
+    current_program: "ProgramNode"
+    new_program: Optional["ProgramNode"]
+    approve_status: str
+    approve_remark: str
+    reason: str
+    current_registration_number: str
+    new_registration_number: Optional[str]
+    approved_by: Optional[str]
 
 
 @strawberry.type(description="User Token")
@@ -574,7 +597,7 @@ class ControlNumberNode:
     registration_number: str
     fee_name: str
     amount: float
-    control_number: str
+    control_number: Optional[str]
     currency: str
     pay_type: str
     academic_year: str
@@ -627,6 +650,7 @@ class StudentSemesterRegistrationInputNode:
 
 @strawberry.type(description="Course registration Node")
 class CourseRegistrationNode:
+    uid: str
     student_uid: str
     core_elective: str
     program_course: ProgramCourseNode

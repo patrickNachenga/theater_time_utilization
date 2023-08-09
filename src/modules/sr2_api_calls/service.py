@@ -115,7 +115,7 @@ class Sr2ApiCalls(object):
         }
 
         # Send the Get request
-        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
+        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=10)
         # Check for errors
         if response.status_code == 200:
             return Response(status=True, code=ResponseCode.SUCCESS,
@@ -125,40 +125,45 @@ class Sr2ApiCalls(object):
                             data=None, message="Failed to refresh number request")
 
     @staticmethod
-    def get_student_control_number(registration_number: str) -> List[ControlNumberNode] | None:
+    def get_student_control_number(registration_number: str) -> Response[Optional[List[ControlNumberNode]]]:
         """
         This is a function to request program fee structure  from SR2
         """
-        try:
-            # Set the request payload
-            payload = {
-                "registration_number": registration_number
-            }
-            encoded_params = urlencode(payload)
-            response = requests.get(Sr2ApiCalls.site_url + f"billing/get_control_numbers?{encoded_params}")
-            # Check for errors
-            if response.status_code == 200:
-                response_data = response.json()
-                control_number_list = []
-                for structure in response_data["data"]:
-                    print(structure)
-                    control_number = ControlNumberNode(
-                        registration_number=structure["registration_number"],
-                        fee_name=structure["fee_name"],
-                        amount=structure["amount"],
-                        control_number=structure["control_number"],
-                        currency=structure["currency"],
-                        pay_type=structure["pay_type"],
-                        academic_year=structure["academic_year"],
-                        bill_id=structure["billid"],
-                    )
-                    control_number_list.append(control_number)
-                return control_number_list
-            else:
-                return None
-        except Exception as e:
-            print(e)
-            return None
+        # Set the request payload
+        payload = {
+            "registration_number": registration_number
+        }
+        encoded_params = urlencode(payload)
+        response = requests.get(Sr2ApiCalls.site_url + f"billing/get_control_numbers?{encoded_params}", timeout=10)
+        # Check for errors
+        if response.status_code == 200:
+            response_data = response.json()
+            control_number_list = []
+            for structure in response_data["data"]:
+                control_number = ControlNumberNode(
+                    registration_number=structure["registration_number"],
+                    fee_name=structure["fee_name"],
+                    amount=structure["amount"],
+                    control_number=structure["control_number"],
+                    currency=structure["currency"],
+                    pay_type=structure["pay_type"],
+                    academic_year=structure["academic_year"],
+                    bill_id=structure["billid"],
+                )
+                control_number_list.append(control_number)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Control Numbers Retrieved successfully",
+                data=control_number_list
+            )
+        else:
+            return Response(
+                status=True,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Control Numbers Found",
+                data=None
+            )
 
     @staticmethod
     def get_financial_statement(registration_number: str) -> Response[str | None]:
@@ -171,7 +176,7 @@ class Sr2ApiCalls(object):
             "type": "generate"
         }
         encoded_params = urlencode(payload)
-        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}")
+        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}", timeout=10)
         # Check for errors
         if response.status_code == 200:
             payload["type"] = "get"
