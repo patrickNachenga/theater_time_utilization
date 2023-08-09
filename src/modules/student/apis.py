@@ -237,20 +237,21 @@ class StudentMutation:
                 cell.alignment = Alignment(horizontal='center', vertical='center')
                 cell.font = font
                 cell.border = border
+        worksheet.cell(row=1, column=4, value=str(result["program_course"].id))
         # Set the specific column where cells should be non-editable (except column D)
         editable_column = 'D'
 
         # Iterate over rows in the worksheet
-        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
-                                       max_col=worksheet.max_column):
+        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
             for cell in row:
                 # Check if the current column is the editable column
-                if cell.column_letter == editable_column:
+                if cell.column_letter == editable_column and cell.row >= 10:
                     # Set protection to False for the editable column
                     cell.protection = Protection(locked=False)
                 else:
                     # Set protection to True for other columns
                     cell.protection = Protection(locked=True)
+
             # Protect the worksheet to make cells not editable
             worksheet.protection.sheet = True
 
