@@ -37,7 +37,7 @@ class ProgramQuery:
                 message="Program not found",
                 data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
+    @strawberry.field
     def get_program(self, uid: str) -> Response[Optional[ProgramNode]]:
         try:
             result = ProgramService.get_program_by_uid(uid)

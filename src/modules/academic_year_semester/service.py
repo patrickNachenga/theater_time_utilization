@@ -46,7 +46,6 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
             result = session.scalars(stmt)
             return result.first()
 
-
     @staticmethod
     def get_academic_year_semesters_by_academic_year(academic_year_uid: str) -> Response[List[AcademicYearSemester]]:
         """
@@ -69,16 +68,16 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
                 )
 
             stmt = select(AcademicYearSemester).where(
-                (AcademicYearSemester.academic_year_id == academic_year.id) & (AcademicYearSemester.deleted_at.is_(None)))
+                (AcademicYearSemester.academic_year_id == academic_year.id) & (
+                    AcademicYearSemester.deleted_at.is_(None)))
             raw_result = session.scalars(stmt)
             result = raw_result.all()
             return Response(
-                    status=True,
-                    code=ResponseCode.SUCCESS,
-                    data=result,
-                    message="You have submitted incorrect Academic Year values"
-                )
-
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=result,
+                message="You have submitted incorrect Academic Year values"
+            )
 
     def register_academic_semesters(self, inputs: List[AcademicYearSemesterInput]) -> Response[
         AcademicYearSemesterListNode]:

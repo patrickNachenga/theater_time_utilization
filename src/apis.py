@@ -21,6 +21,7 @@ from src.modules.programs.apis import ProgramQuery, ProgramMutation
 from src.modules.semester_registration.apis import SemesterRegistrationQuery
 from src.modules.sr2_api_calls.apis import Sr2ApiCallQuery, Sr2ApiCallMutation
 from src.modules.student.apis import StudentQuery, StudentMutation
+from src.modules.student_program_change.apis import StudentProgramChangeMutation, StudentProgramChangeCourseQuery
 
 
 @strawberry.type
@@ -28,7 +29,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                CourseCategoryQuery, GroupQuery, ProgramQuery, ExamCategoryQuery, ExamCategoryGroupsQuery,
                ExamResultSummaryQuery, ExamResultQuery,
                AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
-               ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery, AcademicYearSemesterQuery, MoodleApiCallQuery):
+               ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery, AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery):
     pass
 
 
@@ -38,5 +39,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ExamCategoryGroupsMutation, ExamCategoryMutation,
                   ExamResultSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
-                  ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation, AcademicYearSemesterMutation):
+                  ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation, AcademicYearSemesterMutation,StudentProgramChangeMutation):
     pass
