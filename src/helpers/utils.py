@@ -275,10 +275,10 @@ def get_user_programs_headship(info: Info):
     return user_program_uids
 
 
-def insert_course_work(student_uid, program_course_uid, exam_category_id, assessment_number, out_of, score,
+def insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
                        weight) -> bool:
     with session_scope() as session:
-        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid,
+        program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                                                              ProgramCourse.deleted_at.is_(None)).first()
         exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
                                                            ExamCategory.deleted_at.is_(None)).first()
@@ -286,7 +286,7 @@ def insert_course_work(student_uid, program_course_uid, exam_category_id, assess
                                                                 ExamCoursework.exam_category == program_course,
                                                                 ExamCoursework.exam_category == exam_category,
                                                                 ExamCoursework.assessment_number == assessment_number).first()
-        score = (score / out_of) * 100
+        score = (score / out_off) * 100
         if exam_course_work:
             exam_course_work.score = score
             exam_course_work.weight = weight
@@ -304,19 +304,18 @@ def insert_course_work(student_uid, program_course_uid, exam_category_id, assess
         return True
 
 
-def insert_exam_result(student_uid, program_course_uid, exam_category_id, score, out_of, weight) -> bool:
+def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight) -> bool:
     with session_scope() as session:
-        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid,
+        program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                                                              ProgramCourse.deleted_at.is_(None)).first()
         exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
                                                            ExamCategory.deleted_at.is_(None)).first()
         exam_score = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
                                                       ExamResult.exam_category == program_course,
                                                       ExamResult.exam_category == exam_category).first()
-        score = (score / out_of) * 100
+        score = (score / out_off) * 100
         if exam_score:
             exam_score.score = score
-            exam_score.out_of = out_of
             exam_score.weight = weight
         else:
             new_exam_result = ExamResult(
@@ -329,3 +328,21 @@ def insert_exam_result(student_uid, program_course_uid, exam_category_id, score,
             session.add(new_exam_result)
         session.commit()
         return True
+
+
+def get_student_from_uaa():
+    try:
+
+        # Set the Content-Type header to indicate that the request body is JSON
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(settings.UAA_URi + '/users/students', headers=headers)
+
+    except Exception as e:
+        print(e)
+        response = None
+    if response.status_code == 200:
+        data = response.json()
+        return data
