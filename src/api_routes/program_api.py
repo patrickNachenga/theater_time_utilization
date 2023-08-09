@@ -189,28 +189,32 @@ async def extract_data(file: UploadFile = File(...)):
     name_column = 3  # Assuming Name is in column C
     marks_column = 4  # Assuming Marks is in column D
 
-    is_ue = None
     with session_scope() as session:
         is_ue = session.query(ExamCategory).filter(
             ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
-        print('is ue', is_ue)
         # get student list from uaa service to get student uid after filtering
         students = get_student_from_uaa()
         for row in worksheet.iter_rows(min_row=10, values_only=True):
             reg_number = row[reg_no_column - 1]
             score = row[marks_column - 1]
             # Find the item with the specified registration_number
-            matching_item = next(
-                (item for item in students if item["registration_number"] == reg_number), None)
-
-            if matching_item:
-                student_uid = matching_item["uid"]
-                if is_ue:
-                    insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight)
+            if students:
+                matching_item = next(
+                    (item for item in students if item["registration_number"] == reg_number), None)
+                if matching_item:
+                    student_uid = matching_item["uid"]
+                    if is_ue:
+                        insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight)
+                    else:
+                        insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
+                           weight)
                 else:
-                    insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
-                       weight)
+                    # student doesn't match
+                    pass
 
+            else:
+                # student not found uaa might be down
+                pass
     # Save the extracted data in the database
     # ...
 
