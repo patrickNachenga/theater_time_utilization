@@ -172,6 +172,9 @@ async def extract_data(file: UploadFile = File(...)):
 
     # Get the desired worksheet by name or index
     worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
+    exam_category = worksheet.cell(row=5, column=3).value
+    assessment_number = worksheet.cell(row=6, column=3).value
+    out_off = worksheet.cell(row=7, column=3).value
 
     # Assuming the data is in a specific sheet and columns
     sn_column = 1  # Assuming SN is in column A

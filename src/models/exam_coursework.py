@@ -11,7 +11,7 @@ class ExamCoursework(BaseModel):
     assessment_number: int = Column(Integer, nullable=False)
     score: float = Column(Float, nullable=False)
     weight: float = Column(Float, nullable=False)
-    overall_marks: float = Column(Float, nullable=False)
+    overall_marks: float = Column(Float, nullable=False,default=100)
 
     # ______________________________Foreign Keys_______________________________________________#
 

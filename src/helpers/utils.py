@@ -11,7 +11,7 @@ from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
-    AcademicYear, AcademicYearSemester
+    AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -273,3 +273,59 @@ def get_user_programs_headship(info: Info):
         user_program_uids = info.context.user.headships.program_headships
 
     return user_program_uids
+
+
+def insert_course_work(student_uid, program_course_uid, exam_category_id, assessment_number, out_of, score,
+                       weight) -> bool:
+    with session_scope() as session:
+        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid,
+                                                             ProgramCourse.deleted_at.is_(None)).first()
+        exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                                                           ExamCategory.deleted_at.is_(None)).first()
+        exam_course_work = session.query(ExamCoursework).filter(ExamCoursework.student_uid == student_uid,
+                                                                ExamCoursework.exam_category == program_course,
+                                                                ExamCoursework.exam_category == exam_category,
+                                                                ExamCoursework.assessment_number == assessment_number).first()
+        score = (score / out_of) * 100
+        if exam_course_work:
+            exam_course_work.score = score
+            exam_course_work.weight = weight
+        else:
+            new_exam_coursework = ExamCoursework(
+                student_uid=student_uid,
+                exam_category=exam_category,
+                program_course=program_course,
+                assessment_number=assessment_number,
+                score=score,
+                weight=weight
+            )
+            session.add(new_exam_coursework)
+        session.commit()
+        return True
+
+
+def insert_exam_result(student_uid, program_course_uid, exam_category_id, score, out_of, weight) -> bool:
+    with session_scope() as session:
+        program_course = session.query(ProgramCourse).filter(ProgramCourse.uid == program_course_uid,
+                                                             ProgramCourse.deleted_at.is_(None)).first()
+        exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                                                           ExamCategory.deleted_at.is_(None)).first()
+        exam_score = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
+                                                      ExamResult.exam_category == program_course,
+                                                      ExamResult.exam_category == exam_category).first()
+        score = (score / out_of) * 100
+        if exam_score:
+            exam_score.score = score
+            exam_score.out_of = out_of
+            exam_score.weight = weight
+        else:
+            new_exam_result = ExamResult(
+                student_uid=student_uid,
+                exam_category=exam_category,
+                program_course=program_course,
+                score=score,
+                weight=weight
+            )
+            session.add(new_exam_result)
+        session.commit()
+        return True
