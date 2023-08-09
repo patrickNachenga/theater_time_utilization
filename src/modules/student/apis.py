@@ -244,7 +244,7 @@ class StudentMutation:
         # Iterate over rows in the worksheet
         for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
             for cell in row:
-                # Check if the current column is the editable column
+                # Check if the current column is the editable column and cell row is not greater than 9
                 if cell.column_letter == editable_column and cell.row >= 10:
                     # Set protection to False for the editable column
                     cell.protection = Protection(locked=False)
@@ -271,7 +271,7 @@ class StudentMutation:
         return ExcelFile(base64_data=base64_data)
 
     @strawberry.field
-    def register_student_exam(self, inputs: ExamRegistrationInput) -> Response[ExamRegistrationListNode]:
+    def register_student_exam(self, inputs: List[ExamRegistrationInput]) -> Response[ExamRegistrationListNode]:
         try:
             result = StudentService().register_student_exam(inputs)
             return Response(

@@ -7,7 +7,9 @@ from fastapi import APIRouter, UploadFile, File
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from pydantic import BaseModel
 
-from src.helpers.utils import get_current_academic_year
+from src.db.session import session_scope
+from src.helpers.utils import insert_exam_result, insert_course_work, get_student_from_uaa
+from src.models import ExamCategory
 from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -53,7 +55,8 @@ async def get_program_data(parm: ProgramDepartmentInput):
 
 
 @program_router.post("/generate-allocation-template/")
-def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_category: int,assessment_number: int,assessment_weight: int):
+def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_category: int, assessment_number: int,
+                                     assessment_weight: int):
     result = StudentService().get_allocation_students(allocation_uid)
     # Create a new workbook
     workbook = Workbook()
@@ -75,7 +78,8 @@ def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_categ
                     bottom=Side(border_style="thin"))
 
     # Define the vertical headers
-    vertical_headers = ["Course Ante", "Program Code", "Academic Year", "Study Year", "Exam Category", "Assessment No", "Mark Out of",
+    vertical_headers = ["Course Ante", "Program Code", "Academic Year", "Study Year", "Exam Category", "Assessment No",
+                        "Mark Out of",
                         "Assessment Weight"]
     # Sample data for the vertical header
     data = {
@@ -135,7 +139,7 @@ def generate_allocation_xls_template(allocation_uid: str,out_off: int,exam_categ
     # Iterate over rows in the worksheet
     for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
         for cell in row:
-            # Check if the current column is the editable column
+            # Check if the current column is the editable column and cell row is not greater than 9
             if cell.column_letter == editable_column and cell.row >= 10:
                 # Set protection to False for the editable column
                 cell.protection = Protection(locked=False)
@@ -173,9 +177,11 @@ async def extract_data(file: UploadFile = File(...)):
 
     # Get the desired worksheet by name or index
     worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
-    exam_category = worksheet.cell(row=5, column=3).value
+    exam_category_id = worksheet.cell(row=5, column=3).value
     assessment_number = worksheet.cell(row=6, column=3).value
     out_off = worksheet.cell(row=7, column=3).value
+    program_course_id = worksheet.cell(row=1, column=4).value
+    weight = worksheet.cell(row=8, column=3).value
 
     # Assuming the data is in a specific sheet and columns
     sn_column = 1  # Assuming SN is in column A
@@ -183,19 +189,27 @@ async def extract_data(file: UploadFile = File(...)):
     name_column = 3  # Assuming Name is in column C
     marks_column = 4  # Assuming Marks is in column D
 
-    # Extract the data from the columns
-    data = []
-    for row in worksheet.iter_rows(min_row=10, values_only=True):
-        print("SN", row[sn_column - 1])
-        print("Reg No", row[reg_no_column - 1], )
-        print("Marks", row[marks_column - 1])
-        #
-        # data.append({
-        #     "sn": row[sn_column - 1],
-        #     "reg_no": row[reg_no_column - 1],
-        #     "name": row[name_column - 1],
-        #     "marks": row[marks_column - 1]
-        # })
+    is_ue = None
+    with session_scope() as session:
+        is_ue = session.query(ExamCategory).filter(
+            ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
+        print('is ue', is_ue)
+        # get student list from uaa service to get student uid after filtering
+        students = get_student_from_uaa()
+        for row in worksheet.iter_rows(min_row=10, values_only=True):
+            reg_number = row[reg_no_column - 1]
+            score = row[marks_column - 1]
+            # Find the item with the specified registration_number
+            matching_item = next(
+                (item for item in students if item["registration_number"] == reg_number), None)
+
+            if matching_item:
+                student_uid = matching_item["uid"]
+                if is_ue:
+                    insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight)
+                else:
+                    insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
+                       weight)
 
     # Save the extracted data in the database
     # ...
