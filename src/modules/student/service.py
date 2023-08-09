@@ -170,11 +170,10 @@ class StudentService:
                         StudentExamRegistration.type == data.type,
                         StudentExamRegistration.deleted_at.is_(None)).first()
                     # Check if exam already exist, so that not to register once again
-
                     if exam_registration is None:
                         exam_registration = StudentExamRegistration(
                             type=data.type,
-                            student_course_registrations=course_registration
+                            student_course_registration=course_registration
                         )
 
                         session.add(exam_registration)
@@ -184,7 +183,7 @@ class StudentService:
             result = session.query(StudentExamRegistration).join(StudentCourseRegistration) \
                 .join(ProgramCourse) \
                 .join(ProgramSemester) \
-                .filter(StudentCourseRegistration.student_uid == student_uid) \
+                .filter(StudentCourseRegistration.student_uid == course_registration.student_uid) \
                 .filter(ProgramSemester.semester == semester) \
                 .filter(
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()

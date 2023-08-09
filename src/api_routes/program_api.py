@@ -14,6 +14,7 @@ from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
+from src.types import UploadResponseData
 
 program_router = APIRouter()
 root_path = "/program"
@@ -143,6 +144,8 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
             if cell.column_letter == editable_column and cell.row >= 10:
                 # Set protection to False for the editable column
                 cell.protection = Protection(locked=False)
+                if cell.value is not None and cell.value > int(out_off):
+                    cell.value = 0  # Set the value to 10 if it's greater than 10
             else:
                 # Set protection to True for other columns
                 cell.protection = Protection(locked=True)
@@ -179,9 +182,9 @@ async def extract_data(file: UploadFile = File(...)):
     worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
     exam_category_id = worksheet.cell(row=5, column=3).value
     assessment_number = worksheet.cell(row=6, column=3).value
-    out_off = worksheet.cell(row=7, column=3).value
+    out_off = float(worksheet.cell(row=7, column=3).value)
     program_course_id = worksheet.cell(row=1, column=4).value
-    weight = worksheet.cell(row=8, column=3).value
+    weight = float(worksheet.cell(row=8, column=3).value)
 
     # Assuming the data is in a specific sheet and columns
     sn_column = 1  # Assuming SN is in column A
@@ -189,29 +192,63 @@ async def extract_data(file: UploadFile = File(...)):
     name_column = 3  # Assuming Name is in column C
     marks_column = 4  # Assuming Marks is in column D
 
-    is_ue = None
     with session_scope() as session:
         is_ue = session.query(ExamCategory).filter(
             ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
-        print('is ue', is_ue)
         # get student list from uaa service to get student uid after filtering
         students = get_student_from_uaa()
+        success = 0
+        failed = 0
+        failed_students = []
+        response_data = {
+            "success": 0,
+            "failed": 0,
+            "failed_students": []
+        }
         for row in worksheet.iter_rows(min_row=10, values_only=True):
             reg_number = row[reg_no_column - 1]
-            score = row[marks_column - 1]
+            score = float(row[marks_column - 1])
             # Find the item with the specified registration_number
-            matching_item = next(
-                (item for item in students if item["registration_number"] == reg_number), None)
+            if students:
+                matching_item = next(
+                    (item for item in students if item["registration_number"] == reg_number), None)
+                if matching_item:
+                    student_uid = matching_item["uid"]
+                    # print('student',reg_number,student_uid)
+                    if score <= out_off:
+                        if is_ue:
+                            result = insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off,
+                                                        weight)
+                            if result:
+                                success = success + 1
+                            else:
+                                failed = failed + 1
+                                failed_students.append({"reg_number":reg_number,"reason":"Data processing error"})
+                        else:
+                            result = insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number,
+                                                        out_off, score,
+                                                        weight)
+                            if result:
+                                if result:
+                                    success = success + 1
+                                else:
+                                    failed = failed + 1
+                                    failed_students.append({"reg_number":reg_number,"reason":"Data processing error"})
 
-            if matching_item:
-                student_uid = matching_item["uid"]
-                if is_ue:
-                    insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight)
+                    else:
+                        failed = failed + 1
+                        failed_students.append({"reg_number": reg_number, "reason": "Score is greater than out off"})
                 else:
-                    insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
-                       weight)
+                    failed = failed + 1
+                    failed_students.append({"reg_number": reg_number, "reason": "Data processing error ,student not found"})
+
+            else:
+                failed = failed + 1
+                failed_students.append({"reg_number": reg_number, "reason": "Data processing error , UAA service not found"})
 
     # Save the extracted data in the database
     # ...
-
-    return {"message": "Data extracted successfully"}
+    response_data["failed_students"] = failed_students
+    response_data["failed"] = failed
+    response_data["success"] = success
+    return response_data

@@ -787,6 +787,7 @@ class ExamRegistrationInput:
 
 @strawberry.type(description="Exam registration Output")
 class ExamRegistrationNode:
+    type: int
     exam_category: ExamCategoryNode
     student_course_registration: CourseRegistrationNode
 
@@ -818,3 +819,15 @@ class ExamToRegister:
     first_sitting: List[CourseRegistrationNode]
     failure: List[ExamFailureNode]
     postponed: List[ExamPostponementNode]
+
+
+@strawberry.type
+class FailedStudent:
+    registration_number: str
+
+
+@strawberry.type
+class UploadResponseData:
+    success: int
+    failed: int
+    failed_students: List[FailedStudent]

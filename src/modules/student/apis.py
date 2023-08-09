@@ -17,7 +17,7 @@ from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
     CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
-    ExamToRegister
+    ExamToRegister, ExamRegistrationNode
 
 
 @strawberry.type
@@ -92,7 +92,7 @@ class StudentQuery:
                 data=[])
 
     @strawberry.field
-    def get_student_current_registered_exam(self, student_uid: str) -> Response[ExamRegistrationListNode]:
+    def get_student_current_registered_exam(self, student_uid: str) -> Response[List[ExamRegistrationNode]]:
         try:
             result = StudentService().get_student_current_registered_exam(student_uid)
             if result:
@@ -100,20 +100,20 @@ class StudentQuery:
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Exam Registration Retrieved successfully",
-                    data=ExamRegistrationListNode(items=result, total_count=len(result)))
+                    data=result)
             else:
                 return Response(
                     status=False,
                     code=ResponseCode.NO_RECORD_FOUND,
                     message="Exam Registration not found",
-                    data=ExamRegistrationListNode(items=[], total_count=0))
+                    data=[])
         except Exception as e:
             print(e)
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="Exam Registration not found",
-                data=ExamRegistrationListNode(items=[], total_count=0))
+                message="Exam Registration not found exception occurred",
+                data=[])
 
     @strawberry.field
     def get_student_exam_to_register(self, student_uid: str) -> Response[ExamToRegister]:
