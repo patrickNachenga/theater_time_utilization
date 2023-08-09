@@ -126,6 +126,12 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
+        code="VIEW_ACTIVE_ACADEMIC_YEARS",
+        name="View View Academic Years",
+        description="Can View Active Academic Years",
+        service="registration",
+    ),
+    Permission(
         code="REGISTER_ACADEMIC_YEARS",
         name="Register Academic Years",
         description="Can Register Academic Years",
@@ -141,6 +147,12 @@ permissions: typing.List[Permission] = [
         code="VIEW_ACADEMIC_YEAR_SEMESTERS",
         name="View Academic Year Semeter",
         description="Can View Academic Year Semeter",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_ACADEMIC_YEAR_SEMESTER_BY_ACADEMIC_YEAR",
+        name="View Academic Year Semeter By Academic YEar",
+        description="Can View Academic Year Semeter By using Academic Year",
         service="registration",
     ),
     Permission(
@@ -210,24 +222,6 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
-        code="VIEW_EXAM_RESULT_SUMMARIES",
-        name="View Exam Result Summary",
-        description="Can View Exam Result Summary",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_RESULT_SUMMARIES",
-        name="Register Exam Result Summary",
-        description="Can Register Exam Result Summary",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_RESULT_SUMMARY",
-        name="Remove Exam Result Summary",
-        description="Can Remove Exam Result Summary",
-        service="registration",
-    ),
-    Permission(
         code="VIEW_EXAM_RESULTS",
         name="View Exam Results",
         description="Can View Exam Results",
@@ -267,6 +261,24 @@ permissions: typing.List[Permission] = [
         code="VIEW_COURSE_ALLOCATIONS",
         name="View Course allocation",
         description="Can View Course allocation",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_STAFF_COURSE_ALLOCATION_BY_ACADEMIC_YEAR",
+        name="View Staff Course allocation By Academic Year",
+        description="Can View Staff Course allocation By Year",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_COURSE_ALLOCATION_BY_PROGRAM_COURSE",
+        name="View Staff Course allocation By Program Course",
+        description="Can View Staff Course Program Course",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_STAFF_COURSE_ALLOCATIONS",
+        name="View Staff Course allocation",
+        description="Can View Staff Course allocation",
         service="registration",
     ),
     Permission(
@@ -496,6 +508,12 @@ permissions: typing.List[Permission] = [
         code="VIEW_STUDENT_COURSE_REGISTRATIONS",
         name="View Student Course Registration Information",
         description="Can View Student Course Registration",
+        service="registration",
+    ),
+    Permission(
+        code="VIEW_STUDENT_CURRENT_COURSE_REGISTRATIONS",
+        name="View Student current Course Registration Information",
+        description="Can View current Student Course Registration",
         service="registration",
     ),
     Permission(

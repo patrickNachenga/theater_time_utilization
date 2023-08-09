@@ -51,7 +51,7 @@ class AcademicYearSemesterQuery:
                 message="Academic Year Semester not found",
                 data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTER"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTER_BY_ACADEMIC_YEAR"])])
     def get_academic_year_semester_by_academic_year(self, academic_year_uid: str) -> Response[Optional[List[AcademicYearSemesterNode]]]:
         try:
             return AcademicYearSemesterService.get_academic_year_semesters_by_academic_year(academic_year_uid)

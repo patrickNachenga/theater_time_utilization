@@ -13,7 +13,7 @@ from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
 
 @strawberry.type
 class CourseQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSES"])])
     def get_courses(self, pagination: PaginationInput, info: Info) -> Response[Optional[PaginatedCourse]]:
         try:
             # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
@@ -28,7 +28,7 @@ class CourseQuery:
             message="Courses Retrieved Successfully",
             data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSES"])])
     def get_course(self, uid: str) -> Response[CourseNode | None]:
         try:
             result = CourseService.get_course_by_uid(uid)

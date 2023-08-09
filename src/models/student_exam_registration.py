@@ -13,9 +13,6 @@ class StudentExamRegistration(BaseModel):
 
     # _____________________________Relationships___________________________________________________#
 
-    exam_category = relationship("ExamCategory", lazy="subquery",
-                                 back_populates="student_exam_registrations")
-
     # failure type 1 is first sitting, 2 probation, 3 third attempt, 4 retake
     type: int = Column(Integer, nullable=False)
 

@@ -42,7 +42,7 @@ class StudentQuery:
                 message="Program courses not found",
                 data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_COURSE_REGISTRATIONS"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_CURRENT_COURSE_REGISTRATIONS"])])
     def get_student_current_course_registration(self, student_uid: str) -> Response[
         Optional[CourseRegistrationListNode]]:
         try:
