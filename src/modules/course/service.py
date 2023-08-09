@@ -3,15 +3,18 @@ from typing import List
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, and_, or_, inspect, cast, String
+from sqlalchemy.orm import joinedload
 
 from src.core.moodle_api import MoodleApi
+from src.core.security import Info
 from src.db.session import session_scope
+from src.helpers.utils import get_user_departments_headship
 from src.models import Course
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, PaginatedCourse
+from src.types import CourseInput, PaginatedCourse, CourseNode
 
 
 class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
@@ -21,6 +24,52 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             result = session.query(Course).filter(Course.deleted_at.is_(None)).order_by(
                 desc(Course.updated_at)).all()
             return result
+
+    @staticmethod
+    def get_courses_with_headship(info: Info, pagination, search_columns: List[str],
+                                  relationships_to_join: List[str] = None,
+                                  unique_search: List[dict] = None) -> [PaginatedCourse]:
+        """
+            Get all programs by program
+        :return:
+        """
+        with session_scope() as session:
+            user_h_department_uids = get_user_departments_headship(info)
+
+            query = session.query(Course).filter(
+                and_(Course.deleted_at.is_(None), Course.department_uid.in_(user_h_department_uids)))
+            search_q = pagination.search if pagination.search else ''
+
+            # filter condition if specified unique column
+            unique_filter_conditions = []
+            if unique_search:
+                for condition in unique_search:
+                    for column, value in condition.items():
+                        unique_filter_conditions.append(getattr(Course, column) == value)
+            if unique_filter_conditions:
+                query = query.filter(and_(*unique_filter_conditions))
+
+            # Apply filters
+            filter_conditions = []
+            for column in inspect(Course).columns:
+                if column.name in search_columns:
+                    filter_conditions.append(cast(getattr(Course, column.name), String).ilike(f"%{str(search_q)}%"))
+
+            if filter_conditions:
+                query = query.filter(or_(*filter_conditions))
+
+            total_count = query.count()
+
+            # Apply pagination
+            query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
+            # Fetch items and total count
+            if relationships_to_join and len(relationships_to_join) > 0:
+                for relationship_name in relationships_to_join:
+                    query = query.options(joinedload(relationship_name))
+            items = query.all()
+            session.close()
+
+            return PaginatedCourse(items=items, total_count=total_count)
 
     @staticmethod
     def get_courses_by_codes(codes: List[str]) -> List[Course]:
@@ -73,8 +122,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
         with session_scope() as session:
             stmt = select(Course).where((Course.moodle_id.is_(None)) & (Course.deleted_at.is_(None)))
             result = session.scalars(stmt)
-            return result.first()    \
-
+            return result.first()
     @staticmethod
     def get_register_moodle_course() -> Course | None:
         """
