@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension, LoginRequiredExtension
+from src.core.security import  LoginRequiredExtension
 from src.models import StudentProgramChange
 from src.modules.student_program_change.service import StudentProgramChangeService
 from src.shared.response import Response
@@ -53,10 +53,10 @@ class StudentProgramChangeCourseQuery:
                 data=None)
 
 
-@strawberry.type(extensions=[LoginRequiredExtension()])
+@strawberry.type
 class StudentProgramChangeMutation:
     # (extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_CHANGE"])])
-    @strawberry.field
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def student_request_change_program(self, input: StudentProgramChangeInput) -> Response[Optional[StudentProgramChangeNode]]:
         """
             register and update student program change
