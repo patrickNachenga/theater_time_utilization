@@ -145,8 +145,8 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="VIEW_ACADEMIC_YEAR_SEMESTERS",
-        name="View Academic Year Semeter",
-        description="Can View Academic Year Semeter",
+        name="View Academic Year Semesters",
+        description="Can View Academic Year Semesters",
         service="registration",
     ),
     Permission(
@@ -157,8 +157,8 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REGISTER_ACADEMIC_YEAR_SEMESTERS",
-        name="Register Academic Year Semeter",
-        description="Can Register Academic Year Semeter",
+        name="Register Academic Year Semesters",
+        description="Can Register Academic Year Semesters",
         service="registration",
     ),
     Permission(
@@ -169,14 +169,14 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="VIEW_EXAM_CATEGORIES",
-        name="View Exam Category",
-        description="Can View Exam Category",
+        name="View Exam Categories",
+        description="Can View Exam Categories",
         service="registration",
     ),
     Permission(
         code="REGISTER_EXAM_CATEGORIES",
-        name="Register Exam Category",
-        description="Can Register Exam Category",
+        name="Register Exam Categories",
+        description="Can Register Exam Categories",
         service="registration",
     ),
     Permission(
@@ -199,18 +199,18 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REMOVE_EXAM_CATEGORY_GROUP",
-        name="Remove Exam Category Groups",
-        description="Can Remove Exam Category Groups",
+        name="Remove Exam Category Group",
+        description="Can Remove Exam Category Group",
         service="registration",
     ),
     Permission(
-        code="VIEW_EXAM_COURSEWORKS",
+        code="VIEW_EXAM_COURSEWORK",
         name="View Exam Coursework",
         description="Can View Exam Coursework",
         service="registration",
     ),
     Permission(
-        code="REGISTER_EXAM_COURSEWORKS",
+        code="REGISTER_EXAM_COURSEWORK",
         name="Register Exam Coursework",
         description="Can Register Exam Coursework",
         service="registration",
@@ -235,8 +235,8 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REMOVE_EXAM_RESULT",
-        name="Remove Exam Results",
-        description="Can Remove Exam Results",
+        name="Remove Exam Result",
+        description="Can Remove Exam Result",
         service="registration",
     ),
     Permission(
@@ -247,8 +247,8 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REGISTER_COURSES",
-        name="Register Course",
-        description="Can Register Course",
+        name="Register Courses",
+        description="Can Register Courses",
         service="registration",
     ),
     Permission(
@@ -259,8 +259,8 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="VIEW_COURSE_ALLOCATIONS",
-        name="View Course allocation",
-        description="Can View Course allocation",
+        name="View Course allocations",
+        description="Can View Course allocations",
         service="registration",
     ),
     Permission(
@@ -277,14 +277,14 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="VIEW_STAFF_COURSE_ALLOCATIONS",
-        name="View Staff Course allocation",
-        description="Can View Staff Course allocation",
+        name="View Staff Course allocations",
+        description="Can View Staff Course allocations",
         service="registration",
     ),
     Permission(
         code="REGISTER_COURSE_ALLOCATIONS",
-        name="Register Course",
-        description="Can Register Course allocation",
+        name="Register Courses",
+        description="Can Register Course allocations",
         service="registration",
     ),
     Permission(
@@ -302,7 +302,7 @@ permissions: typing.List[Permission] = [
     Permission(
         code="VIEW_COURSE_CATEGORIES",
         name="View Course Categories",
-        description="Can View Course category",
+        description="Can View Course Categories",
         service="registration",
     ),
     Permission(
@@ -320,7 +320,7 @@ permissions: typing.List[Permission] = [
     Permission(
         code="VIEW_PROGRAM_COURSE_ASSESSMENTS",
         name="VIEW Program Course Assessments",
-        description="Can View Program Course Assessment",
+        description="Can View Program Course Assessments",
         service="registration",
     ),
     Permission(
@@ -366,7 +366,7 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
-        code="REMOVE_PROGRAM_SEMESTERS",
+        code="REMOVE_PROGRAM_SEMESTER",
         name="Remove Program Semester",
         description="Can Delete Program Semester",
         service="registration",
@@ -390,9 +390,9 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
-        code="REMOVE_PROGRAM_COURSES",
-        name="REMOVE Program Courses",
-        description="Can Delete Program Courses",
+        code="REMOVE_PROGRAM_COURSE",
+        name="REMOVE Program Course",
+        description="Can Delete Program Course",
         service="registration",
     ),
     Permission(
@@ -416,31 +416,31 @@ permissions: typing.List[Permission] = [
     Permission(
         code="VIEW_PROGRAM_CAPACITIES",
         name="View Program Capacities",
-        description="Can View Program Capacity",
+        description="Can View Program Capacities",
         service="registration",
     ),
     Permission(
         code="REGISTER_PROGRAM_CAPACITIES",
         name="Register Program Capacities",
-        description="Can Register Program Capacity",
+        description="Can Register Program Capacities",
         service="registration",
     ),
     Permission(
         code="REMOVE_PROGRAM_CAPACITY",
-        name="REMOVE Program Capacities",
+        name="REMOVE Program Capacity",
         description="Can Delete Program Capacity",
         service="registration",
     ),
     Permission(
         code="VIEW_COURSE_LEARN_OUTCOMES",
-        name="View Course Learning Outcome",
-        description="Can View Course  Learning Outcome",
+        name="View Course Learning Outcomes",
+        description="Can View Course  Learning Outcomes",
         service="registration",
     ),
     Permission(
         code="REGISTER_COURSE_LEARN_OUTCOMES",
-        name="Register Course Learning Outcome",
-        description="Can Register Course Learning Outcome",
+        name="Register Course Learning Outcomes",
+        description="Can Register Course Learning Outcomes",
         service="registration",
     ),
     Permission(
@@ -469,25 +469,25 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="VIEW_STUDENT_SEMESTER_REGISTRATIONS",
-        name="View Student Semester Registration",
-        description="Can View Student Semester Registration",
+        name="View Student Semester Registrations",
+        description="Can View Student Semester Registrations",
         service="registration",
     ),
     Permission(
         code="VIEW_EXAM_RESULTS",
-        name="View Exam Result",
+        name="View Exam Results",
         description="Can View Exam Results",
         service="registration",
     ),
     Permission(
         code="REGISTER_EXAM_RESULTS",
         name="Register Exam Results",
-        description="Can Register Exam Result",
+        description="Can Register Exam Results",
         service="registration",
     ),
     Permission(
         code="REMOVE_EXAM_RESULT",
-        name="Remove Exam Results",
+        name="Remove Exam Result",
         description="Can Delete Exam Result",
         service="registration",
     ),
@@ -505,27 +505,27 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REMOVE_GROUP",
-        name="Remove Groups",
-        description="Can Delete Groups",
+        name="Remove Group",
+        description="Can Delete Group",
         service="registration",
     ),
 
     Permission(
         code="VIEW_STUDENT_COURSE_REGISTRATIONS",
-        name="View Student Course Registration Information",
-        description="Can View Student Course Registration",
+        name="View Student Course Registrations",
+        description="Can View Student Course Registrations",
         service="registration",
     ),
     Permission(
         code="VIEW_STUDENT_CURRENT_COURSE_REGISTRATIONS",
-        name="View Student current Course Registration Information",
-        description="Can View current Student Course Registration",
+        name="View Student current Course Registrations",
+        description="Can View current Student Course Registrations",
         service="registration",
     ),
     Permission(
         code="REGISTER_STUDENT_COURSES",
-        name="Register Student Course",
-        description="Can Register Student Course",
+        name="Register Student Courses",
+        description="Can Register Student Courses",
         service="registration",
     ),
 ]

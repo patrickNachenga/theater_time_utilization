@@ -96,7 +96,7 @@ class ProgramSemesterMutation:
                             data=ProgramSemesterListNode(items=[], total_count=0),)
 
     # Delete programs type function
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_SEMESTERS"])])
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_SEMESTER"])])
     async def remove_program_semester(self, uid: str) -> Response[None]:
         """
         Remove student By UID
