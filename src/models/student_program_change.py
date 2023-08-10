@@ -25,8 +25,12 @@ class StudentProgramChange(BaseModel):
     academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
     academic_year = relationship('AcademicYear', lazy='subquery', back_populates="student_program_changes")
 
+    student_program_change_status_id: int = Column(Integer, ForeignKey("student_program_change_status.id"), nullable=False)
+    student_program_change_status = relationship('StudentProgramChangeStatus', lazy='subquery',
+                                                 back_populates="student_program_changes")
+
     current_program_id: int = Column(Integer, ForeignKey("programs.id"), nullable=False)
     current_program = relationship('Program', lazy='subquery', foreign_keys=[current_program_id])
 
     new_program_id = Column(Integer, ForeignKey("programs.id"), nullable=False)
-    new_program = relationship('Program', lazy='subquery',foreign_keys=[new_program_id])
+    new_program = relationship('Program', lazy='subquery', foreign_keys=[new_program_id])

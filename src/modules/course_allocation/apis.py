@@ -120,7 +120,7 @@ class CourseAllocationQuery:
 
 @strawberry.type
 class CourseAllocationMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_ALLOCATION"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_ALLOCATIONS"])])
     def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[Optional[CourseAllocationListNode]]:
         try:
             return CourseAllocationService(CourseAllocation).register_course_allocations(inputs)

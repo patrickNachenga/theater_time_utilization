@@ -272,7 +272,7 @@ permissions: typing.List[Permission] = [
     Permission(
         code="VIEW_COURSE_ALLOCATION_BY_PROGRAM_COURSE",
         name="View Staff Course allocation By Program Course",
-        description="Can View Staff Course Program Course",
+        description="Can View Staff  Allocation By Program Course",
         service="registration",
     ),
     Permission(
@@ -283,7 +283,7 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REGISTER_COURSE_ALLOCATIONS",
-        name="Register Courses",
+        name="Register Course allocations",
         description="Can Register Course allocations",
         service="registration",
     ),
