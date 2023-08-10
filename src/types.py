@@ -502,7 +502,7 @@ class StudentProgramChangeInput:
     current_program_uid: str
     new_program_uid: str
     reason: str
-    registration_number: str
+    current_registration_number: str
 
 
 @strawberry.type(description="Student Program Change  outputs")

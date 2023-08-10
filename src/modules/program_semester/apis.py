@@ -12,7 +12,7 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 
 @strawberry.type
 class ProgramSemesterQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
     def get_program_semesters(self, pagination: PaginationInput) -> Response[Optional[ProgramSemesterListNode]]:
         try:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, ['study_year', 'semester', 'core_credits', 'elective_credits'], ProgramSemesterListNode, ['program', 'academic_year'])
@@ -96,7 +96,7 @@ class ProgramSemesterMutation:
                             data=ProgramSemesterListNode(items=[], total_count=0),)
 
     # Delete programs type function
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_SEMESTERS"])])
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_SEMESTER"])])
     async def remove_program_semester(self, uid: str) -> Response[None]:
         """
         Remove student By UID
