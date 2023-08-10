@@ -437,7 +437,8 @@ class ProgramCourseNode:
     @strawberry.field
     async def program_course_assessments(self, info) -> list[ProgramCourseAssessmentNode]:
         # Filter out children with deleted_at attribute not null
-        non_deleted_children = [program_course_assessment for program_course_assessment in self.program_course_assessments if program_course_assessment.deleted_at is None]
+        non_deleted_children = [program_course_assessment for program_course_assessment in
+                                self.program_course_assessments if program_course_assessment.deleted_at is None]
         return non_deleted_children
 
 
@@ -845,7 +846,23 @@ class FailedStudent:
 
 
 @strawberry.type
-class ExtractionResponse:
+class UploadResponse:
     success: int
     failed: int
     failed_students: list[FailedStudent]
+
+
+@strawberry.input
+class MarksInput:
+    registration_number: str
+    score: float
+
+
+@strawberry.input
+class UploadInput:
+    out_off: int
+    exam_category_id: int
+    assessment_number: int
+    program_course_id: int
+    weight: int
+    marks: List[MarksInput]

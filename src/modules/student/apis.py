@@ -13,7 +13,8 @@ from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.db.session import session_scope
-from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work
+from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work, \
+    general_upload
 from src.models import ExamCategory
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -21,7 +22,7 @@ from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
     CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
-    ExamToRegister, ExamRegistrationNode, ExtractionResponse, FailedStudent
+    ExamToRegister, ExamRegistrationNode, FailedStudent, UploadInput, UploadResponse
 
 
 @strawberry.type
@@ -290,7 +291,7 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
 
     @strawberry.mutation
-    async def upload_score(base64_file: str) -> Response[ExtractionResponse]:
+    async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
         # Decode the base64 file content
         file_content = base64.b64decode(base64_file)
 
@@ -305,9 +306,9 @@ class StudentMutation:
         weight = float(worksheet.cell(row=8, column=3).value)
 
         # Assuming the data is in a specific sheet and columns
-        sn_column = 1  # Assuming SN is in column A
+
         reg_no_column = 2  # Assuming Reg No is in column B
-        name_column = 3  # Assuming Name is in column C
+
         marks_column = 4  # Assuming Marks is in column D
 
         with session_scope() as session:
@@ -318,72 +319,38 @@ class StudentMutation:
             success = 0
             failed = 0
             failed_students = []
-            print('Student',students)
             for row in worksheet.iter_rows(min_row=10, values_only=True):
                 reg_number = row[reg_no_column - 1]
                 score = float(row[marks_column - 1])
                 # Find the item with the specified registration_number
-                if students:
-                    matching_item = next(
-                        (item for item in students if item["registration_number"] == reg_number), None)
-                    if matching_item:
-                        student_uid = matching_item["uid"]
-                        # print('student',reg_number,student_uid)
-                        if score <= out_off:
-                            if is_ue:
-                                result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                            out_off,
-                                                            weight)
-                                if result:
-                                    success = success + 1
-                                else:
-                                    failed = failed + 1
-                                    # failed_students.append(
-                                    #     {"reg_number": reg_number, "reason": "Data processing error"})
-                                    failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                                           reason="Data processing error"))
-                            else:
-                                result = insert_course_work(student_uid, program_course_id, exam_category_id,
-                                                            assessment_number,
-                                                            out_off, score,
-                                                            weight)
-                                if result:
-                                    if result:
-                                        success = success + 1
-                                    else:
-                                        failed = failed + 1
-                                        # failed_students.append(
-                                        #     {"reg_number": reg_number, "reason": "Data processing error"})
-                                        failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                                               reason="Data processing error"))
+                success_, failed_, failed_student = general_upload(students=students,
+                                                                   program_course_id=program_course_id,
+                                                                   exam_category_id=exam_category_id, score=score,
+                                                                   out_off=out_off, weight=weight, is_ue=is_ue,
+                                                                   reg_number=reg_number,
+                                                                   assessment_number=assessment_number)
+                success = success + success_
+                failed = failed + failed_
+                if failed_student.reg_number is not None:
+                    failed_students.append(failed_student)
+            response_data = UploadResponse(
+                success=success,
+                failed=failed,
+                failed_students=failed_students
+            )
 
-                        else:
-                            failed = failed + 1
-                            # failed_students.append(
-                            #     {"reg_number": reg_number, "reason": "Score is greater than out off"})
-                            failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                                   reason="Score is greater than out off"))
-                    else:
-                        failed = failed + 1
-                        # failed_students.append(
-                        #     {"reg_number": reg_number, "reason": "Data processing error ,student not found"})
-                        failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                               reason="Data processing error ,student not found"))
+            return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
 
-                else:
-                    failed = failed + 1
-                    # failed_students.append(
-                    #     {"reg_number": reg_number, "reason": "Data processing error , UAA service not found"})
-                    failed_students.append(FailedStudent(reg_number=reg_number, reason="Data processing error , UAA service not found"))
-
-        # Save the extracted data in the database
-        # ...
-        # response_data["failed_students"] = failed_students
-        # response_data["failed"] = failed
-        # response_data["success"] = success
-        response_data = ExtractionResponse(
-            success=success,
-            failed=failed,
-            failed_students=failed_students
-        )
-        return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
+    @strawberry.mutation
+    async def upload_online_score(self, inputs: UploadInput) -> Response[UploadResponse]:
+        try:
+            result = StudentService().upload_online_score(inputs)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Executed successfully",
+                data=result)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(status=False, code=ResponseCode.FAILURE, message="Failed to execute", data=result)
