@@ -336,6 +336,12 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
+        code="VIEW_ALL_PROGRAMS",
+        name="View All Programs",
+        description="Can View All  Programs",
+        service="registration",
+    ),
+    Permission(
         code="VIEW_PROGRAMS",
         name="View Programs",
         description="Can View Programs",
