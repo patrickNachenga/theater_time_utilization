@@ -52,7 +52,7 @@ class ProgramCourseQuery:
             message="Successfully Retrieve Program Courses",
             data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
+    @strawberry.field()#extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])]
     def get_program_course(self, uid: str) -> Response[ProgramCourseNode | None]:
         try:
             result = ProgramCourseService.get_program_course_by_uid(uid)

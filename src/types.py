@@ -434,6 +434,12 @@ class ProgramCourseNode:
     moodle_id: Optional[str]
     program_course_assessments: List[ProgramCourseAssessmentNode]
 
+    @strawberry.field
+    async def program_course_assessments(self, info) -> list[ProgramCourseAssessmentNode]:
+        # Filter out children with deleted_at attribute not null
+        non_deleted_children = [program_course_assessment for program_course_assessment in self.program_course_assessments if program_course_assessment.deleted_at is None]
+        return non_deleted_children
+
 
 @strawberry.input(description="Course Learn Outcome Input")
 class CourseLearnOutcomeInput:
@@ -821,13 +827,25 @@ class ExamToRegister:
     postponed: List[ExamPostponementNode]
 
 
+# @strawberry.type
+# class FailedStudent:
+#     registration_number: str
+#
+#
+# @strawberry.type
+# class UploadResponseData:
+#     success: int
+#     failed: int
+#     failed_students: List[FailedStudent]
+
 @strawberry.type
 class FailedStudent:
-    registration_number: str
+    reg_number: str
+    reason: str
 
 
 @strawberry.type
-class UploadResponseData:
+class ExtractionResponse:
     success: int
     failed: int
-    failed_students: List[FailedStudent]
+    failed_students: list[FailedStudent]
