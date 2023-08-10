@@ -14,7 +14,6 @@ from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import UploadResponseData
 
 program_router = APIRouter()
 root_path = "/program"
@@ -144,8 +143,9 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
             if cell.column_letter == editable_column and cell.row >= 10:
                 # Set protection to False for the editable column
                 cell.protection = Protection(locked=False)
-                if cell.value is not None and cell.value > int(out_off):
-                    cell.value = 0  # Set the value to 10 if it's greater than 10
+                cell.number_format = '0.00'
+                # if cell.value is not None and float(int(cell.value)) > out_off:
+                #     cell.value = 0  # Set the value to 10 if it's greater than 10
             else:
                 # Set protection to True for other columns
                 cell.protection = Protection(locked=True)

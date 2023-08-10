@@ -1,6 +1,8 @@
 import base64
 import io
 from typing import List, Optional
+
+import openpyxl
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from io import BytesIO
 
@@ -10,14 +12,16 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension, LoginRequiredExtension
-from src.helpers.utils import get_current_academic_year
+from src.db.session import session_scope
+from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work
+from src.models import ExamCategory
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
     CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
-    ExamToRegister, ExamRegistrationNode
+    ExamToRegister, ExamRegistrationNode, ExtractionResponse, FailedStudent
 
 
 @strawberry.type
@@ -143,7 +147,7 @@ class StudentQuery:
 @strawberry.type
 class StudentMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
-    def register_student_course(self, inputs: List[CourseRegistrationInputNode],remove: List[str]) -> Response[
+    def register_student_course(self, inputs: List[CourseRegistrationInputNode], remove: List[str]) -> Response[
         CourseRegistrationListNode]:
         try:
             result = StudentService().register_student_course(inputs, remove)
@@ -248,6 +252,7 @@ class StudentMutation:
                 if cell.column_letter == editable_column and cell.row >= 10:
                     # Set protection to False for the editable column
                     cell.protection = Protection(locked=False)
+                    cell.number_format = '0.00'
                 else:
                     # Set protection to True for other columns
                     cell.protection = Protection(locked=True)
@@ -283,3 +288,102 @@ class StudentMutation:
             print(e)
             result = ExamRegistrationListNode(items=[], total_count=0)
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
+
+    @strawberry.mutation
+    async def upload_score(base64_file: str) -> Response[ExtractionResponse]:
+        # Decode the base64 file content
+        file_content = base64.b64decode(base64_file)
+
+        # Load the workbook from the file content
+        workbook = openpyxl.load_workbook(io.BytesIO(file_content))
+        # Get the desired worksheet by name or index
+        worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
+        exam_category_id = worksheet.cell(row=5, column=3).value
+        assessment_number = worksheet.cell(row=6, column=3).value
+        out_off = float(worksheet.cell(row=7, column=3).value)
+        program_course_id = worksheet.cell(row=1, column=4).value
+        weight = float(worksheet.cell(row=8, column=3).value)
+
+        # Assuming the data is in a specific sheet and columns
+        sn_column = 1  # Assuming SN is in column A
+        reg_no_column = 2  # Assuming Reg No is in column B
+        name_column = 3  # Assuming Name is in column C
+        marks_column = 4  # Assuming Marks is in column D
+
+        with session_scope() as session:
+            is_ue = session.query(ExamCategory).filter(
+                ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
+            # get student list from uaa service to get student uid after filtering
+            students = get_student_from_uaa()
+            success = 0
+            failed = 0
+            failed_students = []
+            print('Student',students)
+            for row in worksheet.iter_rows(min_row=10, values_only=True):
+                reg_number = row[reg_no_column - 1]
+                score = float(row[marks_column - 1])
+                # Find the item with the specified registration_number
+                if students:
+                    matching_item = next(
+                        (item for item in students if item["registration_number"] == reg_number), None)
+                    if matching_item:
+                        student_uid = matching_item["uid"]
+                        # print('student',reg_number,student_uid)
+                        if score <= out_off:
+                            if is_ue:
+                                result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                            out_off,
+                                                            weight)
+                                if result:
+                                    success = success + 1
+                                else:
+                                    failed = failed + 1
+                                    # failed_students.append(
+                                    #     {"reg_number": reg_number, "reason": "Data processing error"})
+                                    failed_students.append(FailedStudent(reg_number=reg_number,
+                                                                                           reason="Data processing error"))
+                            else:
+                                result = insert_course_work(student_uid, program_course_id, exam_category_id,
+                                                            assessment_number,
+                                                            out_off, score,
+                                                            weight)
+                                if result:
+                                    if result:
+                                        success = success + 1
+                                    else:
+                                        failed = failed + 1
+                                        # failed_students.append(
+                                        #     {"reg_number": reg_number, "reason": "Data processing error"})
+                                        failed_students.append(FailedStudent(reg_number=reg_number,
+                                                                                               reason="Data processing error"))
+
+                        else:
+                            failed = failed + 1
+                            # failed_students.append(
+                            #     {"reg_number": reg_number, "reason": "Score is greater than out off"})
+                            failed_students.append(FailedStudent(reg_number=reg_number,
+                                                                                   reason="Score is greater than out off"))
+                    else:
+                        failed = failed + 1
+                        # failed_students.append(
+                        #     {"reg_number": reg_number, "reason": "Data processing error ,student not found"})
+                        failed_students.append(FailedStudent(reg_number=reg_number,
+                                                                               reason="Data processing error ,student not found"))
+
+                else:
+                    failed = failed + 1
+                    # failed_students.append(
+                    #     {"reg_number": reg_number, "reason": "Data processing error , UAA service not found"})
+                    failed_students.append(FailedStudent(reg_number=reg_number, reason="Data processing error , UAA service not found"))
+
+        # Save the extracted data in the database
+        # ...
+        # response_data["failed_students"] = failed_students
+        # response_data["failed"] = failed
+        # response_data["success"] = success
+        response_data = ExtractionResponse(
+            success=success,
+            failed=failed,
+            failed_students=failed_students
+        )
+        return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
