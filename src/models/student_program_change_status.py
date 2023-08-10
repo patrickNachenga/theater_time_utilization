@@ -8,7 +8,6 @@ class StudentProgramChangeStatus(BaseModel):
     __tablename__ = "student_program_change_status"
     code: str = Column(String, nullable=False, unique=True)
     name: str = Column(String, nullable=False, unique=True)
-    student_program_changes = relationship('StudentProgramChange', lazy='subquery', back_populates="student_program_change_status")
 
 
     

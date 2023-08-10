@@ -65,7 +65,6 @@ class AcademicYearSemesterInput:
 
 @strawberry.type(description="Academic Year")
 class AcademicYearSemesterNode:
-    uid: Optional[str] = None
     odd_start_date: str
     odd_end_date: str
     even_start_date: str
@@ -74,6 +73,7 @@ class AcademicYearSemesterNode:
     exam_ticket_date: str
     semester: int
     academic_year: AcademicYearNode
+    uid: Optional[str] = None
 
 
 @strawberry.type(description="AcademicYear Country")
@@ -155,7 +155,6 @@ class ExamResultSummaryInput:
 
 @strawberry.type(description="Exam Result Summary Node|Output")
 class ExamResultSummaryNode:
-    uid: Optional[str] = None
     program_course_id: int
     exam_category_id: int
     student_uid: str
@@ -170,6 +169,7 @@ class ExamResultSummaryNode:
     grade_remark: str
     publish_status: bool
     publisher: str
+    uid: Optional[str] = None
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -392,8 +392,8 @@ class ProgramCourseAssessmentNode:
     program_course: "ProgramCourseNode"
     exam_category: ExamCategoryNode
     minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
+    can_exceed_minimum_by: Optional[int] = 0
 
 
 @strawberry.type(description="Program Course Assessment paginated Output")
@@ -511,6 +511,21 @@ class StudentProgramChangeNode:
     current_registration_number: str
     new_registration_number: Optional[str]
     approved_by: Optional[str]
+
+
+@strawberry.input(description="Student Program Change  Status Input")
+class StudentProgramChangeStatusInput:
+    uid: Optional[str] = None
+    code: str
+    name: str
+
+
+@strawberry.type(description="Student Program Change Status outputs")
+class StudentProgramChangeStatusNode:
+    uid: str
+    uid: Optional[str] = None
+    code: str
+    name: str
 
 
 @strawberry.type(description="User Token")

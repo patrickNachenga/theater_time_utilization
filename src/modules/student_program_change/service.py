@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi.encoders import jsonable_encoder
 from requests import options
@@ -17,6 +17,19 @@ from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentP
 
 class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramChangeInput, StudentProgramChangeInput]):
     @staticmethod
+    def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
+        """
+        Get all Student Program Change
+        :param uid:
+        :return StudentProgramChange:
+        """
+        with session_scope() as session:
+            result = session.query(StudentProgramChange).filter((StudentProgramChange.student_uid == uid),
+                                                                StudentProgramChange.deleted_at.is_(None)).order_by(
+                desc(StudentProgramChange.updated_at)).all()
+            return result
+
+    @staticmethod
     def get_student_change_program_by_uid(uid: str) -> StudentProgramChange:
         """
         Get Student Program Change  by uid
@@ -24,7 +37,8 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
         :return StudentProgramChange:
         """
         with session_scope() as session:
-            stmt = select(StudentProgramChange).where((StudentProgramChange.uid == uid) & (StudentProgramChange.deleted_at.is_(None)))
+            stmt = select(StudentProgramChange).where(
+                (StudentProgramChange.uid == uid) & (StudentProgramChange.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
@@ -36,6 +50,29 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
         """
         with session_scope() as session:
             try:
+                # Check if this is the same program
+                if input.new_program_uid == input.current_program_uid:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=None,
+                        message="You Cant Request For the Same Program"
+                    )
+
+                # Check if There Are Pending Request for this User
+                existed_request = session.query(StudentProgramChange).filter(
+                    (StudentProgramChange.approve_status == "PENDING"),
+                    (StudentProgramChange.student_uid == input.student_uid),
+                    (StudentProgramChange.deleted_at.is_(None)),
+                ).first()
+                if existed_request:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=None,
+                        message="Your already have Program change request on Go"
+                    )
+
                 # Verify and get supplied Current Program uid to get existed program model
                 current_program = ProgramService(Program).get_program_by_uid(input.current_program_uid)
                 if current_program is None:
