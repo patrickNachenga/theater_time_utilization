@@ -50,7 +50,8 @@ class ProgramCategoryQuery:
 @strawberry.type
 class ProgramCategoryMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_CATEGORIES"])])
-    def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[Optional[ProgramCategoryListNode]]:
+    def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[
+        Optional[ProgramCategoryListNode]]:
         try:
             return ProgramCategoryService(ProgramCategory).register_program_categories(inputs)
         except Exception as e:
