@@ -12,6 +12,7 @@ from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
     AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult
+from src.types import UploadResponse, FailedStudent
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -354,3 +355,54 @@ def get_student_from_uaa():
     if response.status_code == 200:
         data = response.json()
         return data
+
+
+def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
+                   is_ue=None, reg_number=None, assessment_number=None):
+    success = 0
+    failed = 0
+    failed_student = FailedStudent(reg_number=None, reason=None)
+    if students:
+        matching_item = next(
+            (item for item in students if item["registration_number"] == reg_number), None)
+        if matching_item:
+            student_uid = matching_item["uid"]
+            if score <= out_off:
+                if is_ue:
+                    result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                out_off,
+                                                weight)
+                    if result:
+                        success = success + 1
+                    else:
+                        failed = failed + 1
+                        failed_student.reg_number = reg_number
+                        failed_student.reason = "Data processing error"
+                else:
+                    result = insert_course_work(student_uid, program_course_id, exam_category_id,
+                                                assessment_number,
+                                                out_off, score,
+                                                weight)
+                    if result:
+                        if result:
+                            success = success + 1
+                        else:
+                            failed = failed + 1
+                            failed_student.reg_number = reg_number
+                            failed_student.reason = "Data processing error"
+
+            else:
+                failed = failed + 1
+                failed_student.reg_number = reg_number
+                failed_student.reason = "Score is greater than out off"
+        else:
+            failed = failed + 1
+            failed_student.reg_number = reg_number
+            failed_student.reason = "Data processing error ,student not found"
+
+    else:
+        failed = failed + 1
+        failed_student.reg_number = reg_number
+        failed_student.reason = "Data processing error , UAA service not found"
+
+    return success, failed, failed_student
