@@ -50,7 +50,7 @@ class CourseAllocationQuery:
                 message="Course Allocation not found",
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STAFF_COURSE_ALLOCATIONS"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
     def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[Optional[CourseAllocationListNode]]:
         result = None
         try:
