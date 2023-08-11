@@ -52,7 +52,7 @@ class CourseQuery:
 
 @strawberry.type
 class CourseMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSES"])])
     async def register_courses(self, inputs: List[CourseInput]) -> Response[Optional[PaginatedCourse]]:
         try:
             return CourseService(Course).register_courses(inputs)
