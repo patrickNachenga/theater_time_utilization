@@ -420,6 +420,7 @@ class ProgramCourseInput:
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
+    id: int
     uid: str
     program_semester: "ProgramSemesterNode"
     course: CourseNode
