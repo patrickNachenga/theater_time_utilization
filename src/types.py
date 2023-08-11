@@ -791,7 +791,6 @@ class CourseAllocationStaffUpdateInput:
 
 @strawberry.input(description="Get moodle url")
 class MoodleGetUrlInput:
-    moodle_username: str
     course_moodle_id: Optional[str]
 
 
