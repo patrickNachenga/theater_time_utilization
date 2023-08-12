@@ -13,9 +13,9 @@ from src.types import StudentProgramChangeInput, StudentProgramChangeNode
 @strawberry.type
 class StudentProgramChangeCourseQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_student_change_programs(self, student_uid: str) -> Response[Optional[List[StudentProgramChangeNode]]]:
+    def get_all_student_change_programs(self) -> Response[Optional[List[StudentProgramChangeNode]]]:
         try:
-            result = StudentProgramChangeService.get_student_change_programs(student_uid)
+            result = StudentProgramChangeService.get_all_student_change_programs()
         except Exception as e:
             print(e)
             result = None
