@@ -9,7 +9,7 @@ from sqlalchemy import and_, desc, exists
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
-from src.db.session import session_scope
+from src.db.session import session_scope, attach_coursework_listener
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
     AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult
 from src.types import UploadResponse, FailedStudent
@@ -302,6 +302,7 @@ def insert_course_work(student_uid, program_course_id, exam_category_id, assessm
                     weight=weight
                 )
                 session.add(new_exam_coursework)
+            attach_coursework_listener(1,2)
             session.commit()
             return True
         except Exception as e:

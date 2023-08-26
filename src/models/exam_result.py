@@ -13,6 +13,7 @@ class ExamResult(BaseModel):
     # out_of: float = Column(Float, nullable=False, unique=False)
     weight: int = Column(Integer, nullable=False, unique=False)
     overall_marks: float = Column(Integer, nullable=False)
+    number_of_sitting: int = Column(Integer, default =1, unique=False)
 
     program_course = relationship("ProgramCourse", lazy="subquery", back_populates="exam_results")
 

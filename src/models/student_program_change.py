@@ -1,11 +1,7 @@
-from typing import Optional
-
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, joinedload
+from sqlalchemy.orm import relationship
 
-from src.db.session import session_scope
-from src.models import BaseModel, Program
+from src.models import BaseModel
 
 
 class StudentProgramChange(BaseModel):

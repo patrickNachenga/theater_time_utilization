@@ -29,12 +29,11 @@ def session_scope():
         session.close()
 
 
-@event.listens_for(ExamCoursework, 'after_insert')
-@event.listens_for(ExamCoursework, 'after_update')
-def coursework_after_insert(mapper, connection, target):
-    print('signal working',target,'type',type(target))
+# Define the attach_coursework_listener function
+def attach_coursework_listener(additional_param1, additional_param2):
+    def coursework_after_insert_or_update(mapper, connection, target, additional_param1=additional_param1,
+                                          additional_param2=additional_param2):
+        print('target: ', target, 'other params:', additional_param1, additional_param2)
 
-
-@event.listens_for(ExamResult, 'after_insert')
-def result_after_insert(mapper, connection, target):
-    print('signal working')
+    event.listen(ExamCoursework, 'after_insert', coursework_after_insert_or_update)
+    event.listen(ExamCoursework, 'after_update', coursework_after_insert_or_update)
