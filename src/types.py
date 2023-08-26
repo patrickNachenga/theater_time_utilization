@@ -585,9 +585,9 @@ class RewControlNumberInput:
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
     program_uid: str
-    year_of_study: float
+    year_of_study: int
     student_status: str
-    countrycode: int
+    countrycode: str
     registration_number: str
 
 

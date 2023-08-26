@@ -17,6 +17,18 @@ from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentP
 
 class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramChangeInput, StudentProgramChangeInput]):
     @staticmethod
+    def get_all_student_change_programs() -> List[StudentProgramChange]:
+        """
+        Get Student Program Change off all student
+        :param uid:
+        :return StudentProgramChange:
+        """
+        with session_scope() as session:
+            result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
+                desc(StudentProgramChange.updated_at)).all()
+            return result
+
+    @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
         """
         Get all Student Program Change
