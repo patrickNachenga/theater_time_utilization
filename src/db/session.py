@@ -33,7 +33,7 @@ def session_scope():
 def attach_coursework_listener(registration_number, first_name, middle_name, last_name, gender):
     def coursework_after_insert_or_update(mapper, connection, target):
         with session_scope() as session:
-            total_score = session.query(func.sum(ExamCoursework.score)).filter(
+            total_score = session.query(func.sum(ExamCoursework.score / 100)).filter(
                 ExamCoursework.student_uid == target.student_uid,ExamCoursework.program_course == target.program_course).scalar()
             exam_result_summary = session.query(ExamResultSummary).filter(
                 ExamResultSummary.student_uid == target.student_uid,
