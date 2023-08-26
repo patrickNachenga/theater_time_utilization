@@ -276,7 +276,8 @@ def get_user_programs_headship(info: Info):
     return user_program_uids
 
 
-def insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
+def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
+                       exam_category_id, assessment_number, out_off, score,
                        weight) -> bool:
     with session_scope() as session:
         try:
@@ -302,7 +303,7 @@ def insert_course_work(student_uid, program_course_id, exam_category_id, assessm
                     weight=weight
                 )
                 session.add(new_exam_coursework)
-            attach_coursework_listener(1,2)
+            attach_coursework_listener(registration_number=registration_number, first_name=first_name, middle_name=middle_name, last_name=last_name, gender=gender)
             session.commit()
             return True
         except Exception as e:
@@ -368,6 +369,11 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             (item for item in students if item["registration_number"] == reg_number), None)
         if matching_item:
             student_uid = matching_item["uid"]
+            registration_number = matching_item["registration_number"]
+            first_name = matching_item["user"]["first_name"]
+            middle_name = matching_item["user"]["middle_name"]
+            last_name = matching_item["user"]["last_name"]
+            gender = matching_item["user"]["gender"]
             if score <= out_off:
                 if is_ue:
                     result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
@@ -380,7 +386,8 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                         failed_student.reg_number = reg_number
                         failed_student.reason = "Data processing error"
                 else:
-                    result = insert_course_work(student_uid, program_course_id, exam_category_id,
+                    result = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
+                                                student_uid, program_course_id, exam_category_id,
                                                 assessment_number,
                                                 out_off, score,
                                                 weight)

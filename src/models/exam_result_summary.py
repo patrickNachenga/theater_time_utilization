@@ -8,13 +8,13 @@ from src.models import BaseModel
 class ExamResultSummary(BaseModel):
     __tablename__ = "exam_result_summaries"
 
-    program_course_id: int = Column(Integer, nullable=False, unique=True)
-    student_uid: str = Column(String, nullable=False, unique=True)
-    registration_number: str = Column(String, nullable=False, unique=True)
+    program_course_id: int = Column(Integer, nullable=False)
+    student_uid: str = Column(String, nullable=False)
+    registration_number: str = Column(String, nullable=False)
     first_name: str = Column(String, nullable=False)
     middle_name: str = Column(String, nullable=True)
     last_name: str = Column(String, nullable=False)
-    gender: str = Column(CHAR(1), nullable=False)
+    gender: str = Column(String, nullable=False)
     course_code: str = Column(String, nullable=False)
     course_name: str = Column(String, nullable=False)
     cw_score: float = Column(Float, nullable=True, unique=False)
