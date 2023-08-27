@@ -30,5 +30,9 @@ class ExamResultSummary(BaseModel):
     publish_status: int = Column(Boolean, nullable=True)
     publisher: str = Column(String, nullable=True)
     publish_date: Date = Column(Date, nullable=True)
+    study_year: int = Column(Integer, nullable=False)
+    semester: int = Column(Integer, nullable=False)
+    academic_year_id: int = Column(Integer, nullable=False)
+
 
 
