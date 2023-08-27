@@ -150,7 +150,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             if child_entries_exist:
                 msg = "Cannot delete. Entry in use."
                 raise ValueError(msg)
-            obj.update({self.model.deleted_at: pendulum.now(), self.model.deleted_by: info.context.user.id})
+            obj.update({self.model.deleted_at: pendulum.now(), self.model.deleted_by: info.context.user.profile.id})
             session.commit()
             return obj
 
