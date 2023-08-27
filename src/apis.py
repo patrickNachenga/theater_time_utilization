@@ -20,10 +20,12 @@ from src.modules.program_semester.apis import ProgramSemesterQuery, ProgramSemes
 from src.modules.programs.apis import ProgramQuery, ProgramMutation
 from src.modules.semester_registration.apis import SemesterRegistrationQuery
 from src.modules.sr2_api_calls.apis import Sr2ApiCallQuery, Sr2ApiCallMutation
+from src.modules.states.apis import StateQuery, StateMutation
 from src.modules.student.apis import StudentQuery, StudentMutation
 from src.modules.student_program_change.apis import StudentProgramChangeMutation, StudentProgramChangeCourseQuery
 from src.modules.student_program_change_status.apis import StudentProgramChangeStatusQuery, \
     StudentProgramChangeStatusMutation
+from src.modules.workflows.apis import WorkflowQuery, WorkflowMutation
 
 
 @strawberry.type
@@ -32,7 +34,8 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                ExamResultSummaryQuery, ExamResultQuery,
                AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery,
-               AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,StudentProgramChangeStatusQuery):
+               AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
+               StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery):
     pass
 
 
@@ -43,5 +46,6 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ExamResultSummaryMutation, AcademicYearMutation,
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation,
-                  AcademicYearSemesterMutation,StudentProgramChangeMutation, StudentProgramChangeStatusMutation):
+                  AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
+                  WorkflowMutation, StateMutation):
     pass

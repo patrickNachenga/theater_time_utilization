@@ -12,7 +12,7 @@ from src.types import ExamCategoryGroupsInput, ExamCategoryGroupsNode
 @strawberry.type
 class ExamCategoryGroupsQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_CATEGORY_GROUPS"])])
-    def get_exam_category_groups(self) -> Response[Optional[List[ExamCategoryGroupsNode]]]:
+    def get_exam_category_groups(self) -> Response[List[ExamCategoryGroupsNode]]:
         try:
             result = ExamCategoryGroupsService.get_exam_category_groups()
         except Exception as e:
@@ -28,8 +28,7 @@ class ExamCategoryGroupsQuery:
 @strawberry.type
 class ExamCategoryGroupsMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_CATEGORY_GROUPS"])])
-    def register_exam_category_groups(self, inputs: List[ExamCategoryGroupsInput]) -> Response[
-        Optional[List[ExamCategoryGroupsNode]]]:
+    def register_exam_category_groups(self, inputs: List[ExamCategoryGroupsInput]) -> Response[List[ExamCategoryGroupsNode]]:
         try:
             return ExamCategoryGroupsService().register_exam_category_groups(inputs)
         except Exception as e:

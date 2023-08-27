@@ -70,7 +70,7 @@ class Sr2ApiCalls(object):
                     data=None)
 
     @staticmethod
-    def request_control_numbers(inputs: RequestControlNumberInput) -> Response[Optional[str]]:
+    def request_control_numbers(inputs: RequestControlNumberInput) -> Response[str]:
 
         # Verify and get supplied Program code and exists
         with session_scope() as session:
@@ -105,7 +105,7 @@ class Sr2ApiCalls(object):
                                 data=None, message="Failed to generate control number request")
 
     @staticmethod
-    def renew_control_number(inputs: RewControlNumberInput) -> Response[Optional[str]]:
+    def renew_control_number(inputs: RewControlNumberInput) -> Response[str]:
         # Set the request payload
         payload = {
             "pay_type": inputs.pay_type,
@@ -125,7 +125,7 @@ class Sr2ApiCalls(object):
                             data=None, message="Failed to refresh number request")
 
     @staticmethod
-    def get_student_control_number(registration_number: str) -> Response[Optional[List[ControlNumberNode]]]:
+    def get_student_control_number(registration_number: str) -> Response[List[ControlNumberNode]]:
         """
         This is a function to request program fee structure  from SR2
         """
@@ -166,7 +166,7 @@ class Sr2ApiCalls(object):
             )
 
     @staticmethod
-    def get_financial_statement(registration_number: str) -> Response[str | None]:
+    def get_financial_statement(registration_number: str) -> Response[str]:
         """
         This is a function to request student financial statement  from SR2
         """

@@ -26,7 +26,7 @@ class CourseLearnOutcomeQuery:
     #         data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_LEARN_OUTCOMES"])])
-    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[Optional[List[CourseLearnOutcomeNode]]]:
+    def get_course_learn_outcomes_by_course(self, course_uid: str) -> Response[List[CourseLearnOutcomeNode]]:
         try:
             result = CourseLearnOutcomeService.get_course_learn_outcome_by_course(course_uid)
         except Exception as e:
@@ -46,7 +46,7 @@ class CourseLearnOutcomeQuery:
                 data=[])
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_LEARN_OUTCOMES"])])
-    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode | None]:
+    def get_course_learn_outcome(self, uid: str) -> Response[CourseLearnOutcomeNode]:
         try:
             result = CourseLearnOutcomeService(CourseLearnOutcome).get_course_learn_outcome_by_uid(uid)
         except Exception as e:
@@ -69,7 +69,7 @@ class CourseLearnOutcomeQuery:
 @strawberry.type
 class CourseLearnOutcomeMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_LEARN_OUTCOMES"])])
-    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode | None]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcomeNode]:
         try:
             return CourseLearnOutcomeService(CourseLearnOutcome).register_course_learn_outcome(inputs)
         except Exception as e:

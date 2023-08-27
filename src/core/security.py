@@ -92,7 +92,7 @@ class CustomPermissionExtension(FieldExtension):
 
 class Context(BaseContext):
     @cached_property
-    def user(self) -> UserAuthenticatedModel | None:
+    def user(self) -> UserAuthenticatedModel | None | Response:
         """
             Get User From Token
         :return:
@@ -100,10 +100,11 @@ class Context(BaseContext):
         if not self.request:
             return None
         authorization = self.request.headers.get("Authorization", None)
+        params = self.request.query_params
         if authorization:
             return fetch_user(authorization.split(" ")[1])
-        if self.request.get("access_token"):
-            return fetch_user(self.request.get("access_token"))
+        if params and params.get("access_token"):
+            return fetch_user(params.get("access_token"))
         return None
 
     @cached_property
@@ -497,24 +498,6 @@ permissions: typing.List[Permission] = [
         description="Can Delete Exam Result",
         service="registration",
     ),
-    Permission(
-        code="VIEW_GROUPS",
-        name="View Groups",
-        description="Can View Groups",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_GROUPS",
-        name="Register Groups",
-        description="Can Register Groups",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_GROUP",
-        name="Remove Group",
-        description="Can Delete Group",
-        service="registration",
-    ),
 
     Permission(
         code="VIEW_STUDENT_COURSE_REGISTRATIONS",
@@ -532,6 +515,63 @@ permissions: typing.List[Permission] = [
         code="REGISTER_STUDENT_COURSES",
         name="Register Student Courses",
         description="Can Register Student Courses",
+        service="registration",
+    ),
+
+    Permission(
+        code="VIEW_WORKFLOWS",
+        name="View Workflows",
+        description="Can View Workflows",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_WORKFLOWS",
+        name="Register Workflows",
+        description="Can Register Workflows",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_WORKFLOW",
+        name="Remove Workflows",
+        description="Can Delete Workflows",
+        service="registration",
+    ),
+
+    Permission(
+        code="VIEW_STATES",
+        name="View States",
+        description="Can View States",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_STATES",
+        name="Register States",
+        description="Can Register States",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_STATE",
+        name="Remove States",
+        description="Can Delete States",
+        service="registration",
+    ),
+
+    Permission(
+        code="VIEW_TRANSITION_METAS",
+        name="View Transition Metas",
+        description="Can View Transition Metas",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_TRANSITION_METAS",
+        name="Register Transition Metas",
+        description="Can Register Transition Metas",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_TRANSITION_META",
+        name="Remove Transition Meta",
+        description="Can Delete Transition Meta",
         service="registration",
     ),
 ]

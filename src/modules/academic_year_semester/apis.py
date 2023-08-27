@@ -15,7 +15,7 @@ from src.types import PaginationInput, \
 class AcademicYearSemesterQuery:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTERS"])])
-    def get_academic_year_semesters(self, pagination: PaginationInput) -> Response[Optional[AcademicYearSemesterListNode]]:
+    def get_academic_year_semesters(self, pagination: PaginationInput) -> Response[AcademicYearSemesterListNode]:
         try:
             result = AcademicYearSemesterCrud.get_multi_paginated(pagination,
                                                                   ["oddStartDate", "oddEndDate", "evenStartDate",
@@ -32,7 +32,7 @@ class AcademicYearSemesterQuery:
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTERS"])])
-    def get_academic_year_semester(self, uid: str) -> Response[Optional[AcademicYearSemesterNode]]:
+    def get_academic_year_semester(self, uid: str) -> Response[AcademicYearSemesterNode]:
         try:
             result = AcademicYearSemesterService.get_academic_year_semesters_by_uid(uid)
         except Exception as e:
@@ -52,7 +52,7 @@ class AcademicYearSemesterQuery:
                 data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEAR_SEMESTER_BY_ACADEMIC_YEAR"])])
-    def get_academic_year_semester_by_academic_year(self, academic_year_uid: str) -> Response[Optional[List[AcademicYearSemesterNode]]]:
+    def get_academic_year_semester_by_academic_year(self, academic_year_uid: str) -> Response[List[AcademicYearSemesterNode]]:
         try:
             return AcademicYearSemesterService.get_academic_year_semesters_by_academic_year(academic_year_uid)
         except Exception as e:
@@ -67,7 +67,7 @@ class AcademicYearSemesterQuery:
 @strawberry.type
 class AcademicYearSemesterMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEAR_SEMESTER"])])
-    def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[Optional[AcademicYearSemesterListNode]]:
+    def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[AcademicYearSemesterListNode]:
         try:
             return AcademicYearSemesterService(AcademicYearSemester).register_academic_semesters(inputs)
 

@@ -57,7 +57,8 @@ class StudentProgramChangeStatusService:
             result = session.scalars(stmt)
             return result.all()
 
-    def register_student_program_change_status(self, inputs: List[StudentProgramChangeStatusInput]) -> Response[List[Optional[StudentProgramChangeStatus]]]:
+    def register_student_program_change_status(self, inputs: List[StudentProgramChangeStatusInput]) -> (
+            Response)[List[StudentProgramChangeStatus]]:
         """
         Register student programs change status
         :param inputs:

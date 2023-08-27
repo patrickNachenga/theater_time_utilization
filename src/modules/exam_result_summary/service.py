@@ -32,7 +32,7 @@ class ExamResultSummaryService:
             return result
 
     def register_exam_result_summaries(self, inputs: List[ExamResultSummaryInput]) -> \
-            Response[List[ExamResultSummaryNode] | None]:
+            Response[List[ExamResultSummaryNode]]:
         exam_result_summaries_list = []
 
         with session_scope() as session:
