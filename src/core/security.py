@@ -531,9 +531,28 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
-        code="REMOVE_WORKFLOWS",
+        code="REMOVE_WORKFLOW",
         name="Remove Workflows",
         description="Can Delete Workflows",
+        service="registration",
+    ),
+
+    Permission(
+        code="VIEW_STATES",
+        name="View States",
+        description="Can View States",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_STATES",
+        name="Register Workflows",
+        description="Can Register States",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_STATE",
+        name="Remove Workflows",
+        description="Can Delete States",
         service="registration",
     ),
 ]

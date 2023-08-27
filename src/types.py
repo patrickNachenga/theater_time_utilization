@@ -521,7 +521,6 @@ class StudentProgramChangeNode:
     new_program: Optional["ProgramNode"]
 
 
-
 @strawberry.input(description="Student Program Change  Status Input")
 class StudentProgramChangeStatusInput:
     uid: Optional[str] = None
@@ -901,4 +900,24 @@ class WorkflowNode:
 @strawberry.type(description="Workflow paginated Output")
 class PaginatedWorkflow:
     items: List[WorkflowNode]
+    total_count: int
+
+
+@strawberry.input(description="State Input")
+class StateInput:
+    uid: Optional[str] = None
+    description: Optional[str] = ""
+    label: str
+
+
+@strawberry.type(description="State Output")
+class StateNode:
+    uid: str
+    description: str
+    label: str
+
+
+@strawberry.type(description="State paginated Output")
+class PaginatedState:
+    items: List[StateNode]
     total_count: int
