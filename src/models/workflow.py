@@ -34,7 +34,7 @@ class TransitionMeta(BaseModel):
     destination_state_id = Column(Integer, ForeignKey('states.id'))
 
     # Relationships
-    workflow = relationship('Workflow', backref='transition_metas')
+    workflow = relationship('Workflow', lazy='subquery', back_populates="transition_metas")
     source_state = relationship('State', foreign_keys=[source_state_id])
     destination_state = relationship('State', foreign_keys=[destination_state_id])
 
