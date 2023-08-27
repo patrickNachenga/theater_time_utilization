@@ -15,7 +15,7 @@ class StateQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(['VIEW_STATES'])])
     def get_states(self, pagination: PaginationInput) -> Response[PaginatedState]:
         try:
-            result = StateCrud.get_multi_paginated(pagination, ['name', 'description'], PaginatedState)
+            result = StateCrud.get_multi_paginated(pagination, ['label', 'description'], PaginatedState)
         except Exception as e:
             print(e)
             result = PaginatedState(items=[], total_count=0)

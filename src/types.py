@@ -921,3 +921,25 @@ class StateNode:
 class PaginatedState:
     items: List[StateNode]
     total_count: int
+
+
+@strawberry.input(description="State Input")
+class TransitionMetaInput:
+    uid: Optional[str] = None
+    workflow_uid: str
+    source_state_uid: str
+    destination_state: str
+
+
+@strawberry.type(description="TransitionMeta Output")
+class TransitionMetaNode:
+    uid: str
+    workflow: WorkflowNode
+    source_state: StateNode
+    destination_state: StateNode
+
+
+@strawberry.type(description="TransitionMeta paginated Output")
+class PaginatedTransitionMeta:
+    items: List[TransitionMetaNode]
+    total_count: int

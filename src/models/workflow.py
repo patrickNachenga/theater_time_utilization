@@ -15,6 +15,7 @@ class Workflow(BaseModel):
     name = Column(String)
     description = Column(String)
     processes = relationship('Process', lazy='subquery', back_populates="workflow")
+    transition_metas = relationship('TransitionMeta', lazy='subquery', back_populates="workflow")
 
 
 class State(BaseModel):

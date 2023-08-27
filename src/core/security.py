@@ -545,14 +545,33 @@ permissions: typing.List[Permission] = [
     ),
     Permission(
         code="REGISTER_STATES",
-        name="Register Workflows",
+        name="Register States",
         description="Can Register States",
         service="registration",
     ),
     Permission(
         code="REMOVE_STATE",
-        name="Remove Workflows",
+        name="Remove States",
         description="Can Delete States",
+        service="registration",
+    ),
+
+    Permission(
+        code="VIEW_TRANSITION_METAS",
+        name="View Transition Metas",
+        description="Can View Transition Metas",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_TRANSITION_METAS",
+        name="Register Transition Metas",
+        description="Can Register Transition Metas",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_TRANSITION_META",
+        name="Remove Transition Meta",
+        description="Can Delete Transition Meta",
         service="registration",
     ),
 ]
