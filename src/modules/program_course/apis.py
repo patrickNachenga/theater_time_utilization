@@ -15,8 +15,8 @@ from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput
 @strawberry.type
 class ProgramCourseQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
-    def get_program_courses(self, pagination: PaginationInput, program_semester: Optional[str] = None) -> Response[
-        Optional[ProgramCourseListNode]]:
+    def get_program_courses(self, pagination: PaginationInput, program_semester: Optional[str] = None) -> (
+            Response)[ProgramCourseListNode]:
         try:
             unique_list = []
             # Verify and get supplied Program uid. and get existed program model
@@ -53,7 +53,7 @@ class ProgramCourseQuery:
             data=result)
 
     @strawberry.field()#extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])]
-    def get_program_course(self, uid: str) -> Response[ProgramCourseNode | None]:
+    def get_program_course(self, uid: str) -> Response[ProgramCourseNode]:
         try:
             result = ProgramCourseService.get_program_course_by_uid(uid)
         except Exception as e:
@@ -73,8 +73,7 @@ class ProgramCourseQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
-    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
-        Optional[ProgramCourseListNode]]:
+    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[ProgramCourseListNode]:
         try:
             program_courses = ProgramCourseService.get_program_course_by_program_semester_uid(program_semester_uid)
             if program_courses:
@@ -118,7 +117,7 @@ class ProgramCourseQuery:
 @strawberry.type
 class ProgramCourseMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_COURSES"])])
-    def register_program_course(self, inputs: List[ProgramCourseInput]) -> Response[Optional[ProgramCourseListNode]]:
+    def register_program_course(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
         """
             register and update program courses
             :param inputs

@@ -13,7 +13,7 @@ from src.types import GroupNode, GroupInput
 @strawberry.type
 class GroupQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_GROUPS"])])
-    def get_groups(self) -> Response[List[GroupNode] | None]:
+    def get_groups(self) -> Response[List[GroupNode]]:
         try:
             result = GroupService.get_groups()
         except Exception as e:
@@ -28,7 +28,7 @@ class GroupQuery:
 @strawberry.type
 class GroupMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_GROUPS"])])
-    def register_groups(self, inputs: List[GroupInput]) -> Response[List[GroupNode] | None]:
+    def register_groups(self, inputs: List[GroupInput]) -> Response[List[GroupNode]]:
         try:
             return GroupService().register_groups(inputs)
         except Exception as e:

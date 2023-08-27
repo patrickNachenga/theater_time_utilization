@@ -13,7 +13,7 @@ from src.types import MoodleGetUrlInput
 @strawberry.type
 class MoodleApiCallQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_moodle_url(self, inputs: MoodleGetUrlInput, info: Info) -> Response[Optional[str]]:
+    def get_moodle_url(self, inputs: MoodleGetUrlInput, info: Info) -> Response[str]:
         try:
             if info and info.context.user.profile.moodle_username:
                 moodle_username = info.context.user.profile.moodle_username

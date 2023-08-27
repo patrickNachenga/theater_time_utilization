@@ -512,13 +512,14 @@ class StudentProgramChangeNode:
     uid: str
     academic_year: "AcademicYearNode"
     current_program: "ProgramNode"
-    new_program: Optional["ProgramNode"]
     approve_status: str
     approve_remark: str
     reason: str
     current_registration_number: str
     new_registration_number: Optional[str]
     approved_by: Optional[str]
+    new_program: Optional["ProgramNode"]
+
 
 
 @strawberry.input(description="Student Program Change  Status Input")
@@ -531,9 +532,9 @@ class StudentProgramChangeStatusInput:
 @strawberry.type(description="Student Program Change Status outputs")
 class StudentProgramChangeStatusNode:
     uid: str
-    uid: Optional[str] = None
     code: str
     name: str
+    uid: Optional[str] = None
 
 
 @strawberry.type(description="User Token")
@@ -881,3 +882,23 @@ class UploadInput:
     program_course_id: int
     weight: int
     marks: List[MarksInput]
+
+
+@strawberry.input(description="Workflow Input")
+class WorkflowInput:
+    uid: Optional[str] = None
+    description: Optional[str] = ""
+    name: str
+
+
+@strawberry.type(description="Workflow Output")
+class WorkflowNode:
+    uid: str
+    description: str
+    name: str
+
+
+@strawberry.type(description="Workflow paginated Output")
+class PaginatedWorkflow:
+    items: List[WorkflowNode]
+    total_count: int

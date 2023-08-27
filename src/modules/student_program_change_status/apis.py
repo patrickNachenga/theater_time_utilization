@@ -12,7 +12,7 @@ from src.types import ProgramCategoryInput, StudentProgramChangeNode, StudentPro
 @strawberry.type
 class StudentProgramChangeStatusQuery:
     @strawberry.field
-    def get_student_program_changes_status(self) -> Response[Optional[List[StudentProgramChangeStatusNode]]]:
+    def get_student_program_changes_status(self) -> Response[List[StudentProgramChangeStatusNode]]:
         try:
             result = StudentProgramChangeStatusService().get_student_program_changes_status()
         except Exception as e:
@@ -25,7 +25,7 @@ class StudentProgramChangeStatusQuery:
             data=result)
 
     @strawberry.field
-    def get_student_program_changes_status_by_uid(self, uid: str) -> Response[Optional[StudentProgramChangeStatusNode]]:
+    def get_student_program_changes_status_by_uid(self, uid: str) -> Response[StudentProgramChangeStatusNode]:
         try:
             result = StudentProgramChangeStatusService().get_student_program_changes_status_by_uid(uid)
         except Exception as e:
@@ -48,7 +48,7 @@ class StudentProgramChangeStatusQuery:
 @strawberry.type
 class StudentProgramChangeStatusMutation:
     @strawberry.field
-    def register_student_program_change(self, inputs: List[StudentProgramChangeStatusInput]) -> Response[Optional[List[StudentProgramChangeStatusNode]]]:
+    def register_student_program_change(self, inputs: List[StudentProgramChangeStatusInput]) -> Response[List[StudentProgramChangeStatusNode]]:
         try:
             return StudentProgramChangeStatusService().register_student_program_change_status(inputs)
         except Exception as e:

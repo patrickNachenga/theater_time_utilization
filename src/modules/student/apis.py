@@ -28,8 +28,7 @@ from src.types import CourseRegistrationListNode, \
 @strawberry.type
 class StudentQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[
-        Optional[StudentProgramCourseListNode]]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
 
@@ -48,8 +47,7 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_student_current_course_registration(self, student_uid: str) -> Response[
-        Optional[CourseRegistrationListNode]]:
+    def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
 
@@ -68,7 +66,7 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field()
-    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse | None:
+    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
 
