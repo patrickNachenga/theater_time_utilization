@@ -59,7 +59,7 @@ class StateMutation:
         :return:
         """
         try:
-            StateCrud.remove_check_relations(uid, 'state_id', [TransitionMeta], info)
+            StateCrud.remove_check_relations(uid, 'source_state_id', [TransitionMeta], info)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
