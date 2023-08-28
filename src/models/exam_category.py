@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -8,6 +8,9 @@ class ExamCategory(BaseModel):
     __tablename__ = "exam_categories"
     code: str = Column(String, nullable=False, unique=False)
     name: str = Column(String, nullable=False, unique=False)
+    is_ue: bool = Column(Boolean, default=False)
+    is_theory: bool = Column(Boolean, default=False)
+
 
     # _______________________________Foreign Keys___________________________________#
 
