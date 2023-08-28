@@ -1,7 +1,8 @@
 import json
 import uuid
 
-from sqlalchemy import Column, String, PickleType, Integer, ForeignKey, DateTime, desc
+from sqlalchemy import Column, String, PickleType, Integer, ForeignKey, DateTime, desc, CheckConstraint, \
+    UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.orm import relationship, Mapped
@@ -37,6 +38,12 @@ class TransitionMeta(BaseModel):
     workflow = relationship('Workflow', lazy='subquery', back_populates="transition_metas")
     source_state = relationship('State', foreign_keys=[source_state_id])
     destination_state = relationship('State', foreign_keys=[destination_state_id])
+
+    # Adding Check and Unique Constraints
+    __table_args__ = (
+        CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
+        UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
+    )
 
 
 class JsonEncodedList(Mutable, list):
