@@ -482,8 +482,7 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
 
 
 def attach_exam_result_listener(target):
-    if True:
-        pass
+
     with session_scope() as session:
         student_exam_results = session.query(ExamResult).filter(
             ExamResult.student_uid == target.student_uid,
@@ -492,13 +491,13 @@ def attach_exam_result_listener(target):
 
         for exam_result in student_exam_results:
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
-                ProgramCourseAssessment.exam_category_id == exam_course_work.exam_category_id,
-                ProgramCourseAssessment.program_course_id == exam_course_work.program_course_id).scalar()
+                ProgramCourseAssessment.exam_category_id == exam_result.exam_category_id,
+                ProgramCourseAssessment.program_course_id == exam_result.program_course_id).scalar()
             total_weight = session.query(func.coalesce(func.sum(ExamCoursework.weight))).filter(
                 ExamCoursework.student_uid == target.student_uid,
-                ExamCoursework.exam_category_id == exam_course_work.exam_category_id,
+                ExamCoursework.exam_category_id == exam_result.exam_category_id,
                 ExamCoursework.program_course_id == target.program_course_id).scalar()
-            weighted_score = (exam_course_work.score / 100) * maximum_score * (exam_course_work.weight / total_weight)
+            weighted_score = (exam_result.score / 100) * maximum_score * (exam_result.weight / total_weight)
             total_score += weighted_score
         exam_result_summary = session.query(ExamResultSummary).filter(
             ExamResultSummary.student_uid == target.student_uid,

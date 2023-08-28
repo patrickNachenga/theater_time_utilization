@@ -14,7 +14,7 @@ class ExamCategory(BaseModel):
 
     # _______________________________Foreign Keys___________________________________#
 
-    exam_category_group_id: int = Column(Integer, ForeignKey("exam_category_groups.id"), nullable=False)
+    # exam_category_group_id: int = Column(Integer, ForeignKey("exam_category_groups.id"), nullable=False)
 
     # _____________________________Relationships____________________________________#
 
