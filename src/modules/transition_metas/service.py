@@ -58,7 +58,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
             for input1 in inputs:
                 workflow = WorkflowService(Workflow).get(input1.workflow_uid)
                 source_state = StateService(State).get(input1.source_state_uid)
-                destination_state = StateService(State).get(input1.destination_state)
+                destination_state = StateService(State).get(input1.destination_state_uid)
 
                 if not workflow:
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
