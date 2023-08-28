@@ -929,7 +929,7 @@ class TransitionMetaInput:
     uid: Optional[str] = None
     workflow_uid: str
     source_state_uid: str
-    destination_state: str
+    destination_state_uid: str
 
 
 @strawberry.type(description="TransitionMeta Output")
