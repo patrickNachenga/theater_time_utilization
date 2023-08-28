@@ -5,9 +5,9 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models import ExamCategoryGroup
+# from src.models import ExamCategoryGroup
 from src.models.exam_category import ExamCategory
-from src.modules.exam_category_groups.service import ExamCategoryGroupsService
+# from src.modules.exam_category_groups.service import ExamCategoryGroupsService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamCategoryInput, ExamCategoryNode
