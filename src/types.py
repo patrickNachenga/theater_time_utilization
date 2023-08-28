@@ -99,7 +99,8 @@ class ExamCategoryInput:
     uid: Optional[str] = None
     name: str
     code: str
-    exam_category_group_uid: str
+    is_ue: bool
+    is_theory: bool
 
 
 @strawberry.type(description="Exam Category Output")

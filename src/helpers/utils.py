@@ -428,7 +428,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
         student_exam_course_works = session.query(ExamCoursework).filter(
             ExamCoursework.student_uid == target.student_uid,
             ExamCoursework.program_course_id == target.program_course_id)
-        total_score = 0
+        total_practical_score = 0
+        total_theory_score = 0
 
         for exam_course_work in student_exam_course_works:
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
@@ -439,7 +440,13 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 ExamCoursework.exam_category_id == exam_course_work.exam_category_id,
                 ExamCoursework.program_course_id == target.program_course_id).scalar()
             weighted_score = (exam_course_work.score / 100) * maximum_score * (exam_course_work.weight / total_weight)
-            total_score += weighted_score
+            if exam_course_work.exam_category.is_theory:
+                total_theory_score += weighted_score
+            else:
+                total_practical_score += weighted_score
+
+            total_score = total_theory_score + total_practical_score
+
         exam_result_summary = session.query(ExamResultSummary).filter(
             ExamResultSummary.student_uid == target.student_uid,
             ExamResultSummary.program_course_id == target.program_course.id,
@@ -459,6 +466,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 credit=target.program_course.credit,
                 course_code=target.program_course.course.code,
                 course_name=target.program_course.course.name,
+                cw_practical=round(total_practical_score,2) if total_practical_score > 0 else None,
+                cw_theory=round(total_theory_score,2) if total_theory_score > 0 else None,
                 cw_score=round(total_score, 2),
                 grade='I',
                 grade_remark='Incomplete',
@@ -469,4 +478,31 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 academic_year_id=target.program_course.program_semester.academic_year_id
             )
             session.add(new_exam_result)
+        session.commit()
+
+
+def attach_exam_result_listener(target):
+    with session_scope() as session:
+        student_exam_results = session.query(ExamResult).filter(
+            ExamResult.student_uid == target.student_uid,
+            ExamResult.program_course_id == target.program_course_id)
+        total_score = 0
+
+        for exam_result in student_exam_results:
+            maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
+                ProgramCourseAssessment.exam_category_id == exam_course_work.exam_category_id,
+                ProgramCourseAssessment.program_course_id == exam_course_work.program_course_id).scalar()
+            total_weight = session.query(func.coalesce(func.sum(ExamCoursework.weight))).filter(
+                ExamCoursework.student_uid == target.student_uid,
+                ExamCoursework.exam_category_id == exam_course_work.exam_category_id,
+                ExamCoursework.program_course_id == target.program_course_id).scalar()
+            weighted_score = (exam_course_work.score / 100) * maximum_score * (exam_course_work.weight / total_weight)
+            total_score += weighted_score
+        exam_result_summary = session.query(ExamResultSummary).filter(
+            ExamResultSummary.student_uid == target.student_uid,
+            ExamResultSummary.program_course_id == target.program_course.id,
+            ExamResultSummary.number_of_sitting == 1).first()
+        if exam_result_summary:
+            exam_result_summary.ue_score = round(total_score, 2)
+
         session.commit()
