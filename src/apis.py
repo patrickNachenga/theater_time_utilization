@@ -25,6 +25,7 @@ from src.modules.student.apis import StudentQuery, StudentMutation
 from src.modules.student_program_change.apis import StudentProgramChangeMutation, StudentProgramChangeCourseQuery
 from src.modules.student_program_change_status.apis import StudentProgramChangeStatusQuery, \
     StudentProgramChangeStatusMutation
+from src.modules.transition_metas.apis import TransitionMetaQuery, TransitionMetaMutation
 from src.modules.workflows.apis import WorkflowQuery, WorkflowMutation
 
 
@@ -35,7 +36,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery,
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
-               StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery):
+               StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery):
     pass
 
 
@@ -47,5 +48,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation,
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
-                  WorkflowMutation, StateMutation):
+                  WorkflowMutation, StateMutation, TransitionMetaMutation):
     pass

@@ -38,6 +38,19 @@ class TransitionMetaQuery:
             message="Successfully Retrieve TransitionMeta",
             data=result)
 
+    @strawberry.field(extensions=[CustomPermissionExtension(['VIEW_TRANSITION_METAS'])])
+    def get_transition_meta_by_workflow(self, workflow_uid: str) -> Response[List[TransitionMetaNode]]:
+        try:
+            result = TransitionMetaCrud.get_transition_metas_by_workflow(workflow_uid)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Successfully Retrieve TransitionMeta",
+            data=result)
+
 
 @strawberry.type
 class TransitionMetaMutation:
