@@ -482,6 +482,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
 
 
 def attach_exam_result_listener(target):
+    if True:
+        pass
     with session_scope() as session:
         student_exam_results = session.query(ExamResult).filter(
             ExamResult.student_uid == target.student_uid,
