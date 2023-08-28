@@ -4,14 +4,15 @@ from typing import List
 
 import requests
 from passlib.context import CryptContext
-from sqlalchemy import and_, desc, exists
+from sqlalchemy import and_, desc, exists, func
 
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
-from src.db.session import session_scope, attach_coursework_listener
+from src.db.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
-    AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult
+    AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult, ProgramCourseAssessment, \
+    ExamResultSummary
 from src.types import UploadResponse, FailedStudent
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -293,6 +294,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             if exam_course_work:
                 exam_course_work.score = score
                 exam_course_work.weight = weight
+                instance = exam_course_work
             else:
                 new_exam_coursework = ExamCoursework(
                     student_uid=student_uid,
@@ -303,8 +305,11 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                     weight=weight
                 )
                 session.add(new_exam_coursework)
-            attach_coursework_listener(registration_number=registration_number, first_name=first_name, middle_name=middle_name, last_name=last_name, gender=gender)
+                instance = new_exam_coursework
             session.commit()
+            attach_coursework_listener(target=instance, registration_number=registration_number, first_name=first_name,
+                                       middle_name=middle_name, last_name=last_name, gender=gender)
+
             return True
         except Exception as e:
             print(e)
@@ -414,3 +419,54 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
         failed_student.reason = "Data processing error , UAA service not found"
 
     return success, failed, failed_student
+
+
+def attach_coursework_listener(target, registration_number, first_name, middle_name, last_name, gender):
+    # def coursework_after_insert_or_update(mapper, connection, target):
+    with session_scope() as session:
+
+        student_exam_course_works = session.query(ExamCoursework).filter(
+            ExamCoursework.student_uid == target.student_uid,
+            ExamCoursework.program_course_id == target.program_course_id)
+        total_score = 0
+
+        for exam_course_work in student_exam_course_works:
+            maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
+                ProgramCourseAssessment.exam_category_id == exam_course_work.exam_category_id,
+                ProgramCourseAssessment.program_course_id == exam_course_work.program_course_id).scalar()
+            total_weight = session.query(func.coalesce(func.sum(ExamCoursework.weight))).filter(
+                ExamCoursework.student_uid == target.student_uid,
+                ExamCoursework.exam_category_id == exam_course_work.exam_category_id,
+                ExamCoursework.program_course_id == target.program_course_id).scalar()
+            weighted_score = (exam_course_work.score / 100) * maximum_score * (exam_course_work.weight / total_weight)
+            total_score += weighted_score
+        exam_result_summary = session.query(ExamResultSummary).filter(
+            ExamResultSummary.student_uid == target.student_uid,
+            ExamResultSummary.program_course_id == target.program_course.id,
+            ExamResultSummary.number_of_sitting == 1).first()
+        if exam_result_summary:
+            exam_result_summary.cw_score = round(total_score, 2)
+        else:
+            new_exam_result = ExamResultSummary(
+                student_uid=target.student_uid,
+                registration_number=registration_number,
+                program_course_id=target.program_course.id,
+                number_of_sitting=1,
+                first_name=first_name,
+                middle_name=middle_name,
+                last_name=last_name,
+                gender=gender,
+                credit=target.program_course.credit,
+                course_code=target.program_course.course.code,
+                course_name=target.program_course.course.name,
+                cw_score=round(total_score, 2),
+                grade='I',
+                grade_remark='Incomplete',
+                exam_status=1,
+                publish_status=False,
+                study_year=target.program_course.program_semester.study_year,
+                semester=target.program_course.program_semester.semester,
+                academic_year_id=target.program_course.program_semester.academic_year_id
+            )
+            session.add(new_exam_result)
+        session.commit()
