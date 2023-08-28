@@ -943,3 +943,21 @@ class TransitionMetaNode:
 class PaginatedTransitionMeta:
     items: List[TransitionMetaNode]
     total_count: int
+
+@strawberry.input(description="Seminar Types Input")
+class SeminarTypesInput:
+    uid: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+
+
+@strawberry.type(description="Seminar Types Output")
+class SeminarTypesNode:
+    uid: str
+    description: str
+    name: str
+
+@strawberry.type(description="Seminar Types paginated output")
+class SeminarTypesListNode:
+    items: List[SeminarTypesNode]
+    total_count: int

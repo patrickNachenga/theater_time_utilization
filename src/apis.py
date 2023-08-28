@@ -26,6 +26,7 @@ from src.modules.student_program_change.apis import StudentProgramChangeMutation
 from src.modules.student_program_change_status.apis import StudentProgramChangeStatusQuery, \
     StudentProgramChangeStatusMutation
 from src.modules.workflows.apis import WorkflowQuery, WorkflowMutation
+from src.modules.seminar_types.apis import SeminarTypeQuery, SeminarTypeMutation
 
 
 @strawberry.type
@@ -35,7 +36,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                AcademicYearQuery, ProgramSemesterQuery, CourseLearnOutcomeQuery, ProgramCourseQuery,
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery,
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
-               StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery):
+               StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, SeminarTypeQuery):
     pass
 
 
@@ -47,5 +48,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation,
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
-                  WorkflowMutation, StateMutation):
+                  WorkflowMutation, StateMutation, SeminarTypeMutation):
     pass

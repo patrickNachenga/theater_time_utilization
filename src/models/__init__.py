@@ -47,3 +47,4 @@ from .exam_failure import StudentExamFailure
 from .student_exam_postponement import StudentExamPostponement
 from .student_program_change_status import StudentProgramChangeStatus
 from .workflow import Workflow, State, TransitionMeta, TransitionApprovalMeta, Process, ProcessFlow
+from .seminar_types import SeminarTypes
