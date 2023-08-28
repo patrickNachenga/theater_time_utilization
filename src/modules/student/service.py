@@ -6,12 +6,13 @@ from sqlalchemy.orm import aliased
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.helpers.utils import get_current_semester
+from src.helpers.utils import get_current_semester, get_student_from_uaa, insert_exam_result, insert_course_work, \
+    general_upload
 from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester, \
     StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement
 from src.models.student_course_registration import StudentCourseRegistration
 from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode, StudentProgramCourseListNode, \
-    ExamRegistrationListNode, ExamToRegister
+    ExamRegistrationListNode, ExamToRegister, UploadResponse, FailedStudent
 
 
 class StudentService:
@@ -142,7 +143,8 @@ class StudentService:
             total_count = len(program_courses)
             registered_course = session.query(StudentCourseRegistration). \
                 join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == 1). \
-                filter(StudentCourseRegistration.student_uid == inputs.student_uid, StudentCourseRegistration.deleted_at.is_(None)). \
+                filter(StudentCourseRegistration.student_uid == inputs.student_uid,
+                       StudentCourseRegistration.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester).all()
 
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,
@@ -170,11 +172,10 @@ class StudentService:
                         StudentExamRegistration.type == data.type,
                         StudentExamRegistration.deleted_at.is_(None)).first()
                     # Check if exam already exist, so that not to register once again
-
                     if exam_registration is None:
                         exam_registration = StudentExamRegistration(
                             type=data.type,
-                            student_course_registrations=course_registration
+                            student_course_registration=course_registration
                         )
 
                         session.add(exam_registration)
@@ -184,7 +185,7 @@ class StudentService:
             result = session.query(StudentExamRegistration).join(StudentCourseRegistration) \
                 .join(ProgramCourse) \
                 .join(ProgramSemester) \
-                .filter(StudentCourseRegistration.student_uid == student_uid) \
+                .filter(StudentCourseRegistration.student_uid == course_registration.student_uid) \
                 .filter(ProgramSemester.semester == semester) \
                 .filter(
                 StudentExamRegistration.deleted_at.is_(None)).order_by(StudentExamRegistration.id.desc()).all()
@@ -221,7 +222,7 @@ class StudentService:
 
             failure_exams = session.query(StudentCourseRegistration). \
                 join(StudentExamRegistration) \
-                .join(StudentExamFailure)\
+                .join(StudentExamFailure) \
                 .filter(StudentExamFailure.is_attended == False, StudentExamFailure.deleted_at.is_(None)) \
                 .filter(StudentCourseRegistration.student_uid == student_uid).all()
 
@@ -230,3 +231,35 @@ class StudentService:
                 failure=failure_exams,
                 postponed=postponed_exams
             )
+
+    def upload_online_score(self, inputs) -> UploadResponse:
+        exam_category_id = inputs.exam_category_id
+        assessment_number = inputs.assessment_number
+        out_off = float(inputs.out_off)
+        program_course_id = inputs.program_course_id
+        weight = inputs.weight
+
+        with session_scope() as session:
+            is_ue = session.query(ExamCategory).filter(
+                ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
+            # get student list from uaa service to get student uid after filtering
+            students = get_student_from_uaa()
+            success = 0
+            failed = 0
+            failed_students = []
+
+            for row in inputs.marks:
+                reg_number = row.registration_number
+                score = float(row.score)
+
+                success_, failed_, failed_student = general_upload(students=students, program_course_id=program_course_id, exam_category_id=exam_category_id, score=score, out_off=out_off, weight=weight, is_ue=is_ue, reg_number=reg_number, assessment_number=assessment_number)
+                success = success + success_
+                failed = failed + failed_
+                if failed_student.reg_number is not None:
+                    failed_students.append(failed_student)
+            response_data = UploadResponse(
+                success=success,
+                failed=failed,
+                failed_students=failed_students
+            )
+            return response_data

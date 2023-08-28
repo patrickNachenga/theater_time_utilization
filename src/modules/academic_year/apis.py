@@ -13,7 +13,7 @@ from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode, 
 @strawberry.type
 class AcademicYearQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
-    def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode | None]:
+    def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
         try:
             result = AcademicYearCrud.get_multi_paginated(pagination, ['name', 'status', 'start_date', 'end_date'],
                                                           AcademicYearListNode)
@@ -28,7 +28,7 @@ class AcademicYearQuery:
         )
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
-    def get_academic_year(self, uid: str) -> Response[AcademicYearNode | None]:
+    def get_academic_year(self, uid: str) -> Response[AcademicYearNode]:
         try:
             result = AcademicYearService.get_academic_year_by_uid(uid)
         except Exception as e:
@@ -48,13 +48,13 @@ class AcademicYearQuery:
                 message="Academic year not found",
                 data=None)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
-    def get_active_academic_year(self) -> Response[AcademicYearNode | None]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACTIVE_ACADEMIC_YEARS"])])
+    def get_active_academic_year(self) -> Response[AcademicYearNode]:
         try:
             result = AcademicYearService.get_active_academic_year()
         except Exception as e:
             print(e)
-            result = []
+            result = None
 
         if result:
             return Response(

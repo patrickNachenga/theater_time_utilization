@@ -13,14 +13,36 @@ from src.types import ProgramInput, PaginationInput, ProgramListNode, ProgramNod
 @strawberry.type
 class ProgramQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
-    def get_programs(self, pagination: PaginationInput, info: Info) -> Response[Optional[ProgramListNode]]:
+    def get_programs(self, pagination: PaginationInput, info: Info) -> Response[ProgramListNode]:
         try:
             # result = ProgramCrud.get_multi_paginated(pagination,
             #                                          ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
             #                                           'registration_code'], ProgramListNode, ["program_category"])
             result = ProgramCrud.get_programs_with_headship(info, pagination,
+                                                            ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
+                                                             'registration_code'], ["program_category"])
+        except Exception as e:
+            print(e)
+            result = ProgramListNode(items=[], total_count=0)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=result)
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ALL_PROGRAMS"])])
+    def get_all_programs(self, pagination: PaginationInput, info: Info) -> Response[ProgramListNode]:
+        try:
+            result = ProgramCrud.get_multi_paginated(pagination,
                                                      ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
-                                                      'registration_code'], ["program_category"])
+                                                      'registration_code'], ProgramListNode, ["program_category"])
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)
@@ -38,7 +60,7 @@ class ProgramQuery:
                 data=result)
 
     @strawberry.field
-    def get_program(self, uid: str) -> Response[Optional[ProgramNode]]:
+    def get_program(self, uid: str) -> Response[ProgramNode]:
         try:
             result = ProgramService.get_program_by_uid(uid)
         except Exception as e:
@@ -58,7 +80,7 @@ class ProgramQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
-    def get_programs_by_program_category_uid(self, program_category_uid: str) -> Response[Optional[ProgramListNode]]:
+    def get_programs_by_program_category_uid(self, program_category_uid: str) -> Response[ProgramListNode]:
         try:
             result = ProgramService(Program).get_programs_by_category(program_category_uid)
         except Exception as e:
@@ -78,7 +100,7 @@ class ProgramQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
-    def get_programs_by_department_uid(self, department_uid: str) -> Response[Optional[ProgramListNode]]:
+    def get_programs_by_department_uid(self, department_uid: str) -> Response[ProgramListNode]:
         try:
             result = ProgramService(Program).get_programs_by_department(department_uid)
         except Exception as e:
@@ -101,7 +123,7 @@ class ProgramQuery:
 @strawberry.type
 class ProgramMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAMS"])])
-    def register_program(self, inputs: List[ProgramInput]) -> Response[Optional[ProgramListNode]]:
+    def register_program(self, inputs: List[ProgramInput]) -> Response[ProgramListNode]:
         try:
             return ProgramService(Program).register_program(inputs)
         except Exception as e:

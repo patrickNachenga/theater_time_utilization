@@ -113,7 +113,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             return result.first()
 
     @staticmethod
-    def get_unregister_moodle_course() -> Course | None:
+    def get_unregister_moodle_course() -> Course:
         """
         Get course with null moodle id
         :param:
@@ -124,7 +124,7 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             result = session.scalars(stmt)
             return result.first()
     @staticmethod
-    def get_register_moodle_course() -> Course | None:
+    def get_register_moodle_course() -> Course:
         """
         Get course with null moodle id
         :param:

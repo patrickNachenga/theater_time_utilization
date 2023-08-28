@@ -30,6 +30,7 @@ class TokenDetailsModel(BaseModel):
 
 
 class UserModel(BaseModel):
+    id: Optional[int] = None
     uid: Optional[UUID] = None
     email: Optional[str] = None
     username: Optional[str] = None
@@ -37,6 +38,7 @@ class UserModel(BaseModel):
     middle_name: Optional[str] = None
     last_name: Optional[str] = None
     moodle_id: Optional[int] = None
+    moodle_username: Optional[str] = None
 
 
 class UserHeadshipsModel(BaseModel):

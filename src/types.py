@@ -65,7 +65,6 @@ class AcademicYearSemesterInput:
 
 @strawberry.type(description="Academic Year")
 class AcademicYearSemesterNode:
-    uid: Optional[str] = None
     odd_start_date: str
     odd_end_date: str
     even_start_date: str
@@ -74,6 +73,7 @@ class AcademicYearSemesterNode:
     exam_ticket_date: str
     semester: int
     academic_year: AcademicYearNode
+    uid: Optional[str] = None
 
 
 @strawberry.type(description="AcademicYear Country")
@@ -155,7 +155,6 @@ class ExamResultSummaryInput:
 
 @strawberry.type(description="Exam Result Summary Node|Output")
 class ExamResultSummaryNode:
-    uid: Optional[str] = None
     program_course_id: int
     exam_category_id: int
     student_uid: str
@@ -170,6 +169,7 @@ class ExamResultSummaryNode:
     grade_remark: str
     publish_status: bool
     publisher: str
+    uid: Optional[str] = None
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -392,8 +392,8 @@ class ProgramCourseAssessmentNode:
     program_course: "ProgramCourseNode"
     exam_category: ExamCategoryNode
     minimum_exams: int
-    can_exceed_minimum_by: Optional[int] = 0
     maximum_score: int
+    can_exceed_minimum_by: Optional[int] = 0
 
 
 @strawberry.type(description="Program Course Assessment paginated Output")
@@ -420,6 +420,7 @@ class ProgramCourseInput:
 
 @strawberry.type(description="Program Course outputs")
 class ProgramCourseNode:
+    id: int
     uid: str
     program_semester: "ProgramSemesterNode"
     course: CourseNode
@@ -433,6 +434,13 @@ class ProgramCourseNode:
     pass_hours: float
     moodle_id: Optional[str]
     program_course_assessments: List[ProgramCourseAssessmentNode]
+
+    @strawberry.field
+    async def program_course_assessments(self, info) -> list[ProgramCourseAssessmentNode]:
+        # Filter out children with deleted_at attribute not null
+        non_deleted_children = [program_course_assessment for program_course_assessment in
+                                self.program_course_assessments if program_course_assessment.deleted_at is None]
+        return non_deleted_children
 
 
 @strawberry.input(description="Course Learn Outcome Input")
@@ -496,7 +504,7 @@ class StudentProgramChangeInput:
     current_program_uid: str
     new_program_uid: str
     reason: str
-    registration_number: str
+    current_registration_number: str
 
 
 @strawberry.type(description="Student Program Change  outputs")
@@ -504,13 +512,28 @@ class StudentProgramChangeNode:
     uid: str
     academic_year: "AcademicYearNode"
     current_program: "ProgramNode"
-    new_program: Optional["ProgramNode"]
     approve_status: str
     approve_remark: str
     reason: str
     current_registration_number: str
     new_registration_number: Optional[str]
     approved_by: Optional[str]
+    new_program: Optional["ProgramNode"]
+
+
+@strawberry.input(description="Student Program Change  Status Input")
+class StudentProgramChangeStatusInput:
+    uid: Optional[str] = None
+    code: str
+    name: str
+
+
+@strawberry.type(description="Student Program Change Status outputs")
+class StudentProgramChangeStatusNode:
+    uid: str
+    code: str
+    name: str
+    uid: Optional[str] = None
 
 
 @strawberry.type(description="User Token")
@@ -562,9 +585,9 @@ class RewControlNumberInput:
 @strawberry.input(description="Request Control Numbers Input")
 class RequestControlNumberInput:
     program_uid: str
-    year_of_study: float
+    year_of_study: int
     student_status: str
-    countrycode: int
+    countrycode: str
     registration_number: str
 
 
@@ -769,7 +792,6 @@ class CourseAllocationStaffUpdateInput:
 
 @strawberry.input(description="Get moodle url")
 class MoodleGetUrlInput:
-    moodle_username: str
     course_moodle_id: Optional[str]
 
 
@@ -787,6 +809,7 @@ class ExamRegistrationInput:
 
 @strawberry.type(description="Exam registration Output")
 class ExamRegistrationNode:
+    type: int
     exam_category: ExamCategoryNode
     student_course_registration: CourseRegistrationNode
 
@@ -818,3 +841,105 @@ class ExamToRegister:
     first_sitting: List[CourseRegistrationNode]
     failure: List[ExamFailureNode]
     postponed: List[ExamPostponementNode]
+
+
+# @strawberry.type
+# class FailedStudent:
+#     registration_number: str
+#
+#
+# @strawberry.type
+# class UploadResponseData:
+#     success: int
+#     failed: int
+#     failed_students: List[FailedStudent]
+
+@strawberry.type
+class FailedStudent:
+    reg_number: str
+    reason: str
+
+
+@strawberry.type
+class UploadResponse:
+    success: int
+    failed: int
+    failed_students: list[FailedStudent]
+
+
+@strawberry.input
+class MarksInput:
+    registration_number: str
+    score: float
+
+
+@strawberry.input
+class UploadInput:
+    out_off: int
+    exam_category_id: int
+    assessment_number: int
+    program_course_id: int
+    weight: int
+    marks: List[MarksInput]
+
+
+@strawberry.input(description="Workflow Input")
+class WorkflowInput:
+    uid: Optional[str] = None
+    description: Optional[str] = ""
+    name: str
+
+
+@strawberry.type(description="Workflow Output")
+class WorkflowNode:
+    uid: str
+    description: str
+    name: str
+
+
+@strawberry.type(description="Workflow paginated Output")
+class PaginatedWorkflow:
+    items: List[WorkflowNode]
+    total_count: int
+
+
+@strawberry.input(description="State Input")
+class StateInput:
+    uid: Optional[str] = None
+    description: Optional[str] = ""
+    label: str
+
+
+@strawberry.type(description="State Output")
+class StateNode:
+    uid: str
+    description: str
+    label: str
+
+
+@strawberry.type(description="State paginated Output")
+class PaginatedState:
+    items: List[StateNode]
+    total_count: int
+
+
+@strawberry.input(description="State Input")
+class TransitionMetaInput:
+    uid: Optional[str] = None
+    workflow_uid: str
+    source_state_uid: str
+    destination_state: str
+
+
+@strawberry.type(description="TransitionMeta Output")
+class TransitionMetaNode:
+    uid: str
+    workflow: WorkflowNode
+    source_state: StateNode
+    destination_state: StateNode
+
+
+@strawberry.type(description="TransitionMeta paginated Output")
+class PaginatedTransitionMeta:
+    items: List[TransitionMetaNode]
+    total_count: int

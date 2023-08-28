@@ -64,19 +64,14 @@ class ProgramCourseAssessmentService(
             return result.first()
 
     @staticmethod
-    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[
-        Optional[ProgramCourseAssessmentListNode]]:
+    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[ProgramCourseAssessmentListNode]:
         """
         Get Program Course by program semester uid
         :return:
         """
         with session_scope() as session:
-            try:
-                program_course = ProgramCourseService.get_program_course_by_uid(uid)
-                if program_course is None:
-                    raise ValueError("You have submitted incorrect programs course details")
-            except Exception as e:
-                print(e)
+            program_course = ProgramCourseService.get_program_course_by_uid(uid)
+            if program_course is None:
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=ProgramCourseAssessmentListNode(items=[], total_count=0),
                                 message="You have submitted incorrect programs course details")
@@ -109,34 +104,28 @@ class ProgramCourseAssessmentService(
                 [inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 # Verify and get supplied Program course uid. and get existed program course id from returned program model
-                try:
-                    program_course = ProgramCourseService.get_program_course_by_uid(inputItem.program_course_uid)
-                    if program_course is None:
-                        raise ValueError("You have submitted incorrect programs course details")
-                except Exception as e:
-                    print(e)
+                program_course = ProgramCourseService.get_program_course_by_uid(inputItem.program_course_uid)
+                if program_course is None:
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     data=ProgramCourseAssessmentListNode(items=[], total_count=0),
                                     message="You have submitted incorrect programs course details")
 
                 # Verify and get supplied Exam category and get existed  model
-                try:
-                    exam_category = ExamCategoryService.get_exam_categories_by_uid(inputItem.exam_category_uid)
-                    if exam_category is None:
-                        raise ValueError("You have submitted incorrect exam category details")
-                except Exception as e:
-                    print(e)
+                exam_category = ExamCategoryService.get_exam_categories_by_uid(inputItem.exam_category_uid)
+                if exam_category is None:
                     return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=ProgramCourseAssessmentListNode(items=[], total_count=0),
-                                    message="You have submitted incorrect exam category details")
-                if inputItem.uid is None:
-                   if session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.program_course==program_course,
-                                                                  ProgramCourseAssessment.exam_category==exam_category).first():
-                       return Response(status=False, code=ResponseCode.FAILURE,
-                                       data=ProgramCourseAssessmentListNode(items=[], total_count=0),
-                                       message="Assessment of this category already exist")
+                                data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                                message="You have submitted incorrect exam category details")
 
-                   else:
+                if inputItem.uid is None:
+                    if session.query(ProgramCourseAssessment).filter(
+                            ProgramCourseAssessment.program_course == program_course,
+                            ProgramCourseAssessment.exam_category == exam_category).first():
+                        return Response(status=False, code=ResponseCode.FAILURE,
+                                        data=ProgramCourseAssessmentListNode(items=[], total_count=0),
+                                        message="Assessment of this category already exist")
+
+                    else:
                         program_course_assessment = ProgramCourseAssessment(
                             program_course=program_course,
                             exam_category=exam_category,
@@ -166,6 +155,7 @@ class ProgramCourseAssessmentService(
                         session.commit()
                         program_course_assessment_list.append(local_object)
                     program_course_assessment_list.append(program_course_assessment)
+
             session.add_all(program_course_assessment_list)
             count = session.query(ProgramCourseAssessment).filter(ProgramCourseAssessment.deleted_at.is_(None)).count()
             session.commit()

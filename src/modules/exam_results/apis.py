@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class ExamResultQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])])
-    def get_exam_results(self) -> Response[List[ExamResultNode] | None]:
+    def get_exam_results(self) -> Response[List[ExamResultNode]]:
         try:
             result = ExamResultService.get_exam_results()
             print("Data inserted", result)
@@ -36,7 +36,7 @@ class ExamResultQuery:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])])
     def get_exam_results_by_uids(self, uids: List[str]) -> \
-            Response[List[ExamResultNode] | None]:
+            Response[List[ExamResultNode]]:
         try:
             result = ExamResultService.get_exam_results_by_uids(uids)
             return Response(
@@ -46,6 +46,7 @@ class ExamResultQuery:
                 data=result
                 )
         except Exception as e:
+            print(e)
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,
@@ -58,7 +59,7 @@ class ExamResultQuery:
 class ExamResultMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_RESULTS"])])
     def register_exam_results(self, inputs: List[ExamResultInput]) -> \
-            Response[List[ExamResultNode] | None]:
+            Response[List[ExamResultNode]]:
         try:
             result = ExamResultService().get_exam_results()
             return Response(

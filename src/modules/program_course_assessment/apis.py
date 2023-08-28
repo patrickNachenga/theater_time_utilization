@@ -13,8 +13,9 @@ from src.types import ProgramCourseAssessmentInput, ProgramCourseAssessmentNode,
 
 @strawberry.type
 class ProgramCourseAssessmentQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSE_ASSESSMENTS"])])
-    def get_program_course_assessments(self, pagination: PaginationInput) -> Response[Optional[ProgramCourseAssessmentListNode]]:
+    # (extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSE_ASSESSMENTS"])])
+    @strawberry.field
+    def get_program_course_assessments(self, pagination: PaginationInput) -> Response[ProgramCourseAssessmentListNode]:
         try:
             result = ProgramCourseAssessmentCrud.get_multi_paginated(pagination, ['minimum_exams'
                                                                                   'can_exceed_minimum_by',
@@ -23,15 +24,15 @@ class ProgramCourseAssessmentQuery:
                                                                      ["program_course", "exam_category"])
         except Exception as e:
             print(e)
-            result = []
+            result = None
         return Response(
             status=True,
-            code=ResponseCode.SUCCESS,
+            code=ResponseCode.SUCCESS if result else ResponseCode.NO_RECORD_FOUND,
             message="Program Course Assessment retrieved successfully",
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSE_ASSESSMENTS"])])
-    def get_program_course_assessment(self, program_course_assessment_uid: str) -> Response[Optional[ProgramCourseAssessmentNode]]:
+    def get_program_course_assessment(self, program_course_assessment_uid: str) -> Response[ProgramCourseAssessmentNode]:
         try:
             result = ProgramCourseAssessmentService(ProgramCourseAssessment).get_program_course_assessment_by_uid(
                 program_course_assessment_uid)
@@ -52,7 +53,7 @@ class ProgramCourseAssessmentQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSE_ASSESSMENTS"])])
-    async def get_program_course_assessment_by_program_course_uid(self, program_course_uid: str) -> Response[Optional[ProgramCourseAssessmentListNode]]:
+    async def get_program_course_assessment_by_program_course_uid(self, program_course_uid: str) -> Response[ProgramCourseAssessmentListNode]:
         try:
             program_course_assessment = ProgramCourseAssessmentService.get_program_course_assessment_by_program_course_uid(
                 program_course_uid)
@@ -72,11 +73,9 @@ class ProgramCourseAssessmentQuery:
 @strawberry.type
 class ProgramCourseAssessmentMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_COURSE_ASSESSMENTS"])])
-    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[
-        Optional[ProgramCourseAssessmentListNode]]:
+    def register_program_course_assessment(self, inputs: List[ProgramCourseAssessmentInput]) -> Response[ProgramCourseAssessmentListNode]:
         try:
             return ProgramCourseAssessmentService(ProgramCourseAssessment).register_program_course_assessment(inputs)
-
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
