@@ -99,7 +99,8 @@ class ExamCategoryInput:
     uid: Optional[str] = None
     name: str
     code: str
-    exam_category_group_uid: str
+    is_ue: bool
+    is_theory: bool
 
 
 @strawberry.type(description="Exam Category Output")
@@ -928,7 +929,7 @@ class TransitionMetaInput:
     uid: Optional[str] = None
     workflow_uid: str
     source_state_uid: str
-    destination_state: str
+    destination_state_uid: str
 
 
 @strawberry.type(description="TransitionMeta Output")

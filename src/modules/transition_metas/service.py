@@ -1,5 +1,7 @@
 from typing import List
 
+from sqlalchemy.orm import joinedload
+
 from src.core.security import Info
 from src.db.session import session_scope
 from src.models import TransitionMeta, Workflow, State
@@ -37,8 +39,11 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
         :param workflow_uid:
         :return:
         """
-        workflow = WorkflowService(Workflow).get(uid=workflow_uid)
-        return workflow.transition_metas
+        with session_scope() as session:
+            workflow = WorkflowService(Workflow).get(uid=workflow_uid)
+            return session.query(TransitionMeta).options(joinedload(TransitionMeta.source_state),
+                                                         joinedload(TransitionMeta.destination_state)).filter(
+                TransitionMeta.workflow == workflow).all()
 
     def register_transition_metas(self, inputs: List[TransitionMetaInput], info: Info) -> (
             Response)[PaginatedTransitionMeta]:
@@ -58,7 +63,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
             for input1 in inputs:
                 workflow = WorkflowService(Workflow).get(input1.workflow_uid)
                 source_state = StateService(State).get(input1.source_state_uid)
-                destination_state = StateService(State).get(input1.destination_state)
+                destination_state = StateService(State).get(input1.destination_state_uid)
 
                 if not workflow:
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
