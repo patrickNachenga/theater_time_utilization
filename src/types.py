@@ -284,7 +284,8 @@ class ExamCategoryNode:
     uid: str
     name: str
     code: str
-    exam_category_group: ExamCategoryGroupsNode
+    is_ue: bool
+    is_theory: bool
 
 
 @strawberry.type(description="Exam Category paginated Output")
