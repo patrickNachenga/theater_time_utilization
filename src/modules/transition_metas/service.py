@@ -37,8 +37,9 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
         :param workflow_uid:
         :return:
         """
-        workflow = WorkflowService(Workflow).get(uid=workflow_uid)
-        return workflow.transition_metas
+        with session_scope() as session:
+            workflow = WorkflowService(Workflow).get(uid=workflow_uid)
+            return session.query(TransitionMeta).filter(TransitionMeta.workflow == workflow).all()
 
     def register_transition_metas(self, inputs: List[TransitionMetaInput], info: Info) -> (
             Response)[PaginatedTransitionMeta]:
