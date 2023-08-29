@@ -5,58 +5,58 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
 from src.db.session import session_scope
-from src.models.seminar_types import SeminarTypes
+from src.models.seminar_types import SeminarType
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import SeminarTypesInput, SeminarTypesNode, SeminarTypesListNode
+from src.types import SeminarTypeInput, SeminarTypeNode, SeminarTypeListNode
 
 
-class SeminarTypesService(CRUDBase[SeminarTypes, SeminarTypesInput, SeminarTypesInput]):
+class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeInput]):
     @staticmethod
-    def get_seminar_types() -> List[SeminarTypes]:
+    def get_seminar_types() -> List[SeminarType]:
         with session_scope() as session:
-            result = session.query(SeminarTypes).filter(SeminarTypes.deleted_at.is_(None)).order_by(
-                desc(SeminarTypes.updated_at)).all()
+            result = session.query(SeminarType).order_by(
+                desc(SeminarType.updated_at)).all()
             return result
 
     @staticmethod
-    def get_seminar_types_by_names(names: List[str]) -> List[SeminarTypes]:
+    def get_seminar_types_by_names(names: List[str]) -> List[SeminarType]:
         """
         Get seminar Type by names
         :return:
         """
         with session_scope() as session:
-            stmt = select(SeminarTypes).where(
-                (SeminarTypes.name.in_(names)) & (SeminarTypes.deleted_at.is_(None)))
+            stmt = select(SeminarType).where(
+                (SeminarType.name.in_(names)) & (SeminarType.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
     @staticmethod
-    def get_seminar_types_by_uids(uids: List[str]) -> List[SeminarTypes]:
+    def get_seminar_types_by_uids(uids: List[str]) -> List[SeminarType]:
         """
         Get Seminar Types by uids
         :return:
         """
         with session_scope() as session:
-            stmt = select(SeminarTypes).where((SeminarTypes.uid.in_(uids)) & (SeminarTypes.deleted_at.is_(None))).order_by(
-                desc(SeminarTypes.updated_at))
+            stmt = select(SeminarType).where((SeminarType.uid.in_(uids)) & (SeminarType.deleted_at.is_(None))).order_by(
+                desc(SeminarType.updated_at))
             result = session.scalars(stmt)
             return result.all()
 
     @staticmethod
-    def get_seminar_type_by_uid(uid: str) -> SeminarTypes:
+    def get_seminar_type_by_uid(uid: str) -> SeminarType:
         """
         Get seminar_type by uid
         :param uid:
         :return:
         """
         with session_scope() as session:
-            stmt = select(SeminarTypes).where((SeminarTypes.uid == uid) & (SeminarTypes.deleted_at.is_(None)))
+            stmt = select(SeminarType).where((SeminarType.uid == uid) & (SeminarType.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
-    def register_seminar_types(self, inputs: List[SeminarTypesInput]) -> Response[SeminarTypesNode]:
+    def register_seminar_types(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeNode]:
         """
         Register Seminar Types
         :param inputs:
@@ -70,13 +70,13 @@ class SeminarTypesService(CRUDBase[SeminarTypes, SeminarTypesInput, SeminarTypes
                 [seminar_types.name for seminar_types in inputs if seminar_types.uid is None])
             if existed_seminar_type_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=SeminarTypesNode(items=existed_seminar_type_list, total_count=0),
+                                data=SeminarTypeNode(items=existed_seminar_type_list, total_count=0),
                                 message="Seminar Type Already Exists")
             # check for existing seminar types using uid
             existed_course_category = self.get_seminar_types_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
-                    seminar_types = SeminarTypes(
+                    seminar_types = SeminarType(
                         name=inputItem.name,
                         description=inputItem.description,
                         rank=inputItem.description,
@@ -93,10 +93,10 @@ class SeminarTypesService(CRUDBase[SeminarTypes, SeminarTypesInput, SeminarTypes
                             setattr(seminar_types, key, value)
                         seminar_type_list.append(seminar_types)
             session.add_all(seminar_type_list)
-            count = session.query(SeminarTypes).filter(SeminarTypes.deleted_at.is_(None)).count()
+            count = session.query(SeminarType).filter(SeminarType.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=SeminarTypesNode(items=seminar_type_list, total_count=count),
+                            data=SeminarTypeNode(items=seminar_type_list, total_count=count),
                             message=f"Successfully to {action_name} Seminar Type")
 
     # Delete Function
@@ -108,8 +108,8 @@ class SeminarTypesService(CRUDBase[SeminarTypes, SeminarTypesInput, SeminarTypes
         :return:
         """
         with session_scope() as session:
-            session.query(SeminarTypes).filter_by(uid=uid).update({SeminarTypes.deleted_at: pendulum.now()})
+            session.query(SeminarType).filter_by(uid=uid).update({SeminarType.deleted_at: pendulum.now()})
             session.commit()
 
 
-SeminarTypesCrud = SeminarTypesService(SeminarTypes)
+SeminarTypeCrud = SeminarTypeService(SeminarType)

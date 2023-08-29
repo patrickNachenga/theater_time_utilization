@@ -932,6 +932,8 @@ class TransitionMetaInput:
     workflow_uid: str
     source_state_uid: str
     destination_state_uid: str
+    groups: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
 
 
 @strawberry.type(description="TransitionMeta Output")
@@ -940,6 +942,8 @@ class TransitionMetaNode:
     workflow: WorkflowNode
     source_state: StateNode
     destination_state: StateNode
+    groups: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
 
 
 @strawberry.type(description="TransitionMeta paginated Output")
@@ -947,22 +951,24 @@ class PaginatedTransitionMeta:
     items: List[TransitionMetaNode]
     total_count: int
 
-@strawberry.input(description="Seminar Types Input")
-class SeminarTypesInput:
+
+@strawberry.input(description="Seminar Type Input")
+class SeminarTypeInput:
     uid: Optional[str] = None
     name: str
     description: Optional[str] = None
     rank: int
 
 
-@strawberry.type(description="Seminar Types Output")
-class SeminarTypesNode:
+@strawberry.type(description="Seminar Type Output")
+class SeminarTypeNode:
     uid: str
     description: str
     name: str
     rank: int
 
-@strawberry.type(description="Seminar Types paginated output")
-class SeminarTypesListNode:
-    items: List[SeminarTypesNode]
+
+@strawberry.type(description="Seminar Type paginated output")
+class SeminarTypeListNode:
+    items: List[SeminarTypeNode]
     total_count: int
