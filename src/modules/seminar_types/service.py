@@ -79,6 +79,7 @@ class SeminarTypesService(CRUDBase[SeminarTypes, SeminarTypesInput, SeminarTypes
                     seminar_types = SeminarTypes(
                         name=inputItem.name,
                         description=inputItem.description,
+                        rank=inputItem.description,
                     )
                     seminar_type_list.append(seminar_types)
                 else:

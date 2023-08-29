@@ -952,6 +952,7 @@ class SeminarTypesInput:
     uid: Optional[str] = None
     name: str
     description: Optional[str] = None
+    rank: int
 
 
 @strawberry.type(description="Seminar Types Output")
@@ -959,6 +960,7 @@ class SeminarTypesNode:
     uid: str
     description: str
     name: str
+    rank: int
 
 @strawberry.type(description="Seminar Types paginated output")
 class SeminarTypesListNode:
