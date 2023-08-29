@@ -99,6 +99,7 @@ class ExamCategoryService(object):
                         name=inputItem.name,
                         is_ue=inputItem.is_ue,
                         is_theory=inputItem.is_theory,
+                        is_oral=inputItem.is_oral,
                     )
                     local_object = session.merge(exam_category)
                     session.add(local_object)

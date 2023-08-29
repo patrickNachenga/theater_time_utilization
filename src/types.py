@@ -101,6 +101,7 @@ class ExamCategoryInput:
     code: str
     is_ue: bool
     is_theory: bool
+    is_oral: bool
 
 
 @strawberry.type(description="Exam Category Output")
@@ -110,6 +111,7 @@ class ExamCategoryNode:
     code: str
     is_ue: bool
     is_theory: bool
+    is_oral: bool
 
 
 @strawberry.input(description="Exam Result Input")
@@ -286,6 +288,7 @@ class ExamCategoryNode:
     code: str
     is_ue: bool
     is_theory: bool
+    is_oral: bool
 
 
 @strawberry.type(description="Exam Category paginated Output")
