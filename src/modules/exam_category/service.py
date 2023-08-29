@@ -93,13 +93,12 @@ class ExamCategoryService(object):
             existed_exam_categories = self.get_exam_categories_by_uids([item.uid for item in inputs])
 
             for inputItem in inputs:
-
                 if inputItem.uid is None:
                     exam_category = ExamCategory(
                         code=inputItem.code,
                         name=inputItem.name,
-                        is_ue=inputs.is_ue,
-                        is_theory=inputs.is_theory,
+                        is_ue=inputItem.is_ue,
+                        is_theory=inputItem.is_theory,
                     )
                     local_object = session.merge(exam_category)
                     session.add(local_object)
