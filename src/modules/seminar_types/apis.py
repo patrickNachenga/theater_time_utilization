@@ -50,9 +50,9 @@ class SeminarTypeQuery:
 @strawberry.type
 class SeminarTypeMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_CATEGORIES"])])
-    def register_course_categories(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeListNode]:
+    def register_seminar_type(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeListNode]:
         try:
-            return SeminarTypeService(SeminarType).register_seminar_types(inputs)
+            return SeminarTypeService(SeminarType).register_seminar_type(inputs)
         except Exception as e:
             print(e)
             return Response(
