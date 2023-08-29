@@ -960,6 +960,7 @@ class SeminarTypeInput:
     uid: Optional[str] = None
     name: str
     description: Optional[str] = None
+    rank: int
 
 
 @strawberry.type(description="Seminar Type Output")
@@ -967,9 +968,34 @@ class SeminarTypeNode:
     uid: str
     description: str
     name: str
+    rank: int
 
 
 @strawberry.type(description="Seminar Type paginated output")
 class SeminarTypeListNode:
     items: List[SeminarTypeNode]
+    total_count: int
+
+@strawberry.input(description="Student Seminar Input")
+class StudentSeminarInput:
+    uid: Optional[str] = None
+    student_id: int
+    title: str
+    seminar_date: datetime
+    seminar_types_uid: str
+    is_pass: bool
+    seminar_marks : float
+
+@strawberry.type(description="Student Seminar Output")
+class StudentSeminarNode:
+    uid: str
+    student_id: int
+    title: str
+    seminar_date: datetime
+    seminar_types_uid: str
+    is_pass: bool
+    seminar_marks : float
+@strawberry.type(description="Student Seminar paginated output")
+class StudentSeminarListNode:
+    items: List[StudentSeminarNode]
     total_count: int

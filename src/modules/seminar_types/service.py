@@ -12,7 +12,7 @@ from src.shared.response_code import ResponseCode
 from src.types import SeminarTypeInput, SeminarTypeNode, SeminarTypeListNode
 
 
-class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeInput]):
+class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeListNode]):
     @staticmethod
     def get_seminar_types() -> List[SeminarType]:
         with session_scope() as session:
@@ -56,7 +56,7 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeInpu
             result = session.scalars(stmt)
             return result.first()
 
-    def register_seminar_types(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeNode]:
+    def register_seminar_type(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeNode]:
         """
         Register Seminar Types
         :param inputs:
@@ -79,6 +79,7 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeInpu
                     seminar_types = SeminarType(
                         name=inputItem.name,
                         description=inputItem.description,
+                        rank=inputItem.description,
                     )
                     seminar_type_list.append(seminar_types)
                 else:

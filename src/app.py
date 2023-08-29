@@ -35,7 +35,7 @@ class RegistrationApp(FastAPI):
 
     async def initialize_async(self):
         await self.rabbit_client.setup()
-#        await self.permissions()
+        await self.permissions()
 
 
     def log_incoming_message(self, message):
