@@ -56,7 +56,7 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeList
             result = session.scalars(stmt)
             return result.first()
 
-    def register_seminar_type(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeNode]:
+    def register_seminar_type(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeListNode]:
         """
         Register Seminar Types
         :param inputs:
@@ -79,7 +79,7 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeList
                     seminar_types = SeminarType(
                         name=inputItem.name,
                         description=inputItem.description,
-                        rank=inputItem.description,
+                        rank=inputItem.rank,
                     )
                     seminar_type_list.append(seminar_types)
                 else:
