@@ -81,7 +81,8 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
 
                     transition_meta = TransitionMeta(workflow=workflow, source_state=source_state,
                                                      destination_state=destination_state,
-                                                     created_by=info.context.user.profile.id)
+                                                     created_by=info.context.user.profile.id, groups=input1.groups,
+                                                     permissions=input1.permissions)
                     session.add(transition_meta)
                     session.commit()
                     transition_meta_list.append(transition_meta)
@@ -92,6 +93,8 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                         transition_meta.workflow = workflow
                         transition_meta.source_state = source_state
                         transition_meta.destination_state = destination_state
+                        transition_meta.groups = input1.groups
+                        transition_meta.permissions = input1.permissions
                         session.merge(transition_meta)
                         session.commit()
                         transition_meta_list.append(transition_meta)
