@@ -12,5 +12,5 @@ class SeminarType(BaseModel):
 
 # ---------------- Relationships -----------------------------#
 
-    student_seminar = relationship("StudentSeminar", lazy="subquery",
-                                                back_populates="seminar_types")
+    # student_seminar = relationship("StudentSeminar", lazy="subquery",
+    #                                             back_populates="seminar_types")
