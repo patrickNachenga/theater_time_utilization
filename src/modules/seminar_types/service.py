@@ -70,7 +70,7 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeList
                 [seminar_types.name for seminar_types in inputs if seminar_types.uid is None])
             if existed_seminar_type_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=SeminarTypeNode(items=existed_seminar_type_list, total_count=0),
+                                data=SeminarTypeListNode(items=existed_seminar_type_list, total_count=0),
                                 message="Seminar Type Already Exists")
             # check for existing seminar types using uid
             existed_course_category = self.get_seminar_types_by_uids([inputItem.uid for inputItem in inputs])
@@ -96,7 +96,7 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeList
             count = session.query(SeminarType).filter(SeminarType.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=SeminarTypeNode(items=seminar_type_list, total_count=count),
+                            data=SeminarTypeListNode(items=seminar_type_list, total_count=count),
                             message=f"Successfully to {action_name} Seminar Type")
 
     # Delete Function

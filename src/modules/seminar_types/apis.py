@@ -12,7 +12,7 @@ from src.types import SeminarTypeInput, SeminarTypeNode, SeminarTypeListNode, Pa
 
 @strawberry.type
 class SeminarTypeQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_SEMINAR_TYPES"])])
+    @strawberry.field()
     def get_seminar_types(self, pagination: PaginationInput) -> Response[SeminarTypeListNode]:
         try:
             result = SeminarTypeCrud.get_multi_paginated(pagination, ["description", "name"],
@@ -49,7 +49,7 @@ class SeminarTypeQuery:
 
 @strawberry.type
 class SeminarTypeMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_SEMINAR_TYPES"])])
+    @strawberry.field()
     def register_seminar_type(self, inputs: List[SeminarTypeInput]) -> Response[SeminarTypeListNode]:
         try:
             return SeminarTypeService(SeminarType).register_seminar_type(inputs)
@@ -58,7 +58,7 @@ class SeminarTypeMutation:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="Seminar Type not found",
+                message="No Seminar Type found",
                 data=None)
 
     @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_SEMINAR_TYPE"])])
