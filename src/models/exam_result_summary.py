@@ -22,6 +22,7 @@ class ExamResultSummary(BaseModel):
     cw_score: float = Column(Float, nullable=True, unique=False)
     ue_practical: float = Column(Float, nullable=True, unique=False)
     ue_theory: float = Column(Float, nullable=True, unique=False)
+    ue_oral: float = Column(Float, nullable=True, unique=False)
     ue_score: float = Column(Float, nullable=True, unique=False)
     total_score: float = Column(Float, nullable=True, unique=False)
     credit: float = Column(Float, nullable=True)
