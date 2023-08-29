@@ -3,7 +3,6 @@ from typing import List
 import strawberry
 
 from src.core.security import CustomPermissionExtension, Info
-from src.models import TransitionApprovalMeta
 from src.modules.transition_metas.service import TransitionMetaCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -73,7 +72,7 @@ class TransitionMetaMutation:
         :return:
         """
         try:
-            TransitionMetaCrud.remove_check_relations(uid, 'transition_meta_id', [TransitionApprovalMeta], info)
+            TransitionMetaCrud.remove_check_relations(uid, 'transition_meta_id', [], info)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
