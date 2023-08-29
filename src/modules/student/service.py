@@ -241,7 +241,7 @@ class StudentService:
 
         with session_scope() as session:
             is_ue = session.query(ExamCategory).filter(
-                ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
+                ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
             students = get_student_from_uaa()
             success = 0

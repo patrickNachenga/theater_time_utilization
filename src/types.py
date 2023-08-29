@@ -108,7 +108,8 @@ class ExamCategoryNode:
     uid: str
     name: str
     code: str
-    exam_category_group: ExamCategoryGroupsNode
+    is_ue: bool
+    is_theory: bool
 
 
 @strawberry.input(description="Exam Result Input")
@@ -283,7 +284,8 @@ class ExamCategoryNode:
     uid: str
     name: str
     code: str
-    exam_category_group: ExamCategoryGroupsNode
+    is_ue: bool
+    is_theory: bool
 
 
 @strawberry.type(description="Exam Category paginated Output")
@@ -947,4 +949,24 @@ class TransitionMetaNode:
 @strawberry.type(description="TransitionMeta paginated Output")
 class PaginatedTransitionMeta:
     items: List[TransitionMetaNode]
+    total_count: int
+
+
+@strawberry.input(description="Seminar Type Input")
+class SeminarTypeInput:
+    uid: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+
+
+@strawberry.type(description="Seminar Type Output")
+class SeminarTypeNode:
+    uid: str
+    description: str
+    name: str
+
+
+@strawberry.type(description="Seminar Type paginated output")
+class SeminarTypeListNode:
+    items: List[SeminarTypeNode]
     total_count: int
