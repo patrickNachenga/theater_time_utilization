@@ -574,4 +574,23 @@ permissions: typing.List[Permission] = [
         description="Can Delete Transition Meta",
         service="registration",
     ),
+
+    Permission(
+        code="VIEW_SEMINAR_TYPES",
+        name="View Seminar Types",
+        description="Can View Seminar Types",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_SEMINAR_TYPES",
+        name="Register Seminar Types",
+        description="Can Register Seminar Types",
+        service="registration",
+    ),
+    Permission(
+        code="REMOVE_SEMINAR_TYPE",
+        name="Remove Seminar Type",
+        description="Can Delete Seminar Type",
+        service="registration",
+    ),
 ]
