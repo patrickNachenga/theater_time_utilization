@@ -930,6 +930,8 @@ class TransitionMetaInput:
     workflow_uid: str
     source_state_uid: str
     destination_state_uid: str
+    groups: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
 
 
 @strawberry.type(description="TransitionMeta Output")
@@ -938,6 +940,8 @@ class TransitionMetaNode:
     workflow: WorkflowNode
     source_state: StateNode
     destination_state: StateNode
+    groups: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
 
 
 @strawberry.type(description="TransitionMeta paginated Output")

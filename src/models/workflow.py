@@ -27,25 +27,6 @@ class State(BaseModel):
     process_flows = relationship('ProcessFlow', lazy='subquery', back_populates="state")
 
 
-class TransitionMeta(BaseModel):
-    __tablename__ = 'transition_meta'
-
-    workflow_id = Column(Integer, ForeignKey('workflows.id'))
-    source_state_id = Column(Integer, ForeignKey('states.id'))
-    destination_state_id = Column(Integer, ForeignKey('states.id'))
-
-    # Relationships
-    workflow = relationship('Workflow', lazy='subquery', back_populates="transition_metas")
-    source_state = relationship('State', foreign_keys=[source_state_id])
-    destination_state = relationship('State', foreign_keys=[destination_state_id])
-
-    # Adding Check and Unique Constraints
-    __table_args__ = (
-        CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
-        UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
-    )
-
-
 class JsonEncodedList(Mutable, list):
     @classmethod
     def coerce(cls, key, value):
@@ -73,17 +54,26 @@ class JsonEncodedList(Mutable, list):
         self.changed()
 
 
-class TransitionApprovalMeta(BaseModel):
-    __tablename__ = 'transition_approval_meta'
+class TransitionMeta(BaseModel):
+    __tablename__ = 'transition_meta'
 
     workflow_id = Column(Integer, ForeignKey('workflows.id'))
-    transition_meta_id = Column(Integer, ForeignKey('transition_meta.id'))
+    source_state_id = Column(Integer, ForeignKey('states.id'))
+    destination_state_id = Column(Integer, ForeignKey('states.id'))
 
     # Relationships
-    workflow = relationship('Workflow', backref='transition_approval_metas')
-    transition_meta = relationship('TransitionMeta', backref='transition_approval_metas')
-    permission_codes = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
-    group_codes = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
+    workflow = relationship('Workflow', lazy='subquery', back_populates="transition_metas")
+    source_state = relationship('State', foreign_keys=[source_state_id])
+    destination_state = relationship('State', foreign_keys=[destination_state_id])
+
+    permissions = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
+    groups = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
+
+    # Adding Check and Unique Constraints
+    __table_args__ = (
+        CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
+        UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
+    )
 
 
 class Process(BaseModel):
