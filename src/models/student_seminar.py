@@ -17,3 +17,5 @@ class StudentSeminar(BaseModel):
 
     # ---------------Mapped Columns ---------------------
     seminar_type_id: int = Column(Integer, ForeignKey("seminar_types.id"), nullable=False)
+
+
