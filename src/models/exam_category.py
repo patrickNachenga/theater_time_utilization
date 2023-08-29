@@ -10,6 +10,7 @@ class ExamCategory(BaseModel):
     name: str = Column(String, nullable=False, unique=False)
     is_ue: bool = Column(Boolean, default=False)
     is_theory: bool = Column(Boolean, default=False)
+    is_oral: bool = Column(Boolean, default=False)
 
 
     # _______________________________Foreign Keys___________________________________#

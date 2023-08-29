@@ -521,5 +521,6 @@ def attach_exam_result_listener(target):
             exam_result_summary.ue_theory = round(total_ue_theory,2) if total_ue_theory else None
             exam_result_summary.ue_practical = round(total_ue_practical,2) if total_ue_practical else None
             exam_result_summary.ue_score = round(total_score, 2)
+            # grading procedures
 
         session.commit()
