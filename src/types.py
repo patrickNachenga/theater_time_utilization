@@ -516,6 +516,7 @@ class StudentProgramChangeInput:
 @strawberry.type(description="Student Program Change  outputs")
 class StudentProgramChangeNode:
     uid: str
+    student_uid: str
     academic_year: "AcademicYearNode"
     current_program: "ProgramNode"
     approve_status: str
@@ -799,6 +800,38 @@ class CourseAllocationStaffUpdateInput:
 @strawberry.input(description="Get moodle url")
 class MoodleGetUrlInput:
     course_moodle_id: Optional[str]
+
+
+@strawberry.input(description="Get moodle quizzes")
+class MoodleGetQuizzesInput:
+    course_moodle_id: str
+
+
+@strawberry.type(description="Get moodle grading method")
+class MoodleGradingMethodNode:
+    id: int
+    name: str
+
+
+@strawberry.input(description="Get moodle user attempts on quiz inputs")
+class MoodleUserAttemptsOnQuizInput:
+    quiz_id: int
+    grading_method: int
+    user_moodle_id: int
+
+
+@strawberry.input(description="Get moodle users attempts on quiz inputs")
+class MoodleUsersAttemptsOnQuizInput:
+    quiz_id: int
+    grading_method: int
+    program_course_uid: str
+
+
+@strawberry.type(description="Get moodle user attempts on quiz output")
+class MoodleUserAttemptsOnQuizNode:
+    quiz_id: int
+    grading_method: int
+    user_moodle_id: int
 
 
 @strawberry.input(description="Program Course update can_exceed_minimum_by input")
