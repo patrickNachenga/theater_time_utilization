@@ -1,5 +1,6 @@
 from typing import List
 
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from src.core.security import Info
@@ -78,6 +79,25 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                     data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
                                     message="Destination State Does not Exists")
+
+                if source_state == destination_state:
+                    return Response(status=False, code=ResponseCode.BAD_REQUEST,
+                                    data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
+                                    message="Source state and destination state cannot be the same")
+
+                existing_transition_meta = session.query(TransitionMeta).filter(
+                    and_(
+                        TransitionMeta.source_state_id == source_state.id,
+                        TransitionMeta.destination_state_id == destination_state.id,
+                        TransitionMeta.deleted_at == None
+                    )
+                ).first()
+
+                if existing_transition_meta is not None:
+                    return Response(status=False, code=ResponseCode.BAD_REQUEST,
+                                    data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
+                                    message="A record with the same source state and destination state "
+                                            "already exists")
 
                 if not input1.groups:
                     input1.groups = []
