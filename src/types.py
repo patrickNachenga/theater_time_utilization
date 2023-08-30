@@ -50,6 +50,22 @@ class AcademicYearListNode:
     total_count: int
 
 
+@strawberry.type(description="By-law node")
+class ByLawNode:
+    uid: str
+    name: str
+    code: str
+    status: bool
+    start_date: str
+    end_date: str
+
+
+@strawberry.type(description="By law list")
+class ByLawListNode:
+    items: List[ByLawNode]
+    total_count: int
+
+
 @strawberry.input(description="Academic Year Input")
 class AcademicYearSemesterInput:
     uid: Optional[str] = None
