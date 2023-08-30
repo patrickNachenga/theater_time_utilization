@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional
 
 import requests
 import strawberry
@@ -43,7 +43,7 @@ class MoodleApiCallQuery:
                 data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_moodle_quizzes_by_course(self, inputs: MoodleGetQuizzesInput) -> Response[Optional[str]]:
+    def get_moodle_quizzes_by_course(self, inputs: MoodleGetQuizzesInput) -> Response[str]:
         try:
             moodle = MoodleApi()
             moodle_response = moodle.get_quizzes_by_course(course_id=inputs.course_moodle_id)
@@ -113,7 +113,7 @@ class MoodleApiCallQuery:
                 data=[])
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[Optional[str]]:
+    def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[List[str]]:
         try:
             moodle = MoodleApi()
             moodle_response = moodle.get_user_attempts_on_quiz(quiz_id=inputs.quiz_id,
