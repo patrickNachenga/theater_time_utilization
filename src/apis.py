@@ -2,6 +2,7 @@ import strawberry
 
 from src.modules.academic_year.apis import AcademicYearQuery, AcademicYearMutation
 from src.modules.academic_year_semester.apis import AcademicYearSemesterQuery, AcademicYearSemesterMutation
+from src.modules.by_law.apis import ByLawQuery, ByLawMutation
 from src.modules.course.apis import CourseQuery, CourseMutation
 from src.modules.course_allocation.apis import CourseAllocationQuery, CourseAllocationMutation
 from src.modules.course_category.apis import CourseCategoryQuery, CourseCategoryMutation
@@ -39,7 +40,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery,
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
                StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery, SeminarTypeQuery,
-               StudentSeminarQuery):
+               StudentSeminarQuery,ByLawQuery):
     pass
 
 
@@ -52,5 +53,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation,
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
 
-                  WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation):
+                  WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation):
     pass
