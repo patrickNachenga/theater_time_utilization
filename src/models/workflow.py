@@ -2,9 +2,9 @@ import json
 import uuid
 
 from sqlalchemy import Column, String, PickleType, Integer, ForeignKey, DateTime, desc, CheckConstraint, \
-    UniqueConstraint
+    UniqueConstraint, JSON
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.mutable import Mutable
+from sqlalchemy.ext.mutable import Mutable, MutableList
 from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -27,33 +27,6 @@ class State(BaseModel):
     process_flows = relationship('ProcessFlow', lazy='subquery', back_populates="state")
 
 
-class JsonEncodedList(Mutable, list):
-    @classmethod
-    def coerce(cls, key, value):
-        if not isinstance(value, JsonEncodedList):
-            if isinstance(value, list):
-                return JsonEncodedList(value)
-            return Mutable.coerce(key, value)
-        else:
-            return value
-
-    def append(self, value):
-        list.append(self, value)
-        self.changed()
-
-    def remove(self, value):
-        list.remove(self, value)
-        self.changed()
-
-    def __setitem__(self, key, value):
-        list.__setitem__(self, key, value)
-        self.changed()
-
-    def __delitem__(self, key):
-        list.__delitem__(self, key)
-        self.changed()
-
-
 class TransitionMeta(BaseModel):
     __tablename__ = 'transition_meta'
 
@@ -66,8 +39,8 @@ class TransitionMeta(BaseModel):
     source_state = relationship('State', foreign_keys=[source_state_id])
     destination_state = relationship('State', foreign_keys=[destination_state_id])
 
-    permissions = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
-    groups = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
+    permissions = Column(MutableList.as_mutable(PickleType), default=list)
+    groups = Column(MutableList.as_mutable(PickleType), default=list)
 
     # Adding Check and Unique Constraints
     __table_args__ = (

@@ -29,6 +29,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
         """
         with session_scope() as session:
             query = session.query(TransitionMeta).filter((TransitionMeta.uid.in_(ids)))
+            print("Transition", query.all())
             result = query.all()
             return result
 
@@ -77,6 +78,11 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                     data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
                                     message="Destination State Does not Exists")
+
+                if not input1.groups:
+                    input1.groups = []
+                if not input1.permissions:
+                    input1.permissions = []
                 if input1.uid is None:
 
                     transition_meta = TransitionMeta(workflow=workflow, source_state=source_state,
@@ -87,6 +93,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                     session.commit()
                     transition_meta_list.append(transition_meta)
                 else:
+
                     transition_meta = next(filter(lambda transition_meta: str(transition_meta.uid) == str(input1.uid),
                                                   existed_transition_metas), None)
                     if transition_meta:
