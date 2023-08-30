@@ -12,7 +12,7 @@ from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarLis
 
 @strawberry.type
 class StudentSeminarQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_SEMINAR_TYPES"])])
+    @strawberry.field()
     def get_student_seminars(self, pagination: PaginationInput) -> Response[StudentSeminarListNode]:
         try:
             result = StudentSeminarCrud.get_multi_paginated(pagination, ["description", "name"],
@@ -26,7 +26,7 @@ class StudentSeminarQuery:
             message="Student Seminar Retrieved successfully",
             data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_SEMINAR_TYPES"])])
+    @strawberry.field()
     def get_student_seminar(self, uid: str) -> Response[StudentSeminarNode]:
         try:
             result = StudentSeminarService(StudentSeminar).get_student_seminar_by_uid(uid)
@@ -46,11 +46,31 @@ class StudentSeminarQuery:
                 message="Student Seminar not found",
                 data=None)
 
-
+    @strawberry.field()
+    def get_student_seminars_by_student_uid(self, student_uid: str,seminar_type_uid: str = None) -> Response[List[StudentSeminarNode]]:
+        # try:
+        result = StudentSeminarService.get_student_seminar_by_student_uid(student_uid,seminar_type_uid)
+        # return Response(result)
+        # except Exception as e:
+        #     print(e)
+        #     print('ererererere----------------')
+        #     result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Student Seminar Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Student Seminar not found",
+                data=None)
 @strawberry.type
 class StudentSeminarMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_SEMINAR_TYPES"])])
-    def register_student_seminar(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarListNode]:
+    @strawberry.field()
+    def register_student_seminar(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarNode]:
         try:
             return StudentSeminarService(StudentSeminar).register_student_seminar(inputs)
         except Exception as e:

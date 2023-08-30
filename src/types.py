@@ -976,26 +976,39 @@ class SeminarTypeListNode:
     items: List[SeminarTypeNode]
     total_count: int
 
+
 @strawberry.input(description="Student Seminar Input")
 class StudentSeminarInput:
     uid: Optional[str] = None
-    student_id: int
+    student_uid: str
     title: str
     seminar_date: datetime
     seminar_types_uid: str
     is_pass: bool
-    seminar_marks : float
+    seminar_marks: float
+    description: str
+    status: int
+
 
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
     uid: str
-    student_id: int
+    student_uid: str
     title: str
     seminar_date: datetime
-    seminar_types_uid: str
     is_pass: bool
-    seminar_marks : float
+    seminar_marks: float
+    description: str
+    status: int
+    seminar_types: SeminarTypeNode
+
+
 @strawberry.type(description="Student Seminar paginated output")
 class StudentSeminarListNode:
     items: List[StudentSeminarNode]
     total_count: int
+
+@strawberry.type(description="Query Student Seminars")
+class StudentSeminarsNode:
+    student_uid: str
+    seminar_type_uid: str = None
