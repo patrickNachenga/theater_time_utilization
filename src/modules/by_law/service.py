@@ -1,16 +1,13 @@
-from datetime import datetime
-from typing import List, Any
+from typing import List
 
 import pendulum
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, update
 
 from src.db.session import session_scope
-from src.models import AcademicYear, AcademicYearSemester, ByLaw
+from src.models import ByLaw
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, AcademicYearListNode, ByLawInput, ByLawListNode
+from src.types import ByLawInput, ByLawListNode
 
 
 class ByLawService(CRUDBase[ByLaw, ByLawInput, ByLawInput]):
@@ -39,17 +36,6 @@ class ByLawService(CRUDBase[ByLaw, ByLawInput, ByLawInput]):
         """
         with session_scope() as session:
             result = session.query(ByLaw).filter(ByLaw.uid == uid, ByLaw.deleted_at.is_(None)).first()
-            return result
-
-    @staticmethod
-    def get_by_law_by_code(code: str) -> ByLaw:
-        """
-        Get Academic Year by uid
-        :param uid:
-        :return:
-        """
-        with session_scope() as session:
-            result = session.query(ByLaw).filter(ByLaw.code == code, ByLaw.deleted_at.is_(None)).first()
             return result
 
     @staticmethod
