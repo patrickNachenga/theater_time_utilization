@@ -1098,7 +1098,7 @@ class StudentSeminarNode:
     uid: str
     student_uid: str
     title: str
-    seminar_date: datetime
+    seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
     is_pass: bool
     seminar_marks: float
