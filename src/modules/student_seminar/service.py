@@ -34,6 +34,20 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             result = session.scalars(stmt)
             return result.all()
 
+    @staticmethod
+    def check_uniqueness(student_uid: str, seminar_type_id: int) -> StudentSeminar:
+        """
+        Check if there already exists program course with same course_id, program_semester_id all together
+        :return ProgramCourse:
+        """
+        with session_scope() as session:
+            stmt = select(StudentSeminar).where(
+                (StudentSeminar.seminar_type_id == seminar_type_id) &
+                (StudentSeminar.student_uid == student_uid) &
+                (StudentSeminar.deleted_at.is_(None))
+            )
+            result = session.scalars(stmt)
+            return result.first()
 
     @staticmethod
     def get_student_seminar_by_student_uid(inputs) -> List[StudentSeminar]:
@@ -51,12 +65,13 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                 if seminar_type is None:
                     return []
                 stmt = select(StudentSeminar).where((StudentSeminar.student_uid == inputs.student_uid) & (
-                                                        StudentSeminar.deleted_at.is_(None)) &
+                    StudentSeminar.deleted_at.is_(None)) &
                                                     (StudentSeminar.seminar_type_id == seminar_type.id)
                                                     )
             else:
                 stmt = select(StudentSeminar).where((
-                    StudentSeminar.student_uid == inputs.student_uid) & (StudentSeminar.deleted_at.is_(None)))
+                                                            StudentSeminar.student_uid == inputs.student_uid) & (
+                                                        StudentSeminar.deleted_at.is_(None)))
 
             result = session.scalars(stmt)
             # for seminar in result:
@@ -71,7 +86,8 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
         :return:
         """
         with session_scope() as session:
-            stmt = select(StudentSeminar).where((StudentSeminar.uid.in_(uids)) & (StudentSeminar.deleted_at.is_(None))).order_by(
+            stmt = select(StudentSeminar).where(
+                (StudentSeminar.uid.in_(uids)) & (StudentSeminar.deleted_at.is_(None))).order_by(
                 desc(StudentSeminar.updated_at))
             result = session.scalars(stmt)
             return result.all()
@@ -116,6 +132,17 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                         code=ResponseCode.FAILURE,
                         data=StudentSeminarNode,
                         message="You have submitted incorrect Seminar Type details"
+                    )
+                print(seminar_type.id)
+                print(seminar_type.id)
+                student_seminar_exist = self.check_uniqueness(student_uid=inputItem.student_uid,
+                                                              seminar_type_id=seminar_type.id)
+                if student_seminar_exist:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=StudentSeminarNode,
+                        message="This Seminar already exist for the Student"
                     )
 
                 if inputItem.uid is None:
