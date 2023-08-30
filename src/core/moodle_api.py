@@ -531,7 +531,7 @@ class MoodleApi:
             'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'mod_quiz_get_quizzes_by_courses',
             'moodlewsrestformat': 'json',
-            'courseids': [course_id]
+            'courseids[0]': course_id
         }
 
         response = self.sendRequest(data)

@@ -11,7 +11,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import MoodleGetUrlInput, MoodleGetQuizzesInput, \
     MoodleGradingMethodNode, MoodleUsersAttemptsOnQuizInput, \
-    MoodleUsersAttemptsOnQuizNode
+    MoodleUsersAttemptsOnQuizNode, MoodleQuizNode, MoodleCourseQuizzesNode
 
 
 @strawberry.type
@@ -46,27 +46,31 @@ class MoodleApiCallQuery:
                 data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_moodle_quizzes_by_course(self, inputs: MoodleGetQuizzesInput) -> Response[str]:
-        try:
-            moodle = MoodleApi()
-            moodle_response = moodle.get_quizzes_by_course(course_id=inputs.course_moodle_id)
-            if moodle_response:
-                print(moodle_response)
-                return Response(status=False, code=ResponseCode.SUCCESS,
-                                message="Moodle Quizzes Retrieved Successful",
-                                data=moodle_response)
-            else:
-                return Response(
-                    status=False, code=ResponseCode.NO_RECORD_FOUND,
-                    message="No moodle Quizzes Found",
-                    data=None)
-        except Exception as e:
-            print(e)
+    async def get_moodle_quizzes_by_course(self, inputs: MoodleGetQuizzesInput) -> Response[MoodleCourseQuizzesNode]:
+        # try:
+        moodle = MoodleApi()
+        moodle_response = moodle.get_quizzes_by_course(course_id=inputs.course_moodle_id)
+        if moodle_response:
+            quizzes = [MoodleQuizNode(**quiz_data) for quiz_data in moodle_response]
+            return Response(status=False, code=ResponseCode.SUCCESS,
+                            message="Moodle Quizzes Retrieved Successful",
+                            data=MoodleCourseQuizzesNode(
+                                quizzes=quizzes
+                            )
+                            )
+        else:
             return Response(
-                status=False,
-                code=ResponseCode.FAILURE,
-                message="Unable To Get Moodle Quizzes",
+                status=False, code=ResponseCode.NO_RECORD_FOUND,
+                message="No moodle Quizzes Found",
                 data=None)
+
+    # except Exception as e:
+    #     print(e)
+    #     return Response(
+    #         status=False,
+    #         code=ResponseCode.FAILURE,
+    #         message="Unable To Get Moodle Quizzes",
+    #         data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_moodle_grading_method(self) -> Response[List[MoodleGradingMethodNode]]:
@@ -74,9 +78,11 @@ class MoodleApiCallQuery:
             moodle = MoodleApi()
             moodle_response = moodle.grading_method()
             if moodle_response:
+                moodle_grading_methods = [MoodleGradingMethodNode(id=grading_method['id'], name=grading_method['name'])
+                                          for grading_method in moodle_response]
                 return Response(status=False, code=ResponseCode.SUCCESS,
-                                message="Moodle Quizzes Retrieved Successful",
-                                data=moodle_response)
+                                message="Moodle Quizzes Methode Retrieved Successful",
+                                data=moodle_grading_methods)
             else:
                 return Response(
                     status=False, code=ResponseCode.NO_RECORD_FOUND,
@@ -116,7 +122,8 @@ class MoodleApiCallQuery:
     #             data=[])
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[List[MoodleUsersAttemptsOnQuizNode]]:
+    def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[
+        List[MoodleUsersAttemptsOnQuizNode]]:
         try:
             program_course = ProgramCourseService.get_program_course_by_uid(inputs.program_course_uid)
             if program_course:
