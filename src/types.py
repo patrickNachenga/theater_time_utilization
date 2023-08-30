@@ -1073,6 +1073,8 @@ class StudentSeminarInput:
     seminar_types_uid: str
     is_pass: bool
     seminar_marks: float
+    description : str
+    status: int
 
 
 @strawberry.type(description="Student Seminar Output")
@@ -1084,7 +1086,8 @@ class StudentSeminarNode:
     seminar_types: SeminarTypeNode
     is_pass: bool
     seminar_marks: float
-
+    description : str
+    status: int
 
 @strawberry.type(description="Student Seminar paginated output")
 class StudentSeminarListNode:
