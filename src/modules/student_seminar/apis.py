@@ -78,7 +78,7 @@ class StudentSeminarMutation:
                 message="Student Seminar not found",
                 data=None)
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_SEMINAR_TYPE"])])
+    @strawberry.mutation()
     async def remove_student_seminar(self, uid: str) -> Response[None]:
         """
         Remove Seminar Type by UID
