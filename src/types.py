@@ -33,6 +33,14 @@ class AcademicYearInput:
     status: Optional[int] = 1
     start_date: str
     end_date: str
+@strawberry.input(description="By law Input")
+class ByLawInput:
+    uid: Optional[str] = None
+    name: str
+    code: str
+    status: bool
+    start_date: str
+    end_date: str
 
 
 @strawberry.type(description="Academic Year")
