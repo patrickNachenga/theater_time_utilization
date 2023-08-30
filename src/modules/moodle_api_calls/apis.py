@@ -47,30 +47,30 @@ class MoodleApiCallQuery:
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
     async def get_moodle_quizzes_by_course(self, inputs: MoodleGetQuizzesInput) -> Response[MoodleCourseQuizzesNode]:
-        # try:
-        moodle = MoodleApi()
-        moodle_response = moodle.get_quizzes_by_course(course_id=inputs.course_moodle_id)
-        if moodle_response:
-            quizzes = [MoodleQuizNode(**quiz_data) for quiz_data in moodle_response]
-            return Response(status=False, code=ResponseCode.SUCCESS,
-                            message="Moodle Quizzes Retrieved Successful",
-                            data=MoodleCourseQuizzesNode(
-                                quizzes=quizzes
-                            )
-                            )
-        else:
-            return Response(
-                status=False, code=ResponseCode.NO_RECORD_FOUND,
-                message="No moodle Quizzes Found",
-                data=None)
+        try:
+            moodle = MoodleApi()
+            moodle_response = moodle.get_quizzes_by_course(course_id=inputs.course_moodle_id)
+            if moodle_response:
+                quizzes = [MoodleQuizNode(**quiz_data) for quiz_data in moodle_response]
+                return Response(status=False, code=ResponseCode.SUCCESS,
+                                message="Moodle Quizzes Retrieved Successful",
+                                data=MoodleCourseQuizzesNode(
+                                    quizzes=quizzes
+                                )
+                                )
+            else:
+                return Response(
+                    status=False, code=ResponseCode.NO_RECORD_FOUND,
+                    message="No moodle Quizzes Found",
+                    data=None)
 
-    # except Exception as e:
-    #     print(e)
-    #     return Response(
-    #         status=False,
-    #         code=ResponseCode.FAILURE,
-    #         message="Unable To Get Moodle Quizzes",
-    #         data=None)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Unable To Get Moodle Quizzes",
+                data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_moodle_grading_method(self) -> Response[List[MoodleGradingMethodNode]]:
