@@ -516,6 +516,7 @@ class StudentProgramChangeInput:
 @strawberry.type(description="Student Program Change  outputs")
 class StudentProgramChangeNode:
     uid: str
+    student_uid: str
     academic_year: "AcademicYearNode"
     current_program: "ProgramNode"
     approve_status: str
@@ -801,6 +802,92 @@ class MoodleGetUrlInput:
     course_moodle_id: Optional[str]
 
 
+@strawberry.input(description="Get moodle quizzes")
+class MoodleGetQuizzesInput:
+    course_moodle_id: str
+
+
+@strawberry.type(description="Get moodle grading method")
+class MoodleGradingMethodNode:
+    id: int
+    name: str
+
+
+@strawberry.input(description="Get moodle users attempts on quiz inputs")
+class MoodleUsersAttemptsOnQuizInput:
+    quiz_id: int
+    grading_method: int
+    program_course_uid: str
+
+
+@strawberry.type(description="Get moodle user attempts on quiz output")
+class MoodleUsersAttemptsOnQuizNode:
+    registration_number: str
+    full_name: str
+    moodle_id: int
+    grade: float
+
+
+@strawberry.type
+class MoodleQuizNode:
+    id: int
+    coursemodule: int
+    course: int
+    name: str
+    intro: str
+    introformat: int
+    introfiles: List[str]
+    section: int
+    visible: bool
+    groupmode: int
+    groupingid: int
+    lang: str
+    timeopen: int
+    timeclose: int
+    timelimit: int
+    overduehandling: str
+    graceperiod: int
+    preferredbehaviour: str
+    canredoquestions: int
+    attempts: int
+    attemptonlast: int
+    grademethod: int
+    decimalpoints: int
+    questiondecimalpoints: int
+    reviewattempt: int
+    reviewcorrectness: int
+    reviewmarks: int
+    reviewspecificfeedback: int
+    reviewgeneralfeedback: int
+    reviewrightanswer: int
+    reviewoverallfeedback: int
+    questionsperpage: int
+    navmethod: str
+    shuffleanswers: int
+    sumgrades: int
+    grade: int
+    timecreated: int
+    timemodified: int
+    password: str
+    subnet: str
+    browsersecurity: str
+    delay1: int
+    delay2: int
+    showuserpicture: int
+    showblocks: int
+    completionattemptsexhausted: int
+    completionpass: int
+    allowofflineattempts: int
+    autosaveperiod: int
+    hasfeedback: int
+    hasquestions: int
+
+
+@strawberry.type
+class MoodleCourseQuizzesNode:
+    quizzes: List[MoodleQuizNode]
+
+
 @strawberry.input(description="Program Course update can_exceed_minimum_by input")
 class ProgramCourseAssessmentUpdateExceedInput:
     program_course_assessment_uid: str
@@ -976,26 +1063,39 @@ class SeminarTypeListNode:
     items: List[SeminarTypeNode]
     total_count: int
 
+
 @strawberry.input(description="Student Seminar Input")
 class StudentSeminarInput:
     uid: Optional[str] = None
-    student_id: int
+    student_uid: str
     title: str
     seminar_date: datetime
     seminar_types_uid: str
     is_pass: bool
-    seminar_marks : float
+    seminar_marks: float
+    description : str
+    status: int
+
 
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
     uid: str
-    student_id: int
+    student_uid: str
     title: str
     seminar_date: datetime
-    seminar_types_uid: str
+    seminar_types: SeminarTypeNode
     is_pass: bool
-    seminar_marks : float
+    seminar_marks: float
+    description : str
+    status: int
+
 @strawberry.type(description="Student Seminar paginated output")
 class StudentSeminarListNode:
     items: List[StudentSeminarNode]
     total_count: int
+
+
+@strawberry.input(description="Student Seminar Input Node")
+class StudentSeminarsInputNode:
+    student_uid: str
+    seminar_type_uid: str
