@@ -828,6 +828,66 @@ class MoodleUsersAttemptsOnQuizNode:
     grade: float
 
 
+@strawberry.type
+class MoodleQuizNode:
+    id: int
+    coursemodule: int
+    course: int
+    name: str
+    intro: str
+    introformat: int
+    introfiles: List[str]
+    section: int
+    visible: bool
+    groupmode: int
+    groupingid: int
+    lang: str
+    timeopen: int
+    timeclose: int
+    timelimit: int
+    overduehandling: str
+    graceperiod: int
+    preferredbehaviour: str
+    canredoquestions: int
+    attempts: int
+    attemptonlast: int
+    grademethod: int
+    decimalpoints: int
+    questiondecimalpoints: int
+    reviewattempt: int
+    reviewcorrectness: int
+    reviewmarks: int
+    reviewspecificfeedback: int
+    reviewgeneralfeedback: int
+    reviewrightanswer: int
+    reviewoverallfeedback: int
+    questionsperpage: int
+    navmethod: str
+    shuffleanswers: int
+    sumgrades: int
+    grade: int
+    timecreated: int
+    timemodified: int
+    password: str
+    subnet: str
+    browsersecurity: str
+    delay1: int
+    delay2: int
+    showuserpicture: int
+    showblocks: int
+    completionattemptsexhausted: int
+    completionpass: int
+    allowofflineattempts: int
+    autosaveperiod: int
+    hasfeedback: int
+    hasquestions: int
+
+
+@strawberry.type
+class MoodleCourseQuizzesNode:
+    quizzes: List[MoodleQuizNode]
+
+
 @strawberry.input(description="Program Course update can_exceed_minimum_by input")
 class ProgramCourseAssessmentUpdateExceedInput:
     program_course_assessment_uid: str
