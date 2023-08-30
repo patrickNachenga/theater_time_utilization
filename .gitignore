@@ -18,3 +18,4 @@ regenv
 alembic.ini
 docker-compose.yml
 Dockerfile
+/venv

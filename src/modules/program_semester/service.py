@@ -23,6 +23,7 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 desc(ProgramSemester.updated_at)).all()
             return result
 
+
     @staticmethod
     def get_program_semesters_by_ids(ids: List[str]) -> List[ProgramSemester]:
         """
@@ -48,6 +49,29 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def get_program_semester_by_program_id(program_id: int) -> ProgramSemester:
+        """
+        Get program semester by program_id
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.program_id == program_id) & (ProgramSemester.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
+
+    @staticmethod
+    def get_program_semester_by_program_uid(program_uid: str) -> ProgramSemester:
+        """
+        Get program semester by program_uid
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramSemester).where(
+                (ProgramSemester.programs.uid == program_uid) & (ProgramSemester.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
     @staticmethod
     def get_program_semester_by_uids(uids: List[str]) -> List[ProgramSemester]:
         """

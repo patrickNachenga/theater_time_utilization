@@ -17,16 +17,15 @@ class ProgramCourse(BaseModel):
 
     # ___________________________Foreign Keys ____________________________#
     course_category_id: int = Column(Integer, ForeignKey("course_categories.id"), nullable=False)
-
-    program_semester_id: int = Column(Integer, ForeignKey("program_semesters.id"), nullable=False)
-
-    course_id: int = Column(Integer, ForeignKey("courses.id"), nullable=False)
-
-    # ______________________________________Relationships ____________________________________________#
-    course = relationship('Course', lazy='subquery', back_populates="program_courses")
     course_category = relationship('CourseCategory', lazy='subquery', back_populates="program_courses")
 
+    program_semester_id: int = Column(Integer, ForeignKey("program_semesters.id"), nullable=False)
     program_semester = relationship('ProgramSemester', lazy='subquery', back_populates="program_courses")
+
+    course_id: int = Column(Integer, ForeignKey("courses.id"), nullable=False)
+    course = relationship('Course', lazy='subquery', back_populates="program_courses")
+
+    # ______________________________________Relationships ____________________________________________#
 
     program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
                                               back_populates="program_course")
@@ -34,9 +33,6 @@ class ProgramCourse(BaseModel):
 
     student_course_registrations = relationship("StudentCourseRegistration", lazy="subquery",
                                                 back_populates="program_course")
-
-    student_exam_registrations = relationship("StudentExamRegistration", lazy="subquery",
-                                              back_populates="program_course")
 
     exam_results = relationship("ExamResult", lazy="subquery",
                                 back_populates="program_course")

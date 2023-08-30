@@ -14,3 +14,4 @@ class AcademicYear(BaseModel):
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="academic_year")
     program_capacities = relationship('ProgramCapacity', lazy='subquery', back_populates="academic_year")
     academic_year_semesters = relationship('AcademicYearSemester', lazy='subquery', back_populates="academic_year")
+    student_program_changes = relationship('StudentProgramChange', lazy='subquery', back_populates="academic_year")

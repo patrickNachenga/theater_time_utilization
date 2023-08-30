@@ -1,13 +1,20 @@
 from typing import List
 
 import pendulum
+import requests
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, inspect, cast, String, or_, and_
+from sqlalchemy.orm import joinedload
 
+from src.core.config import settings
 from src.core.moodle_api import MoodleApi
+from src.core.security import Info
 from src.db.session import session_scope
+from src.helpers.utils import get_user_programs_headship, get_user_departments_headship
+from src.models import AcademicYear
 from src.models.program import Program
 from src.modules import CRUDBase
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_category.service import ProgramCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -15,6 +22,54 @@ from src.types import ProgramInput, ProgramListNode, ProgramCodeInput
 
 
 class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
+
+    @staticmethod
+    def get_programs_with_headship(info: Info, pagination, search_columns: List[str],
+                                   relationships_to_join: List[str] = None,
+                                   unique_search: List[dict] = None) -> [ProgramListNode]:
+        """
+            Get all programs by program
+        :return:
+        """
+        with session_scope() as session:
+            user_h_program_uids = get_user_programs_headship(info)
+            user_h_department_uids = get_user_departments_headship(info)
+
+            query = session.query(Program).filter(and_(Program.deleted_at.is_(None), or_(Program.uid.in_(user_h_program_uids),
+                                                  Program.department_uid.in_(user_h_department_uids))))
+            search_q = pagination.search if pagination.search else ''
+
+            # filter condition if specified unique column
+            unique_filter_conditions = []
+            if unique_search:
+                for condition in unique_search:
+                    for column, value in condition.items():
+                        unique_filter_conditions.append(getattr(Program, column) == value)
+            if unique_filter_conditions:
+                query = query.filter(and_(*unique_filter_conditions))
+
+            # Apply filters
+            filter_conditions = []
+            for column in inspect(Program).columns:
+                if column.name in search_columns:
+                    filter_conditions.append(cast(getattr(Program, column.name), String).ilike(f"%{str(search_q)}%"))
+
+            if filter_conditions:
+                query = query.filter(or_(*filter_conditions))
+
+            total_count = query.count()
+
+            # Apply pagination
+            query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
+            # Fetch items and total count
+            if relationships_to_join and len(relationships_to_join) > 0:
+                for relationship_name in relationships_to_join:
+                    query = query.options(joinedload(relationship_name))
+            items = query.all()
+            session.close()
+
+            return ProgramListNode(items=items, total_count=total_count)
+
     @staticmethod
     def get_programs() -> List[Program]:
         """
@@ -266,25 +321,31 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             session.commit()
 
     @staticmethod
-    async def api_get_program_by_code(parm: ProgramCodeInput) -> Response:
+    async def api_get_program_by(code: str | None = None, uid: str | None = None) -> Response:
         """
             Get programs by codes
         :param:
         """
         try:
+            if code:
+                program = ProgramService.get_program_by_code(code)
+            elif uid:
+                program = ProgramService.get_program_by_uid(uid)
 
-            if parm.code:
-                program = ProgramService.get_program_by_code(parm.code)
-            elif parm.uid:
-                program = ProgramService.get_program_by_uid(parm.uid)
+            # academic_year:AcademicYear
+            academic_year = AcademicYearService.get_active_academic_year()
+
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,
                 "name": program.name,
                 "short_name": program.short_name,
+                "duration": program.duration,
                 "department_uid": program.department_uid,
                 "program_category_name": program.program_category.name,
                 "program_category_short_name": program.program_category.short_name,
+                "active_academic_year": academic_year.name,
+                "active_academic_year_uid": academic_year.uid
 
             }, message="Program retrieved Successfully")
         except Exception as e:
@@ -306,7 +367,10 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     "code": programItems.code,
                     "name": programItems.name,
                     "short_name": programItems.short_name,
-                    "department_uid": programItems.department_uid
+                    "department_uid": programItems.department_uid,
+                    "duration": programItems.duration,
+                    "program_category_name": programItems.program_category.name,
+                    "program_category_short_name": programItems.program_category.short_name,
                 } for programItems in program],
                                 message="Program retrieved Successfully")
             else:

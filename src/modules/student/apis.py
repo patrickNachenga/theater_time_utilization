@@ -1,6 +1,8 @@
 import base64
 import io
-from typing import List
+from typing import List, Optional
+
+import openpyxl
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from io import BytesIO
 
@@ -9,20 +11,26 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
+from src.core.security import CustomPermissionExtension, LoginRequiredExtension
+from src.db.session import session_scope
+from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work, \
+    general_upload
+from src.models import ExamCategory
 from src.modules.student.service import StudentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
-    CourseRegisterInputNode
+    CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
+    ExamToRegister, ExamRegistrationNode, FailedStudent, UploadInput, UploadResponse
 
 
 @strawberry.type
 class StudentQuery:
-    @strawberry.field
-    def get_student_course_to_register(self, program_register: CourseRegisterInputNode) -> Response[ProgramCourseListNode]:
+    @strawberry.field(extensions=[LoginRequiredExtension()])
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
-            result = StudentService().get_student_course_to_register(program_register)
+            result = StudentService().get_student_course_to_register(inputs)
 
             return Response(
                 status=True,
@@ -31,13 +39,14 @@ class StudentQuery:
                 data=result)
         except Exception as e:
             print(e)
-            result = CourseRegistrationListNode(items=[], total_count=0)
+            result = [CourseRegistrationListNode(course_to_register=None, total_count=0, course_registered=None)]
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program courses not found",
                 data=result)
-    @strawberry.field
+
+    @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
@@ -56,19 +65,27 @@ class StudentQuery:
                 message="Course Registration not found",
                 data=result)
 
-    @strawberry.field
+    @strawberry.field()
     def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid)
-            response = UaaDataResponse(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Successfully Retrieved",
-                data=[StudentUaaData(registration_number=item['registration_number'],full_name=item['full_name']) for item in result['data']]
-            )
 
-            return response
+            if result:
+                response = UaaDataResponse(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully Retrieved",
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'])
+                          for item in result['data']]
+                )
 
+                return response
+            else:
+                return UaaDataResponse(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Failed to retrieve",
+                    data=[])
         except Exception as e:
             print(e)
             return UaaDataResponse(
@@ -77,13 +94,62 @@ class StudentQuery:
                 message="Failed to retrieve",
                 data=[])
 
+    @strawberry.field
+    def get_student_current_registered_exam(self, student_uid: str) -> Response[List[ExamRegistrationNode]]:
+        try:
+            result = StudentService().get_student_current_registered_exam(student_uid)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Exam Registration Retrieved successfully",
+                    data=result)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Exam Registration not found",
+                    data=[])
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Exam Registration not found exception occurred",
+                data=[])
+
+    @strawberry.field
+    def get_student_exam_to_register(self, student_uid: str) -> Response[ExamToRegister]:
+        try:
+            result = StudentService().get_student_exam_to_register(student_uid)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Exam Registration Retrieved successfully",
+                    data=result)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Exams not found",
+                    data=[])
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Exams not found",
+                data=[])
+
 
 @strawberry.type
 class StudentMutation:
-    @strawberry.field
-    def register_student_course(self, inputs: List[CourseRegistrationInputNode]) -> Response[CourseRegistrationListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_STUDENT_COURSES"])])
+    def register_student_course(self, inputs: List[CourseRegistrationInputNode], remove: List[str]) -> Response[
+        CourseRegistrationListNode]:
         try:
-            result = StudentService().register_student_course(inputs)
+            result = StudentService().register_student_course(inputs, remove)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -95,7 +161,8 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
-    def generate_allocation_xls_template(self, allocation_uid: str) ->  ExcelFile:
+    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category: int,
+                                         assessment_number: int, assessment_weight: int) -> ExcelFile:
         result = StudentService().get_allocation_students(allocation_uid)
         file_buffer = io.BytesIO()
 
@@ -119,37 +186,40 @@ class StudentMutation:
                         bottom=Side(border_style="thin"))
 
         # Define the vertical headers
-        vertical_headers = ["Program Code", "Academic Year", "Study Year", "Exam Category", "Assessment No",
-                            "Mark Out of",
+        vertical_headers = ["Course Ante", "Program Code", "Academic Year", "Study Year", "Exam Category",
+                            "Assessment No", "Mark Out of",
                             "Assessment Weight"]
         # Sample data for the vertical header
         data = {
-            "Program Code": "FOR",
-            "Academic Year": "2022/2023",
-            "Study Year": "1",
-            "Exam Category": "4",
-            "Assessment No": "1",
-            "Mark Out of": "100",
-            "Assessment Weight": "1"
+            "Course Ante": result["program_course"].course.code,
+            "Program Code": result["program_course"].program_semester.program.code,
+            "Academic Year": result["program_course"].program_semester.academic_year.name,
+            "Study Year": str(result["program_course"].program_semester.study_year),
+            "Exam Category": str(exam_category),
+            "Assessment No": str(assessment_number),
+            "Mark Out of": str(out_off),
+            "Assessment Weight": str(assessment_weight)
         }
         worksheet.sheet_view.showGridLines = False
         # Generate the data for the vertical header
         vertical_data = [data[header] for header in vertical_headers]
-        for row, header in enumerate(vertical_headers, start=2):
+        for row, header in enumerate(vertical_headers, start=1):
             cell = worksheet.cell(row=row, column=1, value=header)
             cell.alignment = Alignment(horizontal='left')
             cell.font = font_border
             cell.border = None
-        for row, value in enumerate(vertical_data, start=2):
+            cell.protection = Protection(locked=False)
+        for row, value in enumerate(vertical_data, start=1):
             cell = worksheet[f"C{row}"]
             cell.value = value
             cell.font = font_border
             cell.border = None
+            cell.protection = Protection(locked=False)
         # Define the horizontal headers
         # worksheet.sheet_view.showGridLines = True
         horizontal_headers = ["SN", "Reg No", "Name", "Marks"]
         start_col = 1  # Start column for horizontal headers
-        start_row = len(vertical_headers) + 2  # Start row for horizontal headers
+        start_row = len(vertical_headers) + 1  # Start row for horizontal headers
 
         for col, header in enumerate(horizontal_headers, start=start_col):
             cell = worksheet.cell(row=start_row, column=col, value=header)
@@ -170,20 +240,24 @@ class StudentMutation:
                 cell.alignment = Alignment(horizontal='center', vertical='center')
                 cell.font = font
                 cell.border = border
-                # Set the specific column where cells should be non-editable (except column D)
-            editable_column = 'D'
+        worksheet.cell(row=1, column=4, value=str(result["program_course"].id))
+        # Set the specific column where cells should be non-editable (except column D)
+        editable_column = 'D'
 
-            # Iterate over rows in the worksheet
-            for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
-                                           max_col=worksheet.max_column):
-                for cell in row:
-                    # Check if the current column is the editable column
-                    if cell.column_letter == editable_column:
-                        # Set protection to False for the editable column
-                        cell.protection = Protection(locked=False)
-                    else:
-                        # Set protection to True for other columns
-                        cell.protection = Protection(locked=True)
+        # Iterate over rows in the worksheet
+        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+            for cell in row:
+                # Check if the current column is the editable column and cell row is not greater than 9
+                if cell.column_letter == editable_column and cell.row >= 10:
+                    # Set protection to False for the editable column
+                    cell.protection = Protection(locked=False)
+                    cell.number_format = '0.00'
+                else:
+                    # Set protection to True for other columns
+                    cell.protection = Protection(locked=True)
+
+            # Protect the worksheet to make cells not editable
+            worksheet.protection.sheet = True
 
         # Save the workbook
         # workbook.save("layout.xlsx")
@@ -199,3 +273,82 @@ class StudentMutation:
 
         # Return the Base64 string as the result
         return ExcelFile(base64_data=base64_data)
+
+    @strawberry.field
+    def register_student_exam(self, inputs: List[ExamRegistrationInput]) -> Response[ExamRegistrationListNode]:
+        try:
+            result = StudentService().register_student_exam(inputs)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Exam Registered successfully",
+                data=result)
+        except Exception as e:
+            print(e)
+            result = ExamRegistrationListNode(items=[], total_count=0)
+        return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
+
+    @strawberry.mutation
+    async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
+        # Decode the base64 file content
+        file_content = base64.b64decode(base64_file)
+
+        # Load the workbook from the file content
+        workbook = openpyxl.load_workbook(io.BytesIO(file_content))
+        # Get the desired worksheet by name or index
+        worksheet = workbook.active  # Modify this line with the appropriate worksheet name or index
+        exam_category_id = worksheet.cell(row=5, column=3).value
+        assessment_number = worksheet.cell(row=6, column=3).value
+        out_off = float(worksheet.cell(row=7, column=3).value)
+        program_course_id = worksheet.cell(row=1, column=4).value
+        weight = float(worksheet.cell(row=8, column=3).value)
+
+        # Assuming the data is in a specific sheet and columns
+
+        reg_no_column = 2  # Assuming Reg No is in column B
+
+        marks_column = 4  # Assuming Marks is in column D
+
+        with session_scope() as session:
+            is_ue = session.query(ExamCategory).filter(
+                ExamCategory.id == exam_category_id).first().is_ue
+            # get student list from uaa service to get student uid after filtering
+            students = get_student_from_uaa()
+            success = 0
+            failed = 0
+            failed_students = []
+            for row in worksheet.iter_rows(min_row=10, values_only=True):
+                reg_number = row[reg_no_column - 1]
+                score = float(row[marks_column - 1])
+                # Find the item with the specified registration_number
+                success_, failed_, failed_student = general_upload(students=students,
+                                                                   program_course_id=program_course_id,
+                                                                   exam_category_id=exam_category_id, score=score,
+                                                                   out_off=out_off, weight=weight, is_ue=is_ue,
+                                                                   reg_number=reg_number,
+                                                                   assessment_number=assessment_number)
+                success = success + success_
+                failed = failed + failed_
+                if failed_student.reg_number is not None:
+                    failed_students.append(failed_student)
+            response_data = UploadResponse(
+                success=success,
+                failed=failed,
+                failed_students=failed_students
+            )
+
+            return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
+
+    @strawberry.mutation
+    async def upload_online_score(self, inputs: UploadInput) -> Response[UploadResponse]:
+        try:
+            result = StudentService().upload_online_score(inputs)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Executed successfully",
+                data=result)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(status=False, code=ResponseCode.FAILURE, message="Failed to execute", data=result)
