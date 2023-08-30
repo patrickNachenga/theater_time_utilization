@@ -1093,12 +1093,12 @@ class StudentSeminarInput:
     uid: Optional[str] = None
     student_uid: str
     title: str
-    seminar_date: datetime
+    seminar_date: Optional[datetime] = None
     seminar_types_uid: str
-    is_pass: bool
-    seminar_marks: float
-    description : str
-    status: int
+    is_pass: Optional[bool] = False
+    seminar_marks: Optional[float] = 0
+    description: str
+    status: Optional[int]=0
 
 
 @strawberry.type(description="Student Seminar Output")
@@ -1106,12 +1106,13 @@ class StudentSeminarNode:
     uid: str
     student_uid: str
     title: str
-    seminar_date: datetime
+    seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
     is_pass: bool
     seminar_marks: float
-    description : str
+    description: str
     status: int
+
 
 @strawberry.type(description="Student Seminar paginated output")
 class StudentSeminarListNode:
