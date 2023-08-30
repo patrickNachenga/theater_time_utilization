@@ -324,8 +324,8 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
             exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
                                                                ExamCategory.deleted_at.is_(None)).first()
             exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
-                                                          ExamResult.program_course == program_course,
-                                                          ExamResult.exam_category == exam_category).first()
+                                                           ExamResult.program_course == program_course,
+                                                           ExamResult.exam_category == exam_category).first()
             score = (score / out_off) * 100
             if exam_result:
                 exam_result.score = score
@@ -383,35 +383,40 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             middle_name = matching_item["user"]["middle_name"]
             last_name = matching_item["user"]["last_name"]
             gender = matching_item["user"]["gender"]
-            if score <= out_off:
-                if is_ue:
-                    result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                out_off,
-                                                weight)
-                    if result:
-                        success = success + 1
-                    else:
-                        failed = failed + 1
-                        failed_student.reg_number = reg_number
-                        failed_student.reason = "Data processing error"
-                else:
-                    result = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
-                                                student_uid, program_course_id, exam_category_id,
-                                                assessment_number,
-                                                out_off, score,
-                                                weight)
-                    if result:
+            if score is None:
+                failed = failed + 1
+                failed_student.reg_number = reg_number
+                failed_student.reason = "No score supplied"
+            else:
+                if score <= out_off:
+                    if is_ue:
+                        result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                    out_off,
+                                                    weight)
                         if result:
                             success = success + 1
                         else:
                             failed = failed + 1
                             failed_student.reg_number = reg_number
                             failed_student.reason = "Data processing error"
+                    else:
+                        result = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
+                                                    student_uid, program_course_id, exam_category_id,
+                                                    assessment_number,
+                                                    out_off, score,
+                                                    weight)
+                        if result:
+                            if result:
+                                success = success + 1
+                            else:
+                                failed = failed + 1
+                                failed_student.reg_number = reg_number
+                                failed_student.reason = "Data processing error"
 
-            else:
-                failed = failed + 1
-                failed_student.reg_number = reg_number
-                failed_student.reason = "Score is greater than out off"
+                else:
+                    failed = failed + 1
+                    failed_student.reg_number = reg_number
+                    failed_student.reason = "Score is greater than out off"
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number
@@ -496,6 +501,18 @@ def attach_exam_result_listener(target):
         total_score = 0
         total_ue_theory = 0
         total_ue_practical = 0
+        total_ue_oral = 0
+
+        # count_ue_assessment_items = (
+        #     session.query(func.count(ProgramCourseAssessment.id))
+        #     .join(ProgramCourse)
+        #     .join(ExamCategory)
+        #     .filter(
+        #         ProgramCourse.id == target.program_course.id,  # Specify the ProgramCourse id
+        #         ExamCategory.is_ue == True
+        #     )
+        #     .scalar()
+        # )
 
         for exam_result in student_exam_results:
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
@@ -509,18 +526,23 @@ def attach_exam_result_listener(target):
             weighted_score = (exam_result.score / 100) * maximum_score * (exam_result.weight / total_weight)
             if exam_result.exam_category.is_theory:
                 total_ue_theory += weighted_score
+            elif exam_result.exam_category.is_theory:
+                total_ue_oral += weighted_score
+
             else:
                 total_ue_practical += weighted_score
 
-            total_score = total_ue_theory + total_ue_practical
+            total_score = total_ue_theory + total_ue_practical + total_ue_oral
         exam_result_summary = session.query(ExamResultSummary).filter(
             ExamResultSummary.student_uid == target.student_uid,
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == target.number_of_sitting).first()
         if exam_result_summary:
-            exam_result_summary.ue_theory = round(total_ue_theory,2) if total_ue_theory else None
-            exam_result_summary.ue_practical = round(total_ue_practical,2) if total_ue_practical else None
+            exam_result_summary.ue_theory = round(total_ue_theory, 2) if total_ue_theory else None
+            exam_result_summary.ue_practical = round(total_ue_practical, 2) if total_ue_practical else None
+            exam_result_summary.ue_oral = round(total_ue_oral, 2) if total_ue_oral else None
             exam_result_summary.ue_score = round(total_score, 2)
+            exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
             # grading procedures
 
         session.commit()
