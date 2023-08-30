@@ -13,7 +13,7 @@ from src.types import ProgramCategoryInput, ProgramCategoryListNode, PaginationI
 @strawberry.type
 class ProgramCategoryQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_CATEGORIES"])])
-    def get_program_categories(self, pagination: PaginationInput) -> Response[Optional[ProgramCategoryListNode]]:
+    def get_program_categories(self, pagination: PaginationInput) -> Response[ProgramCategoryListNode]:
         try:
             result = ProgramCategoryCrud.get_multi_paginated(pagination, ["name", "short_name"],
                                                              ProgramCategoryListNode)
@@ -27,7 +27,7 @@ class ProgramCategoryQuery:
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_CATEGORIES"])])
-    def get_program_category(self, uid: str) -> Response[Optional[ProgramCategoryNode]]:
+    def get_program_category(self, uid: str) -> Response[ProgramCategoryNode]:
         try:
             result = ProgramCategoryService(ProgramCategory).get_program_category_by_uid(uid)
         except Exception as e:
@@ -50,8 +50,7 @@ class ProgramCategoryQuery:
 @strawberry.type
 class ProgramCategoryMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_CATEGORIES"])])
-    def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[
-        Optional[ProgramCategoryListNode]]:
+    def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[ProgramCategoryListNode]:
         try:
             return ProgramCategoryService(ProgramCategory).register_program_categories(inputs)
         except Exception as e:

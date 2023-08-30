@@ -30,6 +30,7 @@ class TokenDetailsModel(BaseModel):
 
 
 class UserModel(BaseModel):
+    id: Optional[int] = None
     uid: Optional[UUID] = None
     email: Optional[str] = None
     username: Optional[str] = None

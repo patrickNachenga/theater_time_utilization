@@ -64,8 +64,7 @@ class ProgramCourseAssessmentService(
             return result.first()
 
     @staticmethod
-    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[
-        Optional[ProgramCourseAssessmentListNode]]:
+    def get_program_course_assessment_by_program_course_uid(uid: str) -> Response[ProgramCourseAssessmentListNode]:
         """
         Get Program Course by program semester uid
         :return:

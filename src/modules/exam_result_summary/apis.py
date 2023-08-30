@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class ExamResultSummaryQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULT_SUMMARIES"])])
-    def get_exam_result_summaries(self) -> Response[List[ExamResultSummaryNode] | None]:
+    def get_exam_result_summaries(self) -> Response[List[ExamResultSummaryNode]]:
         try:
             result = ExamResultSummaryService.get_exam_result_summaries()
             print("Data inserted", result)
@@ -36,7 +36,7 @@ class ExamResultSummaryQuery:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULT_SUMMARIES"])])
     def get_exam_result_summaries_by_uids(self, uids: List[str]) -> \
-            Response[List[ExamResultSummaryNode] | None]:
+            Response[List[ExamResultSummaryNode]]:
         try:
             result = ExamResultSummaryService.get_exam_result_summaries_by_uids(uids)
             return Response(
@@ -59,7 +59,7 @@ class ExamResultSummaryMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_EXAM_RESULT_SUMMARIES"])])
     def register_exam_result_summaries(
             self, inputs: List[ExamResultSummaryInput]
-    ) -> Response[List[ExamResultSummaryNode] | None]:
+    ) -> Response[List[ExamResultSummaryNode]]:
         try:
             result = ExamResultSummaryService().register_exam_result_summaries(inputs)
             return Response(
@@ -97,4 +97,4 @@ class ExamResultSummaryMutation:
             )
 
 
-schema = strawberry.Schema(query=ExamResultSummaryQuery, mutation=ExamResultSummaryMutation)
+# schema = strawberry.Schema(query=ExamResultSummaryQuery, mutation=ExamResultSummaryMutation)

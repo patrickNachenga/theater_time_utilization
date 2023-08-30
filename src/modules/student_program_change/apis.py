@@ -13,7 +13,7 @@ from src.types import StudentProgramChangeInput, StudentProgramChangeNode
 @strawberry.type
 class StudentProgramChangeCourseQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_all_student_change_programs(self) -> Response[Optional[List[StudentProgramChangeNode]]]:
+    def get_all_student_change_programs(self) -> Response[List[StudentProgramChangeNode]]:
         try:
             result = StudentProgramChangeService.get_all_student_change_programs()
         except Exception as e:
@@ -33,7 +33,7 @@ class StudentProgramChangeCourseQuery:
                 data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_student_change_program_by_uid(self, uid: str) -> Response[Optional[StudentProgramChangeNode]]:
+    def get_student_change_program_by_uid(self, uid: str) -> Response[StudentProgramChangeNode]:
         try:
             result = StudentProgramChangeService.get_student_change_program_by_uid(uid)
         except Exception as e:
@@ -57,7 +57,7 @@ class StudentProgramChangeCourseQuery:
 class StudentProgramChangeMutation:
     # (extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_CHANGE"])])
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def student_request_change_program(self, input: StudentProgramChangeInput) -> Response[Optional[StudentProgramChangeNode]]:
+    def student_request_change_program(self, input: StudentProgramChangeInput) -> Response[StudentProgramChangeNode]:
         """
             register and update student program change
             :param input

@@ -64,7 +64,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
             result = session.scalars(stmt)
             return result.first()
 
-    def student_change_program(self, input: StudentProgramChangeInput) -> Response[Optional[StudentProgramChangeNode]]:
+    def student_change_program(self, input: StudentProgramChangeInput) -> Response[StudentProgramChangeNode]:
         """
         Register Student Program Change
         :param input:

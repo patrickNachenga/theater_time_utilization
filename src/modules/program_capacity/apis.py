@@ -13,7 +13,7 @@ from src.types import ProgramCapacityNode, ProgramCapacityListNode, \
 @strawberry.type
 class ProgramCapacityQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_CAPACITIES"])])
-    def get_program_program_capacity(self, program_uid: str) -> Response[Optional[ProgramCapacityNode]]:
+    def get_program_program_capacity(self, program_uid: str) -> Response[ProgramCapacityNode]:
         try:
             result = ProgramCapacityService().get_program_capacity(program_uid)
         except Exception as e:
@@ -37,7 +37,7 @@ class ProgramCapacityQuery:
 class ProgramCapacityMutation:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_CAPACITIES"])])
-    def register_program_capacity(self, inputs: ProgramCapacityInputNode) -> Response[Optional[ProgramCapacityListNode]]:
+    def register_program_capacity(self, inputs: ProgramCapacityInputNode) -> Response[ProgramCapacityListNode]:
         try:
             return ProgramCapacityService().register_program_capacity(inputs)
 
@@ -48,7 +48,7 @@ class ProgramCapacityMutation:
 
     # delete program capacity
     @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_CAPACITY"])])
-    async def remove_program(self, uid: str) -> Response[Optional[ProgramCapacityListNode]]:
+    async def remove_program(self, uid: str) -> Response[ProgramCapacityListNode]:
         """
         Remove student By UID
         :param uid:

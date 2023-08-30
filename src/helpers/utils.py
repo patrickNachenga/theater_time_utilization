@@ -4,14 +4,15 @@ from typing import List
 
 import requests
 from passlib.context import CryptContext
-from sqlalchemy import and_, desc, exists
+from sqlalchemy import and_, desc, exists, func
 
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
-    AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult
+    AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult, ProgramCourseAssessment, \
+    ExamResultSummary
 from src.types import UploadResponse, FailedStudent
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -276,7 +277,8 @@ def get_user_programs_headship(info: Info):
     return user_program_uids
 
 
-def insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number, out_off, score,
+def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
+                       exam_category_id, assessment_number, out_off, score,
                        weight) -> bool:
     with session_scope() as session:
         try:
@@ -292,6 +294,7 @@ def insert_course_work(student_uid, program_course_id, exam_category_id, assessm
             if exam_course_work:
                 exam_course_work.score = score
                 exam_course_work.weight = weight
+                instance = exam_course_work
             else:
                 new_exam_coursework = ExamCoursework(
                     student_uid=student_uid,
@@ -302,7 +305,11 @@ def insert_course_work(student_uid, program_course_id, exam_category_id, assessm
                     weight=weight
                 )
                 session.add(new_exam_coursework)
+                instance = new_exam_coursework
             session.commit()
+            attach_coursework_listener(target=instance, registration_number=registration_number, first_name=first_name,
+                                       middle_name=middle_name, last_name=last_name, gender=gender)
+
             return True
         except Exception as e:
             print(e)
@@ -316,13 +323,14 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                                                                  ProgramCourse.deleted_at.is_(None)).first()
             exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
                                                                ExamCategory.deleted_at.is_(None)).first()
-            exam_score = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
-                                                          ExamResult.program_course == program_course,
-                                                          ExamResult.exam_category == exam_category).first()
+            exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
+                                                           ExamResult.program_course == program_course,
+                                                           ExamResult.exam_category == exam_category).first()
             score = (score / out_off) * 100
-            if exam_score:
-                exam_score.score = score
-                exam_score.weight = weight
+            if exam_result:
+                exam_result.score = score
+                exam_result.weight = weight
+                instance = exam_result
             else:
                 new_exam_result = ExamResult(
                     student_uid=student_uid,
@@ -331,8 +339,11 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                     score=score,
                     weight=weight
                 )
+
                 session.add(new_exam_result)
+                instance = new_exam_result
             session.commit()
+            attach_exam_result_listener(target=instance)
             return True
         except Exception as e:
             print(e)
@@ -367,34 +378,45 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             (item for item in students if item["registration_number"] == reg_number), None)
         if matching_item:
             student_uid = matching_item["uid"]
-            if score <= out_off:
-                if is_ue:
-                    result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                out_off,
-                                                weight)
-                    if result:
-                        success = success + 1
-                    else:
-                        failed = failed + 1
-                        failed_student.reg_number = reg_number
-                        failed_student.reason = "Data processing error"
-                else:
-                    result = insert_course_work(student_uid, program_course_id, exam_category_id,
-                                                assessment_number,
-                                                out_off, score,
-                                                weight)
-                    if result:
+            registration_number = matching_item["registration_number"]
+            first_name = matching_item["user"]["first_name"]
+            middle_name = matching_item["user"]["middle_name"]
+            last_name = matching_item["user"]["last_name"]
+            gender = matching_item["user"]["gender"]
+            if score is None:
+                failed = failed + 1
+                failed_student.reg_number = reg_number
+                failed_student.reason = "No score supplied"
+            else:
+                if score <= out_off:
+                    if is_ue:
+                        result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                    out_off,
+                                                    weight)
                         if result:
                             success = success + 1
                         else:
                             failed = failed + 1
                             failed_student.reg_number = reg_number
                             failed_student.reason = "Data processing error"
+                    else:
+                        result = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
+                                                    student_uid, program_course_id, exam_category_id,
+                                                    assessment_number,
+                                                    out_off, score,
+                                                    weight)
+                        if result:
+                            if result:
+                                success = success + 1
+                            else:
+                                failed = failed + 1
+                                failed_student.reg_number = reg_number
+                                failed_student.reason = "Data processing error"
 
-            else:
-                failed = failed + 1
-                failed_student.reg_number = reg_number
-                failed_student.reason = "Score is greater than out off"
+                else:
+                    failed = failed + 1
+                    failed_student.reg_number = reg_number
+                    failed_student.reason = "Score is greater than out off"
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number
@@ -406,3 +428,121 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
         failed_student.reason = "Data processing error , UAA service not found"
 
     return success, failed, failed_student
+
+
+def attach_coursework_listener(target, registration_number, first_name, middle_name, last_name, gender):
+    # def coursework_after_insert_or_update(mapper, connection, target):
+    with session_scope() as session:
+
+        student_exam_course_works = session.query(ExamCoursework).filter(
+            ExamCoursework.student_uid == target.student_uid,
+            ExamCoursework.program_course_id == target.program_course_id)
+        total_practical_score = 0
+        total_theory_score = 0
+
+        for exam_course_work in student_exam_course_works:
+
+            maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
+                ProgramCourseAssessment.exam_category_id == exam_course_work.exam_category_id,
+                ProgramCourseAssessment.program_course_id == exam_course_work.program_course_id).scalar()
+
+            total_weight = session.query(func.coalesce(func.sum(ExamCoursework.weight))).filter(
+                ExamCoursework.student_uid == target.student_uid,
+                ExamCoursework.exam_category_id == exam_course_work.exam_category_id,
+                ExamCoursework.program_course_id == target.program_course_id).scalar()
+            weighted_score = (exam_course_work.score / 100) * maximum_score * (exam_course_work.weight / total_weight)
+            if exam_course_work.exam_category.is_theory:
+                total_theory_score += weighted_score
+            else:
+                total_practical_score += weighted_score
+
+            total_score = total_theory_score + total_practical_score
+
+        exam_result_summary = session.query(ExamResultSummary).filter(
+            ExamResultSummary.student_uid == target.student_uid,
+            ExamResultSummary.program_course_id == target.program_course.id,
+            ExamResultSummary.number_of_sitting == 1).first()
+        if exam_result_summary:
+            exam_result_summary.cw_score = round(total_score, 2)
+        else:
+            new_exam_result = ExamResultSummary(
+                student_uid=target.student_uid,
+                registration_number=registration_number,
+                program_course_id=target.program_course.id,
+                number_of_sitting=1,
+                first_name=first_name,
+                middle_name=middle_name,
+                last_name=last_name,
+                gender=gender,
+                credit=target.program_course.credit,
+                course_code=target.program_course.course.code,
+                course_name=target.program_course.course.name,
+                cw_practical=round(total_practical_score, 2) if total_practical_score > 0 else None,
+                cw_theory=round(total_theory_score, 2) if total_theory_score > 0 else None,
+                cw_score=round(total_score, 2),
+                grade='I',
+                grade_remark='Incomplete',
+                exam_status=1,
+                publish_status=False,
+                study_year=target.program_course.program_semester.study_year,
+                semester=target.program_course.program_semester.semester,
+                academic_year_id=target.program_course.program_semester.academic_year_id
+            )
+            session.add(new_exam_result)
+        session.commit()
+
+
+def attach_exam_result_listener(target):
+    with session_scope() as session:
+        student_exam_results = session.query(ExamResult).filter(
+            ExamResult.student_uid == target.student_uid,
+            ExamResult.program_course_id == target.program_course_id,
+            ExamResult.number_of_sitting == target.number_of_sitting)
+        total_score = 0
+        total_ue_theory = 0
+        total_ue_practical = 0
+        total_ue_oral = 0
+
+        # count_ue_assessment_items = (
+        #     session.query(func.count(ProgramCourseAssessment.id))
+        #     .join(ProgramCourse)
+        #     .join(ExamCategory)
+        #     .filter(
+        #         ProgramCourse.id == target.program_course.id,  # Specify the ProgramCourse id
+        #         ExamCategory.is_ue == True
+        #     )
+        #     .scalar()
+        # )
+
+        for exam_result in student_exam_results:
+            maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
+                ProgramCourseAssessment.exam_category_id == exam_result.exam_category_id,
+                ProgramCourseAssessment.program_course_id == exam_result.program_course_id).scalar()
+            total_weight = session.query(func.coalesce(func.sum(ExamResult.weight))).filter(
+                ExamResult.student_uid == target.student_uid,
+                ExamResult.exam_category_id == exam_result.exam_category_id,
+                ExamResult.program_course_id == target.program_course_id,
+                ExamResult.number_of_sitting == target.number_of_sitting).scalar()
+            weighted_score = (exam_result.score / 100) * maximum_score * (exam_result.weight / total_weight)
+            if exam_result.exam_category.is_theory:
+                total_ue_theory += weighted_score
+            elif exam_result.exam_category.is_theory:
+                total_ue_oral += weighted_score
+
+            else:
+                total_ue_practical += weighted_score
+
+            total_score = total_ue_theory + total_ue_practical + total_ue_oral
+        exam_result_summary = session.query(ExamResultSummary).filter(
+            ExamResultSummary.student_uid == target.student_uid,
+            ExamResultSummary.program_course_id == target.program_course.id,
+            ExamResultSummary.number_of_sitting == target.number_of_sitting).first()
+        if exam_result_summary:
+            exam_result_summary.ue_theory = round(total_ue_theory, 2) if total_ue_theory else None
+            exam_result_summary.ue_practical = round(total_ue_practical, 2) if total_ue_practical else None
+            exam_result_summary.ue_oral = round(total_ue_oral, 2) if total_ue_oral else None
+            exam_result_summary.ue_score = round(total_score, 2)
+            exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
+            # grading procedures
+
+        session.commit()

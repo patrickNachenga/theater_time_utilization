@@ -99,7 +99,9 @@ class ExamCategoryInput:
     uid: Optional[str] = None
     name: str
     code: str
-    exam_category_group_uid: str
+    is_ue: bool
+    is_theory: bool
+    is_oral: bool
 
 
 @strawberry.type(description="Exam Category Output")
@@ -107,7 +109,9 @@ class ExamCategoryNode:
     uid: str
     name: str
     code: str
-    exam_category_group: ExamCategoryGroupsNode
+    is_ue: bool
+    is_theory: bool
+    is_oral: bool
 
 
 @strawberry.input(description="Exam Result Input")
@@ -282,7 +286,9 @@ class ExamCategoryNode:
     uid: str
     name: str
     code: str
-    exam_category_group: ExamCategoryGroupsNode
+    is_ue: bool
+    is_theory: bool
+    is_oral: bool
 
 
 @strawberry.type(description="Exam Category paginated Output")
@@ -513,13 +519,13 @@ class StudentProgramChangeNode:
     student_uid: str
     academic_year: "AcademicYearNode"
     current_program: "ProgramNode"
-    new_program: Optional["ProgramNode"]
     approve_status: str
     approve_remark: str
     reason: str
     current_registration_number: str
     new_registration_number: Optional[str]
     approved_by: Optional[str]
+    new_program: Optional["ProgramNode"]
 
 
 @strawberry.input(description="Student Program Change  Status Input")
@@ -532,9 +538,9 @@ class StudentProgramChangeStatusInput:
 @strawberry.type(description="Student Program Change Status outputs")
 class StudentProgramChangeStatusNode:
     uid: str
-    uid: Optional[str] = None
     code: str
     name: str
+    uid: Optional[str] = None
 
 
 @strawberry.type(description="User Token")
@@ -914,3 +920,115 @@ class UploadInput:
     program_course_id: int
     weight: int
     marks: List[MarksInput]
+
+
+@strawberry.input(description="Workflow Input")
+class WorkflowInput:
+    uid: Optional[str] = None
+    description: Optional[str] = ""
+    name: str
+
+
+@strawberry.type(description="Workflow Output")
+class WorkflowNode:
+    uid: str
+    description: str
+    name: str
+
+
+@strawberry.type(description="Workflow paginated Output")
+class PaginatedWorkflow:
+    items: List[WorkflowNode]
+    total_count: int
+
+
+@strawberry.input(description="State Input")
+class StateInput:
+    uid: Optional[str] = None
+    description: Optional[str] = ""
+    label: str
+
+
+@strawberry.type(description="State Output")
+class StateNode:
+    uid: str
+    description: str
+    label: str
+
+
+@strawberry.type(description="State paginated Output")
+class PaginatedState:
+    items: List[StateNode]
+    total_count: int
+
+
+@strawberry.input(description="State Input")
+class TransitionMetaInput:
+    uid: Optional[str] = None
+    workflow_uid: str
+    source_state_uid: str
+    destination_state_uid: str
+    groups: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
+
+
+@strawberry.type(description="TransitionMeta Output")
+class TransitionMetaNode:
+    uid: str
+    workflow: WorkflowNode
+    source_state: StateNode
+    destination_state: StateNode
+    groups: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
+
+
+@strawberry.type(description="TransitionMeta paginated Output")
+class PaginatedTransitionMeta:
+    items: List[TransitionMetaNode]
+    total_count: int
+
+
+@strawberry.input(description="Seminar Type Input")
+class SeminarTypeInput:
+    uid: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    rank: int
+
+
+@strawberry.type(description="Seminar Type Output")
+class SeminarTypeNode:
+    uid: str
+    description: str
+    name: str
+    rank: int
+
+
+@strawberry.type(description="Seminar Type paginated output")
+class SeminarTypeListNode:
+    items: List[SeminarTypeNode]
+    total_count: int
+
+@strawberry.input(description="Student Seminar Input")
+class StudentSeminarInput:
+    uid: Optional[str] = None
+    student_id: int
+    title: str
+    seminar_date: datetime
+    seminar_types_uid: str
+    is_pass: bool
+    seminar_marks : float
+
+@strawberry.type(description="Student Seminar Output")
+class StudentSeminarNode:
+    uid: str
+    student_id: int
+    title: str
+    seminar_date: datetime
+    seminar_types_uid: str
+    is_pass: bool
+    seminar_marks : float
+@strawberry.type(description="Student Seminar paginated output")
+class StudentSeminarListNode:
+    items: List[StudentSeminarNode]
+    total_count: int

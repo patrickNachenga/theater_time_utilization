@@ -13,7 +13,7 @@ from src.types import FeeStructureInput, FeeStructureNode, RequestControlNumberI
 @strawberry.type
 class Sr2ApiCallQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_fee_structure(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode] | None]:
+    def get_fee_structure(self, inputs: FeeStructureInput) -> Response[List[FeeStructureNode]]:
         try:
             return Sr2ApiCalls.get_fee_structures(inputs)
         except Exception as e:
@@ -26,7 +26,7 @@ class Sr2ApiCallQuery:
             data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_control_numbers(self, registration_number: str) -> Response[Optional[List[ControlNumberNode]]]:
+    def get_control_numbers(self, registration_number: str) -> Response[List[ControlNumberNode]]:
         try:
             return Sr2ApiCalls.get_student_control_number(registration_number)
         except Exception as e:
@@ -38,7 +38,7 @@ class Sr2ApiCallQuery:
                 data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_financial_statement(self, registration_number: str) -> Response[str | None]:
+    def get_financial_statement(self, registration_number: str) -> Response[str]:
         try:
             return Sr2ApiCalls.get_financial_statement(registration_number)
         except Exception as e:
@@ -55,7 +55,7 @@ class Sr2ApiCallQuery:
 class Sr2ApiCallMutation:
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def request_fee_structure_control_numbers(self, inputs: RequestControlNumberInput) -> Response[Optional[str]]:
+    def request_fee_structure_control_numbers(self, inputs: RequestControlNumberInput) -> Response[str]:
         try:
             return Sr2ApiCalls.request_control_numbers(inputs)
         except Exception as e:
@@ -68,7 +68,7 @@ class Sr2ApiCallMutation:
             )
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def renew_control_number(self, inputs: RewControlNumberInput) -> Response[Optional[str]]:
+    def renew_control_number(self, inputs: RewControlNumberInput) -> Response[str]:
         try:
             return Sr2ApiCalls.renew_control_number(inputs)
         except Exception as e:
