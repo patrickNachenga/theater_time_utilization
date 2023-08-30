@@ -139,14 +139,17 @@ class MoodleApiCallQuery:
                         if moodle_response:
                             moodleQuizResult = []
                             for quizData in moodle_response:
-                                moodleQuizResult.append(
-                                    MoodleUsersAttemptsOnQuizNode(
-                                        registration_number=student.registration_number,
-                                        full_name=student.full_name,
-                                        moodle_id=student.moodle_id,
-                                        grade=quizData['grades']
-                                    ) for student in studentData if student.user.moodle_id == quizData['userid']
-                                )
+                                student = next((student for student in studentData if
+                                                student.user.moodle_id == quizData['userid']), None)
+                                if student:
+                                    moodleQuizResult.append(
+                                        MoodleUsersAttemptsOnQuizNode(
+                                            registration_number=student.registration_number,
+                                            full_name=student.full_name,
+                                            moodle_id=student.moodle_id,
+                                            grade=quizData['grades']
+                                        )
+                                    )
 
                             return Response(status=False, code=ResponseCode.SUCCESS,
                                             message="Moodle User Attempts on Quizzes Retrieved Successful",
