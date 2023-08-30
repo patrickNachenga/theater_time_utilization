@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 import pendulum
@@ -5,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
 from src.db.session import session_scope
+from src.modules.seminar_types.service import SeminarTypeService
 from src.models.student_seminar import StudentSeminar
 from src.modules import CRUDBase
 from src.shared.response import Response
@@ -32,10 +34,40 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             result = session.scalars(stmt)
             return result.all()
 
+
+    @staticmethod
+    def get_student_seminar_by_student_uid(inputs) -> List[StudentSeminar]:
+        """
+        Get Student seminar  by Student Uid
+        :return:
+        """
+        with session_scope() as session:
+            if inputs.seminar_type_uid:
+                try:
+                    seminar_type = SeminarTypeService.get_seminar_type_by_uid(inputs.seminar_type_uid)
+                except Exception as e:
+                    print(e)
+                    return []
+                if seminar_type is None:
+                    return []
+                stmt = select(StudentSeminar).where((StudentSeminar.student_uid == inputs.student_uid) & (
+                                                        StudentSeminar.deleted_at.is_(None)) &
+                                                    (StudentSeminar.seminar_type_id == seminar_type.id)
+                                                    )
+            else:
+                stmt = select(StudentSeminar).where((
+                    StudentSeminar.student_uid == inputs.student_uid) & (StudentSeminar.deleted_at.is_(None)))
+
+            result = session.scalars(stmt)
+            # for seminar in result:
+            #     print("Student Seminar ID:", seminar.seminar_type_id)
+
+            return result.all()
+
     @staticmethod
     def get_student_seminar_by_uids(uids: List[str]) -> List[StudentSeminar]:
         """
-        Get Seminar Types by uids
+        Get Student Seminar by uids
         :return:
         """
         with session_scope() as session:
@@ -56,7 +88,7 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             result = session.scalars(stmt)
             return result.first()
 
-    def register_student_seminar(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarListNode]:
+    def register_student_seminar(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarNode]:
         """
         Register Seminar Types
         :param inputs:
@@ -66,23 +98,36 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
         action_name = "Register"
         with session_scope() as session:
             # Check if the Student Seminar already exist using uid
-            existed_student_seminar_list = self.get_student_seminar_by_names(
-                [student_seminar.name for student_seminar in inputs if student_seminar.uid is None])
-            if existed_student_seminar_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=StudentSeminarNode(items=existed_student_seminar_list, total_count=0),
-                                message="Student Seminar Already Exists")
+            # existed_student_seminar_list = self.get_student_seminar_by_names(
+            #     [student_seminar.name for student_seminar in inputs if student_seminar.uid is None])
+            # if existed_student_seminar_list:
+            #     return Response(status=False, code=ResponseCode.DUPLICATE,
+            #                     data=existed_student_seminar_list,
+            #                     message="Student Seminar Already Exists")
             # check for existing seminar types using uid
             existed_student_seminar = self.get_student_seminar_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
+
+                # Verify and get supplied Seminar Type uid. and get existed Seminar Type id from returned Seminar Type model
+                seminar_type = SeminarTypeService.get_seminar_type_by_uid(inputItem.seminar_types_uid)
+                if seminar_type is None:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=StudentSeminarNode,
+                        message="You have submitted incorrect Seminar Type details"
+                    )
+
                 if inputItem.uid is None:
                     student_seminar = StudentSeminar(
                         title=inputItem.title,
-                        seminarDate=inputItem.seminarDate,
-                        isPass=inputItem.isPass,
-                        seminarMarks=inputItem.seminarMarks,
-                        studentId=inputItem.studentId,
-                        seminarTypesUid=inputItem.seminarTypesUid,
+                        seminar_date=inputItem.seminar_date,
+                        is_pass=inputItem.is_pass,
+                        seminar_marks=inputItem.seminar_marks,
+                        student_uid=inputItem.student_uid,
+                        seminar_types=seminar_type,
+                        description=inputItem.description,
+                        status=inputItem.status,
                     )
                     student_seminar_list.append(student_seminar)
                 else:
@@ -99,7 +144,7 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             count = session.query(StudentSeminar).filter(StudentSeminar.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=StudentSeminarNode(items=student_seminar_list, total_count=count),
+                            data=student_seminar_list,
                             message=f"Successfully to {action_name} Student Seminar")
 
     # Delete Function

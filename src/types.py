@@ -1067,7 +1067,7 @@ class SeminarTypeListNode:
 @strawberry.input(description="Student Seminar Input")
 class StudentSeminarInput:
     uid: Optional[str] = None
-    student_id: int
+    student_uid: str
     title: str
     seminar_date: datetime
     seminar_types_uid: str
@@ -1078,10 +1078,10 @@ class StudentSeminarInput:
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
     uid: str
-    student_id: int
+    student_uid: str
     title: str
     seminar_date: datetime
-    seminar_types_uid: str
+    seminar_types: SeminarTypeNode
     is_pass: bool
     seminar_marks: float
 
@@ -1090,3 +1090,9 @@ class StudentSeminarNode:
 class StudentSeminarListNode:
     items: List[StudentSeminarNode]
     total_count: int
+
+
+@strawberry.input(description="Student Seminar Input Node")
+class StudentSeminarsInputNode:
+    student_uid: str
+    seminar_type_uid: str

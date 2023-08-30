@@ -14,8 +14,12 @@ class StudentSeminar(BaseModel):
     seminar_date = Column(Date, nullable=True, unique=False)
     is_pass = Column(Boolean, nullable=True, unique=False)
     seminar_marks = Column(Float, nullable=True, unique=False)
+    description: str = Column(String, nullable=True, unique=False)
+    status: int = Column(Integer, nullable=True, unique=False)
 
     # ---------------Mapped Columns ---------------------
     seminar_type_id: int = Column(Integer, ForeignKey("seminar_types.id"), nullable=False)
 
+    # ---------------Referenced Columns ---------------------
+    seminar_types = relationship('SeminarType', lazy='subquery', back_populates="student_seminar")
 

@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 import pendulum
@@ -45,14 +46,21 @@ class SeminarTypeService(CRUDBase[SeminarType, SeminarTypeInput, SeminarTypeList
             return result.all()
 
     @staticmethod
-    def get_seminar_type_by_uid(uid: str) -> SeminarType:
+    def get_seminar_type_by_uid(uid: str) -> SeminarType | None:
         """
         Get seminar_type by uid
         :param uid:
         :return:
         """
+        try:
+            # Convert the input UID string to a UUID object
+            uid_uuid = uuid.UUID(uid)
+        except ValueError:
+            # Handle the case when the input UID is not a valid UUID
+            return None
+
         with session_scope() as session:
-            stmt = select(SeminarType).where((SeminarType.uid == uid) & (SeminarType.deleted_at.is_(None)))
+            stmt = select(SeminarType).where((SeminarType.uid == uid_uuid) & (SeminarType.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
