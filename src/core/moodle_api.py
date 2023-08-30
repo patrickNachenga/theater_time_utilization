@@ -1,5 +1,5 @@
-# -------------------------  Version 3 ---------------------------------------
-
+# -------------------------  Version 3 -------------------------
+# -------------------------  Version 3 -------------------------
 
 import requests
 
@@ -331,7 +331,7 @@ class MoodleApi:
             'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'enrol_manual_enrol_users',
             'moodlewsrestformat': 'json',
-            'enrolments[0][roleid]':  self.get_role_id_by_short_name(role_name),
+            'enrolments[0][roleid]': self.get_role_id_by_short_name(role_name),
             'enrolments[0][userid]': user_id,
             'enrolments[0][courseid]': course_id
         }
@@ -482,6 +482,50 @@ class MoodleApi:
         # print(full_path)
         return full_path
 
+    @staticmethod
+    def grading_method():
+        grading_methods_data = [
+            {"id": 1, "name": "First attempt"},
+            {"id": 2, "name": "Average grade"},
+            {"id": 3, "name": "Last attempt"}
+        ]
+        return grading_methods_data
+
+    @staticmethod
+    def grade_filter(data, filter_type):
+        last_sum_grades = 0
+        last_sum_grades_user_id = None
+
+        first_sum_grades = None
+        first_sum_grades_user_id = None
+
+        sum_grades_total = 0
+        num_attempts = len(data)
+
+        for index, quiz_attempt in enumerate(data):
+            if quiz_attempt['sumgrades'] > last_sum_grades:
+                last_sum_grades = quiz_attempt['sumgrades']
+                last_sum_grades_user_id = quiz_attempt['userid']
+
+            if first_sum_grades is None:
+                first_sum_grades = quiz_attempt['sumgrades']
+                first_sum_grades_user_id = quiz_attempt['userid']
+
+            sum_grades_total += quiz_attempt['sumgrades']
+
+        average_sum_grades = sum_grades_total / num_attempts if num_attempts > 0 else 0
+
+        if filter_type == 1:
+            return {
+                'userid': first_sum_grades_user_id,
+                'grades': first_sum_grades
+            }
+        elif filter_type == 2:
+            return {
+                'userid': first_sum_grades_user_id,
+                'grades': average_sum_grades
+            }
+
     def get_quizzes_by_course(self, course_id):
         data = {
             'wstoken': settings.MOODLE_TOKEN,
@@ -515,33 +559,32 @@ class MoodleApi:
                 # print('Empty response received.')
                 return False
 
-    def get_user_attempts_on_quiz(self, user_id, quiz_id):
+    def get_user_attempts_on_quiz(self, quiz_id, grading_method, user_id):
         data = {
-            'wstoken': settings.MOODLE_TOKEN,
+            'wstoken': settings.MOODLE_TOKEN ,
             'wsfunction': 'mod_quiz_get_user_attempts',
             'moodlewsrestformat': 'json',
             'userid': user_id,
             'quizid': quiz_id
         }
-
         response = self.sendRequest(data)
-
         if response is False:
             # Handle the error condition
             # print('Failed to get user attempts on the quiz.')
             return False
 
-        response_data = response.json()
-
-        if 'exception' in response_data:
+        responseData = response.json()
+        if 'exception' in responseData:
             # Handle the API error condition
-            # print('API Error: ' + response_data['message'])
+            # print('API Error: ' + responseData['message'])
             return False
         else:
-            if response_data:
-                # Check if the response contains the attempts
-                if 'attempts' in response_data and isinstance(response_data['attempts'], list):
-                    return response_data['attempts']  # Return the attempts
+            if responseData:
+                if 'attempts' in responseData and isinstance(responseData['attempts'], list):
+                    if responseData['attempts']:
+                        return self.grade_filter(responseData['attempts'], grading_method)  # Return the attempts
+                    else:
+                        return False
                 else:
                     # print('No attempts found for the user on the quiz.')
                     return False
@@ -549,6 +592,13 @@ class MoodleApi:
                 # print('Empty response received.')
                 return False
 
+    def get_users_attempts_on_quiz(self, quiz_id, grading_method, user_id_array):
+        result = []
+        for value in user_id_array:
+            current_res = self.get_user_attempts_on_quiz(quiz_id, grading_method, value)
+            if current_res:
+                result.append(current_res)
+        return result
 
 # moodle_api = MoodleApi()
 # login_url = moodle_api.getloginurl("admin")

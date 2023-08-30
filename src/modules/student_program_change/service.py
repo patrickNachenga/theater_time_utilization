@@ -1,10 +1,12 @@
 from typing import Optional, List
 
+import requests
 from fastapi.encoders import jsonable_encoder
 from requests import options
 from sqlalchemy import select, desc
 from sqlalchemy.orm import joinedload
 
+from src.core.config import settings
 from src.db.session import session_scope
 from src.models import ProgramCourse, Program, AcademicYear, StudentProgramChange
 from src.modules import CRUDBase
@@ -24,9 +26,17 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
         :return StudentProgramChange:
         """
         with session_scope() as session:
-            result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
-                desc(StudentProgramChange.updated_at)).all()
-            return result
+            student_program_changes = session.query(StudentProgramChange).filter(
+                StudentProgramChange.deleted_at.is_(None)).order_by(desc(StudentProgramChange.updated_at)).all()
+            if student_program_changes:
+                students_uids = [student_program_change.uid for student_program_change in student_program_changes]
+                params = {"uids": students_uids}
+                response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    print(responseData)
+            return student_program_changes
 
     @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
