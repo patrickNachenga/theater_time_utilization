@@ -7,7 +7,8 @@ from src.models import StudentSeminar
 from src.modules.student_seminar.service import StudentSeminarService, StudentSeminarCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput
+from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput, \
+    StudentSeminarsInputNode
 
 
 @strawberry.type
@@ -47,14 +48,10 @@ class StudentSeminarQuery:
                 data=None)
 
     @strawberry.field()
-    def get_student_seminars_by_student_uid(self, student_uid: str,seminar_type_uid: str = None) -> Response[List[StudentSeminarNode]]:
+    def get_student_seminars_by_student_uid(self, inputs: StudentSeminarsInputNode) -> Response[List[StudentSeminarNode]]:
         # try:
-        result = StudentSeminarService.get_student_seminar_by_student_uid(student_uid,seminar_type_uid)
-        # return Response(result)
-        # except Exception as e:
-        #     print(e)
-        #     print('ererererere----------------')
-        #     result = None
+        result = StudentSeminarService.get_student_seminar_by_student_uid(inputs)
+
         if result:
             return Response(
                 status=True,

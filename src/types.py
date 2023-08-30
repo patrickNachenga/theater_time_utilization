@@ -1008,7 +1008,8 @@ class StudentSeminarListNode:
     items: List[StudentSeminarNode]
     total_count: int
 
-@strawberry.type(description="Query Student Seminars")
-class StudentSeminarsNode:
+@strawberry.input(description="Query Student Seminars")
+class StudentSeminarsInputNode:
     student_uid: str
     seminar_type_uid: str = None
+

@@ -36,27 +36,27 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
 
 
     @staticmethod
-    def get_student_seminar_by_student_uid(student_uid: str,seminar_type_uid: str = None) -> List[StudentSeminar]:
+    def get_student_seminar_by_student_uid(inputs) -> List[StudentSeminar]:
         """
         Get Student seminar  by Student Uid
         :return:
         """
         with session_scope() as session:
-            if seminar_type_uid:
+            if inputs.seminar_type_uid:
                 try:
-                    seminar_type = SeminarTypeService.get_seminar_type_by_uid(seminar_type_uid)
+                    seminar_type = SeminarTypeService.get_seminar_type_by_uid(inputs.seminar_type_uid)
                 except Exception as e:
                     print(e)
                     return []
                 if seminar_type is None:
                     return []
-                stmt = select(StudentSeminar).where((StudentSeminar.student_uid == student_uid) & (
+                stmt = select(StudentSeminar).where((StudentSeminar.student_uid == inputs.student_uid) & (
                                                         StudentSeminar.deleted_at.is_(None)) &
                                                     (StudentSeminar.seminar_type_id == seminar_type.id)
                                                     )
             else:
                 stmt = select(StudentSeminar).where((
-                    StudentSeminar.student_uid == student_uid) & (StudentSeminar.deleted_at.is_(None)))
+                    StudentSeminar.student_uid == inputs.student_uid) & (StudentSeminar.deleted_at.is_(None)))
 
             result = session.scalars(stmt)
             # for seminar in result:
