@@ -813,13 +813,6 @@ class MoodleGradingMethodNode:
     name: str
 
 
-@strawberry.input(description="Get moodle user attempts on quiz inputs")
-class MoodleUserAttemptsOnQuizInput:
-    quiz_id: int
-    grading_method: int
-    user_moodle_id: int
-
-
 @strawberry.input(description="Get moodle users attempts on quiz inputs")
 class MoodleUsersAttemptsOnQuizInput:
     quiz_id: int
@@ -828,10 +821,11 @@ class MoodleUsersAttemptsOnQuizInput:
 
 
 @strawberry.type(description="Get moodle user attempts on quiz output")
-class MoodleUserAttemptsOnQuizNode:
-    quiz_id: int
-    grading_method: int
-    user_moodle_id: int
+class MoodleUsersAttemptsOnQuizNode:
+    registration_number: str
+    full_name: str
+    moodle_id: int
+    grade: float
 
 
 @strawberry.input(description="Program Course update can_exceed_minimum_by input")
@@ -1009,6 +1003,7 @@ class SeminarTypeListNode:
     items: List[SeminarTypeNode]
     total_count: int
 
+
 @strawberry.input(description="Student Seminar Input")
 class StudentSeminarInput:
     uid: Optional[str] = None
@@ -1017,7 +1012,8 @@ class StudentSeminarInput:
     seminar_date: datetime
     seminar_types_uid: str
     is_pass: bool
-    seminar_marks : float
+    seminar_marks: float
+
 
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
@@ -1027,7 +1023,9 @@ class StudentSeminarNode:
     seminar_date: datetime
     seminar_types_uid: str
     is_pass: bool
-    seminar_marks : float
+    seminar_marks: float
+
+
 @strawberry.type(description="Student Seminar paginated output")
 class StudentSeminarListNode:
     items: List[StudentSeminarNode]
