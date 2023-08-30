@@ -41,12 +41,16 @@ class TransitionMeta(BaseModel):
 
     permissions = Column(MutableList.as_mutable(PickleType), default=list)
     groups = Column(MutableList.as_mutable(PickleType), default=list)
+    deleted_at = Column(DateTime, nullable=True)
 
     # Adding Check and Unique Constraints
-    __table_args__ = (
-        CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
-        UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
-    )
+    # __table_args__ = (
+    #     CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
+    #     UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
+    # )
+    """
+    
+    """
 
 
 class Process(BaseModel):
