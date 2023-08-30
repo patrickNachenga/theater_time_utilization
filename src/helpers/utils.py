@@ -1,4 +1,5 @@
 import dataclasses
+import math
 import re
 from typing import List
 
@@ -327,11 +328,18 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                                                            ExamResult.program_course == program_course,
                                                            ExamResult.exam_category == exam_category).first()
             score = (score / out_off) * 100
+            exam_result_summary = session.query(ExamResultSummary).filter(
+                ExamResultSummary.student_uid == student_uid,
+                ExamResultSummary.program_course_id == program_course.id,
+                ExamResultSummary.number_of_sitting == 1).first()
+            if not exam_result_summary:
+                return False
             if exam_result:
                 exam_result.score = score
                 exam_result.weight = weight
                 instance = exam_result
             else:
+
                 new_exam_result = ExamResult(
                     student_uid=student_uid,
                     exam_category=exam_category,
@@ -398,7 +406,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                         else:
                             failed = failed + 1
                             failed_student.reg_number = reg_number
-                            failed_student.reason = "Data processing error"
+                            failed_student.reason = "Can not upload UE, no course work uploaded yet!"
                     else:
                         result = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
                                                     student_uid, program_course_id, exam_category_id,
@@ -463,7 +471,9 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == 1).first()
         if exam_result_summary:
-            exam_result_summary.cw_score = round(total_score, 2)
+            exam_result_summary.cw_score = custom_round(total_score)
+            exam_result_summary.cw_theory = custom_round(total_theory_score) if total_theory_score > 0 else None
+            exam_result_summary.cw_practical = custom_round(total_practical_score) if total_practical_score > 0 else None
         else:
             new_exam_result = ExamResultSummary(
                 student_uid=target.student_uid,
@@ -477,9 +487,9 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 credit=target.program_course.credit,
                 course_code=target.program_course.course.code,
                 course_name=target.program_course.course.name,
-                cw_practical=round(total_practical_score, 2) if total_practical_score > 0 else None,
-                cw_theory=round(total_theory_score, 2) if total_theory_score > 0 else None,
-                cw_score=round(total_score, 2),
+                cw_practical=custom_round(total_practical_score) if total_practical_score > 0 else None,
+                cw_theory=custom_round(total_theory_score) if total_theory_score > 0 else None,
+                cw_score=custom_round(total_score),
                 grade='I',
                 grade_remark='Incomplete',
                 exam_status=1,
@@ -538,11 +548,17 @@ def attach_exam_result_listener(target):
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == target.number_of_sitting).first()
         if exam_result_summary:
-            exam_result_summary.ue_theory = round(total_ue_theory, 2) if total_ue_theory else None
-            exam_result_summary.ue_practical = round(total_ue_practical, 2) if total_ue_practical else None
-            exam_result_summary.ue_oral = round(total_ue_oral, 2) if total_ue_oral else None
-            exam_result_summary.ue_score = round(total_score, 2)
+            exam_result_summary.ue_theory = custom_round(total_ue_theory) if total_ue_theory else None
+            exam_result_summary.ue_practical = custom_round(total_ue_practical) if total_ue_practical else None
+            exam_result_summary.ue_oral = custom_round(total_ue_oral) if total_ue_oral else None
+            exam_result_summary.ue_score = custom_round(total_score)
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
+        else:
+            pass
             # grading procedures
 
         session.commit()
+
+
+def custom_round(value):
+    return math.floor(value * 100) / 100
