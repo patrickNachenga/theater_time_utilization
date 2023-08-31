@@ -33,6 +33,8 @@ class AcademicYearInput:
     status: Optional[int] = 1
     start_date: str
     end_date: str
+
+
 @strawberry.input(description="By law Input")
 class ByLawInput:
     uid: Optional[str] = None
@@ -1098,7 +1100,7 @@ class StudentSeminarInput:
     is_pass: Optional[bool] = False
     seminar_marks: Optional[float] = 0
     description: str
-    status: Optional[int]=0
+    status: Optional[int] = 0
 
 
 @strawberry.type(description="Student Seminar Output")
@@ -1123,4 +1125,20 @@ class StudentSeminarListNode:
 @strawberry.input(description="Student Seminar Input Node")
 class StudentSeminarsInputNode:
     student_uid: str
-    seminar_type_uid: str
+    seminar_type_uid: Optional[str] = None
+
+
+@strawberry.type(description="All Student Seminars Output")
+class AllStudentSeminarNode:
+    uid: str
+    student_uid: str
+    registration_number: str
+    full_name: str
+    gender: str
+    title: str
+    seminar_date: Optional[datetime] = None
+    seminar_types: SeminarTypeNode
+    is_pass: bool
+    seminar_marks: float
+    description: str
+    status: int
