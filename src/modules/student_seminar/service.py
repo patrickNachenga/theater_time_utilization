@@ -37,7 +37,7 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
     @staticmethod
     def check_uniqueness(student_uid: str, seminar_type_id: int) -> StudentSeminar:
         """
-        Check if there already exists program course with same course_id, program_semester_id all together
+        Check if there already exists Student Seminar with same course_id, program_semester_id all together
         :return ProgramCourse:
         """
         with session_scope() as session:
@@ -133,19 +133,19 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                         data=StudentSeminarNode,
                         message="You have submitted incorrect Seminar Type details"
                     )
-                print(seminar_type.id)
+                print(inputItem.student_uid)
                 print(seminar_type.id)
                 student_seminar_exist = self.check_uniqueness(student_uid=inputItem.student_uid,
                                                               seminar_type_id=seminar_type.id)
-                if student_seminar_exist:
-                    return Response(
-                        status=False,
-                        code=ResponseCode.FAILURE,
-                        data=StudentSeminarNode,
-                        message="This Seminar already exist for the Student"
-                    )
 
                 if inputItem.uid is None:
+                    if student_seminar_exist:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.FAILURE,
+                            data=StudentSeminarNode,
+                            message="This Seminar already exist for the Student"
+                        )
                     student_seminar = StudentSeminar(
                         title=inputItem.title,
                         seminar_date=inputItem.seminar_date,
