@@ -74,9 +74,9 @@ class ByLawQuery:
 @strawberry.type
 class ByLawMutation:
     @strawberry.field()
-    def register_by_law(self, inputs: List[ByLawInput]) -> Response[ByLawListNode]:
+    def register_by_law(self, inputs: ByLawInput) -> Response[ByLawListNode]:
         try:
-            return ByLawCrud(ByLaw).register_by_law(inputs)
+            return ByLawCrud.register_by_law(inputs)
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add By-law",
@@ -90,7 +90,7 @@ class ByLawMutation:
         :return:
         """
         try:
-            return ByLawCrud(ByLaw).remove_by_law(uid)
+            return ByLawCrud.remove_by_law(uid)
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Remove By-law",

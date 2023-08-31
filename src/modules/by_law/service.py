@@ -76,8 +76,8 @@ class ByLawService(CRUDBase[ByLaw, ByLawInput, ByLawInput]):
                     end_date=inputs.end_date,
                 )
                 session.add(by_law)
-                session.commit()
-                existing_bylaws = session.query(ByLaw).all()
+            session.commit()
+            existing_bylaws = session.query(ByLaw).all()
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=ByLawListNode(items=existing_bylaws, total_count=len(existing_bylaws)),
                             message=f"By law added Successfully")
