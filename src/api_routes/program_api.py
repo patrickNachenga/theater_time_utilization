@@ -10,6 +10,9 @@ from pydantic import BaseModel
 from src.db.session import session_scope
 from src.helpers.utils import insert_exam_result, insert_course_work, get_student_from_uaa
 from src.models import ExamCategory
+from src.modules.by_law.by_law_classes import BYLAW
+from src.modules.by_law.by_law_files.by_law_2019 import ByLaw2019
+from src.modules.by_law.service import ByLawCrud
 from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -52,6 +55,17 @@ async def get_program_data():
 @program_router.post("/program/department")
 async def get_program_data(parm: ProgramDepartmentInput):
     return ProgramService.api_get_program_by_departments(parm.departments)
+
+
+@program_router.post("/active-by-law")
+def get_active_by_law():
+
+    try:
+        result = ByLawCrud.get_active_by_law()
+    except Exception as e:
+        print(e)
+        result = None
+    return result
 
 
 @program_router.post("/generate-allocation-template/")
@@ -217,15 +231,17 @@ async def extract_data(file: UploadFile = File(...)):
                     # print('student',reg_number,student_uid)
                     if score <= out_off:
                         if is_ue:
-                            result = insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off,
+                            result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                        out_off,
                                                         weight)
                             if result:
                                 success = success + 1
                             else:
                                 failed = failed + 1
-                                failed_students.append({"reg_number":reg_number,"reason":"Data processing error"})
+                                failed_students.append({"reg_number": reg_number, "reason": "Data processing error"})
                         else:
-                            result = insert_course_work(student_uid, program_course_id, exam_category_id, assessment_number,
+                            result = insert_course_work(student_uid, program_course_id, exam_category_id,
+                                                        assessment_number,
                                                         out_off, score,
                                                         weight)
                             if result:
@@ -233,18 +249,21 @@ async def extract_data(file: UploadFile = File(...)):
                                     success = success + 1
                                 else:
                                     failed = failed + 1
-                                    failed_students.append({"reg_number":reg_number,"reason":"Data processing error"})
+                                    failed_students.append(
+                                        {"reg_number": reg_number, "reason": "Data processing error"})
 
                     else:
                         failed = failed + 1
                         failed_students.append({"reg_number": reg_number, "reason": "Score is greater than out off"})
                 else:
                     failed = failed + 1
-                    failed_students.append({"reg_number": reg_number, "reason": "Data processing error ,student not found"})
+                    failed_students.append(
+                        {"reg_number": reg_number, "reason": "Data processing error ,student not found"})
 
             else:
                 failed = failed + 1
-                failed_students.append({"reg_number": reg_number, "reason": "Data processing error , UAA service not found"})
+                failed_students.append(
+                    {"reg_number": reg_number, "reason": "Data processing error , UAA service not found"})
 
     # Save the extracted data in the database
     # ...
