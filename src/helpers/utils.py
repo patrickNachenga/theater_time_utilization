@@ -496,7 +496,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 publish_status=False,
                 study_year=target.program_course.program_semester.study_year,
                 semester=target.program_course.program_semester.semester,
-                academic_year_id=target.program_course.program_semester.academic_year_id
+                academic_year_uid=target.program_course.program_semester.academic_year.uid,
+                program_uid=target.program_course.program_semester.program.uid
             )
             session.add(new_exam_result)
         session.commit()
