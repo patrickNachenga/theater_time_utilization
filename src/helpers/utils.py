@@ -280,8 +280,15 @@ def get_user_programs_headship(info: Info):
 
 def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
                        exam_category_id, assessment_number, out_off, score,
-                       weight) -> bool:
+                       weight):
+
     with session_scope() as session:
+        # check if there is any ue results for this program course and student
+        exam_result = session.query(ExamResult).filter(
+            ExamResult.student_uid == student_uid,
+            ExamResult.program_course_id == program_course_id).first()
+        if exam_result:
+            return False, "Cannot upload after UE results"
         try:
             program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                                                                  ProgramCourse.deleted_at.is_(None)).first()
@@ -314,7 +321,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             return True
         except Exception as e:
             print(e)
-            return False
+            return False, "Data Processing Error"
 
 
 def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight) -> bool:
@@ -387,44 +394,45 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
         if matching_item:
             student_uid = matching_item["uid"]
             registration_number = matching_item["registration_number"]
+            by_law_uid = matching_item["registration_number"]
             first_name = matching_item["user"]["first_name"]
             middle_name = matching_item["user"]["middle_name"]
             last_name = matching_item["user"]["last_name"]
             gender = matching_item["user"]["gender"]
             if score is None:
+                score = 0
+                # failed = failed + 1
+                # failed_student.reg_number = reg_number
+                # failed_student.reason = "No score supplied"
+
+            if score <= out_off:
+                if is_ue:
+                    result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                out_off,
+                                                weight)
+                    if result:
+                        success = success + 1
+                    else:
+                        failed = failed + 1
+                        failed_student.reg_number = reg_number
+                        failed_student.reason = "Can not upload UE, no course work uploaded yet!"
+                else:
+                    result, reason = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
+                                                student_uid, program_course_id, exam_category_id,
+                                                assessment_number,
+                                                out_off, score,
+                                                weight)
+                    if result:
+                        success = success + 1
+                    else:
+                        failed = failed + 1
+                        failed_student.reg_number = reg_number
+                        failed_student.reason = reason
+
+            else:
                 failed = failed + 1
                 failed_student.reg_number = reg_number
-                failed_student.reason = "No score supplied"
-            else:
-                if score <= out_off:
-                    if is_ue:
-                        result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                    out_off,
-                                                    weight)
-                        if result:
-                            success = success + 1
-                        else:
-                            failed = failed + 1
-                            failed_student.reg_number = reg_number
-                            failed_student.reason = "Can not upload UE, no course work uploaded yet!"
-                    else:
-                        result = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
-                                                    student_uid, program_course_id, exam_category_id,
-                                                    assessment_number,
-                                                    out_off, score,
-                                                    weight)
-                        if result:
-                            if result:
-                                success = success + 1
-                            else:
-                                failed = failed + 1
-                                failed_student.reg_number = reg_number
-                                failed_student.reason = "Data processing error"
-
-                else:
-                    failed = failed + 1
-                    failed_student.reg_number = reg_number
-                    failed_student.reason = "Score is greater than out off"
+                failed_student.reason = "Score is greater than "+str(out_off)
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number

@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from src.db.session import session_scope
 from src.helpers.utils import insert_exam_result, insert_course_work, get_student_from_uaa
 from src.models import ExamCategory
+from src.modules.by_law.by_law_classes import BYLAW
+from src.modules.by_law.by_law_files.by_law_2019 import ByLaw2019
 from src.modules.by_law.service import ByLawCrud
 from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
@@ -57,6 +59,7 @@ async def get_program_data(parm: ProgramDepartmentInput):
 
 @program_router.post("/active-by-law")
 def get_active_by_law():
+
     try:
         result = ByLawCrud.get_active_by_law()
     except Exception as e:
