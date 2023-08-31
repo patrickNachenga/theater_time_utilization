@@ -46,7 +46,7 @@ class ByLawService(CRUDBase[ByLaw, ByLawInput, ByLawInput]):
         :return:
         """
         with session_scope() as session:
-            result = session.query(ByLaw).filter(ByLaw.status == True, ByLaw.deleted_at.is_(None)).last()
+            result = session.query(ByLaw).filter(ByLaw.status == True, ByLaw.deleted_at.is_(None)).first()
 
             return result
 
