@@ -129,15 +129,11 @@ class MoodleApiCallQuery:
     def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[List[MoodleUsersAttemptsOnQuizNode]]:
         try:
             with session_scope() as session:
-                program_course = session.query(ProgramCourse) \
-                    .join(StudentCourseRegistration).options(joinedload(ProgramCourse.student_course_registrations)) \
-                    .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(True)) \
-                    .filter(StudentCourseRegistration.deleted_at.is_(None)) \
-                    .filter(ProgramCourse.uid == inputs.program_course_uid) \
-                    .filter(ProgramCourse.deleted_at.is_(None)).first()
-                if program_course:
-                    students_uids = [course_registrations.student_uid for course_registrations in
-                                     program_course.student_course_registrations]
+                student_course_registrations = session.query(StudentCourseRegistration) \
+                    .join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id) \
+                    .filter(ProgramCourse.uid == inputs.program_course_uid).all()
+                if student_course_registrations:
+                    students_uids = [course_registration.student_uid for course_registration in student_course_registrations]
                     if students_uids:
                         # go to uaa to get student information
                         params = {"uids": students_uids}
