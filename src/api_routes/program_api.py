@@ -57,7 +57,7 @@ async def get_program_data(parm: ProgramDepartmentInput):
     return ProgramService.api_get_program_by_departments(parm.departments)
 
 
-@program_router.post("/active-by-law")
+@program_router.get("/active-by-law")
 def get_active_by_law():
 
     try:
