@@ -1105,8 +1105,9 @@ class StudentSeminarInput:
 
 @strawberry.type(description="Student Output")
 class StudentNode:
-    registration_number:  str
+    registration_number: str
     full_name: str
+
 
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
@@ -1137,8 +1138,9 @@ class StudentSeminarsInputNode:
 class AllStudentSeminarNode:
     student_uid: str
     registration_number: str
-    uid: str
+    full_name: str
     student: StudentNode
+    uid: str
     title: str
     seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
@@ -1147,3 +1149,8 @@ class AllStudentSeminarNode:
     description: str
     status: int
 
+
+@strawberry.type(description="Student Seminar Paginated Node")
+class AllStudentSeminarListNode:
+    items: List[AllStudentSeminarNode]
+    total_count: int

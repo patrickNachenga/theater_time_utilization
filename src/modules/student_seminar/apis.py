@@ -3,27 +3,43 @@ from typing import List, Optional
 import strawberry
 
 from src.core.security import CustomPermissionExtension
+from src.core.security import Info
 from src.models import StudentSeminar
 from src.modules.student_seminar.service import StudentSeminarService, StudentSeminarCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput, \
-    StudentSeminarsInputNode,AllStudentSeminarNode
+    StudentSeminarsInputNode, AllStudentSeminarNode, AllStudentSeminarListNode
 
 
 @strawberry.type
 class StudentSeminarQuery:
+
     @strawberry.field()
-    def get_student_seminars(self, pagination: PaginationInput) -> Response[StudentSeminarListNode]:
+    def get_all_seminar(self, pagination: PaginationInput) -> Response[AllStudentSeminarListNode]:
         try:
-            result = StudentSeminarCrud.get_multi_paginated(pagination, [], StudentSeminarListNode)
+            result = StudentSeminarService.get_all_student_seminar_paginated(pagination, ["status","description", "name"],
+                                                                             AllStudentSeminarNode)
         except Exception as e:
             print(e)
             result = []
         return Response(
             status=True,
+            code=ResponseCode.NO_RECORD_FOUND,
+            message="Seminar No Seminars",
+            data=AllStudentSeminarListNode(items=[], total_count=0))
+
+    @strawberry.field()
+    def get_seminars(self, pagination: PaginationInput, info: Info) -> Response[AllStudentSeminarListNode]:
+        try:
+            result = StudentSeminarCrud.get_all_student_seminar_paginated(info, pagination, ['title', 'description'])
+        except Exception as e:
+            print(e)
+            result = AllStudentSeminarListNode(items=[], total_count=0)
+        return Response(
+            status=True,
             code=ResponseCode.SUCCESS,
-            message="Student Seminar Retrieved successfully",
+            message="Seminar Retrieved Successfully",
             data=result)
 
     @strawberry.field()
