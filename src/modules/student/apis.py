@@ -317,10 +317,12 @@ class StudentMutation:
             success = 0
             failed = 0
             failed_students = []
+
             for row in worksheet.iter_rows(min_row=10, values_only=True):
                 reg_number = row[reg_no_column - 1]
                 score = float(row[marks_column - 1])
                 # Find the item with the specified registration_number
+
                 success_, failed_, failed_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,

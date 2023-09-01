@@ -320,7 +320,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             attach_coursework_listener(target=instance, registration_number=registration_number, first_name=first_name,
                                        middle_name=middle_name, last_name=last_name, gender=gender)
 
-            return True
+            return True, "successfully"
         except Exception as e:
             print(e)
             return False, "Data Processing Error"
@@ -365,7 +365,7 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                     instance = new_exam_result
                 session.commit()
                 attach_exam_result_listener(target=instance,by_law_uid=by_law_uid)
-                return True
+                return True, "Successfully"
             except Exception as e:
                 print(e)
                 return False, "Data processing error"
@@ -396,7 +396,9 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
     success = 0
     failed = 0
     failed_student = FailedStudent(reg_number=None, reason=None)
+
     if students:
+
         matching_item = next(
             (item for item in students if item["registration_number"] == reg_number), None)
         if matching_item:
@@ -407,6 +409,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             middle_name = matching_item["user"]["middle_name"]
             last_name = matching_item["user"]["last_name"]
             gender = matching_item["user"]["gender"]
+
             if not by_law_uid:
                 failed = failed + 1
                 failed_student.reg_number = reg_number
