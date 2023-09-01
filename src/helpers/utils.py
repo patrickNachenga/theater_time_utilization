@@ -328,6 +328,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
 
 def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight,by_law_uid):
     with session_scope() as session:
+
         is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id)
         if is_inserted:
             try:
@@ -401,45 +402,48 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
         if matching_item:
             student_uid = matching_item["uid"]
             registration_number = matching_item["registration_number"]
-            by_law_uid = matching_item["registration_number"]
+            by_law_uid = matching_item["bylaw_uid"]
             first_name = matching_item["user"]["first_name"]
             middle_name = matching_item["user"]["middle_name"]
             last_name = matching_item["user"]["last_name"]
             gender = matching_item["user"]["gender"]
-            if score is None:
-                score = 0
-                # failed = failed + 1
-                # failed_student.reg_number = reg_number
-                # failed_student.reason = "No score supplied"
-
-            if score <= out_off:
-                if is_ue:
-                    result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                        out_off,
-                                                        weight,by_law_uid)
-                    if result:
-                        success = success + 1
-                    else:
-                        failed = failed + 1
-                        failed_student.reg_number = reg_number
-                        failed_student.reason = reason
-                else:
-                    result, reason = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
-                                                        student_uid, program_course_id, exam_category_id,
-                                                        assessment_number,
-                                                        out_off, score,
-                                                        weight)
-                    if result:
-                        success = success + 1
-                    else:
-                        failed = failed + 1
-                        failed_student.reg_number = reg_number
-                        failed_student.reason = reason
-
-            else:
+            if not by_law_uid:
                 failed = failed + 1
                 failed_student.reg_number = reg_number
-                failed_student.reason = "Score is greater than " + str(out_off)
+                failed_student.reason = "Student has no by-law"
+            else:
+
+                if score is None:
+                    score = 0
+
+                if score <= out_off:
+                    if is_ue:
+                        result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                            out_off,
+                                                            weight,by_law_uid)
+                        if result:
+                            success = success + 1
+                        else:
+                            failed = failed + 1
+                            failed_student.reg_number = reg_number
+                            failed_student.reason = reason
+                    else:
+                        result, reason = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
+                                                            student_uid, program_course_id, exam_category_id,
+                                                            assessment_number,
+                                                            out_off, score,
+                                                            weight)
+                        if result:
+                            success = success + 1
+                        else:
+                            failed = failed + 1
+                            failed_student.reg_number = reg_number
+                            failed_student.reason = reason
+
+                else:
+                    failed = failed + 1
+                    failed_student.reg_number = reg_number
+                    failed_student.reason = "Score is greater than " + str(out_off)
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number
@@ -513,7 +517,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 study_year=target.program_course.program_semester.study_year,
                 semester=target.program_course.program_semester.semester,
                 academic_year_uid=target.program_course.program_semester.academic_year.uid,
-                program_uid=target.program_course.program_semester.program.uid
+                program_uid=target.program_course.program_semester.program.uid,
+                course_category=target.program_course.course_category.name
             )
             session.add(new_exam_result)
         session.commit()
