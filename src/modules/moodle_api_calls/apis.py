@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 import requests
@@ -129,47 +130,63 @@ class MoodleApiCallQuery:
     def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[List[MoodleUsersAttemptsOnQuizNode]]:
         try:
             with session_scope() as session:
-                student_course_registrations = session.query(StudentCourseRegistration) \
-                    .join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id) \
+                student_course_registrations = session.query(StudentCourseRegistration).join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id) \
+                    .filter(StudentCourseRegistration.deleted_at.is_(None))\
                     .filter(ProgramCourse.uid == inputs.program_course_uid).all()
+
                 if student_course_registrations:
                     students_uids = [course_registration.student_uid for course_registration in student_course_registrations]
                     if students_uids:
                         # go to uaa to get student information
-                        params = {"uids": students_uids}
-                        response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
+                        data_obj = {
+                            "uids": students_uids
+                        }
+
+                        # Serialize the data to JSON
+                        json_data = json.dumps(data_obj)
+
+                        # Set the Content-Type header to indicate that the request body is JSON
+                        headers = {
+                            "Content-Type": "application/json"
+                        }
+                        # Send the Get request
+                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=json_data, headers=headers)
                         response.raise_for_status()
                         if response.status_code == 200:
-                            studentData = response.json()
-                            # go to moodle for getting user attempt on quiz
-                            moodle = MoodleApi()
-                            user_moodle_ids = [student.moodle_id for student in studentData if
-                                               student.user.moodle_id is not None]
-                            moodle_response = moodle.get_user_attempts_on_quiz(quiz_id=inputs.quiz_id,
-                                                                               grading_method=inputs.grading_method,
-                                                                               user_id=user_moodle_ids)
-                            if moodle_response:
-                                moodleQuizResult = []
-                                for quizData in moodle_response:
-                                    student = next((student for student in studentData if
-                                                    student.user.moodle_id == quizData['userid']), None)
-                                    if student:
-                                        moodleQuizResult.append(
-                                            MoodleUsersAttemptsOnQuizNode(
-                                                registration_number=student.registration_number,
-                                                full_name=student.full_name,
-                                                moodle_id=student.moodle_id,
-                                                grade=quizData['grades']
+                            responseData = response.json()
+                            studentData = responseData['data']
+                            if studentData:
+                                # go to moodle for getting user attempt on quiz
+                                moodle = MoodleApi()
+                                user_moodle_ids = [student['user']['moodle_id'] for student in studentData if
+                                                   'user' in student and 'moodle_id' in student['user'] and student['user'][
+                                                       'moodle_id'] is not None]
+                                moodle_response = moodle.get_users_attempts_on_quiz(quiz_id=inputs.quiz_id, grading_method=inputs.grading_method, user_id_array=user_moodle_ids)
+                                if moodle_response:
+                                    moodleQuizResult = []
+                                    for quizData in moodle_response:
+                                        student = next((student for student in studentData if student['user']['moodle_id'] == quizData['userid']), None)
+                                        if student:
+                                            moodleQuizResult.append(
+                                                MoodleUsersAttemptsOnQuizNode(
+                                                    registration_number=student['registration_number'],
+                                                    full_name=student['full_name'],
+                                                    moodle_id=student['user']['moodle_id'],
+                                                    grade=quizData['grades']
+                                                )
                                             )
-                                        )
-
-                                return Response(status=False, code=ResponseCode.SUCCESS,
-                                                message="Moodle User Attempts on Quizzes Retrieved Successful",
-                                                data=moodleQuizResult)
+                                    return Response(status=False, code=ResponseCode.SUCCESS,
+                                                    message="Moodle User Attempts on Quizzes Retrieved Successful",
+                                                    data=moodleQuizResult)
+                                else:
+                                    return Response(
+                                        status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                        message="No records for Moodle User Attempts on Quizzes",
+                                        data=[])
                             else:
                                 return Response(
                                     status=False, code=ResponseCode.NO_RECORD_FOUND,
-                                    message="No records for Moodle User Attempts on Quizzes",
+                                    message="No Student records found for Moodle Attempts on Quizzes",
                                     data=[])
                         else:
                             return Response(
