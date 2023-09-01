@@ -130,7 +130,7 @@ class MoodleApiCallQuery:
         try:
             with session_scope() as session:
                 program_course = session.query(ProgramCourse) \
-                    .options(joinedload(ProgramCourse.student_course_registrations)) \
+                    .join(StudentCourseRegistration).options(joinedload(ProgramCourse.student_course_registrations)) \
                     .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(True)) \
                     .filter(StudentCourseRegistration.deleted_at.is_(None)) \
                     .filter(ProgramCourse.uid == inputs.program_course_uid) \

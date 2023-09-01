@@ -35,6 +35,16 @@ class AcademicYearInput:
     end_date: str
 
 
+@strawberry.input(description="By law Input")
+class ByLawInput:
+    uid: Optional[str] = None
+    name: str
+    code: str
+    status: bool
+    start_date: str
+    end_date: str
+
+
 @strawberry.type(description="Academic Year")
 class AcademicYearNode:
     uid: str
@@ -47,6 +57,22 @@ class AcademicYearNode:
 @strawberry.type(description="AcademicYear Country")
 class AcademicYearListNode:
     items: List[AcademicYearNode]
+    total_count: int
+
+
+@strawberry.type(description="By-law node")
+class ByLawNode:
+    uid: str
+    name: str
+    code: str
+    status: bool
+    start_date: str
+    end_date: str
+
+
+@strawberry.type(description="By law list")
+class ByLawListNode:
+    items: List[ByLawNode]
     total_count: int
 
 
@@ -1069,21 +1095,30 @@ class StudentSeminarInput:
     uid: Optional[str] = None
     student_uid: str
     title: str
-    seminar_date: datetime
+    seminar_date: Optional[datetime] = None
     seminar_types_uid: str
-    is_pass: bool
-    seminar_marks: float
+    is_pass: Optional[bool] = False
+    seminar_marks: Optional[float] = 0
+    description: str
+    status: Optional[int] = 0
 
+
+@strawberry.type(description="Student Output")
+class StudentNode:
+    registration_number:  str
+    full_name: str
 
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
     uid: str
     student_uid: str
     title: str
-    seminar_date: datetime
+    seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
     is_pass: bool
     seminar_marks: float
+    description: str
+    status: int
 
 
 @strawberry.type(description="Student Seminar paginated output")
@@ -1095,4 +1130,20 @@ class StudentSeminarListNode:
 @strawberry.input(description="Student Seminar Input Node")
 class StudentSeminarsInputNode:
     student_uid: str
-    seminar_type_uid: str
+    seminar_type_uid: Optional[str] = None
+
+
+@strawberry.type(description="All Student Seminars Output")
+class AllStudentSeminarNode:
+    student_uid: str
+    registration_number: str
+    uid: str
+    student: StudentNode
+    title: str
+    seminar_date: Optional[datetime] = None
+    seminar_types: SeminarTypeNode
+    is_pass: bool
+    seminar_marks: float
+    description: str
+    status: int
+
