@@ -8,7 +8,7 @@ from src.modules.student_seminar.service import StudentSeminarService, StudentSe
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput, \
-    StudentSeminarsInputNode
+    StudentSeminarsInputNode,AllStudentSeminarNode
 
 
 @strawberry.type
@@ -16,8 +16,7 @@ class StudentSeminarQuery:
     @strawberry.field()
     def get_student_seminars(self, pagination: PaginationInput) -> Response[StudentSeminarListNode]:
         try:
-            result = StudentSeminarCrud.get_multi_paginated(pagination, ["description", "name"],
-                                                            StudentSeminarListNode)
+            result = StudentSeminarCrud.get_multi_paginated(pagination, [], StudentSeminarListNode)
         except Exception as e:
             print(e)
             result = []
@@ -26,6 +25,18 @@ class StudentSeminarQuery:
             code=ResponseCode.SUCCESS,
             message="Student Seminar Retrieved successfully",
             data=result)
+
+    @strawberry.field()
+    def get_all_student_seminars(self) -> Response[List[AllStudentSeminarNode]]:
+        try:
+            return StudentSeminarService.get_all_student_seminars()
+        except Exception as e:
+            print(e)
+        return Response(
+            status=False,
+            code=ResponseCode.NO_RECORD_FOUND,
+            message="Student Seminar not found",
+            data=[])
 
     @strawberry.field()
     def get_student_seminar(self, uid: str) -> Response[StudentSeminarNode]:
@@ -48,7 +59,8 @@ class StudentSeminarQuery:
                 data=None)
 
     @strawberry.field()
-    def get_student_seminars_by_student_uid(self, inputs: StudentSeminarsInputNode) -> Response[List[StudentSeminarNode]]:
+    def get_student_seminars_by_student_uid(self, inputs: StudentSeminarsInputNode) -> Response[
+        List[StudentSeminarNode]]:
         # try:
         result = StudentSeminarService.get_student_seminar_by_student_uid(inputs)
 
@@ -64,6 +76,8 @@ class StudentSeminarQuery:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Student Seminar not found",
                 data=None)
+
+
 @strawberry.type
 class StudentSeminarMutation:
     @strawberry.field()

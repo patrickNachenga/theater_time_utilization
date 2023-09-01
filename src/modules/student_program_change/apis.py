@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import  LoginRequiredExtension
+from src.core.security import LoginRequiredExtension
 from src.models import StudentProgramChange
 from src.modules.student_program_change.service import StudentProgramChangeService
 from src.shared.response import Response
@@ -30,6 +30,26 @@ class StudentProgramChangeCourseQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Student Program Change not found",
+                data=None)
+
+    @strawberry.field(extensions=[LoginRequiredExtension()])
+    def get_student_change_programs(self, student_uid: str) -> Response[List[StudentProgramChangeNode]]:
+        try:
+            result = StudentProgramChangeService.get_student_change_programs(student_uid)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Programs Change Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Requested Programs Change Found",
                 data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])

@@ -1,17 +1,20 @@
-from typing import List, Optional
+from typing import List
 
 import requests
 import strawberry
+from sqlalchemy.orm import joinedload
 
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
-from src.core.security import LoginRequiredExtension, Info, Context
+from src.core.security import LoginRequiredExtension, Info
+from src.db.session import session_scope
+from src.models import ProgramCourse, StudentCourseRegistration
 from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import MoodleGetUrlInput, MoodleGetQuizzesInput, \
     MoodleGradingMethodNode, MoodleUsersAttemptsOnQuizInput, \
-    MoodleUsersAttemptsOnQuizNode, MoodleQuizNode, MoodleCourseQuizzesNode
+    MoodleUsersAttemptsOnQuizNode, MoodleQuizNode, MoodleCourseQuizzesNode, ProgramCourseNode
 
 
 @strawberry.type
@@ -87,7 +90,8 @@ class MoodleApiCallQuery:
                 return Response(
                     status=False, code=ResponseCode.NO_RECORD_FOUND,
                     message="No moodle grading method found",
-                    data=[])
+                    data=[]
+                )
         except Exception as e:
             print(e)
             return Response(
@@ -122,66 +126,67 @@ class MoodleApiCallQuery:
     #             data=[])
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[
-        List[MoodleUsersAttemptsOnQuizNode]]:
+    def get_moodle_users_attempts_on_quiz(self, inputs: MoodleUsersAttemptsOnQuizInput) -> Response[List[MoodleUsersAttemptsOnQuizNode]]:
         try:
-            program_course = ProgramCourseService.get_program_course_by_uid(inputs.program_course_uid)
-            if program_course:
-                students_uids = [course_registrations.student_uid for course_registrations in
-                                 program_course.student_course_registrations]
-                if students_uids:
-                    # go to uaa to get student information
-                    params = {"uids": students_uids}
-                    response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
-                    response.raise_for_status()
-                    if response.status_code == 200:
-                        studentData = response.json()
-                        # go to moodle for getting user attempt on quiz
-                        moodle = MoodleApi()
-                        user_moodle_ids = [student.moodle_id for student in studentData if
-                                           student.user.moodle_id is not None]
-                        moodle_response = moodle.get_user_attempts_on_quiz(quiz_id=inputs.quiz_id,
-                                                                           grading_method=inputs.grading_method,
-                                                                           user_id=user_moodle_ids)
-                        if moodle_response:
-                            moodleQuizResult = []
-                            for quizData in moodle_response:
-                                student = next((student for student in studentData if
-                                                student.user.moodle_id == quizData['userid']), None)
-                                if student:
-                                    moodleQuizResult.append(
-                                        MoodleUsersAttemptsOnQuizNode(
-                                            registration_number=student.registration_number,
-                                            full_name=student.full_name,
-                                            moodle_id=student.moodle_id,
-                                            grade=quizData['grades']
+            with session_scope() as session:
+                student_course_registrations = session.query(StudentCourseRegistration) \
+                    .join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id) \
+                    .filter(ProgramCourse.uid == inputs.program_course_uid).all()
+                if student_course_registrations:
+                    students_uids = [course_registration.student_uid for course_registration in student_course_registrations]
+                    if students_uids:
+                        # go to uaa to get student information
+                        params = {"uids": students_uids}
+                        response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
+                        response.raise_for_status()
+                        if response.status_code == 200:
+                            studentData = response.json()
+                            # go to moodle for getting user attempt on quiz
+                            moodle = MoodleApi()
+                            user_moodle_ids = [student.moodle_id for student in studentData if
+                                               student.user.moodle_id is not None]
+                            moodle_response = moodle.get_user_attempts_on_quiz(quiz_id=inputs.quiz_id,
+                                                                               grading_method=inputs.grading_method,
+                                                                               user_id=user_moodle_ids)
+                            if moodle_response:
+                                moodleQuizResult = []
+                                for quizData in moodle_response:
+                                    student = next((student for student in studentData if
+                                                    student.user.moodle_id == quizData['userid']), None)
+                                    if student:
+                                        moodleQuizResult.append(
+                                            MoodleUsersAttemptsOnQuizNode(
+                                                registration_number=student.registration_number,
+                                                full_name=student.full_name,
+                                                moodle_id=student.moodle_id,
+                                                grade=quizData['grades']
+                                            )
                                         )
-                                    )
 
-                            return Response(status=False, code=ResponseCode.SUCCESS,
-                                            message="Moodle User Attempts on Quizzes Retrieved Successful",
-                                            data=moodleQuizResult)
+                                return Response(status=False, code=ResponseCode.SUCCESS,
+                                                message="Moodle User Attempts on Quizzes Retrieved Successful",
+                                                data=moodleQuizResult)
+                            else:
+                                return Response(
+                                    status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                    message="No records for Moodle User Attempts on Quizzes",
+                                    data=[])
                         else:
                             return Response(
                                 status=False, code=ResponseCode.NO_RECORD_FOUND,
-                                message="No records for Moodle User Attempts on Quizzes",
+                                message="Student records not found",
                                 data=[])
                     else:
                         return Response(
                             status=False, code=ResponseCode.NO_RECORD_FOUND,
-                            message="Student records not found",
+                            message="No Student Found under this course",
                             data=[])
                 else:
                     return Response(
                         status=False, code=ResponseCode.NO_RECORD_FOUND,
-                        message="No Student Found under this course",
-                        data=[])
-            else:
-                return Response(
-                    status=False, code=ResponseCode.NO_RECORD_FOUND,
-                    message="Unable to get program course data",
-                    data=[]
-                )
+                        message="Unable to get program course data",
+                        data=[]
+                    )
         except Exception as e:
             print(e)
             return Response(
