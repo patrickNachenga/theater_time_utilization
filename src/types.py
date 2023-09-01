@@ -1103,10 +1103,15 @@ class StudentSeminarInput:
     status: Optional[int] = 0
 
 
+@strawberry.type(description="Student Output")
+class StudentNode:
+    registration_number:  str
+    full_name: str
+
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
     uid: str
-    student_uid: str
+    student_uid: StudentNode
     title: str
     seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
@@ -1130,11 +1135,10 @@ class StudentSeminarsInputNode:
 
 @strawberry.type(description="All Student Seminars Output")
 class AllStudentSeminarNode:
-    uid: str
     student_uid: str
     registration_number: str
-    full_name: str
-    gender: str
+    uid: str
+    student_uid: StudentNode
     title: str
     seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
@@ -1142,3 +1146,4 @@ class AllStudentSeminarNode:
     seminar_marks: float
     description: str
     status: int
+

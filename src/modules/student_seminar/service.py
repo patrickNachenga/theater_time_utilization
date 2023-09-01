@@ -67,8 +67,6 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             # Serialize the data to JSON
             data_json = json.dumps(uids_list)
 
-
-
             # Set the Content-Type header to indicate that the request body is JSON
             headers = {
                 "Content-Type": "application/json"
@@ -104,24 +102,55 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             if student_seminars:
                 students_uids = [str(student_seminar.student_uid) for student_seminar in student_seminars]
                 params = {"uids": students_uids}
-                print(params)
+                # print(params)
 
                 # Set the Content-Type header to indicate that the request body is JSON
                 headers = {
                     "Content-Type": "application/json"
                 }
-                response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=json.dumps(params), headers=headers)
-
-                print(response.json())
+                response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=json.dumps(params),
+                                         headers=headers)
+                # print(response.json())
+                # print(response.status_code)
+                # student_seminar_list = []
                 if response.status_code == 200:
                     response_data = response.json()
+                    # print(response_data.get('status'))
                     if response_data and response_data.get('status'):
+                        response_data = response.json()
+                        for x in student_seminars:
+                            filtered_students = [student for student in response_data.get("data") if student['registration_number'] =='CIT/D/2023/0001']
+                            if filtered_students:
+                                st = filtered_students[0]
+                                x.full_name = st['full_name']
+                                x.registration_number = st['registration_number']
+                                # student_seminar_list.append(x)
+                                # print(x)
 
+                        # for x in student_seminars:
+                        #     print(x.full_name)
                         return Response(
                             status=True,
                             code=ResponseCode.SUCCESS,
-                            message="Student Seminars Retrieved successfully",
+                            message="Student Seminar Retrieved successfully",
                             data=student_seminars)
+
+
+
+                        # filtered_students = [student for student in students if student["age"] > age_threshold]
+
+                        for structure in response_data["data"]:
+                            student_seminar_structure = AllStudentSeminarNode(
+                                registration_number=structure["registration_number"],
+                                student_uid=structure["student_uid"]
+                            )
+                            print(structure["registration_number"])
+                            # student_seminar_list.append(student_seminar_structure)
+                            return Response(
+                                status=True,
+                                code=ResponseCode.SUCCESS,
+                                message="Student Seminars Retrieved successfully",
+                                data=student_seminar_list)
                     else:
                         print("response_data", response_data)
                         return Response(
