@@ -16,8 +16,7 @@ class StudentSeminarQuery:
     @strawberry.field()
     def get_student_seminars(self, pagination: PaginationInput) -> Response[StudentSeminarListNode]:
         try:
-            return StudentSeminarCrud.get_student_seminars(pagination, [], ["description", "name"], [])
-
+            result = StudentSeminarCrud.get_multi_paginated(pagination, [], StudentSeminarListNode)
         except Exception as e:
             print(e)
             result = []

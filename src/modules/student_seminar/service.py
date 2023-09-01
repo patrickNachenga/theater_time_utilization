@@ -20,7 +20,7 @@ from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarLis
 
 class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, StudentSeminarInput]):
     @staticmethod
-    def get_student_seminars(pagination, unique_search: [], search_columns: [],
+    def get_student_seminars_page(pagination, unique_search: [], search_columns: [],
                              relationships_to_join: []) -> Response[StudentSeminarListNode]:
         with session_scope() as session:
             query = session.query(StudentSeminar).filter(StudentSeminar.deleted_at.is_(None))
@@ -96,21 +96,30 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
         :param uid:
         :return StudentSeminarNode:
         """
+        # Set the Content-Type header to indicate that the request body is JSON
+        headers = {
+            "Content-Type": "application/json"
+        }
+
         with session_scope() as session:
             student_seminars = session.query(StudentSeminar).filter(
                 StudentSeminar.deleted_at.is_(None)).order_by(desc(StudentSeminar.updated_at)).all()
             if student_seminars:
+                for student_seminar_array in student_seminars:
+                    student_uid = str(student_seminar_array.student_uid)
+
+                    params = {"uid": student_uid}
+                    response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                    response.raise_for_status()
+                    print(response.json())
+
                 students_uids = [str(student_seminar.student_uid) for student_seminar in student_seminars]
                 params = {"uids": students_uids}
                 # print(params)
 
-                # Set the Content-Type header to indicate that the request body is JSON
-                headers = {
-                    "Content-Type": "application/json"
-                }
                 response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=json.dumps(params),
                                          headers=headers)
-                # print(response.json())
+                print(response.json())
                 # print(response.status_code)
                 # student_seminar_list = []
                 if response.status_code == 200:
@@ -119,7 +128,8 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                     if response_data and response_data.get('status'):
                         response_data = response.json()
                         for x in student_seminars:
-                            filtered_students = [student for student in response_data.get("data") if student['registration_number'] =='CIT/D/2023/0001']
+                            filtered_students = [student for student in response_data.get("data") if
+                                                 student['registration_number'] == 'CIT/D/2023/0001']
                             if filtered_students:
                                 st = filtered_students[0]
                                 x.full_name = st['full_name']
@@ -127,15 +137,11 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                                 # student_seminar_list.append(x)
                                 # print(x)
 
-                        # for x in student_seminars:
-                        #     print(x.full_name)
                         return Response(
                             status=True,
                             code=ResponseCode.SUCCESS,
                             message="Student Seminar Retrieved successfully",
                             data=student_seminars)
-
-
 
                         # filtered_students = [student for student in students if student["age"] > age_threshold]
 

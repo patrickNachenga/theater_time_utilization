@@ -1111,7 +1111,7 @@ class StudentNode:
 @strawberry.type(description="Student Seminar Output")
 class StudentSeminarNode:
     uid: str
-    student_uid: StudentNode
+    student_uid: str
     title: str
     seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
@@ -1138,7 +1138,7 @@ class AllStudentSeminarNode:
     student_uid: str
     registration_number: str
     uid: str
-    student_uid: StudentNode
+    student: StudentNode
     title: str
     seminar_date: Optional[datetime] = None
     seminar_types: SeminarTypeNode
