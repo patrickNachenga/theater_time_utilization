@@ -238,6 +238,7 @@ class StudentService:
         out_off = float(inputs.out_off)
         program_course_id = inputs.program_course_id
         weight = inputs.weight
+        source = inputs.source
 
         with session_scope() as session:
             is_ue = session.query(ExamCategory).filter(
@@ -252,7 +253,7 @@ class StudentService:
                 reg_number = row.registration_number
                 score = float(row.score)
 
-                success_, failed_, failed_student = general_upload(students=students, program_course_id=program_course_id, exam_category_id=exam_category_id, score=score, out_off=out_off, weight=weight, is_ue=is_ue, reg_number=reg_number, assessment_number=assessment_number)
+                success_, failed_, failed_student = general_upload(students=students, program_course_id=program_course_id, exam_category_id=exam_category_id, score=score, out_off=out_off, weight=weight, is_ue=is_ue, reg_number=reg_number, assessment_number=assessment_number,source=source)
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:

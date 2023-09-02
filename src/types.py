@@ -994,6 +994,7 @@ class MarksInput:
 
 @strawberry.input
 class UploadInput:
+    source: str
     out_off: int
     exam_category_id: int
     assessment_number: int
