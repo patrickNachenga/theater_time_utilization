@@ -1162,3 +1162,38 @@ class PaginationSeminarInput:
     limit: int = 10
     search: Optional[str] = None
     status: Optional[int] = None
+
+
+@strawberry.type(description="Student Seminar Output")
+class StudentSeminarNode:
+    uid: str
+    student_uid: str
+    title: str
+    seminar_date: Optional[datetime] = None
+    seminar_types: SeminarTypeNode
+    is_pass: bool
+    seminar_marks: float
+    description: str
+    status: int
+
+
+@strawberry.type(description="Student Seminar paginated output")
+class StudentManuscriptNode:
+    uid: str
+    student_uid: str
+    title: str
+    publication_date: Optional[datetime] = None
+    description: str
+    status: int
+    publication_status: int
+
+
+@strawberry.input(description="Student Seminar Input Node")
+class StudentManuscriptInput:
+    student_uid: str
+    uid: Optional[str] = None
+    title: str
+    publication_date: Optional[datetime] = None
+    description: str
+    status: int
+    publication_status: int
