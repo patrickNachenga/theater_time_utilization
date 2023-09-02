@@ -1154,3 +1154,11 @@ class AllStudentSeminarNode:
 class AllStudentSeminarListNode:
     items: List[AllStudentSeminarNode]
     total_count: int
+
+
+@strawberry.input(description="Pagination Input")
+class PaginationSeminarInput:
+    offset: int = 0
+    limit: int = 10
+    search: Optional[str] = None
+    status: Optional[int] = None

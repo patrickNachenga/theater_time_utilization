@@ -9,14 +9,14 @@ from src.modules.student_seminar.service import StudentSeminarService, StudentSe
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput, \
-    StudentSeminarsInputNode, AllStudentSeminarNode, AllStudentSeminarListNode
+    StudentSeminarsInputNode, AllStudentSeminarNode, AllStudentSeminarListNode, PaginationSeminarInput
 
 
 @strawberry.type
 class StudentSeminarQuery:
 
     @strawberry.field()
-    def get_all_seminar(self, pagination: PaginationInput) -> Response[AllStudentSeminarListNode]:
+    def get_all_seminar(self, pagination: PaginationSeminarInput) -> Response[AllStudentSeminarListNode]:
         try:
             result = StudentSeminarService.get_all_student_seminar_paginated(pagination, ["status","description", "name"],
                                                                              AllStudentSeminarNode)
@@ -30,9 +30,9 @@ class StudentSeminarQuery:
             data=AllStudentSeminarListNode(items=[], total_count=0))
 
     @strawberry.field()
-    def get_seminars(self, pagination: PaginationInput, info: Info) -> Response[AllStudentSeminarListNode]:
+    def get_seminars(self, pagination: PaginationSeminarInput, info: Info) -> Response[AllStudentSeminarListNode]:
         try:
-            result = StudentSeminarCrud.get_all_student_seminar_paginated(info, pagination, ['title', 'description'])
+            result = StudentSeminarCrud.get_all_student_seminar_paginated(info, pagination, ['title', 'description', 'status'])
         except Exception as e:
             print(e)
             result = AllStudentSeminarListNode(items=[], total_count=0)

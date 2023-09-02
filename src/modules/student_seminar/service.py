@@ -17,7 +17,7 @@ from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, AllStudentSeminarNode, \
-    AllStudentSeminarListNode, PaginationInput
+    AllStudentSeminarListNode, PaginationInput, PaginationSeminarInput
 
 
 class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, StudentSeminarInput]):
@@ -27,14 +27,18 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                                           relationships_to_join: List[str] = None,
                                           unique_search: List[dict] = None) -> [AllStudentSeminarListNode]:
         """
-            Get all programs by program
+            Get all Seminars Paginated
         :return:
         """
         with session_scope() as session:
             # user_h_department_uids = get_user_departments_headship(info)
 
-            query = session.query(StudentSeminar).filter(
-                and_(StudentSeminar.deleted_at.is_(None)))
+            if pagination.status:
+                query = session.query(StudentSeminar).filter(
+                    and_(StudentSeminar.deleted_at.is_(None), StudentSeminar.status == pagination.status))
+            else:
+                query = session.query(StudentSeminar).filter(
+                    StudentSeminar.deleted_at.is_(None))
             search_q = pagination.search if pagination.search else ''
 
             # filter condition if specified unique column
