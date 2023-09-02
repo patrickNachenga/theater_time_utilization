@@ -302,7 +302,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                                                                     ExamCoursework.assessment_number == assessment_number).first()
             score = (score / out_off) * 100
             if exam_course_work:
-                exam_course_work.score = score
+                exam_course_work.score = custom_round(score)
                 exam_course_work.weight = weight
                 exam_course_work.source = source
                 instance = exam_course_work
@@ -312,7 +312,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                     exam_category=exam_category,
                     program_course=program_course,
                     assessment_number=assessment_number,
-                    score=score,
+                    score=custom_round(score),
                     weight=weight,
                     source=source
                 )

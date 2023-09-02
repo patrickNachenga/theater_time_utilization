@@ -152,17 +152,6 @@ class ExamResultInput:
     overall_marks: int
 
 
-@strawberry.type(description="Exam Result Output | Node")
-class ExamResultNode:
-    student_uid: str
-    program_course_id: int
-    exam_category_id: int
-    score: float
-    out_of: float
-    weight: int
-    overall_marks: float
-
-
 @strawberry.input(description="Exam Result Summary Input")
 class ExamResultSummaryInput:
     uid: str
@@ -194,6 +183,14 @@ class ExamResultSummaryNode:
     course_code: str
     course_name: str
     credit: float
+    cw_practical: float
+    cw_theory: float
+    cw_score: float
+    ue_practical: float
+    ue_theory: float
+    ue_oral: float
+    ue_score: float
+    total_score: float
     grade: str
     grade_point: float
     grade_remark: str
@@ -1163,3 +1160,29 @@ class PaginationSeminarInput:
     limit: int = 10
     search: Optional[str] = None
     status: Optional[int] = None
+
+
+@strawberry.type(description="Exam Result Output | Node")
+class ExamResultNode:
+    student_uid: str
+    program_course_id: int
+    exam_category_id: int
+    score: float
+    source: float
+    out_of: float
+    weight: str
+    overall_marks: float
+    program_course: ProgramCourseNode
+
+
+@strawberry.type(description="Exam course work result Output | Node")
+class ExamCourseWorkNode:
+    student_uid: str
+    program_course_id: int
+    exam_category_id: int
+    score: float
+    out_of: float
+    weight: int
+    source: str
+    overall_marks: float
+    program_course: ProgramCourseNode
