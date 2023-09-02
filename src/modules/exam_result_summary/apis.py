@@ -38,7 +38,6 @@ class ExamResultSummaryQuery:
             Response[List[ExamResultSummaryNode]]:
         try:
             result = ExamResultSummaryService.get_student_exam_result_summaries(student_uid)
-
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

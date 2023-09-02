@@ -183,16 +183,16 @@ class ExamResultSummaryNode:
     course_code: str
     course_name: str
     credit: float
-    cw_practical: float
-    cw_theory: float
-    cw_score: float
-    ue_practical: float
-    ue_theory: float
-    ue_oral: float
-    ue_score: float
-    total_score: float
+    cw_practical: Optional[float] = None
+    cw_theory: Optional[float] = None
+    cw_score: Optional[float] = None
+    ue_practical: Optional[float] = None
+    ue_theory: Optional[float] = None
+    ue_oral: Optional[float] = None
+    ue_score: Optional[float] = None
+    total_score: Optional[float] = None
     grade: str
-    grade_point: float
+    grade_point: Optional[float] = None
     grade_remark: str
     publish_status: bool
     publisher: str
