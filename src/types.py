@@ -152,17 +152,6 @@ class ExamResultInput:
     overall_marks: int
 
 
-@strawberry.type(description="Exam Result Output | Node")
-class ExamResultNode:
-    student_uid: str
-    program_course_id: int
-    exam_category_id: int
-    score: float
-    out_of: float
-    weight: int
-    overall_marks: float
-
-
 @strawberry.input(description="Exam Result Summary Input")
 class ExamResultSummaryInput:
     uid: str
@@ -194,8 +183,16 @@ class ExamResultSummaryNode:
     course_code: str
     course_name: str
     credit: float
+    cw_practical: Optional[float] = None
+    cw_theory: Optional[float] = None
+    cw_score: Optional[float] = None
+    ue_practical: Optional[float] = None
+    ue_theory: Optional[float] = None
+    ue_oral: Optional[float] = None
+    ue_score: Optional[float] = None
+    total_score: Optional[float] = None
     grade: str
-    grade_point: float
+    grade_point: Optional[float] = None
     grade_remark: str
     publish_status: bool
     publisher: str
@@ -729,6 +726,7 @@ class CourseRegistrationInputNode:
 class StudentUaaData:
     registration_number: str
     full_name: str
+    uid: str
 
 
 @strawberry.type
@@ -994,6 +992,7 @@ class MarksInput:
 
 @strawberry.input
 class UploadInput:
+    source: str
     out_off: int
     exam_category_id: int
     assessment_number: int
@@ -1164,18 +1163,30 @@ class PaginationSeminarInput:
     status: Optional[int] = None
 
 
-@strawberry.type(description="Student Seminar Output")
-class StudentSeminarNode:
-    uid: str
+@strawberry.type(description="Exam Result Output | Node")
+class ExamResultNode:
     student_uid: str
-    title: str
-    seminar_date: Optional[datetime] = None
-    seminar_types: SeminarTypeNode
-    is_pass: bool
-    seminar_marks: float
-    description: str
-    status: int
+    program_course_id: int
+    exam_category_id: int
+    score: float
+    source: float
+    out_of: float
+    weight: str
+    overall_marks: float
+    program_course: ProgramCourseNode
 
+
+@strawberry.type(description="Exam course work result Output | Node")
+class ExamCourseWorkNode:
+    student_uid: str
+    program_course_id: int
+    exam_category_id: int
+    score: float
+    out_of: float
+    weight: int
+    source: str
+    overall_marks: float
+    program_course: ProgramCourseNode
 
 @strawberry.type(description="Student Seminar paginated output")
 class StudentManuscriptNode:
@@ -1197,3 +1208,25 @@ class StudentManuscriptInput:
     description: Optional[str] = None
     status: Optional[int] = 0
     publication_status: Optional[int] = 0
+
+@strawberry.type(description="Student Submission paginated output")
+class IntentionToSubmitNode:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int
+
+@strawberry.input(description="Student Submission Input Node")
+class IntentionToSubmitInput:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int
