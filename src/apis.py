@@ -30,6 +30,7 @@ from src.modules.transition_metas.apis import TransitionMetaMutation, Transition
 from src.modules.workflows.apis import WorkflowQuery, WorkflowMutation
 from src.modules.seminar_types.apis import SeminarTypeQuery, SeminarTypeMutation
 from src.modules.student_seminar.apis import StudentSeminarQuery, StudentSeminarMutation
+from src.modules.student_manuscript.apis import StudentManuscriptQuery, StudentManuscriptMutation
 
 
 @strawberry.type
@@ -40,7 +41,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery,
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
                StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery, SeminarTypeQuery,
-               StudentSeminarQuery,ByLawQuery):
+               StudentSeminarQuery,ByLawQuery, StudentManuscriptQuery):
     pass
 
 
@@ -53,5 +54,6 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation,
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
 
-                  WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation):
+                  WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation,
+                  ByLawMutation, StudentManuscriptMutation):
     pass

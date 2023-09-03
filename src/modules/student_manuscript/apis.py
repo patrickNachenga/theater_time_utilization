@@ -15,7 +15,26 @@ from src.types import StudentManuscriptInput, StudentManuscriptNode
 class StudentManuscriptQuery:
 
     @strawberry.field()
-    def get_student_manuscript_by_uid(self, uid: str) -> Response[StudentManuscriptNode]:
+    def get_student_manuscript(self) -> Response[List[StudentManuscriptNode]]:
+        try:
+            result = StudentManuscriptService(StudentManuscript).get_student_manuscript()
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Student Manuscript Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Student Manuscript not found",
+                data=None)
+    @strawberry.field()
+    def get_student_manuscript_by_uid(self, uid: str) -> Response[List[StudentManuscriptNode]]:
         try:
             result = StudentManuscriptService(StudentManuscript).get_student_manuscript_by_uid(uid)
         except Exception as e:
@@ -35,10 +54,13 @@ class StudentManuscriptQuery:
                 data=None)
 
     @strawberry.field()
-    def get_student_manuscript_by_student_uid(self, student_uid: str) \
+    def get_student_manuscript_by_student_uid(student_uid: str) \
             -> Response[List[StudentManuscriptNode]]:
-        # try:
-        result = StudentManuscriptService.get_student_manuscript_by_student_uid(student_uid)
+        try:
+            result = StudentManuscriptService.get_student_manuscript_by_student_uid(student_uid)
+        except Exception as e:
+            print(e)
+            result = None
 
         if result:
             return Response(
@@ -55,9 +77,10 @@ class StudentManuscriptQuery:
 
 
 @strawberry.type
-class StudentSeminarMutation:
+class StudentManuscriptMutation:
     @strawberry.field()
-    def register_student_seminar(self, inputs: List[StudentManuscriptInput]) -> Response[StudentManuscriptNode]:
+    def register_student_manuscript(self, inputs: List[StudentManuscriptInput]) \
+            -> Response[StudentManuscriptNode]:
         try:
             return StudentManuscriptService(StudentManuscript).register_student_manuscript(inputs)
         except Exception as e:

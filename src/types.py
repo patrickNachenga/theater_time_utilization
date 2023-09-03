@@ -1179,21 +1179,21 @@ class StudentSeminarNode:
 
 @strawberry.type(description="Student Seminar paginated output")
 class StudentManuscriptNode:
-    uid: str
-    student_uid: str
-    title: str
-    publication_date: Optional[datetime] = None
-    description: str
-    status: int
-    publication_status: int
-
-
-@strawberry.input(description="Student Seminar Input Node")
-class StudentManuscriptInput:
-    student_uid: str
     uid: Optional[str] = None
+    student_uid: str
     title: str
     publication_date: Optional[datetime] = None
     description: str
     status: int
     publication_status: int
+
+
+@strawberry.input(description="Student Manuscript Input Node")
+class StudentManuscriptInput:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    publication_date: Optional[datetime] = None
+    description: Optional[str] = None
+    status: Optional[int] = 0
+    publication_status: Optional[int] = 0
