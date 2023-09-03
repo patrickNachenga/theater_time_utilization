@@ -1208,3 +1208,45 @@ class ExamResultSummarySearchCriteria:
     program_uid: Optional[str] = None
     course_category: Optional[str] = None
     semester: Optional[int] = None
+@strawberry.type(description="Student Seminar paginated output")
+class StudentManuscriptNode:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    publication_date: Optional[datetime] = None
+    description: str
+    status: int
+    publication_status: int
+
+
+@strawberry.input(description="Student Manuscript Input Node")
+class StudentManuscriptInput:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    publication_date: Optional[datetime] = None
+    description: Optional[str] = None
+    status: Optional[int] = 0
+    publication_status: Optional[int] = 0
+
+@strawberry.type(description="Student Submission paginated output")
+class IntentionToSubmitNode:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int
+
+@strawberry.input(description="Student Submission Input Node")
+class IntentionToSubmitInput:
+    uid: Optional[str] = None
+    student_uid: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int

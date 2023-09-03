@@ -16,31 +16,45 @@ from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarLis
 class StudentSeminarQuery:
 
     @strawberry.field()
-    def get_all_seminar(self, pagination: PaginationSeminarInput) -> Response[AllStudentSeminarListNode]:
+    def get_student_seminar_by_uid(self, uid: str) -> Response[StudentSeminarNode]:
         try:
-            result = StudentSeminarService.get_all_student_seminar_paginated(pagination, ["status","description", "name"],
-                                                                             AllStudentSeminarNode)
+            result = StudentSeminarService(StudentSeminar).get_student_seminar_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
-        return Response(
-            status=True,
-            code=ResponseCode.NO_RECORD_FOUND,
-            message="Seminar No Seminars",
-            data=AllStudentSeminarListNode(items=[], total_count=0))
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Student Seminar Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Student Seminar not found",
+                data=None)
 
     @strawberry.field()
     def get_seminars(self, pagination: PaginationSeminarInput, info: Info) -> Response[AllStudentSeminarListNode]:
         try:
-            result = StudentSeminarCrud.get_all_student_seminar_paginated(info, pagination, ['title', 'description', 'status'])
+            result = StudentSeminarCrud.get_all_student_seminar_paginated(info, pagination,
+                                                                          ['title', 'description', 'status'])
         except Exception as e:
             print(e)
             result = AllStudentSeminarListNode(items=[], total_count=0)
-        return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Seminar Retrieved Successfully",
-            data=result)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Seminar Retrieved Successfully",
+                data=result)
+        else:
+            return Response(
+                status=True,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Seminar Records Found",
+                data=result)
 
     @strawberry.field()
     def get_all_student_seminars(self) -> Response[List[AllStudentSeminarNode]]:
