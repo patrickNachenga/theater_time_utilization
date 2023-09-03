@@ -1,16 +1,26 @@
+from sched import scheduler
+
+from src.helpers.apscheduler import scheduler
 from starlette.middleware.cors import CORSMiddleware
 
 from src.app import RegistrationApp
 from src.core.redis import redis_dependency
 from src.db.session import database
+from src.api_routes.program_api import program_router
+from src.api_routes.sr2_finance_api import sr2_router
 
 app = RegistrationApp()
 
 app.debug = True
+# app.debug = False
 
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
 )
+
+# Adding REST API route for querying Program Module
+app.include_router(program_router)
+app.include_router(sr2_router)
 
 
 @app.on_event("startup")
@@ -22,9 +32,13 @@ async def startup():
     :return:
     """
     await database.connect()
+
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
     await redis_dependency.init()
+    if not app.debug:
+        await app.initialize_async()
+        scheduler.start()
 
 
 @app.on_event("shutdown")
@@ -35,15 +49,6 @@ async def shutdown():
     :return:
     """
     await database.disconnect()
-
-
-@app.get("/health")
-async def health():
-    """
-        Health Check For APP
-    :return:
-    """
-    return {"status": "ok"}
 
 
 @app.get("/")

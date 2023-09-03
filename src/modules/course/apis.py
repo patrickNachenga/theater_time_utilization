@@ -1,46 +1,75 @@
-from typing import List
+# Importing useful libraries
+from typing import List, Optional
 
-import strawberry
+import strawberry  # For building graphQL APIs
 
-from src.modules.course.service import CourseService
+from src.core.security import CustomPermissionExtension, Info
+from src.models import Course
+from src.modules.course.service import CourseService, CourseCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, CourseNode
+from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
+
 
 @strawberry.type
 class CourseQuery:
-    @strawberry.field
-    def get_courses(self) -> Response[List[CourseNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSES"])])
+    def get_courses(self, pagination: PaginationInput, info: Info) -> Response[PaginatedCourse]:
         try:
-            result = CourseService.get_courses()
+            # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
+            # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
+            result = CourseCrud.get_courses_with_headship(info, pagination, ['name', 'code', 'description'])
         except Exception as e:
             print(e)
-            result = []
+            result = PaginatedCourse(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Students retrieved successfully",
+            message="Courses Retrieved Successfully",
             data=result)
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSES"])])
+    def get_course(self, uid: str) -> Response[CourseNode]:
+        try:
+            result = CourseService.get_course_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course not found",
+                data=None)
+
 
 @strawberry.type
 class CourseMutation:
-    @strawberry.field
-    def register_courses(self, inputs: List[CourseInput]) -> Response[List[CourseNode]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSES"])])
+    async def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
         try:
-            return CourseService().register_courses(inputs)
-
+            return CourseService(Course).register_courses(inputs)
         except Exception as e:
             print(e)
-            return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register course", data=[])
-    @strawberry.mutation
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course",
+                            data=PaginatedCourse(items=[], total_count=0))
+
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE"])])
     async def remove_course(self, uid: str) -> Response[None]:
         """
-        Remove course By UID
+        Remove Course By UID
         :param uid:
         :return:
         """
         try:
-            CourseService().remove_course(uid)
+            CourseService(Course).remove_course(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,

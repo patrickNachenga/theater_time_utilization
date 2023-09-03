@@ -14,5 +14,8 @@ env
 src/core/.env
 regenv
 .gitttt
-/alembic/versions/
+/alembic
 alembic.ini
+docker-compose.yml
+Dockerfile
+/venv

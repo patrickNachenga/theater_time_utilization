@@ -1,5 +1,5 @@
 import strawberry
-from typing import Generic, TypeVar, List
+from typing import Generic, TypeVar, List, Optional
 
 T = TypeVar("T")
 
@@ -9,4 +9,4 @@ class Response(Generic[T]):
     status: bool
     code: int
     message: str
-    data: T
+    data: Optional[T]

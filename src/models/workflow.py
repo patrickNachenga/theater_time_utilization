@@ -1,9 +1,10 @@
 import json
 import uuid
 
-from sqlalchemy import Column, String, PickleType, Integer, ForeignKey, DateTime, desc
+from sqlalchemy import Column, String, PickleType, Integer, ForeignKey, DateTime, desc, CheckConstraint, \
+    UniqueConstraint, JSON
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.mutable import Mutable
+from sqlalchemy.ext.mutable import Mutable, MutableList
 from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -38,45 +39,18 @@ class TransitionMeta(BaseModel):
     source_state = relationship('State', foreign_keys=[source_state_id])
     destination_state = relationship('State', foreign_keys=[destination_state_id])
 
+    permissions = Column(MutableList.as_mutable(PickleType), default=list)
+    groups = Column(MutableList.as_mutable(PickleType), default=list)
+    deleted_at = Column(DateTime, nullable=True)
 
-class JsonEncodedList(Mutable, list):
-    @classmethod
-    def coerce(cls, key, value):
-        if not isinstance(value, JsonEncodedList):
-            if isinstance(value, list):
-                return JsonEncodedList(value)
-            return Mutable.coerce(key, value)
-        else:
-            return value
-
-    def append(self, value):
-        list.append(self, value)
-        self.changed()
-
-    def remove(self, value):
-        list.remove(self, value)
-        self.changed()
-
-    def __setitem__(self, key, value):
-        list.__setitem__(self, key, value)
-        self.changed()
-
-    def __delitem__(self, key):
-        list.__delitem__(self, key)
-        self.changed()
-
-
-class TransitionApprovalMeta(BaseModel):
-    __tablename__ = 'transition_approval_meta'
-
-    workflow_id = Column(Integer, ForeignKey('workflows.id'))
-    transition_meta_id = Column(Integer, ForeignKey('transition_meta.id'))
-
-    # Relationships
-    workflow = relationship('Workflow', backref='transition_approval_metas')
-    transition_meta = relationship('TransitionMeta', backref='transition_approval_metas')
-    permission_codes = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
-    group_codes = Column(JsonEncodedList.as_mutable(PickleType(pickler=json)))
+    # Adding Check and Unique Constraints
+    # __table_args__ = (
+    #     CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
+    #     UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
+    # )
+    """
+    
+    """
 
 
 class Process(BaseModel):

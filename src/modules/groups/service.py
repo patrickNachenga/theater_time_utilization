@@ -1,5 +1,6 @@
 from typing import List
 
+import pendulum
 from sqlalchemy import select
 
 from src.db.session import session_scope
@@ -129,3 +130,14 @@ class GroupService(object):
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS, data=group_list,
                             message="Successfully Submitted")
+
+    @staticmethod
+    def remove_group(uid: str):
+        """
+        Remove Group by UID
+        :param uid:
+        :return:
+        """
+        with session_scope() as session:
+            session.query(Group).filter_by(uid=uid).update({Group.deleted_at: pendulum.now()})
+            session.commit()
