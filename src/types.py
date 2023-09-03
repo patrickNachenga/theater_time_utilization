@@ -175,10 +175,11 @@ class ExamResultSummaryInput:
 @strawberry.type(description="Exam Result Summary Node|Output")
 class ExamResultSummaryNode:
     program_course_id: int
-    exam_category_id: int
     student_uid: str
     registration_number: str
-    student_name: str
+    first_name: str
+    middle_name: str
+    last_name: str
     gender: str
     course_code: str
     course_name: str
@@ -196,7 +197,14 @@ class ExamResultSummaryNode:
     grade_remark: str
     publish_status: bool
     publisher: str
+    program_uid: str
     uid: Optional[str] = None
+
+
+@strawberry.type(description="Exam Result Summary List Node|Output")
+class ExamResultSummaryListNode:
+    items: List[ExamResultSummaryNode]
+    total_count: int
 
 
 @strawberry.input(description="Exam Category Groups Input")
@@ -727,6 +735,7 @@ class StudentUaaData:
     registration_number: str
     full_name: str
     uid: str
+    score: str
 
 
 @strawberry.type
@@ -1189,6 +1198,17 @@ class ExamCourseWorkNode:
     program_course: ProgramCourseNode
 
 
+@strawberry.input(description="Exam course work result Output | Node")
+class ExamResultSummarySearchCriteria:
+    gender: Optional[str] = None
+    program_course_id: Optional[str] = None
+    student_uid: Optional[str] = None
+    registration_number: Optional[str] = None
+    course_code: Optional[str] = None
+    academic_year_uid: Optional[str] = None
+    program_uid: Optional[str] = None
+    course_category: Optional[str] = None
+    semester: Optional[int] = None
 @strawberry.type(description="Student Seminar paginated output")
 class StudentManuscriptNode:
     uid: Optional[str] = None
@@ -1197,7 +1217,7 @@ class StudentManuscriptNode:
     publication_date: Optional[datetime] = None
     description: str
     status: int
-    publication_status: Optional[str] = None
+    publication_status: int
 
 
 @strawberry.input(description="Student Manuscript Input Node")
@@ -1208,8 +1228,7 @@ class StudentManuscriptInput:
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
     status: Optional[int] = 0
-    publication_status: Optional[str] = None
-
+    publication_status: Optional[int] = 0
 
 @strawberry.type(description="Student Submission paginated output")
 class IntentionToSubmitNode:
@@ -1222,7 +1241,6 @@ class IntentionToSubmitNode:
     plagiarism_percentage: float
     status: int
 
-
 @strawberry.input(description="Student Submission Input Node")
 class IntentionToSubmitInput:
     uid: Optional[str] = None
@@ -1233,7 +1251,6 @@ class IntentionToSubmitInput:
     plagiarism_status: int
     plagiarism_percentage: float
     status: int
-
 
 @strawberry.type(description="Paginated Intention to Submit")
 class IntentionToSubmitListNode:

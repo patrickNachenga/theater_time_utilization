@@ -4,20 +4,22 @@ from typing import List
 import strawberry
 
 from src.core.security import CustomPermissionExtension
-from src.modules.exam_result_summary.service import ExamResultSummaryService
+from src.modules.exam_result_summary.service import ExamResultSummaryService, ExamResultSummaryCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultSummaryNode, ExamResultSummaryInput
+from src.types import ExamResultSummaryNode, ExamResultSummaryInput, PaginationInput, ExamResultSummaryListNode, \
+    ExamResultSummarySearchCriteria
 
 logger = logging.getLogger(__name__)
 
 
 @strawberry.type
 class ExamResultSummaryQuery:
-    @strawberry.field() # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULT_SUMMARIES"])]
-    def get_exam_result_summaries(self) -> Response[List[ExamResultSummaryNode]]:
+    @strawberry.field()  # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULT_SUMMARIES"])]
+    def get_exam_result_summaries(self, search_criteria: ExamResultSummarySearchCriteria) -> Response[List[ExamResultSummaryNode]]:
         try:
-            result = ExamResultSummaryService.get_exam_result_summaries()
+            result = ExamResultSummaryService.get_exam_result_summaries(search_criteria)
+
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -33,7 +35,7 @@ class ExamResultSummaryQuery:
                 data=[],
             )
 
-    @strawberry.field() # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULT_SUMMARIES"])]
+    @strawberry.field()  # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULT_SUMMARIES"])]
     def get_student_exam_result_summaries(self, student_uid: str) -> \
             Response[List[ExamResultSummaryNode]]:
         try:
@@ -43,7 +45,7 @@ class ExamResultSummaryQuery:
                 code=ResponseCode.SUCCESS,
                 message="Exam Results Retrieved Successfully",
                 data=result
-                )
+            )
         except Exception as e:
             print(e)
             return Response(
@@ -52,5 +54,3 @@ class ExamResultSummaryQuery:
                 message="Failed to retrieve exam result summaries",
                 data=[]
             )
-
-
