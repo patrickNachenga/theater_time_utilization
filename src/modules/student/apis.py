@@ -66,16 +66,16 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field()
-    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
+    def get_allocation_students(self, allocation_uid: str,assessment_number: int, exam_category: int) -> UaaDataResponse:
         try:
-            result = StudentService().get_allocation_students(allocation_uid)
+            result = StudentService().get_allocation_students(allocation_uid,assessment_number, exam_category)
 
             if result:
                 response = UaaDataResponse(
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'],uid=item['uid'])
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'],uid=item['uid'],score=item['marks'])
                           for item in result['data']]
                 )
 
@@ -163,7 +163,7 @@ class StudentMutation:
     @strawberry.field
     def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category: int,
                                          assessment_number: int, assessment_weight: int) -> ExcelFile:
-        result = StudentService().get_allocation_students(allocation_uid)
+        result = StudentService().get_allocation_students(allocation_uid,assessment_number, exam_category)
         file_buffer = io.BytesIO()
 
         # Create a new workbook
@@ -233,7 +233,7 @@ class StudentMutation:
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
             worksheet[f"C{row}"] = item['full_name']
-            worksheet[f"D{row}"] = ""
+            worksheet[f"D{row}"] = item['marks']
             # Align the cells to the center
             for col in range(1, 5):
                 cell = worksheet.cell(row=row, column=col)
