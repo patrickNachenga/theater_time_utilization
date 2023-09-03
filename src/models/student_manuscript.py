@@ -14,6 +14,6 @@ class StudentManuscript(BaseModel):
     publication_date = Column(Date, nullable=True, unique=False)
     description: str = Column(String, nullable=True, unique=False)
     status: int = Column(Integer, nullable=True, unique=False)
-    publication_status: int = Column(Integer, nullable=True, unique=False)
+    publication_status: str = Column(String, nullable=True, unique=False)
 
 

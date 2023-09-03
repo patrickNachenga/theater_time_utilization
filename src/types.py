@@ -1188,6 +1188,7 @@ class ExamCourseWorkNode:
     overall_marks: float
     program_course: ProgramCourseNode
 
+
 @strawberry.type(description="Student Seminar paginated output")
 class StudentManuscriptNode:
     uid: Optional[str] = None
@@ -1196,7 +1197,7 @@ class StudentManuscriptNode:
     publication_date: Optional[datetime] = None
     description: str
     status: int
-    publication_status: int
+    publication_status: Optional[str] = None
 
 
 @strawberry.input(description="Student Manuscript Input Node")
@@ -1207,7 +1208,8 @@ class StudentManuscriptInput:
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
     status: Optional[int] = 0
-    publication_status: Optional[int] = 0
+    publication_status: Optional[str] = None
+
 
 @strawberry.type(description="Student Submission paginated output")
 class IntentionToSubmitNode:
@@ -1220,6 +1222,7 @@ class IntentionToSubmitNode:
     plagiarism_percentage: float
     status: int
 
+
 @strawberry.input(description="Student Submission Input Node")
 class IntentionToSubmitInput:
     uid: Optional[str] = None
@@ -1230,3 +1233,29 @@ class IntentionToSubmitInput:
     plagiarism_status: int
     plagiarism_percentage: float
     status: int
+
+
+@strawberry.type(description="Paginated Intention to Submit")
+class IntentionToSubmitListNode:
+    items: List[IntentionToSubmitNode]
+    total_count: int
+
+
+@strawberry.type(description="Student Submission paginated output")
+class IntentionToSubmitStudentNode:
+    uid: Optional[str] = None
+    student_uid: str
+    full_name: str
+    registration_number: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int
+
+
+@strawberry.type(description="Paginated Intention to Submit")
+class IntentionToSubmitStudentListNode:
+    items: List[IntentionToSubmitStudentNode]
+    total_count: int

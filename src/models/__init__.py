@@ -51,3 +51,4 @@ from .seminar_types import SeminarType
 from .student_seminar import StudentSeminar
 from .by_law import ByLaw
 from .student_manuscript import StudentManuscript
+from .intention_to_submit import IntentionToSubmit
