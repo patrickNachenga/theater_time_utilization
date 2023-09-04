@@ -283,12 +283,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                        exam_category_id, assessment_number, out_off, score,
                        weight, source, by_law_uid):
     with session_scope() as session:
-        # check if there is any ue results for this program course and student
-        # exam_result = session.query(ExamResult).filter(
-        #     ExamResult.student_uid == student_uid,
-        #     ExamResult.program_course_id == program_course_id).first()
-        # if exam_result:
-        #     return False, "Cannot upload after UE results"
+
         try:
             program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                                                                  ProgramCourse.deleted_at.is_(None)).first()
@@ -467,6 +462,7 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamCoursework.program_course_id == target.program_course_id)
         total_practical_score = 0
         total_theory_score = 0
+        program_type = student_exam_course_works.first().program_course.program_semester.program.program_category.short_name
         for exam_course_work in student_exam_course_works:
 
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
@@ -533,18 +529,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             )
             summary_instance = new_exam_result
             session.add(new_exam_result)
-        # is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
-        # if is_inserted:
-        #     # perform grading by_law_uid
-        #     by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
-        #     by_law = BYLAW[by_law_code]()
-        #     performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
-        #     exam_result_summary.grade = performance_grade['grade']
-        #     exam_result_summary.grade_point = performance_grade['grade_point']
-        #     exam_result_summary.grade_remark = performance_grade['status']
-        #     exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
 
-        grade_result(session, target, by_law_uid, summary_instance)
+        grade_result(session, target, by_law_uid, summary_instance,program_type)
         session.commit()
 
 
@@ -590,17 +576,7 @@ def attach_exam_result_listener(target, by_law_uid):
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
         else:
             pass
-        # grading procedures are_minimum_ue_exams_inserted
-        # is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
-        # if is_inserted:
-        #     # perform grading by_law_uid
-        #     by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
-        #     by_law = BYLAW[by_law_code]()
-        #     performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
-        #     exam_result_summary.grade = performance_grade['grade']
-        #     exam_result_summary.grade_point = performance_grade['grade_point']
-        #     exam_result_summary.grade_remark = performance_grade['status']
-        #     exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
+
         grade_result(session, target, by_law_uid, exam_result_summary)
         session.commit()
 
@@ -646,7 +622,7 @@ def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
     return True
 
 
-def grade_result(session, target, by_law_uid, exam_result_summary):
+def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
     is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
     if is_inserted:
         print('4')
@@ -654,7 +630,7 @@ def grade_result(session, target, by_law_uid, exam_result_summary):
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
         by_law = BYLAW[by_law_code]()
-        performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
+        performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score,program_type)
         exam_result_summary.grade = performance_grade['grade']
         exam_result_summary.grade_point = performance_grade['grade_point']
         exam_result_summary.grade_remark = performance_grade['status']

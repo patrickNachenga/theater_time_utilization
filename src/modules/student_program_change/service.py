@@ -178,13 +178,11 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     session.commit()
                     process = session.query(Process).filter(
                         Process.process_unique_uid == student_program_change.uid).first()
-
-                    if process is not None:
+                    if process is None:
                         process = Process(description='PROGRAM_CHANGE', process_unique_uid=student_program_change.uid,
                                           workflow_id=workflow.id)
                         session.add(process)
                         session.commit()
-
                     # Change state process
                     process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
                     session.add(process_flow)
