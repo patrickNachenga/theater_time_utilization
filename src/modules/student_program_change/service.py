@@ -121,7 +121,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                         status=False,
                         code=ResponseCode.FAILURE,
                         data=None,
-                        message="Sorry. Academic year is not saved Yet"
+                        message="Academic year Does not exist"
                     )
 
                 if input.uid is None:

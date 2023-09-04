@@ -970,6 +970,8 @@ class TransitionMetaInput:
     destination_state_uid: str
     groups: Optional[List[str]] = None
     permissions: Optional[List[str]] = None
+    is_first: Optional[bool] = None
+    is_last: Optional[bool] = None
 
 
 @strawberry.type(description="TransitionMeta Output")
@@ -980,6 +982,8 @@ class TransitionMetaNode:
     destination_state: StateNode
     groups: Optional[List[str]] = None
     permissions: Optional[List[str]] = None
+    is_first: Optional[bool] = None
+    is_last: Optional[bool] = None
 
 
 @strawberry.type(description="TransitionMeta paginated Output")
