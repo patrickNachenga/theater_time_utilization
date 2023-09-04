@@ -84,7 +84,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                         info = response_data['user']
                         x.registration_number = info['username']
                         x.full_name = info['first_name'] + " " + info['middle_name'] + " " + info['last_name']
-
+                # print(response_data)
             session.close()
 
             return IntentionToSubmitStudentListNode(items=items, total_count=total_count)

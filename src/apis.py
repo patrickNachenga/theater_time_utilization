@@ -33,6 +33,8 @@ from src.modules.seminar_types.apis import SeminarTypeQuery, SeminarTypeMutation
 from src.modules.student_seminar.apis import StudentSeminarQuery, StudentSeminarMutation
 from src.modules.student_manuscript.apis import StudentManuscriptQuery, StudentManuscriptMutation
 from src.modules.intention_to_submit.apis import IntentionToSubmitQuery, IntentionToSubmitMutation
+from src.modules.intention_to_submit_requirement.apis import IntentionToSubmitRequirementQuery, \
+    IntentionToSubmitRequirementMutation
 
 
 @strawberry.type
@@ -43,7 +45,8 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                ProgramCapacityQuery, ProgramCourseAssessmentQuery, SemesterRegistrationQuery, Sr2ApiCallQuery,
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
                StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery, SeminarTypeQuery,
-               StudentSeminarQuery,ByLawQuery, ExamCourseWorkResultQuery, StudentManuscriptQuery, IntentionToSubmitQuery):
+               StudentSeminarQuery,ByLawQuery, ExamCourseWorkResultQuery, StudentManuscriptQuery, IntentionToSubmitQuery,
+               IntentionToSubmitRequirementQuery):
     pass
 
 
@@ -56,5 +59,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
 
                   WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation,
-                  StudentManuscriptMutation, IntentionToSubmitMutation):
+                  StudentManuscriptMutation, IntentionToSubmitMutation, IntentionToSubmitRequirementMutation):
     pass

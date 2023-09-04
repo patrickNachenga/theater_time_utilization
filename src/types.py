@@ -1301,3 +1301,28 @@ class StudentManuscriptAllNode:
 class StudentManuscriptAllListNode:
     items: List[StudentManuscriptAllNode]
     total_count: int
+
+
+@strawberry.input(description="Intention To Submit Requirement Input")
+class IntentionToSubmitRequirementInput:
+    uid: Optional[str] = None
+    minimum_manuscripts: Optional[int] = 0
+    minimum_seminars: Optional[int] = 0
+    seminar_pass_marks: Optional[float] = 0
+    life_span: Optional[int] = 0
+    program_category_uid: str
+
+
+@strawberry.type(description="Intention To Submit Requirement Output")
+class IntentionToSubmitRequirementNode:
+    uid: Optional[str] = None
+    minimum_manuscripts: Optional[int] = 0
+    minimum_seminars: Optional[int] = 0
+    seminar_pass_marks: Optional[float] = 0
+    life_span: Optional[int] = 0
+    program_category: ProgramCategoryNode
+
+@strawberry.type(description="Intention To Submit Requirement Paginated Output")
+class IntentionToSubmitRequirementListNode:
+    items: List[IntentionToSubmitRequirementNode]
+    total_count: int

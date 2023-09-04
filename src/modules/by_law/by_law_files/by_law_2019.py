@@ -21,42 +21,53 @@ class ByLaw2019:
     }
     letter_grade = ['A', 'B+', 'B', 'C', 'D', 'E']
 
-    def get_course_performance_grade(self, score):
-        if score >= 70:
-            grade_point = 0.02 * score + 3
-            return {'grade': 'A', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point)}
-        if score >= 65:
-            grade_point = 0.08 * score - 1.2
-            return {'grade': 'B+', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point)}
-        if score >= 60:
-            grade_point = 0.02 * score - 9
-            return {'grade': 'B', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point)}
-        if score >= 50:
-            grade_point = 0.1 * score - 3
+    def get_course_performance_grade(self, score, program_type):
+        if program_type == 'MA' or program_type == 'PGD' or program_type == 'PHD':
+            if score >= 75:
+                grade_point = 0.024 * score + 2.6
+                return {'grade': 'A', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Excellent'}
+            if score >= 65:
+                grade_point = 0.08 * score - 1.6
+                return {'grade': 'B+', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Very Good'}
+            if score >= 60:
+                grade_point = 0.1 * score - 3
+                return {'grade': 'B', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Good'}
+            if score >= 50:
+                grade_point = 0.1 * score - 3
 
-            return {'grade': 'C', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point)}
-        if score >= 40:
-            grade_point = 0.1 * score - 3
+                return {'grade': 'C', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Satisfactory'}
+            if score >= 40:
+                grade_point = 0.1 * score - 3
 
-            return {'grade': 'D', 'status': 'Fail', 'grade_point': by_law_custom_round(grade_point)}
-        if score >= 0:
-            grade_point = 0.025 * score
+                return {'grade': 'D', 'status': 'Fail', 'grade_point': by_law_custom_round(grade_point), 'description':'Marginal Fail'}
+            if score >= 0:
+                grade_point = 0.025 * score
 
-            return {'grade': 'E', 'status': 'Fail', 'grade_point': by_law_custom_round(grade_point)}
+                return {'grade': 'E', 'status': 'Fail', 'grade_point': by_law_custom_round(grade_point), 'description':'Absolute Fail'}
+        else:
+            if score >= 70:
+                grade_point = 0.02 * score + 3
+                return {'grade': 'A', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
+            if score >= 65:
+                grade_point = 0.08 * score - 1.2
+                return {'grade': 'B+', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
+            if score >= 60:
+                grade_point = 0.02 * score - 9
+                return {'grade': 'B', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
+            if score >= 50:
+                grade_point = 0.1 * score - 3
 
-    def get_grade_point(self, latter_grade):
-        if latter_grade == 'A':
-            return 5
-        if latter_grade == 'B+':
-            return 4
-        if latter_grade == 'B':
-            return 3
-        if latter_grade == 'C':
-            return 2
-        if latter_grade == 'D':
-            return 1
-        if latter_grade == 'E':
-            return 0
+                return {'grade': 'C', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
+            if score >= 40:
+                grade_point = 0.1 * score - 3
+
+                return {'grade': 'D', 'status': 'Fail', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
+            if score >= 0:
+                grade_point = 0.025 * score
+
+                return {'grade': 'E', 'status': 'Fail', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
+
+
 
 
 def by_law_custom_round(value):
