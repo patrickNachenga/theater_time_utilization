@@ -84,7 +84,7 @@ class RedisDependency:
 
     async def init(self):
         """Initialises the Redis Dependency"""
-        if settings.DEBUG_MODE:
+        if settings.SYSTEM_DEBUG_MODE:
             self.redis = await RedisBackend.init(f"redis://{REDIS_HOST}:{REDIS_PORT}")
         else:
             self.redis = await RedisBackend.init(f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}")
@@ -95,6 +95,6 @@ redis_dependency: RedisDependency = RedisDependency()
 
 async def get_redis() -> RedisBackend:
     """Returns a NEW Redis connection"""
-    if settings.DEBUG_MODE:
+    if settings.SYSTEM_DEBUG_MODE:
         return await RedisBackend.init(f"redis://{REDIS_HOST}:{REDIS_PORT}")
     return await RedisBackend.init(f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}")
