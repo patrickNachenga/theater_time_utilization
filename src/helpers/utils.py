@@ -325,7 +325,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
 
             return True, "successfully"
         except Exception as e:
-            print('maokoto', e)
+            print(e)
             return False, "Data Processing Error in Exception"
 
 
