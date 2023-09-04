@@ -6,7 +6,7 @@ from src.modules import CRUDBase
 from src.types import ExamResultSummaryInput, ExamResultSummarySearchCriteria
 
 
-class ExamResultSummaryService((CRUDBase[ExamResultSummary,ExamResultSummaryInput,ExamResultSummaryInput])):
+class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInput, ExamResultSummaryInput])):
     @staticmethod
     def get_exam_result_summaries(search_criteria: ExamResultSummarySearchCriteria) -> List[ExamResultSummary]:
         with session_scope() as session:
@@ -38,9 +38,16 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary,ExamResultSummaryInpu
     @staticmethod
     def get_student_exam_result_summaries(student_uid: str) -> List[ExamResultSummary]:
         with session_scope() as session:
-            result = session.query(ExamResultSummary).filter(ExamResultSummary.student_uid == student_uid,ExamResultSummary.deleted_at.is_(None)).all()
+            result = session.query(ExamResultSummary).filter(ExamResultSummary.student_uid == student_uid,
+                                                             ExamResultSummary.deleted_at.is_(None)).all()
+            return result
+
+    @staticmethod
+    def change_result_stage(result_summary_uid: str, stage: int):
+        with session_scope() as session:
+            result = session.query(ExamResultSummary).filter(ExamResultSummary.id == result_summary_uid).update(
+                {"exam_status": stage})
             return result
 
 
 ExamResultSummaryCrud = ExamResultSummaryService(ExamResultSummary)
-
