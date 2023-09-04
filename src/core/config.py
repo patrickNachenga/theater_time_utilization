@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     REDIS_HOST = os.environ.get("REDIS_HOST")
     REDIS_PORT = os.environ.get("REDIS_PORT")
+    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
     LOGGING_FILE_NAME = 'logs'
     UAA_URi: str = os.environ.get("UAA_URi")
     SR2_TOKEN: str = os.environ.get("SR2_TOKEN")
