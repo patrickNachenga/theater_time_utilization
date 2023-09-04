@@ -12,6 +12,7 @@ class ExamResult(BaseModel):
     score: float = Column(Float, nullable=False, unique=False)
     # out_of: float = Column(Float, nullable=False, unique=False)
     weight: int = Column(Integer, nullable=False, unique=False)
+    source: str = Column(String, nullable=False, default="Excel")
     overall_marks: float = Column(Integer, nullable=False, default=100)
     number_of_sitting: int = Column(Integer, default =1, unique=False)
 

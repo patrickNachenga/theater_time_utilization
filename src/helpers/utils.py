@@ -282,14 +282,14 @@ def get_user_programs_headship(info: Info):
 
 def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
                        exam_category_id, assessment_number, out_off, score,
-                       weight):
+                       weight, source, by_law_uid):
     with session_scope() as session:
         # check if there is any ue results for this program course and student
-        exam_result = session.query(ExamResult).filter(
-            ExamResult.student_uid == student_uid,
-            ExamResult.program_course_id == program_course_id).first()
-        if exam_result:
-            return False, "Cannot upload after UE results"
+        # exam_result = session.query(ExamResult).filter(
+        #     ExamResult.student_uid == student_uid,
+        #     ExamResult.program_course_id == program_course_id).first()
+        # if exam_result:
+        #     return False, "Cannot upload after UE results"
         try:
             program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                                                                  ProgramCourse.deleted_at.is_(None)).first()
@@ -301,8 +301,9 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                                                                     ExamCoursework.assessment_number == assessment_number).first()
             score = (score / out_off) * 100
             if exam_course_work:
-                exam_course_work.score = score
+                exam_course_work.score = custom_round(score)
                 exam_course_work.weight = weight
+                exam_course_work.source = source
                 instance = exam_course_work
             else:
                 new_exam_coursework = ExamCoursework(
@@ -310,24 +311,27 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                     exam_category=exam_category,
                     program_course=program_course,
                     assessment_number=assessment_number,
-                    score=score,
-                    weight=weight
+                    score=custom_round(score),
+                    weight=weight,
+                    source=source
                 )
                 session.add(new_exam_coursework)
                 instance = new_exam_coursework
             session.commit()
             attach_coursework_listener(target=instance, registration_number=registration_number, first_name=first_name,
-                                       middle_name=middle_name, last_name=last_name, gender=gender)
+                                       middle_name=middle_name, last_name=last_name, gender=gender,
+                                       by_law_uid=by_law_uid)
 
-            return True
+            return True, "successfully"
         except Exception as e:
             print(e)
-            return False, "Data Processing Error"
+            return False, "Data Processing Error in Exception"
 
 
-def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight,by_law_uid):
+def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source):
     with session_scope() as session:
-        is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id)
+
+        is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
         if is_inserted:
             try:
                 program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
@@ -338,16 +342,11 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                                                                ExamResult.program_course == program_course,
                                                                ExamResult.exam_category == exam_category).first()
                 score = (score / out_off) * 100
-                # exam_result_summary = session.query(ExamResultSummary).filter(
-                #     ExamResultSummary.student_uid == student_uid,
-                #     ExamResultSummary.program_course_id == program_course.id,
-                #     ExamResultSummary.number_of_sitting == 1).first()
-                # # can not upload ue before all required coursework
-                # if not exam_result_summary:
-                #     return False, "No Course uploaded yet"
+
                 if exam_result:
                     exam_result.score = score
                     exam_result.weight = weight
+                    exam_result.source = source
                     instance = exam_result
                 else:
 
@@ -356,14 +355,15 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                         exam_category=exam_category,
                         program_course=program_course,
                         score=score,
-                        weight=weight
+                        weight=weight,
+                        source=source
                     )
 
                     session.add(new_exam_result)
                     instance = new_exam_result
                 session.commit()
-                attach_exam_result_listener(target=instance,by_law_uid=by_law_uid)
-                return True
+                attach_exam_result_listener(target=instance, by_law_uid=by_law_uid)
+                return True, "Successfully"
             except Exception as e:
                 print(e)
                 return False, "Data processing error"
@@ -390,55 +390,62 @@ def get_student_from_uaa():
 
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
-                   is_ue=None, reg_number=None, assessment_number=None):
+                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', ):
     success = 0
     failed = 0
     failed_student = FailedStudent(reg_number=None, reason=None)
+
     if students:
+
         matching_item = next(
             (item for item in students if item["registration_number"] == reg_number), None)
         if matching_item:
             student_uid = matching_item["uid"]
             registration_number = matching_item["registration_number"]
-            by_law_uid = matching_item["registration_number"]
+            by_law_uid = matching_item["bylaw_uid"]
             first_name = matching_item["user"]["first_name"]
             middle_name = matching_item["user"]["middle_name"]
             last_name = matching_item["user"]["last_name"]
             gender = matching_item["user"]["gender"]
-            if score is None:
-                score = 0
-                # failed = failed + 1
-                # failed_student.reg_number = reg_number
-                # failed_student.reason = "No score supplied"
 
-            if score <= out_off:
-                if is_ue:
-                    result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                        out_off,
-                                                        weight,by_law_uid)
-                    if result:
-                        success = success + 1
-                    else:
-                        failed = failed + 1
-                        failed_student.reg_number = reg_number
-                        failed_student.reason = reason
-                else:
-                    result, reason = insert_course_work(registration_number, first_name, middle_name, last_name, gender,
-                                                        student_uid, program_course_id, exam_category_id,
-                                                        assessment_number,
-                                                        out_off, score,
-                                                        weight)
-                    if result:
-                        success = success + 1
-                    else:
-                        failed = failed + 1
-                        failed_student.reg_number = reg_number
-                        failed_student.reason = reason
-
-            else:
+            if not by_law_uid:
                 failed = failed + 1
                 failed_student.reg_number = reg_number
-                failed_student.reason = "Score is greater than " + str(out_off)
+                failed_student.reason = "Student has no by-law"
+            else:
+
+                if score is None:
+                    score = 0
+
+                if score <= out_off:
+                    if is_ue:
+                        result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                            out_off,
+                                                            weight, by_law_uid, source)
+                        if result:
+                            success = success + 1
+                        else:
+                            failed = failed + 1
+                            failed_student.reg_number = reg_number
+                            failed_student.reason = reason
+                    else:
+                        result, reason = insert_course_work(registration_number, first_name, middle_name, last_name,
+                                                            gender,
+                                                            student_uid, program_course_id, exam_category_id,
+                                                            assessment_number,
+                                                            out_off, score,
+                                                            weight, source, by_law_uid)
+                        if result:
+                            success = success + 1
+                        else:
+                            failed = failed + 1
+                            failed_student.reg_number = reg_number
+                            failed_student.reason = reason
+
+                else:
+                    failed = failed + 1
+                    failed_student.reg_number = reg_number
+                    failed_student.reason = "Score is greater than " + str(out_off)
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number
@@ -452,7 +459,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
     return success, failed, failed_student
 
 
-def attach_coursework_listener(target, registration_number, first_name, middle_name, last_name, gender):
+def attach_coursework_listener(target, registration_number, first_name, middle_name, last_name, gender, by_law_uid):
     # def coursework_after_insert_or_update(mapper, connection, target):
     with session_scope() as session:
 
@@ -461,7 +468,6 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamCoursework.program_course_id == target.program_course_id)
         total_practical_score = 0
         total_theory_score = 0
-
         for exam_course_work in student_exam_course_works:
 
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
@@ -486,9 +492,13 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamResultSummary.number_of_sitting == 1).first()
         if exam_result_summary:
             exam_result_summary.cw_score = custom_round(total_score)
-            exam_result_summary.cw_theory = custom_round(total_theory_score) if total_theory_score > 0 else None
-            exam_result_summary.cw_practical = custom_round(
-                total_practical_score) if total_practical_score > 0 else None
+            if total_theory_score > 0:
+                exam_result_summary.cw_theory = custom_round(total_theory_score)
+            if total_practical_score > 0:
+                exam_result_summary.cw_practical = custom_round(
+                    total_practical_score)
+            exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
+            summary_instance = exam_result_summary
         else:
             new_exam_result = ExamResultSummary(
                 student_uid=target.student_uid,
@@ -502,8 +512,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 credit=target.program_course.credit,
                 course_code=target.program_course.course.code,
                 course_name=target.program_course.course.name,
-                cw_practical=custom_round(total_practical_score) if total_practical_score > 0 else None,
-                cw_theory=custom_round(total_theory_score) if total_theory_score > 0 else None,
+                cw_practical=custom_round(total_practical_score),
+                cw_theory=custom_round(total_theory_score),
                 cw_score=custom_round(total_score),
                 grade='I',
                 grade_remark='Incomplete',
@@ -512,9 +522,24 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 study_year=target.program_course.program_semester.study_year,
                 semester=target.program_course.program_semester.semester,
                 academic_year_uid=target.program_course.program_semester.academic_year.uid,
-                program_uid=target.program_course.program_semester.program.uid
+                program_uid=target.program_course.program_semester.program.uid,
+                course_category=target.program_course.course_category.name
             )
+            summary_instance = new_exam_result
             session.add(new_exam_result)
+        # is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
+        # if is_inserted:
+        #     # perform grading by_law_uid
+        #     by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
+        #     by_law = BYLAW[by_law_code]()
+        #     performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
+        #     exam_result_summary.grade = performance_grade['grade']
+        #     exam_result_summary.grade_point = performance_grade['grade_point']
+        #     exam_result_summary.grade_remark = performance_grade['status']
+        #     exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
+        print('3')
+
+        grade_result(session, target, by_law_uid, summary_instance)
         session.commit()
 
 
@@ -553,75 +578,86 @@ def attach_exam_result_listener(target, by_law_uid):
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == target.number_of_sitting).first()
         if exam_result_summary:
-            exam_result_summary.ue_theory = custom_round(total_ue_theory) if total_ue_theory else None
-            exam_result_summary.ue_practical = custom_round(total_ue_practical) if total_ue_practical else None
-            exam_result_summary.ue_oral = custom_round(total_ue_oral) if total_ue_oral else None
+            exam_result_summary.ue_theory = custom_round(total_ue_theory)
+            exam_result_summary.ue_practical = custom_round(total_ue_practical)
+            exam_result_summary.ue_oral = custom_round(total_ue_oral)
             exam_result_summary.ue_score = custom_round(total_score)
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
         else:
             pass
         # grading procedures are_minimum_ue_exams_inserted
-        is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id)
-        if is_inserted:
-            # perform grading by_law_uid
-            by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
-            by_law = BYLAW[by_law_code]()
-            performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
-            exam_result_summary.grade = performance_grade['grade']
-            exam_result_summary.grade_point = performance_grade['grade_point']
-            exam_result_summary.grade_remark = performance_grade['status']
-            exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
-
+        # is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
+        # if is_inserted:
+        #     # perform grading by_law_uid
+        #     by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
+        #     by_law = BYLAW[by_law_code]()
+        #     performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
+        #     exam_result_summary.grade = performance_grade['grade']
+        #     exam_result_summary.grade_point = performance_grade['grade_point']
+        #     exam_result_summary.grade_remark = performance_grade['status']
+        #     exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
+        grade_result(session, target, by_law_uid, exam_result_summary)
         session.commit()
 
 
-def are_minimum_course_work_exams_inserted(session, program_course_id):
+def are_minimum_course_work_exams_inserted(session, program_course_id, student_uid):
     # Get a list of exam categories along with their minimum exams
-    assessment_alias = aliased(ProgramCourseAssessment)
-    exam_categories_with_min_exams = session.query(
+    exam_categories_with_min_exams = (session.query(
         ProgramCourseAssessment.exam_category_id,
         ProgramCourseAssessment.minimum_exams
-    ).join(assessment_alias.program_course).filter(ProgramCourse.id == program_course_id,
-                                                   ~ProgramCourseAssessment.exam_category.has(is_ue=True)).all()
+    ).join(ProgramCourse).filter(ProgramCourseAssessment.program_course.has(id=program_course_id),
+                                 ProgramCourse.id == program_course_id,
+                                 ~ProgramCourseAssessment.exam_category.has(is_ue=True)).all())
 
     for category_id, min_exams in exam_categories_with_min_exams:
         # Count the number of ExamCoursework entries for the specified ProgramCourse and ExamCategory
-        exam_coursework_count = session.query(func.count(ExamCoursework.id)). \
-            join(ExamCoursework.program_course). \
-            join(ExamCoursework.exam_category). \
-            filter(ProgramCourseAssessment.exam_category_id == category_id,
-                   ProgramCourse.id == program_course_id). \
-            scalar()
-
-        if exam_coursework_count < min_exams:
+        exam_coursework_count = session.query(ExamCoursework).filter(ExamCoursework.exam_category_id == category_id,
+                                                                     ExamCoursework.program_course_id == program_course_id,
+                                                                     ExamCoursework.student_uid == student_uid).all()
+        if len(exam_coursework_count) < min_exams:
             return False
 
     return True
 
 
-def are_minimum_ue_exams_inserted(session, program_course_id):
+def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
     # Get a list of exam categories along with their minimum exams
-    assessment_alias = aliased(ProgramCourseAssessment)
     exam_categories_with_min_exams = session.query(
         ProgramCourseAssessment.exam_category_id,
         ProgramCourseAssessment.minimum_exams
-    ).join(assessment_alias.program_course).filter(ProgramCourse.id == program_course_id,
-                                                   ProgramCourseAssessment.exam_category.has(is_ue=True)).all()
+    ).join(ProgramCourse).filter(ProgramCourseAssessment.program_course.has(id=program_course_id),
+                                 ProgramCourse.id == program_course_id,
+                                 ProgramCourseAssessment.exam_category.has(is_ue=True)).all()
 
     for category_id, min_exams in exam_categories_with_min_exams:
         # Count the number of ExamCoursework entries for the specified ProgramCourse and ExamCategory
-        exam_ue_count = session.query(func.count(ExamResult.id)). \
-            join(ExamResult.program_course). \
-            join(ExamResult.exam_category). \
-            filter(ProgramCourseAssessment.exam_category_id == category_id,
-                   ProgramCourse.id == program_course_id). \
-            scalar()
+        exam_ue_count = session.query(ExamResult).filter(ExamResult.exam_category_id == category_id,
+                                                         ExamResult.program_course_id == program_course_id,
+                                                         ExamResult.student_uid == student_uid).all()
 
-        if exam_ue_count < min_exams:
+        if len(exam_ue_count) < min_exams:
             return False
 
     return True
+
+
+def grade_result(session, target, by_law_uid, exam_result_summary):
+    is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
+    if is_inserted:
+        print('4')
+
+        # perform grading by_law_uid
+        by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
+        by_law = BYLAW[by_law_code]()
+        performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score)
+        exam_result_summary.grade = performance_grade['grade']
+        exam_result_summary.grade_point = performance_grade['grade_point']
+        exam_result_summary.grade_remark = performance_grade['status']
+        exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
+        return exam_result_summary
 
 
 def custom_round(value):
     return math.floor(value * 100) / 100
+def test():
+    print("Testing round")

@@ -66,16 +66,19 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field()
-    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse:
+    def get_allocation_students(self, allocation_uid: str, assessment_number: int, exam_category_id: int,
+                                out_off: int) -> UaaDataResponse:
         try:
-            result = StudentService().get_allocation_students(allocation_uid)
+            result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id,
+                                                              out_off)
 
             if result:
                 response = UaaDataResponse(
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'])
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'],
+                                         uid=item['uid'], score=item['marks'])
                           for item in result['data']]
                 )
 
@@ -161,9 +164,9 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
-    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category: int,
+    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category_id: int,
                                          assessment_number: int, assessment_weight: int) -> ExcelFile:
-        result = StudentService().get_allocation_students(allocation_uid)
+        result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off)
         file_buffer = io.BytesIO()
 
         # Create a new workbook
@@ -195,7 +198,7 @@ class StudentMutation:
             "Program Code": result["program_course"].program_semester.program.code,
             "Academic Year": result["program_course"].program_semester.academic_year.name,
             "Study Year": str(result["program_course"].program_semester.study_year),
-            "Exam Category": str(exam_category),
+            "Exam Category": str(exam_category_id),
             "Assessment No": str(assessment_number),
             "Mark Out of": str(out_off),
             "Assessment Weight": str(assessment_weight)
@@ -233,7 +236,7 @@ class StudentMutation:
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
             worksheet[f"C{row}"] = item['full_name']
-            worksheet[f"D{row}"] = ""
+            worksheet[f"D{row}"] = item['marks']
             # Align the cells to the center
             for col in range(1, 5):
                 cell = worksheet.cell(row=row, column=col)
@@ -317,10 +320,12 @@ class StudentMutation:
             success = 0
             failed = 0
             failed_students = []
+
             for row in worksheet.iter_rows(min_row=10, values_only=True):
                 reg_number = row[reg_no_column - 1]
                 score = float(row[marks_column - 1])
                 # Find the item with the specified registration_number
+
                 success_, failed_, failed_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,
