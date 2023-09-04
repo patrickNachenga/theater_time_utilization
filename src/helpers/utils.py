@@ -491,15 +491,22 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == 1).first()
         if exam_result_summary:
+
             exam_result_summary.cw_score = custom_round(total_score)
             if total_theory_score > 0:
+
                 exam_result_summary.cw_theory = custom_round(total_theory_score)
+
             if total_practical_score > 0:
                 exam_result_summary.cw_practical = custom_round(
                     total_practical_score)
-            exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
+            if exam_result_summary.cw_score and exam_result_summary.ue_score:
+                exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
+
             summary_instance = exam_result_summary
+
         else:
+
             new_exam_result = ExamResultSummary(
                 student_uid=target.student_uid,
                 registration_number=registration_number,
@@ -537,7 +544,6 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
         #     exam_result_summary.grade_point = performance_grade['grade_point']
         #     exam_result_summary.grade_remark = performance_grade['status']
         #     exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
-        print('3')
 
         grade_result(session, target, by_law_uid, summary_instance)
         session.commit()
