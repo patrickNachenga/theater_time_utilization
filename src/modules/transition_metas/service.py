@@ -30,7 +30,6 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
         """
         with session_scope() as session:
             query = session.query(TransitionMeta).filter((TransitionMeta.uid.in_(ids)))
-            print("Transition", query.all())
             result = query.all()
             return result
 
@@ -85,6 +84,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                                     data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
                                     message="Source state and destination state cannot be the same")
 
+
                 existing_transition_meta = session.query(TransitionMeta).filter(
                     and_(
                         TransitionMeta.source_state_id == source_state.id,
@@ -93,7 +93,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                     )
                 ).first()
 
-                if existing_transition_meta is not None:
+                if existing_transition_meta is not None and input1.uid is None:
                     return Response(status=False, code=ResponseCode.BAD_REQUEST,
                                     data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
                                     message="A record with the same source state and destination state "
@@ -104,7 +104,6 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                 if not input1.permissions:
                     input1.permissions = []
                 if input1.uid is None:
-
                     transition_meta = TransitionMeta(workflow=workflow, source_state=source_state,
                                                      destination_state=destination_state,
                                                      created_by=info.context.user.profile.id, groups=input1.groups,
@@ -117,6 +116,11 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                     transition_meta = next(filter(lambda transition_meta: str(transition_meta.uid) == str(input1.uid),
                                                   existed_transition_metas), None)
                     if transition_meta:
+                        if existing_transition_meta is not None and transition_meta.id != existing_transition_meta.id:
+                            return Response(status=False, code=ResponseCode.BAD_REQUEST,
+                                            data=PaginatedTransitionMeta(items=transition_meta_list, total_count=count),
+                                            message="A record with the same source state and destination state "
+                                                    "already exists")
                         transition_meta.workflow = workflow
                         transition_meta.source_state = source_state
                         transition_meta.destination_state = destination_state
