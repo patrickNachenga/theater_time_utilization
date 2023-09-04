@@ -181,13 +181,11 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     if process is None:
                         process = Process(description='PROGRAM_CHANGE', process_unique_uid=student_program_change.uid,
                                           workflow_id=workflow.id)
-                        p = session.merge(process)
-                        session.add(p)
+                        session.add(process)
                         session.commit()
                     # Change state process
                     process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
-                    pf = session.merge(process_flow)
-                    session.add(pf)
+                    session.add(process_flow)
                     session.commit()
 
                     student_program_change = self.get_student_change_program_by_uid(local_object.uid)
