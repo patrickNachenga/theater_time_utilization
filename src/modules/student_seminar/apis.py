@@ -3,29 +3,70 @@ from typing import List, Optional
 import strawberry
 
 from src.core.security import CustomPermissionExtension
+from src.core.security import Info
 from src.models import StudentSeminar
 from src.modules.student_seminar.service import StudentSeminarService, StudentSeminarCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput, \
-    StudentSeminarsInputNode
+    StudentSeminarsInputNode, AllStudentSeminarNode, AllStudentSeminarListNode, PaginationSeminarInput
 
 
 @strawberry.type
 class StudentSeminarQuery:
+
     @strawberry.field()
-    def get_student_seminars(self, pagination: PaginationInput) -> Response[StudentSeminarListNode]:
+    def get_student_seminar_by_uid(self, uid: str) -> Response[StudentSeminarNode]:
         try:
-            result = StudentSeminarCrud.get_multi_paginated(pagination, ["description", "name"],
-                                                            StudentSeminarListNode)
+            result = StudentSeminarService(StudentSeminar).get_student_seminar_by_uid(uid)
         except Exception as e:
             print(e)
-            result = []
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Student Seminar Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Student Seminar not found",
+                data=None)
+
+    @strawberry.field()
+    def get_seminars(self, pagination: PaginationSeminarInput, info: Info) -> Response[AllStudentSeminarListNode]:
+        try:
+            result = StudentSeminarCrud.get_all_student_seminar_paginated(info, pagination,
+                                                                          ['title', 'description', 'status'])
+        except Exception as e:
+            print(e)
+            result = AllStudentSeminarListNode(items=[], total_count=0)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Seminar Retrieved Successfully",
+                data=result)
+        else:
+            return Response(
+                status=True,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Seminar Records Found",
+                data=result)
+
+    @strawberry.field()
+    def get_all_student_seminars(self) -> Response[List[AllStudentSeminarNode]]:
+        try:
+            return StudentSeminarService.get_all_student_seminars()
+        except Exception as e:
+            print(e)
         return Response(
-            status=True,
-            code=ResponseCode.SUCCESS,
-            message="Student Seminar Retrieved successfully",
-            data=result)
+            status=False,
+            code=ResponseCode.NO_RECORD_FOUND,
+            message="Student Seminar not found",
+            data=[])
 
     @strawberry.field()
     def get_student_seminar(self, uid: str) -> Response[StudentSeminarNode]:
@@ -48,7 +89,8 @@ class StudentSeminarQuery:
                 data=None)
 
     @strawberry.field()
-    def get_student_seminars_by_student_uid(self, inputs: StudentSeminarsInputNode) -> Response[List[StudentSeminarNode]]:
+    def get_student_seminars_by_student_uid(self, inputs: StudentSeminarsInputNode) -> Response[
+        List[StudentSeminarNode]]:
         # try:
         result = StudentSeminarService.get_student_seminar_by_student_uid(inputs)
 
@@ -64,6 +106,8 @@ class StudentSeminarQuery:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Student Seminar not found",
                 data=None)
+
+
 @strawberry.type
 class StudentSeminarMutation:
     @strawberry.field()
@@ -78,7 +122,7 @@ class StudentSeminarMutation:
                 message="Student Seminar not found",
                 data=None)
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_SEMINAR_TYPE"])])
+    @strawberry.mutation()
     async def remove_student_seminar(self, uid: str) -> Response[None]:
         """
         Remove Seminar Type by UID

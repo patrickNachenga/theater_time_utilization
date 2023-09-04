@@ -2,36 +2,36 @@ from typing import List
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
-from src.models import AcademicYear
-from src.modules.academic_year.service import AcademicYearService, AcademicYearCrud
+from src.models import ByLaw
+from src.modules.by_law.service import ByLawCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode, AcademicYearNode, ByLawListNode
+from src.types import PaginationInput, ByLawListNode, \
+    ByLawNode, ByLawInput
 
 
 @strawberry.type
-class ByaLawQuery:
+class ByLawQuery:
     # extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])]
     @strawberry.field()
-    def get_by_lays(self, pagination: PaginationInput) -> Response[ByLawListNode]:
+    def get_by_laws(self, pagination: PaginationInput) -> Response[ByLawListNode]:
         try:
-            result = AcademicYearCrud.get_multi_paginated(pagination, ['name', 'status', 'start_date', 'end_date'],
-                                                          AcademicYearListNode)
+            result = ByLawCrud.get_multi_paginated(pagination, ['name', 'code', 'status', 'start_date', 'end_date'],
+                                                   ByLawListNode)
         except Exception as e:
             print(e)
             result = []
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Academic Year retrieved successfully",
+            message="By law retrieved successfully",
             data=result,
         )
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
-    def get_academic_year(self, uid: str) -> Response[AcademicYearNode]:
+    @strawberry.field()
+    def get_by_law_by_uid(self, uid: str) -> Response[ByLawNode]:
         try:
-            result = AcademicYearService.get_academic_year_by_uid(uid)
+            result = ByLawCrud.get_by_law_by_uid(uid)
         except Exception as e:
             print(e)
             result = []
@@ -40,19 +40,19 @@ class ByaLawQuery:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Academic Year retrieved successfully",
+                message="By-law retrieved successfully",
                 data=result)
         else:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="Academic year not found",
+                message="By-law not found",
                 data=None)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACTIVE_ACADEMIC_YEARS"])])
-    def get_active_academic_year(self) -> Response[AcademicYearNode]:
+    @strawberry.field()
+    def get_active_by_law(self) -> Response[ByLawNode]:
         try:
-            result = AcademicYearService.get_active_academic_year()
+            result = ByLawCrud.get_active_by_law()
         except Exception as e:
             print(e)
             result = None
@@ -61,47 +61,37 @@ class ByaLawQuery:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Active Academic Year retrieved successfully",
+                message="Active By-law retrieved successfully",
                 data=result)
         else:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="No Active Academic year not found",
+                message="No Active By-law found",
                 data=None)
 
 
 @strawberry.type
-class AcademicYearMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEARS"])])
-    def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
+class ByLawMutation:
+    @strawberry.field()
+    def register_by_law(self, inputs: ByLawInput) -> Response[ByLawListNode]:
         try:
-            return AcademicYearService(AcademicYear).register_academic_year(inputs)
+            return ByLawCrud.register_by_law(inputs)
         except Exception as e:
             print(e)
-            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add Academic Year",
-                            data=AcademicYearListNode(items=[], total_count=0))
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Add By-law",
+                            data=ByLawListNode(items=[], total_count=0))
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_ACADEMIC_YEAR"])])
-    async def remove_academic_year(self, uid: str) -> Response[None]:
+    @strawberry.mutation()
+    async def remove_by_law(self, uid: str) -> Response[ByLawListNode]:
         """
         Remove Academic Year By UID
         :param uid:
         :return:
         """
         try:
-            AcademicYearService(AcademicYear).remove_academic_year(uid)
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Academic Year Removed Successfully",
-                data=None
-            )
+            return ByLawCrud.remove_by_law(uid)
         except Exception as e:
             print(e)
-            return Response(
-                status=False,
-                code=ResponseCode.FAILURE,
-                message="Failed to Remove Academic Year",
-                data=None
-            )
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Remove By-law",
+                            data=ByLawListNode(items=[], total_count=0))

@@ -1,3 +1,4 @@
+import json
 from typing import Optional, List
 
 import requests
@@ -8,10 +9,14 @@ from sqlalchemy.orm import joinedload
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.models import ProgramCourse, Program, AcademicYear, StudentProgramChange
+from src.models import ProgramCourse, Program, AcademicYear, StudentProgramChange, Workflow, TransitionMeta, Process, \
+    ProcessFlow, State
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
+from src.modules.states.service import StateService
+from src.modules.transition_metas.service import TransitionMetaService
+from src.modules.workflows.service import WorkflowService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode
@@ -22,20 +27,34 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
     def get_all_student_change_programs() -> List[StudentProgramChange]:
         """
         Get Student Program Change off all student
-        :param uid:
+        :param:
         :return StudentProgramChange:
         """
         with session_scope() as session:
             student_program_changes = session.query(StudentProgramChange).filter(
                 StudentProgramChange.deleted_at.is_(None)).order_by(desc(StudentProgramChange.updated_at)).all()
             if student_program_changes:
-                students_uids = [student_program_change.uid for student_program_change in student_program_changes]
-                params = {"uids": students_uids}
-                response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
-                response.raise_for_status()
-                if response.status_code == 200:
-                    responseData = response.json()
-                    print(responseData)
+                students_uids = [str(student_program_change.uid) for student_program_change in student_program_changes]
+                if students_uids:
+                    # go to uaa to get student information
+                    data_obj = {
+                        "uids": students_uids
+                    }
+                    # Serialize the data to JSON
+                    payload = json.dumps(data_obj)
+                    # Set the Content-Type header to indicate that the request body is JSON
+                    headers = {
+                        "Content-Type": "application/json"
+                    }
+                    # Send the Get request
+                    response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                             headers=headers)
+                    response.raise_for_status()
+                    print(response.json())
+                    if response.status_code == 200:
+                        responseData = response.json()
+                        studentData = responseData['data']
+                        print(studentData)
             return student_program_changes
 
     @staticmethod
@@ -76,7 +95,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 if input.new_program_uid == input.current_program_uid:
                     return Response(
                         status=False,
-                        code=ResponseCode.FAILURE,
+                        code=ResponseCode.BAD_REQUEST,
                         data=None,
                         message="You Cant Request For the Same Program"
                     )
@@ -90,7 +109,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 if existed_request:
                     return Response(
                         status=False,
-                        code=ResponseCode.FAILURE,
+                        code=ResponseCode.BAD_REQUEST,
                         data=None,
                         message="Your already have Program change request on Go"
                     )
@@ -100,7 +119,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 if current_program is None:
                     return Response(
                         status=False,
-                        code=ResponseCode.FAILURE,
+                        code=ResponseCode.BAD_REQUEST,
                         data=None,
                         message="You have submitted incorrect current program details"
                     )
@@ -110,7 +129,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 if new_program is None:
                     return Response(
                         status=False,
-                        code=ResponseCode.FAILURE,
+                        code=ResponseCode.BAD_REQUEST,
                         data=None,
                         message="You have submitted incorrect new program details"
                     )
@@ -119,25 +138,58 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 if academic_year is None:
                     return Response(
                         status=False,
-                        code=ResponseCode.FAILURE,
+                        code=ResponseCode.BAD_REQUEST,
                         data=None,
-                        message="Sorry. Academic year is not saved Yet"
+                        message="Academic year Does not exist"
+                    )
+
+                workflow = WorkflowService(Workflow).get_workflow_by_name('PROGRAM_CHANGE')
+                if workflow is None:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.BAD_REQUEST,
+                        data=None,
+                        message="Program Change Workflow Does not exist"
                     )
 
                 if input.uid is None:
+                    state = StateService(State).get_state_by_label('Requested')
+                    if state is None:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.BAD_REQUEST,
+                            data=None,
+                            message="State Workflow 'Requested' Does not exist"
+                        )
+
                     student_program_change = StudentProgramChange(
                         student_uid=input.student_uid,
                         academic_year_id=academic_year.id,
                         current_program=current_program,
                         new_program=new_program,
                         reason=input.reason,
-                        approve_status="PENDING",
+                        approve_status=state.label,
                         approve_remark="",
                         current_registration_number=input.current_registration_number
                     )
+
                     local_object = session.merge(student_program_change)
                     session.add(local_object)
                     session.commit()
+                    process = session.query(Process).filter(
+                        Process.process_unique_uid == student_program_change.uid).first()
+
+                    if process is not None:
+                        process = Process(description='PROGRAM_CHANGE', process_unique_uid=student_program_change.uid,
+                                          workflow_id=workflow.id)
+                        session.add(process)
+                        session.commit()
+
+                    # Change state process
+                    process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
+                    session.add(process_flow)
+                    session.commit()
+
                     student_program_change = self.get_student_change_program_by_uid(local_object.uid)
                     return Response(status=True, code=ResponseCode.SUCCESS,
                                     data=student_program_change,

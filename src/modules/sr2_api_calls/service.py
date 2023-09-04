@@ -100,6 +100,9 @@ class Sr2ApiCalls(object):
                 # print(response_data["message"])
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=None, message="Control number request generated successfully")
+            elif response.status_code == 400:
+                return Response(status=False, code=ResponseCode.INVALID_REQUEST,
+                                data=None, message="Your have Submitted Incorrect Request Data")
             else:
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None, message="Failed to generate control number request")

@@ -1,166 +1,102 @@
-from datetime import datetime
-from typing import List, Any
+from typing import List
 
 import pendulum
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, update
 
 from src.db.session import session_scope
-from src.models import AcademicYear, AcademicYearSemester
+from src.models import ByLaw
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, AcademicYearListNode
+from src.types import ByLawInput, ByLawListNode
 
 
-class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYearInput]):
+class ByLawService(CRUDBase[ByLaw, ByLawInput, ByLawInput]):
     @staticmethod
-    def get_academic_years() -> List[AcademicYear]:
+    def get_by_laws() -> List[ByLaw]:
         with session_scope() as session:
-            result = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).all()
+            result = session.query(ByLaw).filter(ByLaw.deleted_at.is_(None)).all()
             return result
 
     @staticmethod
-    def get_academic_year_by_name(name: List[str]) -> List[AcademicYear]:
+    def get_by_law_by_id(id: List[int]) -> List[ByLaw]:
         """
-        Get Academic Year by name
+        Get By law by id
         :return:
         """
         with session_scope() as session:
-            stmt = select(AcademicYear).where((AcademicYear.name.in_(name)) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.all()
+            result = session.query(ByLaw).filter(ByLaw.id == id, ByLaw.deleted_at.is_(None)).first()
+            return result
 
     @staticmethod
-    def get_academic_year_by_id(id: List[int]) -> List[AcademicYear]:
-        """
-        Get AcademicYear by id
-        :return:
-        """
-        with session_scope() as session:
-            stmt = select(AcademicYear).where(
-                (AcademicYear.id.in_(id)) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.all()
-
-    @staticmethod
-    def get_academic_year_by_uids(uids: List[str]) -> List[AcademicYear]:
-        """
-        Get Academic Year by uids
-        :return:
-        """
-        with session_scope() as session:
-            stmt = select(AcademicYear).where((AcademicYear.uid.in_(uids)) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.all()
-
-    @staticmethod
-    def get_academic_year_by_uid(uid: str) -> AcademicYear:
+    def get_by_law_by_uid(uid: str) -> ByLaw:
         """
         Get Academic Year by uid
         :param uid:
         :return:
         """
         with session_scope() as session:
-            stmt = select(AcademicYear).where((AcademicYear.uid == uid) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.first()
+            result = session.query(ByLaw).filter(ByLaw.uid == uid, ByLaw.deleted_at.is_(None)).first()
+            return result
 
     @staticmethod
-    def get_active_academic_year() -> AcademicYear:
+    def get_active_by_law() -> ByLaw:
         """
-        Get Active Academic Year
+        Get Active by law
         :param:
         :return:
         """
         with session_scope() as session:
-            stmt = select(AcademicYear).where((AcademicYear.status == 1) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.first()
+            result = session.query(ByLaw).filter(ByLaw.status == True, ByLaw.deleted_at.is_(None)).first()
 
-    def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
+            return result
+
+    def register_by_law(self, inputs: ByLawInput) -> Response[ByLawListNode]:
         """
-        Register Academic Year
+        Register by law
         :param inputs:
         :return:
         """
-        academic_year_list = []
-        status_checkup = True  # used for onetime check on all supplied academic year status from inputs
-        action_name = "Registered"
+
         with session_scope() as session:
-            # Check if the Academic Year already exist using uid
-            existed_academic_year_list = self.get_academic_year_by_name(
-                [academic_year.name for academic_year in inputs if academic_year.uid is None])
-            if existed_academic_year_list:
-                return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=AcademicYearListNode(items=existed_academic_year_list, total_count=0),
-                                message="One or More Academic Year Already exist")
-            # check for existing course using uid
-            existed_academic_year = self.get_academic_year_by_uids([inputItem.uid for inputItem in inputs])
-            for inputItem in inputs:
-                # Through an Exception that may be occurred during verification of user inputs
-                try:
-                    start_date = datetime.strptime(inputItem.start_date, "%Y-%m-%d")
-                    end_date = datetime.strptime(inputItem.end_date, "%Y-%m-%d")
-                    # Check if inputs has value of start year that great than end year and through an exception
-                    if start_date > end_date:
-                        return Response(status=False, code=ResponseCode.INVALID_REQUEST,
-                                        data=AcademicYearListNode(items=[], total_count=0),
-                                        message="End year must be great than Start year to all inputs")
-                    # Apply one time check of all inputs status to decide return/pass the operation
-                    if status_checkup:
-                        status_checkup = False
-                        status_list = [item.status for item in inputs if item.status == 1]
-                        if len(status_list) > 1:
-                            return Response(status=False, code=ResponseCode.INVALID_REQUEST,
-                                            data=AcademicYearListNode(items=[], total_count=0),
-                                            message="Only one active Academic year are Accepted")
-                        else:
-                            if len(status_list) == 1:
-                                session.query(AcademicYear).filter(AcademicYear.status == 1).update({"status": 0})
-                except Exception as e:
-                    print(e)
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=AcademicYearListNode(items=[], total_count=0),
-                                    message="Unable to register Academic year")
+            by_law = session.query(ByLaw).filter(ByLaw.code == inputs.code, ByLaw.deleted_at.is_(None)).first()
+            if by_law:
+                by_law.name = inputs.name
+                by_law.code = inputs.code
+                by_law.status = inputs.status
+                by_law.start_date = inputs.start_date
+                by_law.end_date = inputs.end_date
+            else:
+                session.query(ByLaw).update({ByLaw.status: False})
 
-                if inputItem.uid is None:
-                    academic_year = AcademicYear(
-                        name=inputItem.name,
-                        status=inputItem.status,
-                        start_date=inputItem.start_date,
-                        end_date=inputItem.end_date,
-                    )
-                    academic_year_list.append(academic_year)
-                else:
-                    action_name = "Updated"
-                    academic_year = next(filter(lambda academic_year: str(academic_year.uid) == str(inputItem.uid),
-                                                existed_academic_year), None)
-
-                    if academic_year:
-                        obj_data = jsonable_encoder(inputItem)
-                        for key, value in obj_data.items():
-                            setattr(academic_year, key, value)
-                        academic_year_list.append(academic_year)
-            session.add_all(academic_year_list)
+                by_law = ByLaw(
+                    name=inputs.name,
+                    code=inputs.code,
+                    status=inputs.status,
+                    start_date=inputs.start_date,
+                    end_date=inputs.end_date,
+                )
+                session.add(by_law)
             session.commit()
-            count = session.query(AcademicYear).filter(AcademicYear.deleted_at.is_(None)).count()
-            session.commit()
+            existing_bylaws = session.query(ByLaw).all()
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=AcademicYearListNode(items=academic_year_list, total_count=count),
-                            message=f"Academic Year {action_name} Successfully")
+                            data=ByLawListNode(items=existing_bylaws, total_count=len(existing_bylaws)),
+                            message=f"By law added Successfully")
 
     # Delete Function
     @staticmethod
-    def remove_academic_year(uid: str):
+    def remove_by_law(uid: str) -> Response[ByLawListNode]:
         """
-        Remove Academic Year by UID
+        Remove By law UID
         :param uid:
         :return:
         """
         with session_scope() as session:
-            session.query(AcademicYear).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
+            session.query(ByLaw).filter(ByLaw.uid == uid).update({ByLaw.deleted_at: pendulum.now()})
             session.commit()
+            existing_bylaws = session.query(ByLaw).all()
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=ByLawListNode(items=existing_bylaws, total_count=len(existing_bylaws)),
+                            message=f"By law removed Successfully")
 
 
-AcademicYearCrud = AcademicYearService(AcademicYear)
+ByLawCrud = ByLawService(ByLaw)

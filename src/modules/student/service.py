@@ -9,7 +9,7 @@ from src.db.session import session_scope
 from src.helpers.utils import get_current_semester, get_student_from_uaa, insert_exam_result, insert_course_work, \
     general_upload
 from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester, \
-    StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement
+    StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement, ExamResult, ExamCoursework
 from src.models.student_course_registration import StudentCourseRegistration
 from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode, StudentProgramCourseListNode, \
     ExamRegistrationListNode, ExamToRegister, UploadResponse, FailedStudent
@@ -85,10 +85,11 @@ class StudentService:
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
-    def get_allocation_students(self, allocation_uid) -> [StudentUaaData]:
+    def get_allocation_students(self, allocation_uid, assessment_number, exam_category, out_off) -> [StudentUaaData]:
         """
         Retrieve all students located to a particular allocation
         """
+        print('tttt')
         with session_scope() as session:
             student_uids = session.query(StudentCourseRegistration.student_uid). \
                 join(ProgramCourse). \
@@ -128,6 +129,52 @@ class StudentService:
                 data = response.json()
                 data["program_course"] = program_course
 
+                if session.query(ExamCategory).filter(ExamCategory.id == exam_category).first().is_ue:
+                    ue_results = session.query(ExamResult).filter(
+                        ExamResult.program_course_id == allocation.program_course.id,
+                        ExamResult.exam_category_id == exam_category,
+                        ExamResult.assessment_number == assessment_number).all()
+                    ue_results_dict = {ue_result.student_uid: ue_result.score for ue_result in ue_results}
+                    # Update the data list with marks from ue_results
+                    for item in data['data']:
+                        uid = item.get("uid")  # Use item.get to safely retrieve the UID
+                        if uid is not None:
+                            marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
+                            if marks:
+                                item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
+                            else:
+                                item["marks"] = ''  # Set a default value if marks is empty
+
+                        else:
+                            item['marks'] = ''
+
+                else:
+
+                    course_work_results = session.query(ExamCoursework).filter(
+                        ExamCoursework.program_course_id == allocation.program_course.id,
+                        ExamCoursework.exam_category_id == exam_category,
+                        ExamCoursework.assessment_number == assessment_number).all()
+
+                    # for ue_course_work_result in course_work_results:
+                    #
+                    #     for item in data["data"]:
+                    #         if ue_course_work_result.student_uid == item["uid"]:
+                    #             item["marks"] = ue_course_work_result.score
+                    #             print('marks',item["marks"])
+                    ue_results_dict = {ue_result.student_uid: ue_result.score for ue_result in course_work_results}
+                    # Update the data list with marks from ue_results
+                    for item in data['data']:
+                        # print(item)  # Print the entire item to inspect its structure
+                        uid = item.get("uid")  # Use item.get to safely retrieve the UID
+                        if uid is not None:
+                            marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
+                            if marks:
+                                item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
+                            else:
+                                item["marks"] = ''  # Set a default value if marks is empty
+
+                        else:
+                            item['marks'] = ''
         return data
 
     def get_student_course_to_register(self, inputs) -> StudentProgramCourseListNode:
@@ -238,6 +285,7 @@ class StudentService:
         out_off = float(inputs.out_off)
         program_course_id = inputs.program_course_id
         weight = inputs.weight
+        source = inputs.source
 
         with session_scope() as session:
             is_ue = session.query(ExamCategory).filter(
@@ -252,7 +300,12 @@ class StudentService:
                 reg_number = row.registration_number
                 score = float(row.score)
 
-                success_, failed_, failed_student = general_upload(students=students, program_course_id=program_course_id, exam_category_id=exam_category_id, score=score, out_off=out_off, weight=weight, is_ue=is_ue, reg_number=reg_number, assessment_number=assessment_number)
+                success_, failed_, failed_student = general_upload(students=students,
+                                                                   program_course_id=program_course_id,
+                                                                   exam_category_id=exam_category_id, score=score,
+                                                                   out_off=out_off, weight=weight, is_ue=is_ue,
+                                                                   reg_number=reg_number,
+                                                                   assessment_number=assessment_number, source=source)
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:

@@ -37,7 +37,10 @@ class ExamResultSummary(BaseModel):
     publish_date: Date = Column(Date, nullable=True)
     study_year: int = Column(Integer, nullable=False)
     semester: int = Column(Integer, nullable=False)
-    academic_year_id: int = Column(Integer, nullable=False)
+    academic_year_uid: str = Column(String, nullable=False)
+    program_uid: str = Column(String, nullable=False)
+    course_category: str = Column(String, nullable=False)
+
 
 
 
