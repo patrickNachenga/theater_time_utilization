@@ -1220,7 +1220,7 @@ class StudentManuscriptNode:
     publication_date: Optional[datetime] = None
     description: str
     status: int
-    publication_status: int
+    publication_status: str
 
 
 @strawberry.input(description="Student Manuscript Input Node")
@@ -1231,7 +1231,7 @@ class StudentManuscriptInput:
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
     status: Optional[int] = 0
-    publication_status: Optional[int] = 0
+    publication_status: Optional[str] = None
 
 
 @strawberry.type(description="Student Submission paginated output")
@@ -1292,7 +1292,7 @@ class StudentManuscriptAllNode:
     publication_date: Optional[datetime] = None
     description: str
     status: int
-    publication_status: int
+    publication_status: str
     full_name: str
     registration_number: str
 
