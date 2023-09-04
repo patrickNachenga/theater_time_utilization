@@ -15,10 +15,76 @@ from src.models.student_manuscript import StudentManuscript
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentManuscriptInput, StudentManuscriptNode
+from src.types import StudentManuscriptInput, StudentManuscriptNode, StudentManuscriptAllListNode
 
 
 class StudentManuscriptService(CRUDBase[StudentManuscript, StudentManuscriptInput, StudentManuscriptNode]):
+
+    @staticmethod
+    def get_all_manuscript_paginated(info: Info, pagination, search_columns: List[str],
+                                          relationships_to_join: List[str] = None,
+                                          unique_search: List[dict] = None) -> [StudentManuscriptAllListNode]:
+        """
+            Get all Manuscript Paginated
+        :return:
+        """
+        with session_scope() as session:
+
+            # if pagination.status:
+            #     query = session.query(IntentionToSubmit).filter(
+            #         and_(IntentionToSubmit.deleted_at.is_(None), IntentionToSubmit.status == pagination.status))
+            # else:
+            query = session.query(StudentManuscript).filter(
+                    StudentManuscript.deleted_at.is_(None))
+            search_q = pagination.search if pagination.search else ''
+            #
+            # # filter condition if specified unique column
+            unique_filter_conditions = []
+            if unique_search:
+                for condition in unique_search:
+                    for column, value in condition.items():
+                        unique_filter_conditions.append(getattr(StudentManuscript, column) == value)
+            if unique_filter_conditions:
+                query = query.filter(and_(*unique_filter_conditions))
+            #
+            # # Apply filters
+            filter_conditions = []
+            for column in inspect(StudentManuscript).columns:
+                if column.name in search_columns:
+                    filter_conditions.append(
+                        cast(getattr(StudentManuscript, column.name), String).ilike(f"%{str(search_q)}%"))
+
+            if filter_conditions:
+                query = query.filter(or_(*filter_conditions))
+            #
+            total_count = query.count()
+            print(total_count)
+            #
+            # # Apply pagination
+            query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
+            # Fetch items and total count
+            if relationships_to_join and len(relationships_to_join) > 0:
+                for relationship_name in relationships_to_join:
+                    query = query.options(joinedload(relationship_name))
+            items = query.all()
+            #
+            if items:
+                intention_to_submit_list = []
+                for x in items:
+                    params = {"uid": str(x.student_uid)}
+                    response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                    response.raise_for_status()
+                    response_data = response.json()
+                    if response.status_code == 200:
+                        print(response_data["user"]['username'])
+                        response_data = response.json()
+                        info = response_data['user']
+                        x.registration_number = info['username']
+                        x.full_name = info['first_name'] + " " + info['middle_name'] + " " + info['last_name']
+
+            session.close()
+
+            return StudentManuscriptAllListNode(items=items, total_count=total_count)
 
     @staticmethod
     def get_student_manuscript_by_student_uid(student_uid) -> List[StudentManuscript]:

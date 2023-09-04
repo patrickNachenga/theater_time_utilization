@@ -8,11 +8,26 @@ from src.models import StudentManuscript
 from src.modules.student_manuscript.service import StudentManuscriptService, StudentManuscriptCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentManuscriptInput, StudentManuscriptNode
+from src.types import StudentManuscriptInput, StudentManuscriptNode, PaginationInput, StudentManuscriptAllListNode
 
 
 @strawberry.type
 class StudentManuscriptQuery:
+
+    @strawberry.field()
+    def get_manuscripts(self, pagination: PaginationInput, info: Info) \
+            -> Response[StudentManuscriptAllListNode]:
+        try:
+            result = StudentManuscriptCrud.get_all_manuscript_paginated(info, pagination,
+                                                                                 ['title', 'plagiarism_status'])
+        except Exception as e:
+            print(e)
+            result = StudentManuscriptAllListNode(items=[], total_count=0)
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Manuscript Retrieved Successfully",
+            data=result)
 
     @strawberry.field()
     def get_student_manuscript(self) -> Response[List[StudentManuscriptNode]]:
