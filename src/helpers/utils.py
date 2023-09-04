@@ -99,7 +99,6 @@ def create_group_to_moodle():
                 .filter(ProgramCourse.course.has(Course.moodle_id.isnot(None))) \
                 .order_by(desc(ProgramCourse.created_at)) \
                 .first()
-
             if program_course:
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()

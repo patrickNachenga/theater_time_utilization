@@ -131,8 +131,9 @@ class MoodleApiCallQuery:
         try:
             with session_scope() as session:
                 student_course_registrations = session.query(StudentCourseRegistration).join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id) \
-                    .filter(StudentCourseRegistration.deleted_at.is_(None))\
+                    .filter(StudentCourseRegistration.deleted_at.is_(None)) \
                     .filter(ProgramCourse.uid == inputs.program_course_uid).all()
+                    #.filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(True)) \
 
                 if student_course_registrations:
                     students_uids = [course_registration.student_uid for course_registration in student_course_registrations]
@@ -143,14 +144,14 @@ class MoodleApiCallQuery:
                         }
 
                         # Serialize the data to JSON
-                        json_data = json.dumps(data_obj)
+                        payload = json.dumps(data_obj)
 
                         # Set the Content-Type header to indicate that the request body is JSON
                         headers = {
                             "Content-Type": "application/json"
                         }
                         # Send the Get request
-                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=json_data, headers=headers)
+                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload, headers=headers)
                         response.raise_for_status()
                         if response.status_code == 200:
                             responseData = response.json()

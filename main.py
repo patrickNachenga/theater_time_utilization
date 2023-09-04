@@ -15,6 +15,7 @@ app = RegistrationApp()
 # app.debug = True
 app.debug = Settings().SYSTEM_DEBUG_MODE
 
+
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
 )
