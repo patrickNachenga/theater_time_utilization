@@ -552,6 +552,7 @@ class StudentProgramChangeNode:
     new_registration_number: Optional[str]
     approved_by: Optional[str]
     new_program: Optional["ProgramNode"]
+    full_name: Optional[str]
 
 
 @strawberry.input(description="Student Program Change  Status Input")

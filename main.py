@@ -11,8 +11,8 @@ from src.api_routes.sr2_finance_api import sr2_router
 
 app = RegistrationApp()
 
-app.debug = True
-# app.debug = False
+# app.debug = True
+app.debug = False
 
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
