@@ -325,8 +325,8 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
 
             return True, "successfully"
         except Exception as e:
-            print(e)
-            return False, "Data Processing Error"
+            print('maokoto', e)
+            return False, "Data Processing Error in Exception"
 
 
 def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source):
@@ -469,7 +469,6 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamCoursework.program_course_id == target.program_course_id)
         total_practical_score = 0
         total_theory_score = 0
-
         for exam_course_work in student_exam_course_works:
 
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
@@ -494,9 +493,11 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             ExamResultSummary.number_of_sitting == 1).first()
         if exam_result_summary:
             exam_result_summary.cw_score = custom_round(total_score)
-            exam_result_summary.cw_theory = custom_round(total_theory_score) if total_theory_score > 0 else None
-            exam_result_summary.cw_practical = custom_round(
-                total_practical_score) if total_practical_score > 0 else None
+            if total_theory_score > 0:
+                exam_result_summary.cw_theory = custom_round(total_theory_score)
+            if total_practical_score > 0:
+                exam_result_summary.cw_practical = custom_round(
+                    total_practical_score)
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
             summary_instance = exam_result_summary
         else:
@@ -512,8 +513,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
                 credit=target.program_course.credit,
                 course_code=target.program_course.course.code,
                 course_name=target.program_course.course.name,
-                cw_practical=custom_round(total_practical_score) if total_practical_score > 0 else None,
-                cw_theory=custom_round(total_theory_score) if total_theory_score > 0 else None,
+                cw_practical=custom_round(total_practical_score),
+                cw_theory=custom_round(total_theory_score),
                 cw_score=custom_round(total_score),
                 grade='I',
                 grade_remark='Incomplete',
@@ -537,6 +538,8 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
         #     exam_result_summary.grade_point = performance_grade['grade_point']
         #     exam_result_summary.grade_remark = performance_grade['status']
         #     exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
+        print('3')
+
         grade_result(session, target, by_law_uid, summary_instance)
         session.commit()
 
@@ -576,9 +579,9 @@ def attach_exam_result_listener(target, by_law_uid):
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == target.number_of_sitting).first()
         if exam_result_summary:
-            exam_result_summary.ue_theory = custom_round(total_ue_theory) if total_ue_theory else None
-            exam_result_summary.ue_practical = custom_round(total_ue_practical) if total_ue_practical else None
-            exam_result_summary.ue_oral = custom_round(total_ue_oral) if total_ue_oral else None
+            exam_result_summary.ue_theory = custom_round(total_ue_theory)
+            exam_result_summary.ue_practical = custom_round(total_ue_practical)
+            exam_result_summary.ue_oral = custom_round(total_ue_oral)
             exam_result_summary.ue_score = custom_round(total_score)
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
         else:
@@ -642,6 +645,8 @@ def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
 def grade_result(session, target, by_law_uid, exam_result_summary):
     is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
     if is_inserted:
+        print('4')
+
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
         by_law = BYLAW[by_law_code]()
