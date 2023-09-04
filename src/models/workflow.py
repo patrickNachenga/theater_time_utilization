@@ -42,48 +42,12 @@ class TransitionMeta(BaseModel):
     permissions = Column(MutableList.as_mutable(PickleType), default=list)
     groups = Column(MutableList.as_mutable(PickleType), default=list)
     deleted_at = Column(DateTime, nullable=True)
-    is_first: bool = Column(Boolean, default=False)
-    is_last: bool = Column(Boolean, default=False)
 
     # Adding Check and Unique Constraints
     # __table_args__ = (
     #     CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
     #     UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
     # )
-
-
-# Event listener for new inserts or updates on is_first
-@event.listens_for(TransitionMeta, 'before_insert')
-@event.listens_for(TransitionMeta, 'before_update')
-def unset_is_first(mapper, connection, target):
-    if target.is_first and target.deleted_at is None:
-        # Unset `is_first` attribute of all other instances with the same workflow_id
-        connection.execute(
-            TransitionMeta.__table__.update().where(
-                and_(
-                    TransitionMeta.workflow_id == target.workflow_id,
-                    TransitionMeta.is_first == True,
-                    TransitionMeta.deleted_at.is_(None)
-                )
-            ).values(is_first=False)
-        )
-
-
-# Event listener for new inserts or updates on is_last
-@event.listens_for(TransitionMeta, 'before_insert')
-@event.listens_for(TransitionMeta, 'before_update')
-def unset_is_last(mapper, connection, target):
-    if target.is_last and target.deleted_at is None:
-        # Unset `is_last` attribute of all other instances with the same workflow_id
-        connection.execute(
-            TransitionMeta.__table__.update().where(
-                and_(
-                    TransitionMeta.workflow_id == target.workflow_id,
-                    TransitionMeta.is_last == True,
-                    TransitionMeta.deleted_at.is_(None)
-                )
-            ).values(is_last=False)
-        )
 
 
 class Process(BaseModel):
