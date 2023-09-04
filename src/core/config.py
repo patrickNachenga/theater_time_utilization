@@ -15,6 +15,7 @@ load_dotenv(os.path.join(BASEDIR, '.env'))
 
 class Settings(BaseSettings):
     PROJECT_TITLE: str = "Registration App"
+    SYSTEM_DEBUG_MODE: bool = os.environ.get("SYSTEM_DEBUG_MODE")
     PROJECT_VERSION: str = "0.0.1"
     HOST_HTTP: str = os.environ.get("HOST_HTTP", "http://")
     HOST_URL: str = os.environ.get("HOST_URL")
