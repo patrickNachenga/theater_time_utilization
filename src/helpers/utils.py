@@ -105,7 +105,7 @@ def create_group_to_moodle():
 
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
-                    group_name=f"{program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
+                    group_name=f"{program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
                     group_description=program_course.program_semester.semester,
                 )
                 if moodle_unit_id != 0:
@@ -128,7 +128,6 @@ def enroll_student_to_moodle_course():
                 .filter(StudentCourseRegistration.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(StudentCourseRegistration.created_at)) \
                 .first()
-
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
                 response = requests.get(settings.UAA_URi + f'/users/student', params=params)

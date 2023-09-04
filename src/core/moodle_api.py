@@ -275,11 +275,7 @@ class MoodleApi:
             'groups[0][visibility]': 1
         }
 
-        print(data)
-
         response = self.sendRequest(data)
-
-        print(response.json())
 
         if response is False:
             # Handle the error condition
@@ -340,7 +336,12 @@ class MoodleApi:
             'enrolments[0][courseid]': course_id
         }
 
+        print(data)
+
+
+
         response = self.sendRequest(data)
+        print(response.json())
         if response is False:
             # Handle the error condition
             print('Failed to enroll user.')
