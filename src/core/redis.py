@@ -5,9 +5,9 @@ from aioredis import from_url
 
 from src.core.config import settings
 
-
 REDIS_HOST = settings.REDIS_HOST
 REDIS_PORT = settings.REDIS_PORT
+REDIS_PASSWORD = settings.REDIS_PASSWORD
 
 
 class RedisBackend:
@@ -84,7 +84,10 @@ class RedisDependency:
 
     async def init(self):
         """Initialises the Redis Dependency"""
-        self.redis = await RedisBackend.init(f"redis://{REDIS_HOST}:{REDIS_PORT}")
+        if settings.DEBUG_MODE:
+            self.redis = await RedisBackend.init(f"redis://{REDIS_HOST}:{REDIS_PORT}")
+        else:
+            self.redis = await RedisBackend.init(f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}")
 
 
 redis_dependency: RedisDependency = RedisDependency()
@@ -92,4 +95,6 @@ redis_dependency: RedisDependency = RedisDependency()
 
 async def get_redis() -> RedisBackend:
     """Returns a NEW Redis connection"""
-    return await RedisBackend.init(f"redis://{REDIS_HOST}:{REDIS_PORT}")
+    if settings.DEBUG_MODE:
+        return await RedisBackend.init(f"redis://{REDIS_HOST}:{REDIS_PORT}")
+    return await RedisBackend.init(f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}")
