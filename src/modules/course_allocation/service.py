@@ -99,7 +99,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     .filter(CourseAllocation.deleted_at.is_(None))
                 return result
             else:
-                return None
+                return []
 
     @staticmethod
     def get_course_allocation_by_program_course_uid(uid: str) -> Response[CourseAllocationListNode]:

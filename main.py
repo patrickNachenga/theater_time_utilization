@@ -1,5 +1,6 @@
 from sched import scheduler
 
+from src.core.config import Settings
 from src.helpers.apscheduler import scheduler
 from starlette.middleware.cors import CORSMiddleware
 
@@ -12,7 +13,8 @@ from src.api_routes.sr2_finance_api import sr2_router
 app = RegistrationApp()
 
 # app.debug = True
-app.debug = False
+app.debug = Settings().SYSTEM_DEBUG_MODE
+
 
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
@@ -32,13 +34,13 @@ async def startup():
     :return:
     """
     await database.connect()
-    scheduler.start()
 
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
     await redis_dependency.init()
     if not app.debug:
         await app.initialize_async()
+        scheduler.start()
 
 
 @app.on_event("shutdown")

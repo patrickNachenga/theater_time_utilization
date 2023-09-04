@@ -1,3 +1,4 @@
+import json
 from typing import Optional, List
 
 import requests
@@ -22,20 +23,34 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
     def get_all_student_change_programs() -> List[StudentProgramChange]:
         """
         Get Student Program Change off all student
-        :param uid:
+        :param:
         :return StudentProgramChange:
         """
         with session_scope() as session:
             student_program_changes = session.query(StudentProgramChange).filter(
                 StudentProgramChange.deleted_at.is_(None)).order_by(desc(StudentProgramChange.updated_at)).all()
             if student_program_changes:
-                students_uids = [student_program_change.uid for student_program_change in student_program_changes]
-                params = {"uids": students_uids}
-                response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
-                response.raise_for_status()
-                if response.status_code == 200:
-                    responseData = response.json()
-                    print(responseData)
+                students_uids = [str(student_program_change.uid) for student_program_change in student_program_changes]
+                if students_uids:
+                    # go to uaa to get student information
+                    data_obj = {
+                        "uids": students_uids
+                    }
+                    # Serialize the data to JSON
+                    payload = json.dumps(data_obj)
+                    # Set the Content-Type header to indicate that the request body is JSON
+                    headers = {
+                        "Content-Type": "application/json"
+                    }
+                    # Send the Get request
+                    response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                             headers=headers)
+                    response.raise_for_status()
+                    print(response.json())
+                    if response.status_code == 200:
+                        responseData = response.json()
+                        studentData = responseData['data']
+                        print(studentData)
             return student_program_changes
 
     @staticmethod
