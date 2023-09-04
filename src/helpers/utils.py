@@ -660,3 +660,5 @@ def grade_result(session, target, by_law_uid, exam_result_summary):
 
 def custom_round(value):
     return math.floor(value * 100) / 100
+def test():
+    print("Testing round")
