@@ -23,9 +23,27 @@ from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode
 
 
+def map_data_to_node(data, user_data):
+    mapped_data = {
+        "uid": str(data["uid"]),
+        "student_uid": data["student_uid"],
+        "academic_year": data["academic_year"],
+        "current_program": data["current_program"],
+        "approve_status": data["approve_status"],
+        "approve_remark": data["approve_remark"],
+        "reason": data["reason"],
+        "current_registration_number": data["current_registration_number"],
+        "new_registration_number": data["new_registration_number"],
+        "approved_by": data["approved_by"],
+        "new_program": data["new_program"],
+        "full_name": user_data["first_name"] + ' ' + user_data.get("middle_name", "") + ' ' + user_data["last_name"]
+    }
+    return StudentProgramChangeNode(**mapped_data)
+
+
 class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramChangeInput, StudentProgramChangeInput]):
     @staticmethod
-    def get_all_student_change_programs() -> List[StudentProgramChange]:
+    def get_all_student_change_programs() -> List[StudentProgramChangeNode]:
         """
         Get Student Program Change off all student
         :param:
@@ -34,32 +52,39 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
         with session_scope() as session:
             student_program_changes = session.query(StudentProgramChange).order_by(
                 desc(StudentProgramChange.updated_at)).all()
-            if student_program_changes:
-                students_uids = [str(student_program_change.student_uid) for student_program_change in
-                                 student_program_changes]
-                # students_uids = [
-                #     "5a8c0931-a61f-4bc5-b9ff-5050cc789337", "cd5e690d-6e16-4fa0-8c0c-b0e02138de86"
-                # ]
-                if students_uids:
-                    # go to uaa to get student information
-                    data_obj = {
-                        "uids": students_uids
-                    }
-                    # Serialize the data to JSON
-                    payload = json.dumps(data_obj)
-                    # Set the Content-Type header to indicate that the request body is JSON
-                    headers = {
-                        "Content-Type": "application/json"
-                    }
-                    # Send the Get request
-                    response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
-                                             headers=headers)
-                    response.raise_for_status()
-                    # print(response.json())
-                    if response.status_code == 200:
-                        response_data = response.json()
-                        print(response_data)
+
+        # if no student program changes, return early
+        if not student_program_changes:
+            return []
+
+        students_uids = [str(change.student_uid) for change in student_program_changes]
+
+        # if no student uids, return the unchanged data
+        if not students_uids:
             return student_program_changes
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(settings.UAA_URi + '/students-details-by-uids',
+                                 json={"uids": students_uids},
+                                 headers=headers)
+
+        response.raise_for_status()
+
+        # if response is not 200 OK, return the unchanged data
+        if response.status_code != 200:
+            return student_program_changes
+
+        response_data = response.json()
+
+        results = [dict(data, **change.__dict__)
+                   for data in response_data
+                   for change in student_program_changes
+                   if data['uid'] == change.student_uid]
+
+        return [map_data_to_node(result, result.pop('user')) for result in results]
 
     @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
