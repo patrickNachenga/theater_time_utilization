@@ -382,17 +382,12 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                                                                ExamResult.program_course == program_course,
                                                                ExamResult.exam_category == exam_category).first()
                 score = (score / out_off) * 100
-                print('1')
                 if exam_result:
-                    print('11')
-
                     exam_result.score = score
                     exam_result.weight = weight
                     exam_result.source = source
                     instance = exam_result
                 else:
-                    print('2')
-
                     new_exam_result = ExamResult(
                         student_uid=student_uid,
                         exam_category=exam_category,
@@ -683,7 +678,7 @@ def grade_result(session, target, by_law_uid, exam_result_summary, program_type)
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
         by_law = BYLAW[by_law_code]()
-        performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score, program_type)
+        performance_grade = by_law.get_course_performance_grade(exam_result_summary, program_type, session)
         exam_result_summary.grade = performance_grade['grade']
         exam_result_summary.grade_point = performance_grade['grade_point']
         exam_result_summary.grade_remark = performance_grade['status']
