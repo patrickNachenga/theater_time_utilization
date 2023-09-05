@@ -336,13 +336,16 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                                                                ExamResult.program_course == program_course,
                                                                ExamResult.exam_category == exam_category).first()
                 score = (score / out_off) * 100
-
+                print('1')
                 if exam_result:
+                    print('11')
+
                     exam_result.score = score
                     exam_result.weight = weight
                     exam_result.source = source
                     instance = exam_result
                 else:
+                    print('2')
 
                     new_exam_result = ExamResult(
                         student_uid=student_uid,
@@ -544,7 +547,7 @@ def attach_exam_result_listener(target, by_law_uid):
         total_ue_theory = 0
         total_ue_practical = 0
         total_ue_oral = 0
-
+        program_type = student_exam_results.first().program_course.program_semester.program.program_category.short_name
         for exam_result in student_exam_results:
             maximum_score = session.query(ProgramCourseAssessment.maximum_score).filter(
                 ProgramCourseAssessment.exam_category_id == exam_result.exam_category_id,
@@ -555,6 +558,7 @@ def attach_exam_result_listener(target, by_law_uid):
                 ExamResult.program_course_id == target.program_course_id,
                 ExamResult.number_of_sitting == target.number_of_sitting).scalar()
             weighted_score = (exam_result.score / 100) * maximum_score * (exam_result.weight / total_weight)
+
             if exam_result.exam_category.is_theory:
                 total_ue_theory += weighted_score
             elif exam_result.exam_category.is_theory:
@@ -564,20 +568,22 @@ def attach_exam_result_listener(target, by_law_uid):
                 total_ue_practical += weighted_score
 
             total_score = total_ue_theory + total_ue_practical + total_ue_oral
+
         exam_result_summary = session.query(ExamResultSummary).filter(
             ExamResultSummary.student_uid == target.student_uid,
             ExamResultSummary.program_course_id == target.program_course.id,
             ExamResultSummary.number_of_sitting == target.number_of_sitting).first()
         if exam_result_summary:
+
             exam_result_summary.ue_theory = custom_round(total_ue_theory)
             exam_result_summary.ue_practical = custom_round(total_ue_practical)
             exam_result_summary.ue_oral = custom_round(total_ue_oral)
             exam_result_summary.ue_score = custom_round(total_score)
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
+            grade_result(session, target, by_law_uid, exam_result_summary,program_type)
+
         else:
             pass
-
-        grade_result(session, target, by_law_uid, exam_result_summary)
         session.commit()
 
 
@@ -623,8 +629,11 @@ def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
 
 
 def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
+    print('8')
+
     is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
     if is_inserted:
+        print('9')
 
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
