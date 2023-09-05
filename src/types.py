@@ -984,7 +984,11 @@ class ExamToRegister:
 @strawberry.type
 class FailedStudent:
     reg_number: str
-    reason: str
+    reason: (str)
+@strawberry.type
+class SuccessStudent:
+    reg_number: str
+
 
 
 @strawberry.type
@@ -992,6 +996,7 @@ class UploadResponse:
     success: int
     failed: int
     failed_students: list[FailedStudent]
+    success_students: list[SuccessStudent]
 
 
 @strawberry.input

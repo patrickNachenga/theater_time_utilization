@@ -320,6 +320,7 @@ class StudentMutation:
             success = 0
             failed = 0
             failed_students = []
+            success_students = []
 
             for row in worksheet.iter_rows(min_row=10, values_only=True):
                 reg_number = row[reg_no_column - 1]
@@ -328,7 +329,7 @@ class StudentMutation:
                     continue
                 score = float(row[marks_column - 1])
 
-                success_, failed_, failed_student = general_upload(students=students,
+                success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,
                                                                    out_off=out_off, weight=weight, is_ue=is_ue,
@@ -338,10 +339,13 @@ class StudentMutation:
                 failed = failed + failed_
                 if failed_student.reg_number is not None:
                     failed_students.append(failed_student)
+                if success_student.reg_number is not None:
+                    success_students.append(success_student)
             response_data = UploadResponse(
                 success=success,
                 failed=failed,
-                failed_students=failed_students
+                failed_students=failed_students,
+                success_students=success_students
             )
 
             return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)

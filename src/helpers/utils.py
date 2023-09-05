@@ -17,7 +17,7 @@ from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegi
     ExamResultSummary, ByLaw
 from src.modules.by_law.by_law_classes import BYLAW
 from src.modules.by_law.service import ByLawService
-from src.types import UploadResponse, FailedStudent
+from src.types import UploadResponse, FailedStudent, SuccessStudent
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -391,6 +391,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
     success = 0
     failed = 0
     failed_student = FailedStudent(reg_number=None, reason=None)
+    success_student = SuccessStudent(reg_number=None)
 
     if students:
 
@@ -421,6 +422,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                                             weight, by_law_uid, source)
                         if result:
                             success = success + 1
+                            success_student.reg_number = reg_number
                         else:
                             failed = failed + 1
                             failed_student.reg_number = reg_number
@@ -434,6 +436,8 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                                             weight, source, by_law_uid)
                         if result:
                             success = success + 1
+                            success_student.reg_number = reg_number
+
                         else:
                             failed = failed + 1
                             failed_student.reg_number = reg_number
@@ -453,7 +457,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
         failed_student.reg_number = reg_number
         failed_student.reason = "Data processing error , UAA service not found"
 
-    return success, failed, failed_student
+    return success, failed, failed_student, success_student
 
 
 def attach_coursework_listener(target, registration_number, first_name, middle_name, last_name, gender, by_law_uid):
@@ -629,11 +633,9 @@ def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
 
 
 def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
-    print('8')
 
     is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
     if is_inserted:
-        print('9')
 
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
@@ -648,5 +650,3 @@ def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
 
 def custom_round(value):
     return math.floor(value * 100) / 100
-def test():
-    print("Testing round")
