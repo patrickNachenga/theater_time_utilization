@@ -296,6 +296,9 @@ class StudentService:
             failed_students = []
 
             for row in inputs.marks:
+                if row.score is None:
+                    continue
+
                 reg_number = row.registration_number
                 score = float(row.score)
 
