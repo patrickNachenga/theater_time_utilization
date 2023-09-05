@@ -161,7 +161,11 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             else:
                 program_category_id = program.program_category.id
                 result = session.query(Program).filter(Program.program_category_id == program_category_id).all()
-                return result
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Program Retrieved successfully",
+                    data=ProgramListNode(items=result, total_count=result.count()))
 
     @staticmethod
     def get_programs_by_department(department_uid: str) -> Response[ProgramListNode]:
