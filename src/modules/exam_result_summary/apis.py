@@ -58,8 +58,9 @@ class ExamResultSummaryQuery:
 @strawberry.type
 class ExamResultSummaryMutation:
     @strawberry.field()
-    def change_result_stage(self,result_summary_uid: str, stage: int) -> Response[ExamResultSummaryNode]:
+    def change_result_stage(self,result_summary_uid: str, stage: str) -> Response[ExamResultSummaryNode]:
         try:
+
             result = ExamResultSummaryService.change_result_stage(result_summary_uid, stage)
             return Response(
                 status=True,

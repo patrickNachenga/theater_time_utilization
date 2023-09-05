@@ -1,7 +1,7 @@
 from typing import List
 
 from src.db.session import session_scope
-from src.models import ExamResultSummary
+from src.models import ExamResultSummary, Process, Workflow, State, ProcessFlow
 from src.modules import CRUDBase
 from src.types import ExamResultSummaryInput, ExamResultSummarySearchCriteria
 
@@ -43,11 +43,36 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             return result
 
     @staticmethod
-    def change_result_stage(result_summary_uid: str, stage: int):
+    def change_result_stage(result_summary_uid: str, stage: str) -> bool:
+        # check stage validit
+
         with session_scope() as session:
-            result = session.query(ExamResultSummary).filter(ExamResultSummary.id == result_summary_uid).update(
+            result_summary = session.query(ExamResultSummary).filter(
+                ExamResultSummary.uid == result_summary_uid).first()
+
+            # update result summary exam status
+            session.query(ExamResultSummary).filter(ExamResultSummary.uid == result_summary_uid).update(
                 {"exam_status": stage})
-            return result
+            process = session.query(Process).filter(Process.process_unique_uid == result_summary_uid).first()
+            # create process if it does not exist
+            if process is None:
+                work_flow = session.query(Workflow).filter(Workflow.name == 'EXAM_FORWARDING').first()
+                process = Process(
+                    process_unique_uid=result_summary.uid,
+                    workflow=work_flow,
+                    description='EXAM_FORWARDING'
+                )
+                session.add(process)
+                session.commit()
+            # crate process flow progress
+            state = session.query(State).filter(State.label == stage).first()
+            process_flow = ProcessFlow(
+                state=state,
+                process=process
+            )
+            session.add(process_flow)
+            session.commit()
+            return True
 
 
 ExamResultSummaryCrud = ExamResultSummaryService(ExamResultSummary)
