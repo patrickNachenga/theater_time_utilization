@@ -91,7 +91,7 @@ class IntentionToSubmitRequirementMutation:
                 message="No Intention To Submit Requirement found",
                 data=None)
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_SEMINAR_TYPE"])])
+    @strawberry.mutation()
     async def remove_intention_to_submit_requirement(self, uid: str) -> Response[None]:
         """
         Remove Seminar Type by UID

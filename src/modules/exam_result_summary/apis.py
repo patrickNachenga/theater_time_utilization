@@ -54,3 +54,24 @@ class ExamResultSummaryQuery:
                 message="Failed to retrieve exam result summaries",
                 data=[]
             )
+
+@strawberry.type
+class ExamResultSummaryMutation:
+    @strawberry.field()
+    def change_result_stage(self,result_summary_uid: str, stage: int) -> Response[ExamResultSummaryNode]:
+        try:
+            result = ExamResultSummaryService.change_result_stage(result_summary_uid, stage)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Action Successfully",
+                data=result
+            )
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Action Failed",
+                data=[]
+            )

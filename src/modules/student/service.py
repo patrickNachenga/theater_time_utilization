@@ -89,7 +89,6 @@ class StudentService:
         """
         Retrieve all students located to a particular allocation
         """
-        print('tttt')
         with session_scope() as session:
             student_uids = session.query(StudentCourseRegistration.student_uid). \
                 join(ProgramCourse). \
@@ -133,7 +132,7 @@ class StudentService:
                     ue_results = session.query(ExamResult).filter(
                         ExamResult.program_course_id == allocation.program_course.id,
                         ExamResult.exam_category_id == exam_category,
-                        ExamResult.assessment_number == assessment_number).all()
+                        ExamResult.number_of_sitting == assessment_number).all()
                     ue_results_dict = {ue_result.student_uid: ue_result.score for ue_result in ue_results}
                     # Update the data list with marks from ue_results
                     for item in data['data']:
