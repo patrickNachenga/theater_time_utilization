@@ -47,6 +47,19 @@ class IntentionToSubmitQuery:
             data=result)
 
     @strawberry.field()
+    def get_thesis(self, pagination: PaginationInput, info: Info) \
+            -> Response[IntentionToSubmitStudentListNode]:
+        try:
+            result = IntentionToSubmitCrud.get_thesis(info, pagination, ['title', 'plagiarism_status'])
+        except Exception as e:
+            print(e)
+            result = IntentionToSubmitStudentListNode(items=[], total_count=0)
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Intention to Submit THESIS Retrieved Successfully",
+            data=result)
+    @strawberry.field()
     def get_all_intention_to_submit(self) -> Response[List[IntentionToSubmitNode]]:
         try:
             return IntentionToSubmitService.get_all_intention_to_submit()

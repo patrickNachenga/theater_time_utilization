@@ -49,7 +49,7 @@ class StudentManuscriptQuery:
                 message="Student Manuscript not found",
                 data=None)
     @strawberry.field()
-    def get_student_manuscript_by_uid(self, uid: str) -> Response[List[StudentManuscriptNode]]:
+    def get_student_manuscript_by_uid(self, uid: str) -> Response[StudentManuscriptNode]:
         try:
             result = StudentManuscriptService(StudentManuscript).get_student_manuscript_by_uid(uid)
         except Exception as e:
