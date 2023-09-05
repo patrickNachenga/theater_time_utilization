@@ -17,7 +17,7 @@ from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, AllStudentSeminarNode, \
-    AllStudentSeminarListNode, PaginationInput, PaginationSeminarInput
+    AllStudentSeminarListNode, PaginationInput, PaginationSeminarInput, StudentSeminarMarksInput
 
 
 class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, StudentSeminarInput]):
@@ -296,7 +296,7 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                             data=student_seminar_list,
                             message=f"Successfully to {action_name} Student Seminar")
 
-    def update_student_seminar_marks(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarNode]:
+    def update_student_seminar_marks(self, inputs: List[StudentSeminarMarksInput]) -> Response[StudentSeminarNode]:
         """
         Update Student Seminar Marks
         :param inputs:
@@ -317,18 +317,18 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             for inputItem in inputs:
 
                 # Verify and get supplied Seminar Type uid. and get existed Seminar Type id from returned Seminar Type model
-                seminar_type = SeminarTypeService.get_seminar_type_by_uid(inputItem.seminar_types_uid)
-                if seminar_type is None:
-                    return Response(
-                        status=False,
-                        code=ResponseCode.FAILURE,
-                        data=StudentSeminarNode,
-                        message="You have submitted incorrect Seminar Type details"
-                    )
+                # seminar_type = SeminarTypeService.get_seminar_type_by_uid(inputItem.seminar_types_uid)
+                # if seminar_type is None:
+                #     return Response(
+                #         status=False,
+                #         code=ResponseCode.FAILURE,
+                #         data=StudentSeminarNode,
+                #         message="You have submitted incorrect Seminar Type details"
+                #     )
                 # print(inputItem.student_uid)
                 # print(seminar_type.id)
-                student_seminar_exist = self.check_uniqueness(student_uid=inputItem.student_uid,
-                                                              seminar_type_id=seminar_type.id)
+                # student_seminar_exist = self.check_uniqueness(student_uid=inputItem.student_uid,
+                #                                               seminar_type_id=seminar_type.id)
 
                 if inputItem.uid is None:
                     # if student_seminar_exist:

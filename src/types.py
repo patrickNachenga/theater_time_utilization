@@ -1351,3 +1351,8 @@ class ThesisNode:
 class ThesisListNode:
     items: List[ThesisNode]
     total_count: int
+
+@strawberry.input(description="Student Seminar Input")
+class StudentSeminarMarksInput:
+    uid: str
+    seminar_marks: Optional[float] = 0

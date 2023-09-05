@@ -8,7 +8,7 @@ from src.models import StudentSeminar
 from src.modules.student_seminar.service import StudentSeminarService, StudentSeminarCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarListNode, PaginationInput, \
+from src.types import StudentSeminarInput, StudentSeminarNode, StudentSeminarMarksInput, PaginationInput, \
     StudentSeminarsInputNode, AllStudentSeminarNode, AllStudentSeminarListNode, PaginationSeminarInput
 
 
@@ -123,7 +123,7 @@ class StudentSeminarMutation:
                 data=None)
 
     @strawberry.field()
-    def update_seminar_marks(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarNode]:
+    def update_seminar_marks(self, inputs: List[StudentSeminarMarksInput]) -> Response[StudentSeminarNode]:
         try:
             return StudentSeminarService(StudentSeminar).update_student_seminar_marks(inputs)
         except Exception as e:
