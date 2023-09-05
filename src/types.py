@@ -1343,6 +1343,8 @@ class ThesisNode:
     plagiarism_status: int
     plagiarism_percentage: float
     status: int
+    no_of_seminars: Optional[int] = 0
+    no_of_manuscripts: Optional[int] = 0
 
 
 @strawberry.type(description="Paginated Intention to Submit")
