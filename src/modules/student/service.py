@@ -125,9 +125,8 @@ class StudentService:
                 print(e)
                 response = None
             if response.status_code == 200:
-                data = response.json()
-                data["program_course"] = program_course
-
+                response_data = response.json()
+                data = {'data': response_data, "program_course": program_course}
                 if session.query(ExamCategory).filter(ExamCategory.id == exam_category).first().is_ue:
                     ue_results = session.query(ExamResult).filter(
                         ExamResult.program_course_id == allocation.program_course.id,
