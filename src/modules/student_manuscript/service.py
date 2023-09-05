@@ -136,7 +136,8 @@ class StudentManuscriptService(CRUDBase[StudentManuscript, StudentManuscriptInpu
         """
         with session_scope() as session:
             stmt = select(StudentManuscript).where(
-                (StudentManuscript.uid == uid) & (StudentManuscript.deleted_at.is_(None)))
+                (StudentManuscript.uid == uid) &
+                (StudentManuscript.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 

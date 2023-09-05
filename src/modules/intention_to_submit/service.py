@@ -25,8 +25,8 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
 
     @staticmethod
     def get_all_intention_to_submit_paginated(info: Info, pagination, search_columns: List[str],
-                                          relationships_to_join: List[str] = None,
-                                          unique_search: List[dict] = None) -> [IntentionToSubmitStudentListNode]:
+                                              relationships_to_join: List[str] = None,
+                                              unique_search: List[dict] = None) -> [IntentionToSubmitStudentListNode]:
         """
             Get all Thesis Paginated
         :return:
@@ -38,7 +38,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
             #         and_(IntentionToSubmit.deleted_at.is_(None), IntentionToSubmit.status == pagination.status))
             # else:
             query = session.query(IntentionToSubmit).filter(
-                    IntentionToSubmit.deleted_at.is_(None))
+                IntentionToSubmit.deleted_at.is_(None))
             search_q = pagination.search if pagination.search else ''
             #
             # # filter condition if specified unique column
@@ -90,6 +90,88 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
             return IntentionToSubmitStudentListNode(items=items, total_count=total_count)
 
     @staticmethod
+    def get_thesis(info: Info, pagination, search_columns: List[str],
+                   relationships_to_join: List[str] = None,
+                   unique_search: List[dict] = None) -> [IntentionToSubmitStudentListNode]:
+        """
+            Get all Thesis Paginated
+        :return:
+        """
+        with session_scope() as session:
+
+            # if pagination.status:
+            #     query = session.query(IntentionToSubmit).filter(
+            #         and_(IntentionToSubmit.deleted_at.is_(None), IntentionToSubmit.status == pagination.status))
+            # else:
+            # Set the Content-Type header to indicate that the request body is JSON
+            headers = {
+                "Content-Type": "application/json"
+            }
+            query = session.query(IntentionToSubmit).filter(
+                IntentionToSubmit.deleted_at.is_(None))
+            search_q = pagination.search if pagination.search else ''
+            #
+            # # filter condition if specified unique column
+            unique_filter_conditions = []
+            if unique_search:
+                for condition in unique_search:
+                    for column, value in condition.items():
+                        unique_filter_conditions.append(getattr(IntentionToSubmit, column) == value)
+            if unique_filter_conditions:
+                query = query.filter(and_(*unique_filter_conditions))
+            #
+            # # Apply filters
+            filter_conditions = []
+            for column in inspect(IntentionToSubmit).columns:
+                if column.name in search_columns:
+                    filter_conditions.append(
+                        cast(getattr(IntentionToSubmit, column.name), String).ilike(f"%{str(search_q)}%"))
+
+            if filter_conditions:
+                query = query.filter(or_(*filter_conditions))
+            #
+            total_count = query.count()
+            print(total_count)
+            #
+            # # Apply pagination
+            query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
+            # Fetch items and total count
+            if relationships_to_join and len(relationships_to_join) > 0:
+                for relationship_name in relationships_to_join:
+                    query = query.options(joinedload(relationship_name))
+            items = query.all()
+            #
+            if items:
+                intention_to_submit_list = []
+                for x in items:
+                    print(x.student_uid)
+
+                    params = {"uids": [str(x.student_uid)]}
+                    # Serialize the data to JSON
+                    payload = json.dumps(params)
+
+                    response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                             headers=headers)
+                    response.raise_for_status()
+                    response_data = response.json()
+
+                    if response.status_code == 200:
+                        print(response_data)
+                        # registration_number = json_data["data"][0]["registration_number"]
+                        print(response_data[0]['registration_number'])
+                        print(response_data[0]['registration_number'])
+                        print(response_data[0]['full_name'])
+                        print(response_data[0]['programme_uid'])
+                        # response_data = response.json()
+                        # info = response_data['data'][0]
+                        x.registration_number = response_data[0]['registration_number']
+                        x.full_name = response_data[0]['full_name']
+                # print(response_data)
+            session.close()
+
+            return IntentionToSubmitStudentListNode(items=items, total_count=total_count)
+
+    @staticmethod
     def get_all_intention_to_submit() -> Response[List[IntentionToSubmitNode]]:
         """
         Get Thesis of all student
@@ -107,10 +189,12 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
             if intention_to_submits:
                 student_seminar_list = []
                 for x in intention_to_submits:
-                    params = {"uid": str(x.student_uid)}
-                    response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                    params = {"uids": [str(x.student_uid)]}
+                    # response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                    response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
                     response.raise_for_status()
                     response_data = response.json()
+                    print(response_data)
                     if response.status_code == 200:
                         print(response_data["user"]['username'])
                         response_data = response.json()
@@ -158,10 +242,9 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
         :return:
         """
         with session_scope() as session:
-
             stmt = select(IntentionToSubmit).where((
-                        IntentionToSubmit.student_uid == student_uid) & (
-                    IntentionToSubmit.deleted_at.is_(None)))
+                                                           IntentionToSubmit.student_uid == student_uid) & (
+                                                       IntentionToSubmit.deleted_at.is_(None)))
 
             result = session.scalars(stmt)
             # for seminar in result:
@@ -190,7 +273,8 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
         :return:
         """
         with session_scope() as session:
-            stmt = select(IntentionToSubmit).where((IntentionToSubmit.uid == uid) & (IntentionToSubmit.deleted_at.is_(None)))
+            stmt = select(IntentionToSubmit).where(
+                (IntentionToSubmit.uid == uid) & (IntentionToSubmit.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
