@@ -14,7 +14,7 @@ from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
     AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult, ProgramCourseAssessment, \
-    ExamResultSummary, ByLaw
+    ExamResultSummary, ByLaw, Process, State, TransitionMeta
 from src.modules.by_law.by_law_classes import BYLAW
 from src.modules.by_law.service import ByLawService
 from src.types import UploadResponse, FailedStudent, SuccessStudent
@@ -496,7 +496,6 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
 
             exam_result_summary.cw_score = custom_round(total_score)
             if total_theory_score > 0:
-
                 exam_result_summary.cw_theory = custom_round(total_theory_score)
 
             if total_practical_score > 0:
@@ -537,7 +536,7 @@ def attach_coursework_listener(target, registration_number, first_name, middle_n
             summary_instance = new_exam_result
             session.add(new_exam_result)
 
-        grade_result(session, target, by_law_uid, summary_instance,program_type)
+        grade_result(session, target, by_law_uid, summary_instance, program_type)
         session.commit()
 
 
@@ -584,7 +583,7 @@ def attach_exam_result_listener(target, by_law_uid):
             exam_result_summary.ue_oral = custom_round(total_ue_oral)
             exam_result_summary.ue_score = custom_round(total_score)
             exam_result_summary.total_score = exam_result_summary.cw_score + exam_result_summary.ue_score
-            grade_result(session, target, by_law_uid, exam_result_summary,program_type)
+            grade_result(session, target, by_law_uid, exam_result_summary, program_type)
 
         else:
             pass
@@ -632,15 +631,13 @@ def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
     return True
 
 
-def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
-
+def grade_result(session, target, by_law_uid, exam_result_summary, program_type):
     is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
     if is_inserted:
-
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
         by_law = BYLAW[by_law_code]()
-        performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score,program_type)
+        performance_grade = by_law.get_course_performance_grade(exam_result_summary.total_score, program_type)
         exam_result_summary.grade = performance_grade['grade']
         exam_result_summary.grade_point = performance_grade['grade_point']
         exam_result_summary.grade_remark = performance_grade['status']
@@ -650,3 +647,27 @@ def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
 
 def custom_round(value):
     return math.floor(value * 100) / 100
+
+
+def can_progress(session, process: Process, new_state: State):
+    # get the current process workflow
+    workflow = process.workflow
+
+    # Get current state
+    current_state = process.current_state
+
+    if not current_state:
+        return True
+
+    # Query Transition Meta Table for a record with matching workflow_id, source_state_id, destination_state_id
+    transition = session.query(TransitionMeta) \
+        .filter(and_(TransitionMeta.workflow_id == workflow.id,
+                     TransitionMeta.source_state_id == current_state.state_id,
+                     TransitionMeta.destination_state_id == new_state.state_id)) \
+        .first()
+
+    # If the query returns a TransitionMeta instance, we can transition from current state to new state
+    if transition:
+        return True
+    else:
+        return False

@@ -78,3 +78,5 @@ class ProcessFlow(BaseModel):
     state = relationship("State", lazy='subquery', back_populates="process_flows")
     process = relationship("Process", lazy='subquery', back_populates="process_flows")
     comment = Column(String(255), nullable=True)
+
+
