@@ -13,15 +13,37 @@ from src.core.config import settings
 from src.db.session import session_scope
 from src.modules.seminar_types.service import SeminarTypeService
 from src.models.student_seminar import StudentSeminar
+from src.modules.student_seminar.service import StudentSeminarService
 from src.models.intention_to_submit import IntentionToSubmit
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, IntentionToSubmitNode, IntentionToSubmitInput, \
-    IntentionToSubmitListNode, IntentionToSubmitStudentListNode
+    IntentionToSubmitListNode, IntentionToSubmitStudentListNode, ThesisNode, ThesisListNode
 
 
 class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInput, IntentionToSubmitNode]):
+
+    @staticmethod
+    def check_requirements(student_uid: str) -> List[IntentionToSubmit]:
+        """
+        Get Intention to Submit
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(IntentionToSubmit).where((
+                                                           IntentionToSubmit.student_uid == student_uid) & (
+                                                       IntentionToSubmit.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+
+            # check if request is made for Intention to submit
+            if result:
+                print("Student Seminar ID:")
+
+            # for seminar in result:
+            #     print("Student Seminar ID:", seminar.seminar_type_id)
+
+            return result.all()
 
     @staticmethod
     def get_all_intention_to_submit_paginated(info: Info, pagination, search_columns: List[str],
@@ -92,7 +114,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
     @staticmethod
     def get_thesis(info: Info, pagination, search_columns: List[str],
                    relationships_to_join: List[str] = None,
-                   unique_search: List[dict] = None) -> [IntentionToSubmitStudentListNode]:
+                   unique_search: List[dict] = None) -> [ThesisListNode]:
         """
             Get all Thesis Paginated
         :return:
@@ -144,7 +166,11 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
             if items:
                 intention_to_submit_list = []
                 for x in items:
+                    # get seminar count
+                    student_seminar = StudentSeminarService.get_student_seminar_by_student(x.student_uid)
+                    count = student_seminar.count(1)
                     print(x.student_uid)
+                    print(student_seminar)
 
                     params = {"uids": [str(x.student_uid)]}
                     # Serialize the data to JSON
@@ -158,18 +184,19 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                     if response.status_code == 200:
                         print(response_data)
                         # registration_number = json_data["data"][0]["registration_number"]
-                        print(response_data[0]['registration_number'])
-                        print(response_data[0]['registration_number'])
-                        print(response_data[0]['full_name'])
-                        print(response_data[0]['programme_uid'])
+                        # print(response_data[0]['registration_number'])
+                        # print(response_data[0]['registration_number'])
+                        # print(response_data[0]['full_name'])
+                        # print(response_data[0]['programme_uid'])
                         # response_data = response.json()
                         # info = response_data['data'][0]
                         x.registration_number = response_data[0]['registration_number']
                         x.full_name = response_data[0]['full_name']
+                        x.program_uid = response_data[0]['programme_uid']
                 # print(response_data)
             session.close()
 
-            return IntentionToSubmitStudentListNode(items=items, total_count=total_count)
+            return ThesisListNode(items=items, total_count=total_count)
 
     @staticmethod
     def get_all_intention_to_submit() -> Response[List[IntentionToSubmitNode]]:

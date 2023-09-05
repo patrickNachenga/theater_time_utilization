@@ -182,6 +182,24 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             return result.all()
 
     @staticmethod
+    def get_student_seminar_by_student(student_uid) -> StudentSeminar:
+        """
+        Get Student seminar  by Student Uid
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(StudentSeminar).where((
+                        StudentSeminar.student_uid == student_uid) & (
+                    StudentSeminar.deleted_at.is_(None)))
+
+            result = session.scalars(stmt)
+            # for seminar in result:
+            #     print("Student Seminar ID:", seminar.seminar_type_id)
+
+            return result.all()
+
+
+    @staticmethod
     def get_student_seminar_by_uids(uids: List[str]) -> List[StudentSeminar]:
         """
         Get Student Seminar by uids

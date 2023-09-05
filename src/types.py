@@ -1106,12 +1106,12 @@ class SeminarTypeListNode:
 class StudentSeminarInput:
     uid: Optional[str] = None
     student_uid: str
-    title: str
+    title: Optional[str] = None
     seminar_date: Optional[datetime] = None
     seminar_types_uid: str
     is_pass: Optional[bool] = False
     seminar_marks: Optional[float] = 0
-    description: str
+    description: Optional[str] = None
     status: Optional[int] = 0
 
 
@@ -1230,7 +1230,7 @@ class StudentManuscriptNode:
 class StudentManuscriptInput:
     uid: Optional[str] = None
     student_uid: str
-    title: str
+    title: Optional[str] = None
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
     status: Optional[int] = 0
@@ -1328,4 +1328,24 @@ class IntentionToSubmitRequirementNode:
 @strawberry.type(description="Intention To Submit Requirement Paginated Output")
 class IntentionToSubmitRequirementListNode:
     items: List[IntentionToSubmitRequirementNode]
+    total_count: int
+
+@strawberry.type(description="Student Submission paginated output")
+class ThesisNode:
+    uid: Optional[str] = None
+    student_uid: str
+    full_name: str
+    registration_number: str
+    program_uid: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int
+
+
+@strawberry.type(description="Paginated Intention to Submit")
+class ThesisListNode:
+    items: List[ThesisNode]
     total_count: int
