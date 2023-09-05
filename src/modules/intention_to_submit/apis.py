@@ -11,7 +11,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import StudentSeminarInput, StudentSeminarNode, IntentionToSubmitNode, IntentionToSubmitInput, \
     StudentSeminarsInputNode, IntentionToSubmitListNode, IntentionToSubmitListNode, PaginationSeminarInput, \
-    PaginationInput, IntentionToSubmitStudentListNode
+    PaginationInput, IntentionToSubmitStudentListNode, ThesisNode, ThesisListNode
 
 
 @strawberry.type
@@ -40,6 +40,20 @@ class IntentionToSubmitQuery:
         except Exception as e:
             print(e)
             result = IntentionToSubmitStudentListNode(items=[], total_count=0)
+        return Response(
+            status=True,
+            code=ResponseCode.SUCCESS,
+            message="Intention to Submit THESIS Retrieved Successfully",
+            data=result)
+
+    @strawberry.field()
+    def get_thesis(self, pagination: PaginationInput, info: Info) \
+            -> Response[ThesisListNode]:
+        try:
+            result = IntentionToSubmitCrud.get_thesis(info, pagination, ['title', 'plagiarism_status'])
+        except Exception as e:
+            print(e)
+            result = ThesisListNode(items=[], total_count=0)
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
@@ -76,6 +90,24 @@ class IntentionToSubmitQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Intention to Submit not found",
+                data=None)
+
+    @strawberry.field()
+    def check_if_thesis_requirement_is_met(self, student_uid: str) -> Response[List[IntentionToSubmitNode]]:
+        # try:
+        result = IntentionToSubmitService.check_requirements(student_uid)
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="All Requirements are meet",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Intention to submit not found",
                 data=None)
 
     @strawberry.field()

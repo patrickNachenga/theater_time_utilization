@@ -122,6 +122,17 @@ class StudentSeminarMutation:
                 message="Student Seminar not found",
                 data=None)
 
+    @strawberry.field()
+    def update_seminar_marks(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarNode]:
+        try:
+            return StudentSeminarService(StudentSeminar).update_student_seminar_marks(inputs)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Student Seminar marks not found",
+                data=None)
     @strawberry.mutation()
     async def remove_student_seminar(self, uid: str) -> Response[None]:
         """

@@ -5,7 +5,7 @@ from typing import List
 import pendulum
 import requests
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, desc, and_, inspect, String, cast, or_
+from sqlalchemy import select, desc, and_, inspect, String, cast, or_, true, false
 from sqlalchemy.orm import joinedload
 
 from src.core.security import Info
@@ -182,6 +182,24 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
             return result.all()
 
     @staticmethod
+    def get_student_seminar_by_student(student_uid) -> StudentSeminar:
+        """
+        Get Student seminar  by Student Uid
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(StudentSeminar).where((
+                        StudentSeminar.student_uid == student_uid) & (
+                    StudentSeminar.deleted_at.is_(None)))
+
+            result = session.scalars(stmt)
+            # for seminar in result:
+            #     print("Student Seminar ID:", seminar.seminar_type_id)
+
+            return result.all()
+
+
+    @staticmethod
     def get_student_seminar_by_uids(uids: List[str]) -> List[StudentSeminar]:
         """
         Get Student Seminar by uids
@@ -264,6 +282,74 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                     student_seminar = next(
                         filter(lambda student_seminar: str(student_seminar.uid) == str(inputItem.uid),
                                existed_student_seminar), None)
+                    if student_seminar:
+                        obj_data = jsonable_encoder(inputItem)
+                        for key, value in obj_data.items():
+                            setattr(student_seminar, key, value)
+                        student_seminar_list.append(student_seminar)
+            session.add_all(student_seminar_list)
+            count = session.query(StudentSeminar).filter(StudentSeminar.deleted_at.is_(None)).count()
+            session.commit()
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=student_seminar_list,
+                            message=f"Successfully to {action_name} Student Seminar")
+
+    def update_student_seminar_marks(self, inputs: List[StudentSeminarInput]) -> Response[StudentSeminarNode]:
+        """
+        Update Student Seminar Marks
+        :param inputs:
+        :return:
+        """
+        student_seminar_list = []
+        action_name = "Register"
+        with session_scope() as session:
+            # Check if the Student Seminar already exist using uid
+            # existed_student_seminar_list = self.get_student_seminar_by_names(
+            #     [student_seminar.name for student_seminar in inputs if student_seminar.uid is None])
+            # if existed_student_seminar_list:
+            #     return Response(status=False, code=ResponseCode.DUPLICATE,
+            #                     data=existed_student_seminar_list,
+            #                     message="Student Seminar Already Exists")
+            # check for existing seminar types using uid
+            existed_student_seminar = self.get_student_seminar_by_uids([inputItem.uid for inputItem in inputs])
+            for inputItem in inputs:
+
+                # Verify and get supplied Seminar Type uid. and get existed Seminar Type id from returned Seminar Type model
+                seminar_type = SeminarTypeService.get_seminar_type_by_uid(inputItem.seminar_types_uid)
+                if seminar_type is None:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=StudentSeminarNode,
+                        message="You have submitted incorrect Seminar Type details"
+                    )
+                # print(inputItem.student_uid)
+                # print(seminar_type.id)
+                student_seminar_exist = self.check_uniqueness(student_uid=inputItem.student_uid,
+                                                              seminar_type_id=seminar_type.id)
+
+                if inputItem.uid is None:
+                    # if student_seminar_exist:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        data=StudentSeminarNode,
+                        message="This Student Seminar Selected"
+                    )
+                else:
+                    action_name = "Update"
+                    # print("ddddddddddd")
+                    # print(inputItem.seminar_marks)
+                    tolerance = 0.01  # Adjust the tolerance as needed
+                    if inputItem.seminar_marks >= 50 - tolerance:
+                        inputItem.is_pass = True
+                    else:
+                        inputItem.is_pass = False
+
+                    student_seminar = next(
+                        filter(lambda student_seminar: str(student_seminar.uid) == str(inputItem.uid),
+                               existed_student_seminar), None)
+
                     if student_seminar:
                         obj_data = jsonable_encoder(inputItem)
                         for key, value in obj_data.items():

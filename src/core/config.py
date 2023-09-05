@@ -35,17 +35,18 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     REDIS_HOST = os.environ.get("REDIS_HOST")
     REDIS_PORT = os.environ.get("REDIS_PORT")
+    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
     LOGGING_FILE_NAME = 'logs'
-    UAA_URi : str = os.environ.get("UAA_URi")
-    SR2_TOKEN : str = os.environ.get("SR2_TOKEN")
-    SR2_SERVICE_URL : str = os.environ.get("SR2_SERVICE_URL")
-    MOODLE_SITE_URL : str = os.environ.get("MOODLE_SITE_URL")
-    MOODLE_SITE_DOMAIN : str= os.environ.get("MOODLE_SITE_DOMAIN")
-    MOODLE_TOKEN : str = os.environ.get("MOODLE_TOKEN")
-    RABBIT_HOST : str = os.environ.get("RABBIT_HOST")
+    UAA_URi: str = os.environ.get("UAA_URi")
+    SR2_TOKEN: str = os.environ.get("SR2_TOKEN")
+    SR2_SERVICE_URL: str = os.environ.get("SR2_SERVICE_URL")
+    MOODLE_SITE_URL: str = os.environ.get("MOODLE_SITE_URL")
+    MOODLE_SITE_DOMAIN: str = os.environ.get("MOODLE_SITE_DOMAIN")
+    MOODLE_TOKEN: str = os.environ.get("MOODLE_TOKEN")
+    RABBIT_HOST: str = os.environ.get("RABBIT_HOST")
     RABBIT_PORT = int(os.environ.get("RABBIT_PORT"))
-    RABBIT_USERNAME : str = os.environ.get("RABBIT_USERNAME")
-    RABBIT_PASSWORD : str = os.environ.get("RABBIT_PASSWORD")
+    RABBIT_USERNAME: str = os.environ.get("RABBIT_USERNAME")
+    RABBIT_PASSWORD: str = os.environ.get("RABBIT_PASSWORD")
 
 
 settings = Settings()
@@ -55,6 +56,12 @@ QUEUES = [
         "name": "sua-esb-permission-queue",
         "exchange": "sua-esb-permission-exchange",
         "routing_key": "sua-esb-permission-routing-key",
+        "type": "fanout"
+    },
+    {
+        "name": "sua-esb-audit-log-queue",
+        "exchange": "sua-esb-audit-log-exchange",
+        "routing_key": "sua-esb-audit-log-routing-key",
         "type": "fanout"
     },
 ]

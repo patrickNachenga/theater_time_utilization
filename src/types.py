@@ -538,10 +538,8 @@ class PaginatedCourse:
 class StudentProgramChangeInput:
     uid: Optional[str] = None
     student_uid: str
-    current_program_uid: str
     new_program_uid: str
     reason: str
-    current_registration_number: str
 
 
 @strawberry.type(description="Student Program Change  outputs")
@@ -984,7 +982,11 @@ class ExamToRegister:
 @strawberry.type
 class FailedStudent:
     reg_number: str
-    reason: str
+    reason: (str)
+@strawberry.type
+class SuccessStudent:
+    reg_number: str
+
 
 
 @strawberry.type
@@ -992,6 +994,7 @@ class UploadResponse:
     success: int
     failed: int
     failed_students: list[FailedStudent]
+    success_students: list[SuccessStudent]
 
 
 @strawberry.input
@@ -1103,12 +1106,12 @@ class SeminarTypeListNode:
 class StudentSeminarInput:
     uid: Optional[str] = None
     student_uid: str
-    title: str
+    title: Optional[str] = None
     seminar_date: Optional[datetime] = None
     seminar_types_uid: str
     is_pass: Optional[bool] = False
     seminar_marks: Optional[float] = 0
-    description: str
+    description: Optional[str] = None
     status: Optional[int] = 0
 
 
@@ -1220,18 +1223,18 @@ class StudentManuscriptNode:
     publication_date: Optional[datetime] = None
     description: str
     status: int
-    publication_status: int
+    publication_status: str
 
 
 @strawberry.input(description="Student Manuscript Input Node")
 class StudentManuscriptInput:
     uid: Optional[str] = None
     student_uid: str
-    title: str
+    title: Optional[str] = None
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
     status: Optional[int] = 0
-    publication_status: Optional[int] = 0
+    publication_status: Optional[str] = None
 
 
 @strawberry.type(description="Student Submission paginated output")
@@ -1292,7 +1295,7 @@ class StudentManuscriptAllNode:
     publication_date: Optional[datetime] = None
     description: str
     status: int
-    publication_status: int
+    publication_status: str
     full_name: str
     registration_number: str
 
@@ -1300,4 +1303,49 @@ class StudentManuscriptAllNode:
 @strawberry.type(description="Paginated Intention to Submit")
 class StudentManuscriptAllListNode:
     items: List[StudentManuscriptAllNode]
+    total_count: int
+
+
+@strawberry.input(description="Intention To Submit Requirement Input")
+class IntentionToSubmitRequirementInput:
+    uid: Optional[str] = None
+    minimum_manuscripts: Optional[int] = 0
+    minimum_seminars: Optional[int] = 0
+    seminar_pass_marks: Optional[float] = 0
+    life_span: Optional[int] = 0
+    program_category_uid: str
+
+
+@strawberry.type(description="Intention To Submit Requirement Output")
+class IntentionToSubmitRequirementNode:
+    uid: Optional[str] = None
+    minimum_manuscripts: Optional[int] = 0
+    minimum_seminars: Optional[int] = 0
+    seminar_pass_marks: Optional[float] = 0
+    life_span: Optional[int] = 0
+    program_category: ProgramCategoryNode
+
+@strawberry.type(description="Intention To Submit Requirement Paginated Output")
+class IntentionToSubmitRequirementListNode:
+    items: List[IntentionToSubmitRequirementNode]
+    total_count: int
+
+@strawberry.type(description="Student Submission paginated output")
+class ThesisNode:
+    uid: Optional[str] = None
+    student_uid: str
+    full_name: str
+    registration_number: str
+    program_uid: str
+    title: str
+    submission_date: Optional[datetime] = None
+    plagiarism_report: str
+    plagiarism_status: int
+    plagiarism_percentage: float
+    status: int
+
+
+@strawberry.type(description="Paginated Intention to Submit")
+class ThesisListNode:
+    items: List[ThesisNode]
     total_count: int

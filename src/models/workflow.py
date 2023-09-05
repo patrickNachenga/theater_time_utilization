@@ -2,7 +2,7 @@ import json
 import uuid
 
 from sqlalchemy import Column, String, PickleType, Integer, ForeignKey, DateTime, desc, CheckConstraint, \
-    UniqueConstraint, JSON
+    UniqueConstraint, JSON, Boolean, event, and_
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import Mutable, MutableList
 from sqlalchemy.orm import relationship, Mapped
@@ -48,9 +48,6 @@ class TransitionMeta(BaseModel):
     #     CheckConstraint(source_state_id != destination_state_id, name='check_different_states'),
     #     UniqueConstraint('source_state_id', 'destination_state_id', name='uix_source_destination'),
     # )
-    """
-    
-    """
 
 
 class Process(BaseModel):
@@ -81,3 +78,5 @@ class ProcessFlow(BaseModel):
     state = relationship("State", lazy='subquery', back_populates="process_flows")
     process = relationship("Process", lazy='subquery', back_populates="process_flows")
     comment = Column(String(255), nullable=True)
+
+

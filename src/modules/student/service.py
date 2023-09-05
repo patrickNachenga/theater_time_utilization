@@ -89,7 +89,6 @@ class StudentService:
         """
         Retrieve all students located to a particular allocation
         """
-        print('tttt')
         with session_scope() as session:
             student_uids = session.query(StudentCourseRegistration.student_uid). \
                 join(ProgramCourse). \
@@ -126,14 +125,13 @@ class StudentService:
                 print(e)
                 response = None
             if response.status_code == 200:
-                data = response.json()
-                data["program_course"] = program_course
-
+                response_data = response.json()
+                data = {'data': response_data, "program_course": program_course}
                 if session.query(ExamCategory).filter(ExamCategory.id == exam_category).first().is_ue:
                     ue_results = session.query(ExamResult).filter(
                         ExamResult.program_course_id == allocation.program_course.id,
                         ExamResult.exam_category_id == exam_category,
-                        ExamResult.assessment_number == assessment_number).all()
+                        ExamResult.number_of_sitting == assessment_number).all()
                     ue_results_dict = {ue_result.student_uid: ue_result.score for ue_result in ue_results}
                     # Update the data list with marks from ue_results
                     for item in data['data']:
@@ -295,12 +293,16 @@ class StudentService:
             success = 0
             failed = 0
             failed_students = []
+            success_students = []
 
             for row in inputs.marks:
+                if row.score is None:
+                    continue
+
                 reg_number = row.registration_number
                 score = float(row.score)
 
-                success_, failed_, failed_student = general_upload(students=students,
+                success_, failed_, failed_student,success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,
                                                                    out_off=out_off, weight=weight, is_ue=is_ue,
@@ -310,9 +312,12 @@ class StudentService:
                 failed = failed + failed_
                 if failed_student.reg_number is not None:
                     failed_students.append(failed_student)
+                if success_student.reg_number is not None:
+                    success_students.append(success_student)
             response_data = UploadResponse(
                 success=success,
                 failed=failed,
-                failed_students=failed_students
+                failed_students=failed_students,
+                success_students=success_students
             )
             return response_data

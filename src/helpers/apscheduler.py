@@ -1,7 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.helpers.utils import create_course_to_moodle, create_group_to_moodle, enroll_staff_to_moodle_course, \
-    enroll_student_to_moodle_course, enroll_student_to_moodle_group, test, enroll_staff_to_moodle_group
+ enroll_student_to_moodle_course, enroll_student_to_moodle_group, enroll_staff_to_moodle_group
 
 # Set up the scheduler
 scheduler = BackgroundScheduler()
