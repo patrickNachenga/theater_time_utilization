@@ -157,26 +157,37 @@ def enroll_staff_to_moodle_course():
         try:
             # Get data that course allocation not on moodle and program course already on moodle
             course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse) \
-                .filter(CourseAllocation.moodle_enrollment_status.is_(False)) \
+                .filter(CourseAllocation.moodle_course_enrollment_status.is_(False)) \
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
 
             if course_allocation:
-                params = {"uid": course_allocation.staff_uid}
-                response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
-                response.raise_for_status()
-                if response.status_code == 200:
-                    responseData = response.json()
-                    if responseData and responseData['user']['moodle_id']:
-                        moodle = MoodleApi()
-                        enrollment_status = moodle.enroll_user_as_user(
-                            user_id=responseData['user']['moodle_id'],
-                            course_id=course_allocation.program_course.course.moodle_id,
-                            role_name="editingteacher",
-                        )
+                # check if this staff already enrolled to this moodle course
+                staff_course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse).join(
+                    Course) \
+                    .filter(CourseAllocation.staff_uid == course_allocation.staff_uid) \
+                    .filter(CourseAllocation.program_course.has(
+                    ProgramCourse.course.id.is_(course_allocation.program_course.course.id))) \
+                    .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
+                    .order_by(desc(CourseAllocation.created_at)) \
+                    .first()
+
+                if not staff_course_allocation:
+                    params = {"uid": course_allocation.staff_uid}
+                    response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
+                    response.raise_for_status()
+                    if response.status_code == 200:
+                        responseData = response.json()
+                        if responseData and responseData['user']['moodle_id']:
+                            moodle = MoodleApi()
+                            enrollment_status = moodle.enroll_user_as_user(
+                                user_id=responseData['user']['moodle_id'],
+                                course_id=course_allocation.program_course.course.moodle_id,
+                                role_name="editingteacher",
+                            )
                         if enrollment_status:
-                            course_allocation.moodle_enrollment_status = True
+                            course_allocation.moodle_course_enrollment_status = True
                             session.add(course_allocation)
                             session.commit()
                         else:
@@ -219,6 +230,41 @@ def enroll_student_to_moodle_group():
                                   student_course_registration.uid)
         except Exception as e:
             print('--- Exception Occurred while enrolling student to Group.  ', str(e))
+
+
+def enroll_staff_to_moodle_group():
+    with session_scope() as session:
+        try:
+            # Get data that student group registration not on moodle and program course already on moodle
+            staff_course_allocation: CourseAllocation = session.query(CourseAllocation).join(
+                ProgramCourse) \
+                .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
+                .filter(CourseAllocation.moodle_group_enrollment_status.is_(False)) \
+                .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
+                .order_by(desc(CourseAllocation.created_at)) \
+                .first()
+
+            if staff_course_allocation:
+                params = {"uid": staff_course_allocation.staff_uid}
+                response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if responseData and responseData['user']['moodle_id']:
+                        moodle = MoodleApi()
+                        enrollment_status: bool = moodle.add_member_to_group(
+                            user_id=responseData['user']['moodle_id'],
+                            group_id=staff_course_allocation.program_course.moodle_id,
+                        )
+                        if enrollment_status:
+                            staff_course_allocation.moodle_group_enrollment_status = True
+                            session.add(staff_course_allocation)
+                            session.commit()
+                        else:
+                            print('--- Fail to Enroll Staff to Moodle Group --- on staff_course_allocation_uid:',
+                                  staff_course_allocation.uid)
+        except Exception as e:
+            print('--- Exception Occurred while enrolling staff to Group.  ', str(e))
 
 
 def get_current_semester():

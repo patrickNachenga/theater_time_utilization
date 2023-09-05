@@ -566,7 +566,7 @@ class MoodleApi:
 
     def get_user_attempts_on_quiz(self, quiz_id, grading_method, user_id):
         data = {
-            'wstoken': settings.MOODLE_TOKEN ,
+            'wstoken': settings.MOODLE_TOKEN,
             'wsfunction': 'mod_quiz_get_user_attempts',
             'moodlewsrestformat': 'json',
             'userid': user_id,
@@ -604,6 +604,40 @@ class MoodleApi:
             if current_res:
                 result.append(current_res)
         return result
+
+    def unroll_user_from_course(self, userId, courseId, RoleName):
+        enrollmentData = [
+            {
+                "roleid": self.get_role_id_by_short_name(RoleName),
+                "userid": userId,
+                "courseid": courseId,
+            }
+        ]
+
+        data = {
+            "wstoken": settings.MOODLE_TOKEN,
+            "wsfunction": "enrol_manual_unenrol_users",
+            "moodlewsrestformat": "json",
+            "enrolments": enrollmentData,
+        }
+
+        response = self.sendRequest(data)
+        http_status_code = response.status_code
+
+        if http_status_code == 200:
+            return True  # Unenrollment successful
+
+        if response is False:
+            # print("Failed to unenroll user.")
+            return False
+
+        responseData = response.json()
+
+        if "exception" in responseData:
+            # print("API Error:", responseData["message"])
+            return False
+        else:
+            return True
 
 # moodle_api = MoodleApi()
 # login_url = moodle_api.getloginurl("admin")
