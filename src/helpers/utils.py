@@ -625,7 +625,6 @@ def are_minimum_ue_exams_inserted(session, program_course_id, student_uid):
 def grade_result(session, target, by_law_uid, exam_result_summary,program_type):
     is_inserted = are_minimum_ue_exams_inserted(session, target.program_course_id, target.student_uid)
     if is_inserted:
-        print('4')
 
         # perform grading by_law_uid
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
