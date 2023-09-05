@@ -35,8 +35,9 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             user_h_program_uids = get_user_programs_headship(info)
             user_h_department_uids = get_user_departments_headship(info)
 
-            query = session.query(Program).filter(and_(Program.deleted_at.is_(None), or_(Program.uid.in_(user_h_program_uids),
-                                                  Program.department_uid.in_(user_h_department_uids))))
+            query = session.query(Program).filter(
+                and_(Program.deleted_at.is_(None), or_(Program.uid.in_(user_h_program_uids),
+                                                       Program.department_uid.in_(user_h_department_uids))))
             search_q = pagination.search if pagination.search else ''
 
             # filter condition if specified unique column
@@ -144,6 +145,23 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 desc(Program.updated_at))
             result = session.scalars(stmt)
             return result.all()
+
+    def get_programs_on_program_category(self, program_uid: str) -> Response[ProgramListNode]:
+        """
+            Get programs by depending on the supplied program category
+        :param:program_uid
+        :return:List[ProgramListNode]
+        """
+        with session_scope() as session:
+            program = self.get(program_uid)
+            if program is None:
+                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                data=ProgramListNode(items=[], total_count=0),
+                                message="Program Supplied Does not Exists")
+            else:
+                program_category_id = program.program_category.id
+                result = session.query(Program).filter(Program.program_category_id == program_category_id).all()
+                return result
 
     @staticmethod
     def get_programs_by_department(department_uid: str) -> Response[ProgramListNode]:
