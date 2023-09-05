@@ -155,8 +155,8 @@ class MoodleApiCallQuery:
                         response.raise_for_status()
                         if response.status_code == 200:
                             responseData = response.json()
-                            studentData = responseData['data']
-                            if studentData:
+                            studentData = responseData
+                            if len(studentData) > 0:
                                 # go to moodle for getting user attempt on quiz
                                 moodle = MoodleApi()
                                 user_moodle_ids = [student['user']['moodle_id'] for student in studentData if

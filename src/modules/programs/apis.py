@@ -100,6 +100,18 @@ class ProgramQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
+    def get_programs_on_program_category(self, program_uid: str) -> Response[ProgramListNode]:
+        try:
+            return ProgramCrud.get_programs_on_program_category(program_uid)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to get Programs",
+                data=ProgramListNode(items=[], total_count=0))
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
     def get_programs_by_department_uid(self, department_uid: str) -> Response[ProgramListNode]:
         try:
             result = ProgramService(Program).get_programs_by_department(department_uid)

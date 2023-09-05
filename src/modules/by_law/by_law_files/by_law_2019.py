@@ -52,7 +52,7 @@ class ByLaw2019:
                 grade_point = 0.08 * score - 1.2
                 return {'grade': 'B+', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
             if score >= 60:
-                grade_point = 0.02 * score - 9
+                grade_point = 0.2 * score - 9
                 return {'grade': 'B', 'status': 'Pass', 'grade_point': by_law_custom_round(grade_point),'description':'Pass'}
             if score >= 50:
                 grade_point = 0.1 * score - 3

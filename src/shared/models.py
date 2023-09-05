@@ -52,3 +52,16 @@ class UserAuthenticatedModel(BaseModel):
     authorities: Optional[List[str]] = None
     profile: Optional[UserModel] = None
     headships: Optional[UserHeadshipsModel] = None
+
+
+class StaffModel(BaseModel):
+    uid: Optional[UUID] = None
+    user: Optional[UserModel] = None
+
+
+class StudentModel(BaseModel):
+    uid: Optional[UUID] = None
+    registration_number: Optional[str] = None
+    programme_uid: Optional[str] = None
+    bylaw_uid: Optional[str] = None
+    user: Optional[UserModel] = None

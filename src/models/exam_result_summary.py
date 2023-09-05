@@ -31,7 +31,7 @@ class ExamResultSummary(BaseModel):
     grade_point: float = Column(Float, nullable=True, unique=False)
     grade_remark: str = Column(String, nullable=True, unique=False)
     number_of_sitting: int = Column(Integer, default =1, unique=False)
-    exam_status: int = Column(Boolean, nullable=True)
+    exam_status: str = Column(String, nullable=True)
     publish_status: int = Column(Boolean, nullable=True)
     publisher: str = Column(String, nullable=True)
     publish_date: Date = Column(Date, nullable=True)
