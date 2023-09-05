@@ -79,29 +79,4 @@ class ProcessFlow(BaseModel):
     process = relationship("Process", lazy='subquery', back_populates="process_flows")
     comment = Column(String(255), nullable=True)
 
-    def can_progress(self, process: Process, new_state: State):
-        # Assuming that we have session object from SQLAlchemy
-        from src.db.session import session_scope
-        with session_scope() as session:
 
-            # get the current process workflow
-            workflow = process.workflow
-
-            # Get current state
-            current_state = process.current_state
-
-            if not current_state:
-                return True
-
-            # Query Transition Meta Table for a record with matching workflow_id, source_state_id, destination_state_id
-            transition = session.query(TransitionMeta) \
-                .filter(and_(TransitionMeta.workflow_id == workflow.id,
-                             TransitionMeta.source_state_id == current_state.state_id,
-                             TransitionMeta.destination_state_id == new_state.state_id)) \
-                .first()
-
-            # If the query returns a TransitionMeta instance, we can transition from current state to new state
-            if transition:
-                return True
-            else:
-                return False
