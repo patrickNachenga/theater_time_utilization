@@ -100,6 +100,26 @@ class ProgramQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
+    def get_programs_on_program_category(self, program_uid: str) -> Response[ProgramListNode]:
+        try:
+            result = ProgramCrud.get_programs_on_program_category(program_uid)
+        except Exception as e:
+            print(e)
+            result = ProgramListNode(items=[], total_count=0)
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program not found",
+                data=None)
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
     def get_programs_by_department_uid(self, department_uid: str) -> Response[ProgramListNode]:
         try:
             result = ProgramService(Program).get_programs_by_department(department_uid)
