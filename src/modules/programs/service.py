@@ -165,7 +165,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Program Retrieved successfully",
-                    data=ProgramListNode(items=result, total_count=result.count()))
+                    data=ProgramListNode(items=result, total_count=len(result)))
 
     @staticmethod
     def get_programs_by_department(department_uid: str) -> Response[ProgramListNode]:

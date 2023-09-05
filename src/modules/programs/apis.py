@@ -107,8 +107,8 @@ class ProgramQuery:
             print(e)
             return Response(
                 status=False,
-                code=ResponseCode.NO_RECORD_FOUND,
-                message="Program not found",
+                code=ResponseCode.FAILURE,
+                message="Failed to get Programs",
                 data=ProgramListNode(items=[], total_count=0))
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
