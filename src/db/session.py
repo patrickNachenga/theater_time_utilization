@@ -49,10 +49,25 @@ SessionLocal = sessionmaker(autocommit=False, expire_on_commit=False, autoflush=
                             class_=CustomSession)
 
 
+class CustomSessionDeleted(Session):
+    def __init__(self, **options):
+        super(CustomSessionDeleted, self).__init__(**options)
+
+    def query(self, *entities, **kwargs):
+        return super(CustomSessionDeleted, self).query(*entities, **kwargs)
+
+
+SessionLocalDeleted = sessionmaker(autocommit=False, expire_on_commit=False, autoflush=False, bind=engine,
+                                   class_=CustomSessionDeleted)
+
+
 @contextmanager
-def session_scope():
+def session_scope(withDeleted: bool = False):
     """Provide a transactional scope around a series of operations."""
-    session = SessionLocal()
+    if withDeleted:
+        session = SessionLocalDeleted()
+    else:
+        session = SessionLocal()
     try:
         yield session
         session.commit()

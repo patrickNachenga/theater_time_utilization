@@ -308,9 +308,8 @@ class MoodleApi:
             'members[0][groupid]': group_id,
             'members[0][userid]': user_id
         }
-
         response = self.sendRequest(data)
-
+        print(response.json())
         if response is False:
             # Handle the error condition
             print('cURL Error: Failed to send the request.')
@@ -335,10 +334,6 @@ class MoodleApi:
             'enrolments[0][userid]': user_id,
             'enrolments[0][courseid]': course_id
         }
-
-        print(data)
-
-
 
         response = self.sendRequest(data)
         print(response.json())
@@ -605,10 +600,10 @@ class MoodleApi:
                 result.append(current_res)
         return result
 
-    def unroll_user_from_course(self, userId, courseId, RoleName):
+    def unroll_user_from_course(self, userId, courseId, roleName):
         enrollmentData = [
             {
-                "roleid": self.get_role_id_by_short_name(RoleName),
+                "roleid": self.get_role_id_by_short_name(roleName),
                 "userid": userId,
                 "courseid": courseId,
             }
@@ -621,9 +616,9 @@ class MoodleApi:
             "enrolments": enrollmentData,
         }
 
+
         response = self.sendRequest(data)
         http_status_code = response.status_code
-
         if http_status_code == 200:
             return True  # Unenrollment successful
 
