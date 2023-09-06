@@ -106,6 +106,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                         info = response_data['user']
                         x.registration_number = info['username']
                         x.full_name = info['first_name'] + " " + info['middle_name'] + " " + info['last_name']
+
                 # print(response_data)
             session.close()
 
@@ -168,7 +169,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                 for x in items:
                     # get seminar count
                     student_seminar = StudentSeminarService.get_student_seminar_by_student(x.student_uid)
-                    count = student_seminar.count(1)
+                    # count = student_seminar.count(1)
                     print(x.student_uid)
                     print(student_seminar)
 
@@ -193,6 +194,8 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                         x.registration_number = response_data[0]['registration_number']
                         x.full_name = response_data[0]['full_name']
                         x.program_uid = response_data[0]['programme_uid']
+                        x.no_of_seminars = count
+                        x.no_of_manuscripts = 12
                 # print(response_data)
             session.close()
 

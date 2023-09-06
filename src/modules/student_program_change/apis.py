@@ -28,8 +28,8 @@ class StudentProgramChangeCourseQuery:
         else:
             return Response(
                 status=False,
-                code=ResponseCode.NO_RECORD_FOUND,
-                message="Student Program Change not found",
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve student program change information",
                 data=None)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
