@@ -99,13 +99,14 @@ def create_group_to_moodle():
                 .filter(ProgramCourse.course.has(Course.moodle_id.isnot(None))) \
                 .order_by(desc(ProgramCourse.created_at)) \
                 .first()
+
             if program_course:
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
 
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
-                    group_name=f"{program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
+                    group_name=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
                     group_description=program_course.program_semester.semester,
                 )
                 if moodle_unit_id != 0:
@@ -152,6 +153,39 @@ def enroll_student_to_moodle_course():
             print('--- Exception Occurred while enrolling student to Moodle.  ', str(e))
 
 
+def unroll_student_to_moodle_course():
+    with session_scope(withDeleted=True) as session:
+        try:
+            # Get data that student course registration not on moodle and program course already on moodle
+            student_course_registration: StudentCourseRegistration = session. query(StudentCourseRegistration) \
+                .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(True)) \
+                .filter(StudentCourseRegistration.deleted_at.isnot(None)) \
+                .order_by(desc(StudentCourseRegistration.deleted_at)) \
+                .first()
+            if student_course_registration:
+                params = {"uid": student_course_registration.student_uid}
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if responseData and responseData["user"]['moodle_id']:
+                        moodle = MoodleApi()
+                        enrollment_status: bool = moodle.unroll_user_from_course(
+                            userId=responseData["user"]['moodle_id'],
+                            courseId=student_course_registration.program_course.course.moodle_id,
+                            roleName="student",
+                        )
+                        if enrollment_status:
+                            student_course_registration.moodle_course_enrollment_status = False
+                            session.add(student_course_registration)
+                            session.commit()
+                        else:
+                            print('--- Fail to Enroll Student to Moodle Course --- on student_course_registration_uid:',
+                                  student_course_registration.uid)
+        except Exception as e:
+            print('--- Exception Occurred while enrolling student to Moodle.  ', str(e))
+
+
 def enroll_staff_to_moodle_course():
     with session_scope() as session:
         try:
@@ -164,11 +198,12 @@ def enroll_staff_to_moodle_course():
 
             if course_allocation:
                 # check if this staff already enrolled to this moodle course
-                staff_course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse).join(
-                    Course) \
+                staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \
+                    .join(ProgramCourse).join(Course) \
                     .filter(CourseAllocation.staff_uid == course_allocation.staff_uid) \
-                    .filter(CourseAllocation.program_course.has(
-                    ProgramCourse.course.id.is_(course_allocation.program_course.course.id))) \
+                    .filter(
+                    CourseAllocation.program_course.has(Course.id == course_allocation.program_course.course.id)) \
+                    .filter(CourseAllocation.program_course_id != course_allocation.program_course.id) \
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
                     .order_by(desc(CourseAllocation.created_at)) \
                     .first()
@@ -236,8 +271,7 @@ def enroll_staff_to_moodle_group():
     with session_scope() as session:
         try:
             # Get data that student group registration not on moodle and program course already on moodle
-            staff_course_allocation: CourseAllocation = session.query(CourseAllocation).join(
-                ProgramCourse) \
+            staff_course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse) \
                 .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
                 .filter(CourseAllocation.moodle_group_enrollment_status.is_(False)) \
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
