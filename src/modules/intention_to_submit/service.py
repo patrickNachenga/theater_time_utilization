@@ -11,10 +11,14 @@ from sqlalchemy.orm import joinedload
 from src.core.security import Info
 from src.core.config import settings
 from src.db.session import session_scope
-from src.modules.seminar_types.service import SeminarTypeService
 from src.models.student_seminar import StudentSeminar
-from src.modules.student_seminar.service import StudentSeminarService
+from src.models.student_manuscript import StudentManuscript
+from src.models.intention_to_submit_requirement import IntentionToSubmitRequirement
 from src.models.intention_to_submit import IntentionToSubmit
+from src.modules.intention_to_submit_requirement.service import IntentionToSubmitRequirementService
+from src.models.program import Program
+from src.models.program_category import ProgramCategory
+from src.modules.programs.service import ProgramService
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -168,10 +172,17 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                 intention_to_submit_list = []
                 for x in items:
                     # get seminar count
-                    student_seminar = StudentSeminarService.get_student_seminar_by_student(x.student_uid)
-                    # count = student_seminar.count(1)
-                    print(x.student_uid)
-                    print(student_seminar)
+                    # student_seminar = StudentSeminarService.get_student_seminar_by_student(x.student_uid)
+                    student_seminar = session.query(StudentSeminar).filter(
+                        and_(StudentSeminar.deleted_at.is_(None), StudentSeminar.student_uid == x.student_uid))
+                    seminar_count = student_seminar.count()
+                    # get number of Manuscripts
+                    student_manuscript = session.query(StudentManuscript).filter(
+                        and_(StudentManuscript.deleted_at.is_(None), StudentManuscript.student_uid == x.student_uid))
+                    manuscript_count = student_manuscript.count()
+
+                    # print(x.student_uid)
+                    # print(count)
 
                     params = {"uids": [str(x.student_uid)]}
                     # Serialize the data to JSON
@@ -194,8 +205,8 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                         x.registration_number = response_data[0]['registration_number']
                         x.full_name = response_data[0]['full_name']
                         x.program_uid = response_data[0]['programme_uid']
-                        x.no_of_seminars = count
-                        x.no_of_manuscripts = 12
+                        x.no_of_seminars = seminar_count
+                        x.no_of_manuscripts = manuscript_count
                 # print(response_data)
             session.close()
 
@@ -308,6 +319,135 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def submit_intention_to_submit(student_uid: str) -> Response[IntentionToSubmitNode]:
+        """
+        Register Thesis
+        :param inputs:
+        :return:
+        """
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # print(student_uid)
+        # print("hhhhh")
+        try:
+            # Assuming you have a database session available
+            with session_scope() as session:
+                # Check if an intention to submit record already exists for the student
+                existing_record = session.query(IntentionToSubmit).filter_by(student_uid=student_uid).first().uid
+                if existing_record:
+                    # print(existing_record)
+                    action_name = "Submit"
+                    # Get student Details
+                    params = {"uids": [str(student_uid)]}
+                    # Serialize the data to JSON
+                    payload = json.dumps(params)
+                    response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                             headers=headers)
+                    response.raise_for_status()
+                    response_data = response.json()
+                    # print(response_data)
+                    if response.status_code == 200:
+                        # print(response_data)
+                        registration_number = response_data[0]['registration_number']
+                        full_name = response_data[0]['full_name']
+                        program_uid = response_data[0]['programme_uid']
+                        # get Seminars done
+                        student_seminar = session.query(StudentSeminar).filter(
+                            and_(StudentSeminar.deleted_at.is_(None), StudentSeminar.student_uid == student_uid))
+                        seminar_count = student_seminar.count()
+                        # get number of Manuscripts
+                        # publication_status == 'accepted' OR 'published'
+                        student_manuscript = session.query(StudentManuscript).filter(
+                            and_(StudentManuscript.deleted_at.is_(None),
+                                 StudentManuscript.student_uid == student_uid))
+                        manuscript_count = student_manuscript.count()
+                        no_of_seminars = seminar_count
+                        no_of_manuscripts = manuscript_count
+                        # print(program_uid)
+                        # category = ProgramService.get_program_by_uid(program_uid)
+                        # program = session.query(Program).filter_by(uid=program_uid).first()
+                        # print(program.program_category_id)
+                        # program = ProgramService.get_program_by_uid(program_uid)
+                        # print("Program Uid ", program_uid)
+
+                        program = session.query(Program).filter_by(uid=program_uid).first()
+                        if program is None:
+                            return Response(
+                                status=False,
+                                code=ResponseCode.FAILURE,
+                                message="Invalid Student Program",
+                                data=None
+                            )
+
+                        # Find Category
+                        category = session.query(ProgramCategory).filter_by(id=program.program_category_id).first()
+                        if category is None:
+                            return Response(
+                                status=False,
+                                code=ResponseCode.FAILURE,
+                                message="Invalid Student Program Category",
+                                data=None
+                            )
+                            # print("Program Not Found")
+
+                        requirements = IntentionToSubmitRequirementService. \
+                            get_intention_to_submit_requirement_by_category(category.uid)
+                        print(no_of_seminars)
+                        print(no_of_manuscripts)
+                        require_seminars = 1
+                        require_manuscripts = 5
+                        if no_of_seminars >= require_seminars and no_of_manuscripts >= require_manuscripts:
+                            # submit
+                            session.query(IntentionToSubmit).filter_by(student_uid=student_uid).update(
+                                {IntentionToSubmit.status: 1})
+                            session.commit()
+                            return Response(
+                                status=False,
+                                code=ResponseCode.SUCCESS,
+                                message="Submission is Successful",
+                                data=None
+                            )
+                        else:
+                            return Response(
+                                status=False,
+                                code=ResponseCode.FAILURE,
+                                message="Submission Requirement is not Meet",
+                                data=None
+                            )
+                else:
+                    # Create a new intention to submit record
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        message="Failed to update intention to submit",
+                        data=None
+                    )
+                    # new_record = IntentionToSubmit(student_uid=student_uid, status="Submitted")
+                    # session.add(new_record)
+
+                # Commit the changes to the database
+                # session.commit()
+
+                # Return a success response
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Intention to submit successfully updated",
+                    data=None
+                )
+
+        except Exception as e:
+            print(e)
+            # Return an error response if an exception occurs
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to update intention to submit",
+                data=None
+            )
+
     def register_intention_to_submit(self, inputs: List[IntentionToSubmitInput]) -> Response[IntentionToSubmitNode]:
         """
         Register Thesis
@@ -317,13 +457,6 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
         intention_to_submit_list = []
         action_name = "Register"
         with session_scope() as session:
-            # Check if the Student Seminar already exist using uid
-            # existed_student_seminar_list = self.get_student_seminar_by_names(
-            #     [student_seminar.name for student_seminar in inputs if student_seminar.uid is None])
-            # if existed_student_seminar_list:
-            #     return Response(status=False, code=ResponseCode.DUPLICATE,
-            #                     data=existed_student_seminar_list,
-            #                     message="Student Seminar Already Exists")
             # check for existing seminar types using uid
             existed_intention_to_submit = self.get_intention_to_submit_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:

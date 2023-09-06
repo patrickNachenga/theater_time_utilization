@@ -110,25 +110,6 @@ class IntentionToSubmitQuery:
                 message="Intention to submit not found",
                 data=None)
 
-    @strawberry.field()
-    def get_intention_to_submit_by_student_uid(self, student_uid: str) -> Response[
-        List[IntentionToSubmitNode]]:
-        # try:
-        result = IntentionToSubmitService.get_intention_to_submit_by_student_uid(student_uid)
-
-        if result:
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Intention to submit Retrieved successfully",
-                data=result)
-        else:
-            return Response(
-                status=False,
-                code=ResponseCode.NO_RECORD_FOUND,
-                message="Intention to submit not found",
-                data=None)
-
 
 @strawberry.type
 class IntentionToSubmitMutation:
@@ -136,6 +117,18 @@ class IntentionToSubmitMutation:
     def register_intention_to_submit(self, inputs: List[IntentionToSubmitInput]) -> Response[IntentionToSubmitNode]:
         try:
             return IntentionToSubmitService(IntentionToSubmit).register_intention_to_submit(inputs)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Intention to submit not found",
+                data=None)
+
+    @strawberry.field()
+    def submit_intention_to_submit(self, student_uid: str) -> Response[IntentionToSubmitNode]:
+        try:
+            return IntentionToSubmitService.submit_intention_to_submit(student_uid)
         except Exception as e:
             print(e)
             return Response(

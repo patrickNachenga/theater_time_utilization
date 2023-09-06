@@ -1356,3 +1356,4 @@ class ThesisListNode:
 class StudentSeminarMarksInput:
     uid: str
     seminar_marks: Optional[float] = 0
+    is_pass: Optional[bool] = False

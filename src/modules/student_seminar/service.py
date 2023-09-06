@@ -347,18 +347,17 @@ class StudentSeminarService(CRUDBase[StudentSeminar, StudentSeminarInput, Studen
                         inputItem.is_pass = True
                     else:
                         inputItem.is_pass = False
-
                     student_seminar = next(
                         filter(lambda student_seminar: str(student_seminar.uid) == str(inputItem.uid),
                                existed_student_seminar), None)
-
                     if student_seminar:
                         obj_data = jsonable_encoder(inputItem)
+                        print(inputItem)
                         for key, value in obj_data.items():
                             setattr(student_seminar, key, value)
                         student_seminar_list.append(student_seminar)
             session.add_all(student_seminar_list)
-            count = session.query(StudentSeminar).filter(StudentSeminar.deleted_at.is_(None)).count()
+            # count = session.query(StudentSeminar).filter(StudentSeminar.deleted_at.is_(None)).count()
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
                             data=student_seminar_list,
