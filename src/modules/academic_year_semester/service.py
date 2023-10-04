@@ -46,6 +46,39 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def get_academic_year_semesters_by_academic_year(academic_year_uid: str) -> Response[List[AcademicYearSemester]]:
+        """
+        Get Academic Year Semester by academic year uid
+        :param academic_year_uid:
+        :return:
+        """
+        with session_scope() as session:
+            try:
+                academic_year = AcademicYearService.get_academic_year_by_uid(academic_year_uid)
+                if academic_year is None:
+                    raise ValueError("You have submitted incorrect Academic Year values")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=[],
+                    message="You have submitted incorrect Academic Year values"
+                )
+
+            stmt = select(AcademicYearSemester).where(
+                (AcademicYearSemester.academic_year_id == academic_year.id) & (
+                    AcademicYearSemester.deleted_at.is_(None)))
+            raw_result = session.scalars(stmt)
+            result = raw_result.all()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=result,
+                message="You have submitted incorrect Academic Year values"
+            )
+
     def register_academic_semesters(self, inputs: List[AcademicYearSemesterInput]) -> Response[
         AcademicYearSemesterListNode]:
         """
@@ -60,8 +93,12 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
             existed_academic_year_semester = self.get_academic_year_semesters_by_uids(
                 [inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
-                academic_year = AcademicYearService.get_academic_year_by_uid(inputItem.academic_year_uid)
-                if academic_year is None:
+                try:
+                    academic_year = AcademicYearService.get_academic_year_by_uid(inputItem.academic_year_uid)
+                    if academic_year is None:
+                        raise ValueError("You have submitted incorrect Academic Year values")
+                except Exception as e:
+                    print(e)
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -101,8 +138,9 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
                         session.add(local_object)
                         session.commit()
                         academic_year_semester_list.append(local_object)
+                count = session.query(AcademicYearSemester).filter(AcademicYearSemester.deleted_at.is_(None)).count()
                 return Response(status=True, code=ResponseCode.SUCCESS,
-                                data=academic_year_semester,
+                                data=AcademicYearSemesterListNode(items=academic_year_semester_list, total_count=count),
                                 message=f"Successfully to {action_type} Academic Year Semester")
 
     # Delete Function

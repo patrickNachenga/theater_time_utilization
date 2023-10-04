@@ -1,16 +1,20 @@
+from sched import scheduler
+
+from src.core.config import Settings
+from src.helpers.apscheduler import scheduler
 from starlette.middleware.cors import CORSMiddleware
 
 from src.app import RegistrationApp
-from src.core.config import settings
 from src.core.redis import redis_dependency
-from src.helpers.task_manager import TaskManager
 from src.db.session import database
 from src.api_routes.program_api import program_router
 from src.api_routes.sr2_finance_api import sr2_router
 
 app = RegistrationApp()
 
-app.debug = True
+# app.debug = True
+app.debug = Settings().SYSTEM_DEBUG_MODE
+
 
 app.add_middleware(
     CORSMiddleware, allow_headers=["*"], allow_origins=["*"], allow_methods=["*"]
@@ -19,12 +23,6 @@ app.add_middleware(
 # Adding REST API route for querying Program Module
 app.include_router(program_router)
 app.include_router(sr2_router)
-
-
-async def process_data():
-    task_manager = TaskManager(redis_url=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
-    await task_manager.start_processing()
-    await task_manager.enqueue_task("create_course_to_moodle")
 
 
 @app.on_event("startup")
@@ -39,11 +37,10 @@ async def startup():
 
     # Base.metadata.drop_all(engine)
     # Base.metadata.create_all(engine)
-    # await redis_dependency.init()
-
-    # background_tasks = BackgroundTasks()
-    # background_tasks.add_task(process_data)
-    # await background_tasks()
+    await redis_dependency.init()
+    if not app.debug:
+        await app.initialize_async()
+        scheduler.start()
 
 
 @app.on_event("shutdown")

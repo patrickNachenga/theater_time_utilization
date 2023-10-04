@@ -40,6 +40,37 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             return result.first()
 
     @staticmethod
+    def get_program_course_by_program_semester_uid(uid: str) -> Response[ProgramCourseListNode]:
+        """
+        Get Program Course by program semester uid
+        :return:
+        """
+        with session_scope() as session:
+            try:
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(uid)
+                if program_semester is None:
+                    raise ValueError("You have submitted incorrect programs semester details")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=ProgramCourseListNode(items=[], total_count=0),
+                    message="You have submitted incorrect programs semester details"
+                )
+            stmt = select(ProgramCourse).where((ProgramCourse.program_semester_id == program_semester.id) & (ProgramCourse.deleted_at.is_(None)))
+            result_raw = session.scalars(stmt)
+            result = result_raw.all()
+            count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=ProgramCourseListNode(items=result, total_count=count),
+                message="Program Course Retrieved Successful"
+            )
+
+
+    @staticmethod
     def get_program_courses_by_uids(uids: List[str]) -> List[ProgramCourse]:
         """
         Get programs course by uids
@@ -66,7 +97,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             result = session.scalars(stmt)
             return result.first()
 
-    async def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
+    def register_program_courses(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
         """
         Register programs Course
         :param inputs:
@@ -79,13 +110,9 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             existed_program_course = self.get_program_courses_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 # Verify and get supplied Program uid. and get existed program model
-                try:
-                    program_semester = ProgramSemesterService.get_program_semester_by_uid(
-                        inputItem.program_semester_uid)
-                    if program_semester is None:
-                        raise ValueError("You have submitted incorrect programs semester details")
-                except Exception as e:
-                    print(e)
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(
+                    inputItem.program_semester_uid)
+                if program_semester is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -94,26 +121,18 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     )
 
                 # Verify and get supplied Course uid. and get existed Course id from returned Course model
-                try:
-                    course = CourseService.get_course_by_uid(inputItem.course_uid)
-                    if course is None:
-                        raise ValueError("You have submitted incorrect courses details")
-                except Exception as e:
-                    print(e)
+                course = CourseService.get_course_by_uid(inputItem.course_uid)
+                if course is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
-                        data=ProgramSemesterListNode(items=[], total_count=0),
+                        data=ProgramCourseListNode(items=[], total_count=0),
                         message="You have submitted incorrect courses details"
                     )
 
                 # Verify and get supplied Course category uid. and get existed Course category id from returned Course model
-                try:
-                    course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
-                    if course_category is None:
-                        raise ValueError("You have submitted incorrect courses category details")
-                except Exception as e:
-                    print(e)
+                course_category = CourseCategoryService.get_course_category_by_uid(inputItem.course_category_uid)
+                if course_category is None:
                     return Response(
                         status=False,
                         code=ResponseCode.FAILURE,
@@ -249,6 +268,21 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
         with session_scope() as session:
             session.query(ProgramCourse).filter_by(uid=uid).update({ProgramCourse.deleted_at: pendulum.now()})
             session.commit()
+
+    @staticmethod
+    def get_unregister_moodle_program_course_by_course_id(course_id: int) -> ProgramCourseNode:
+        """
+        Get Program Course with null moodle id that belong to course with passed course id
+        :return ProgramCourseNode:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramCourse).where(
+                (ProgramCourse.course_id == course_id) &
+                (ProgramCourse.moodle_id.is_(None)) &
+                (ProgramCourse.deleted_at.is_(None))
+            )
+            result = session.scalars(stmt)
+            return result.first()
 
 
 ProgramCourseCrud = ProgramCourseService(ProgramCourse)

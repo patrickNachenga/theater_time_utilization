@@ -8,11 +8,13 @@ class ExamResult(BaseModel):
     __tablename__ = "exam_results"
     program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False, unique=False)
     exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"), nullable=False, unique=False)
-    student_uid: int = Column(Integer, nullable=False, unique=False)
+    student_uid: str = Column(String, nullable=False, unique=False)
     score: float = Column(Float, nullable=False, unique=False)
-    out_of: float = Column(Float, nullable=False, unique=False)
+    # out_of: float = Column(Float, nullable=False, unique=False)
     weight: int = Column(Integer, nullable=False, unique=False)
-    overall_marks: float = Column(Integer, nullable=False)
+    source: str = Column(String, nullable=False, default="Excel")
+    overall_marks: float = Column(Integer, nullable=False, default=100)
+    number_of_sitting: int = Column(Integer, default =1, unique=False)
 
     program_course = relationship("ProgramCourse", lazy="subquery", back_populates="exam_results")
 

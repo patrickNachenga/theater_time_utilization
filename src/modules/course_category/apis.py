@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import CourseCategory
 from src.modules.course_category.service import CourseCategoryService, CourseCategoryCrud
 from src.shared.response import Response
@@ -11,7 +12,7 @@ from src.types import CourseCategoryInput, CourseCategoryNode, CourseCategoryLis
 
 @strawberry.type
 class CourseCategoryQuery:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_CATEGORIES"])])
     def get_course_categories(self, pagination: PaginationInput) -> Response[CourseCategoryListNode]:
         try:
             result = CourseCategoryCrud.get_multi_paginated(pagination, ["description", "name"],
@@ -25,8 +26,8 @@ class CourseCategoryQuery:
             message="Course Category Retrieved successfully",
             data=result)
 
-    @strawberry.field
-    def get_course_category(self, uid: str) -> Response[CourseCategoryNode | None]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_CATEGORIES"])])
+    def get_course_category(self, uid: str) -> Response[CourseCategoryNode]:
         try:
             result = CourseCategoryService(CourseCategory).get_course_category_by_uid(uid)
         except Exception as e:
@@ -48,7 +49,7 @@ class CourseCategoryQuery:
 
 @strawberry.type
 class CourseCategoryMutation:
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_CATEGORIES"])])
     def register_course_categories(self, inputs: List[CourseCategoryInput]) -> Response[CourseCategoryListNode]:
         try:
             return CourseCategoryService(CourseCategory).register_course_categories(inputs)
@@ -60,7 +61,7 @@ class CourseCategoryMutation:
                 message="Course Category not found",
                 data=None)
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_CATEGORY"])])
     async def remove_course_category(self, uid: str) -> Response[None]:
         """
         Remove course category by UID

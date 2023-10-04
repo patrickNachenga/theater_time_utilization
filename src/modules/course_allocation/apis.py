@@ -1,19 +1,23 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 
+from src.core.security import CustomPermissionExtension
 from src.models import CourseAllocation
 from src.modules.course_allocation.service import CourseAllocationService, CourseAllocationCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseAllocationInput, CourseAllocationNode, PaginatedCourse, PaginationInput, \
-    CourseAllocationListNode, StaffAllocationInputNode
+from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInput, CourseAllocationListNode, \
+    ProgramCourseAssessmentNode, \
+    ProgramCourseAssessmentUpdateExceedInput, \
+    StaffAllocationInputNode, CourseAllocationStaffUpdateInput, StaffCourseAllocationBySemesterInputs, \
+    StaffCourseAllocationBySemesterNode
 
 
 @strawberry.type
 class CourseAllocationQuery:
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
     def get_course_allocations(self, pagination: PaginationInput) -> Response[CourseAllocationListNode]:
         try:
             result = CourseAllocationCrud.get_multi_paginated(pagination, [], CourseAllocationListNode)
@@ -26,7 +30,7 @@ class CourseAllocationQuery:
             message="Course Allocation Retrieved successfully",
             data=result)
 
-    @strawberry.field
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
     def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
         try:
             result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
@@ -44,34 +48,81 @@ class CourseAllocationQuery:
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Course Allocation not found",
-                data=result)
+                data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
-    @strawberry.field
-    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
+    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationListNode]:
+        result = None
         try:
             result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully Retrieve Course Allocation",
+                    data=CourseAllocationListNode(items=result, total_count=len(result)))
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Course Allocation not found",
+                    data=CourseAllocationListNode(items=[], total_count=0))
 
         except Exception as e:
             print(e)
-            result = None
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Course Allocation not found, An exception occurred",
+                data=CourseAllocationListNode(items=[], total_count=0))
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STAFF_COURSE_ALLOCATION_BY_ACADEMIC_YEAR"])])
+    def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffCourseAllocationBySemesterInputs) -> (
+            Response)[List[StaffCourseAllocationBySemesterNode]]:
+        result = None
+        try:
+            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation_by_Academic_year_semesters(inputs)
+        except Exception as e:
+            print(e)
+
         if result:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Successfully Retrieve Course Allocation",
-                data=result)
+                message="Successfully Retrieve Staff Course Allocation",
+                data=result,
+            )
         else:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Course Allocation not found",
-                data=result)
+                data=List[CourseAllocationNode(uid="", program_course_uid='', program_course=None, staff_uid="")])
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATION_BY_PROGRAM_COURSE"])])
+    async def get_course_allocation_by_program_course_uid(self, program_course_uid: str) -> (
+            Response)[CourseAllocationListNode]:
+        try:
+            course_allocation = CourseAllocationService.get_course_allocation_by_program_course_uid(
+                program_course_uid)
+            if course_allocation:
+                return course_allocation
+            raise ValueError("Unable to retrieve course allocation")
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                data=CourseAllocationListNode(items=[], total_count=0),
+                message="Unable to retrieve course allocation"
+            )
 
 
 @strawberry.type
 class CourseAllocationMutation:
-    @strawberry.field
-    def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> Response[CourseAllocationListNode]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE_ALLOCATIONS"])])
+    def register_course_allocations(self, inputs: List[CourseAllocationInput]) -> (
+            Response)[CourseAllocationListNode]:
         try:
             return CourseAllocationService(CourseAllocation).register_course_allocations(inputs)
 
@@ -80,7 +131,7 @@ class CourseAllocationMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course Allocation",
                             data=CourseAllocationListNode(items=[], total_count=0), )
 
-    @strawberry.mutation
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
     async def remove_course_allocation(self, uid: str) -> Response[None]:
         """
         Remove course allocation by UID
@@ -104,3 +155,38 @@ class CourseAllocationMutation:
                 message="Failed to Remove Course Allocation",
                 data=None
             )
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
+    def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> (
+            Response)[CourseAllocationNode]:
+        try:
+            course_allocations = CourseAllocationService(CourseAllocation).update_course_allocation_staff(inputs)
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            data=course_allocations,
+                            message=f"Successfully updated Course Allocation Staff")
+
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to update course allocation staff",
+                            data=CourseAllocationNode(None)) @ strawberry.field
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
+    def staff_update_allocation_assessment_item(self, inputs: ProgramCourseAssessmentUpdateExceedInput) -> (
+            Response)[ProgramCourseAssessmentNode]:
+        try:
+            program_course_assessment = CourseAllocationService(
+                CourseAllocation).staff_update_allocation_assessment_item(
+                inputs)
+            if program_course_assessment:
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=program_course_assessment,
+                                message=f"Successfully updated")
+            else:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=[],
+                                message=f"Failed to updated")
+
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed to update",
+                            data=[])
