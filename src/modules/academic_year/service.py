@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, update
 
 from src.db.session import session_scope
-from src.models import AcademicYear
+from src.models import AcademicYear, AcademicYearSemester
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -66,6 +66,18 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             result = session.scalars(stmt)
             return result.first()
 
+    @staticmethod
+    def get_active_academic_year() -> AcademicYear:
+        """
+        Get Active Academic Year
+        :param:
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(AcademicYear).where((AcademicYear.status == 1) & (AcademicYear.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
+
     def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         """
         Register Academic Year
@@ -86,33 +98,33 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             # check for existing course using uid
             existed_academic_year = self.get_academic_year_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
-                if inputItem.uid is None:
-                    # Through an Exception that may be occurred during verification of user inputs
-                    try:
-                        start_date = datetime.strptime(inputItem.start_date, "%Y-%m-%d")
-                        end_date = datetime.strptime(inputItem.end_date, "%Y-%m-%d")
-                        # Check if inputs has value of start year that great than end year and through an exception
-                        if start_date > end_date:
+                # Through an Exception that may be occurred during verification of user inputs
+                try:
+                    start_date = datetime.strptime(inputItem.start_date, "%Y-%m-%d")
+                    end_date = datetime.strptime(inputItem.end_date, "%Y-%m-%d")
+                    # Check if inputs has value of start year that great than end year and through an exception
+                    if start_date > end_date:
+                        return Response(status=False, code=ResponseCode.INVALID_REQUEST,
+                                        data=AcademicYearListNode(items=[], total_count=0),
+                                        message="End year must be great than Start year to all inputs")
+                    # Apply one time check of all inputs status to decide return/pass the operation
+                    if status_checkup:
+                        status_checkup = False
+                        status_list = [item.status for item in inputs if item.status == 1]
+                        if len(status_list) > 1:
                             return Response(status=False, code=ResponseCode.INVALID_REQUEST,
                                             data=AcademicYearListNode(items=[], total_count=0),
-                                            message="End year must be great than Start year to all inputs")
-                        # Apply one time check of all inputs status to decide return/pass the operation
-                        if status_checkup:
-                            status_checkup = False
-                            status_list = [item.status for item in inputs if item.status == 1]
-                            if len(status_list) > 1:
-                                return Response(status=False, code=ResponseCode.INVALID_REQUEST,
-                                                data=AcademicYearListNode(items=[], total_count=0),
-                                                message="Only one active Academic year are Accepted")
-                            else:
-                                if len(status_list) == 1:
-                                    session.query(AcademicYear).filter(AcademicYear.status == 1).update({"status": 0})
-                    except Exception as e:
-                        print(e)
-                        return Response(status=False, code=ResponseCode.FAILURE,
-                                        data=AcademicYearListNode(items=[], total_count=0),
-                                        message="Unable to register Academic year")
+                                            message="Only one active Academic year are Accepted")
+                        else:
+                            if len(status_list) == 1:
+                                session.query(AcademicYear).filter(AcademicYear.status == 1).update({"status": 0})
+                except Exception as e:
+                    print(e)
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    data=AcademicYearListNode(items=[], total_count=0),
+                                    message="Unable to register Academic year")
 
+                if inputItem.uid is None:
                     academic_year = AcademicYear(
                         name=inputItem.name,
                         status=inputItem.status,

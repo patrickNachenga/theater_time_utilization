@@ -47,7 +47,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             return result.first()
 
     @staticmethod
-    def get_course_learn_outcome_by_course(course_uid: str) -> List[CourseLearnOutcome] | None:
+    def get_course_learn_outcome_by_course(course_uid: str) -> List[CourseLearnOutcome]:
         """
         Get one course learn outcome by course_uid
         :return:
@@ -65,7 +65,7 @@ class CourseLearnOutcomeService(CRUDBase[CourseLearnOutcome, CourseLearnOutcomeI
             result = session.scalars(stmt)
             return result.all()
 
-    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome | None]:
+    def register_course_learn_outcome(self, inputs: CourseLearnOutcomeInput) -> Response[CourseLearnOutcome]:
         """
         Register/Update Course Learn outcome
         :param inputs:

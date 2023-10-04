@@ -9,4 +9,4 @@ class Response(Generic[T]):
     status: bool
     code: int
     message: str
-    data: T
+    data: Optional[T]

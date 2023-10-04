@@ -2,9 +2,10 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, insert, inspect, or_
+from sqlalchemy import select, insert, inspect, or_, and_, cast, String
 from sqlalchemy.orm import joinedload
 
+from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Base, BaseModel
 from src.shared.response import Response
@@ -12,9 +13,13 @@ from src.shared.response_code import ResponseCode
 from src.types import PaginationInput
 
 ModelType = TypeVar("ModelType", bound=Base)
+RelatedModelType = TypeVar("RelatedModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 SearchOutput = TypeVar("SearchOutput", bound=BaseModel)
+
+
+# unique search columns
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
@@ -124,23 +129,59 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             session.commit()
             return obj
 
+    def remove_check_relations(self, uid: str, parent_id, child_models: List[RelatedModelType],
+                               info: Info) -> ModelType:
+        with session_scope() as session:
+            """
+            Remove object by restriction on related tables if has entries
+            """
+            obj = session.query(self.model).filter_by(uid=uid)
+            if not obj.first():
+                msg = "Provided Entry not found!"
+                raise ValueError(msg)
+            child_entries_exist = False
+            for child_table in child_models:
+                model_field = getattr(child_table, parent_id)
+                child_entries = session.query(child_table).filter(model_field == obj.first().id).all()
+                if child_entries:
+                    child_entries_exist = True
+                    break
+
+            if child_entries_exist:
+                msg = "Cannot delete. Entry in use."
+                raise ValueError(msg)
+            obj.update({self.model.deleted_at: pendulum.now(), self.model.deleted_by: info.context.user.profile.id})
+            session.commit()
+            return obj
+
     def get_multi_paginated(self, pagination: PaginationInput, search_columns: List[str], search_node,
-                            relationships_to_join: List[str] = None) -> SearchOutput:
+                            relationships_to_join: List[str] = None, unique_search: List[dict] = None) -> SearchOutput:
         with session_scope() as session:
             query = session.query(self.model).filter(self.model.deleted_at.is_(None))
             search_q = pagination.search if pagination.search else ''
+
+            # filter condition if specified unique column
+            unique_filter_conditions = []
+            if unique_search:
+                for condition in unique_search:
+                    for column, value in condition.items():
+                        unique_filter_conditions.append(getattr(self.model, column) == value)
+            if unique_filter_conditions:
+                query = query.filter(and_(*unique_filter_conditions))
+
             # Apply filters
             filter_conditions = []
             for column in inspect(self.model).columns:
                 if column.name in search_columns:
-                    filter_conditions.append(getattr(self.model, column.name).ilike(f"%{search_q}%"))
+                    filter_conditions.append(cast(getattr(self.model, column.name), String).ilike(f"%{str(search_q)}%"))
 
             if filter_conditions:
                 query = query.filter(or_(*filter_conditions))
+
             total_count = query.count()
+
             # Apply pagination
             query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
-
             # Fetch items and total count
             if relationships_to_join and len(relationships_to_join) > 0:
                 for relationship_name in relationships_to_join:
