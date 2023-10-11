@@ -12,7 +12,7 @@ from src.types import PaginationInput, SemesterRegistrationListNode
 @strawberry.type
 class SemesterRegistrationQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_SEMESTER_REGISTRATIONS"])])
-    def get_semester_registrations(self, pagination: PaginationInput) -> Response[Optional[SemesterRegistrationListNode]]:
+    def get_semester_registrations(self, pagination: PaginationInput) -> Response[SemesterRegistrationListNode]:
         try:
             result = SemesterRegistrationService().get_semester_registrations(pagination)
         except Exception as e:
@@ -25,7 +25,7 @@ class SemesterRegistrationQuery:
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STUDENT_SEMESTER_REGISTRATIONS"])])
-    def get_student_semester_registrations(self,student_uid: str) -> Response[Optional[SemesterRegistrationListNode]]:
+    def get_student_semester_registrations(self,student_uid: str) -> Response[SemesterRegistrationListNode]:
         try:
             result = SemesterRegistrationService().get_student_semester_registrations(student_uid)
         except Exception as e:

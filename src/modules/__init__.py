@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, insert, inspect, or_, and_, cast, String
 from sqlalchemy.orm import joinedload
 
+from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Base, BaseModel
 from src.shared.response import Response
@@ -12,6 +13,7 @@ from src.shared.response_code import ResponseCode
 from src.types import PaginationInput
 
 ModelType = TypeVar("ModelType", bound=Base)
+RelatedModelType = TypeVar("RelatedModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 SearchOutput = TypeVar("SearchOutput", bound=BaseModel)
@@ -124,6 +126,31 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 msg = "%s object not found with uid %s" % (self.model, uid)
                 raise Exception(msg)
             obj.update({self.model.deleted_at: pendulum.now()})
+            session.commit()
+            return obj
+
+    def remove_check_relations(self, uid: str, parent_id, child_models: List[RelatedModelType],
+                               info: Info) -> ModelType:
+        with session_scope() as session:
+            """
+            Remove object by restriction on related tables if has entries
+            """
+            obj = session.query(self.model).filter_by(uid=uid)
+            if not obj.first():
+                msg = "Provided Entry not found!"
+                raise ValueError(msg)
+            child_entries_exist = False
+            for child_table in child_models:
+                model_field = getattr(child_table, parent_id)
+                child_entries = session.query(child_table).filter(model_field == obj.first().id).all()
+                if child_entries:
+                    child_entries_exist = True
+                    break
+
+            if child_entries_exist:
+                msg = "Cannot delete. Entry in use."
+                raise ValueError(msg)
+            obj.update({self.model.deleted_at: pendulum.now(), self.model.deleted_by: info.context.user.profile.id})
             session.commit()
             return obj
 

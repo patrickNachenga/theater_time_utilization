@@ -50,7 +50,7 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             return result.first()
 
     @staticmethod
-    def get_program_semester_by_program_id(program_id: str) -> ProgramSemester:
+    def get_program_semester_by_program_id(program_id: int) -> ProgramSemester:
         """
         Get program semester by program_id
         :return:
@@ -64,7 +64,7 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
     @staticmethod
     def get_program_semester_by_program_uid(program_uid: str) -> ProgramSemester:
         """
-        Get program semester by program_id
+        Get program semester by program_uid
         :return:
         """
         with session_scope() as session:

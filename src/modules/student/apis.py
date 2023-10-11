@@ -13,7 +13,8 @@ from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.db.session import session_scope
-from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work
+from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work, \
+    general_upload
 from src.models import ExamCategory
 from src.modules.student.service import StudentService
 from src.shared.response import Response
@@ -21,14 +22,13 @@ from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
     CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
-    ExamToRegister, ExamRegistrationNode, ExtractionResponse, FailedStudent
+    ExamToRegister, ExamRegistrationNode, FailedStudent, UploadInput, UploadResponse
 
 
 @strawberry.type
 class StudentQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[
-        Optional[StudentProgramCourseListNode]]:
+    def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
 
@@ -47,8 +47,7 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
-    def get_student_current_course_registration(self, student_uid: str) -> Response[
-        Optional[CourseRegistrationListNode]]:
+    def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
         try:
             result = StudentService().get_student_current_course_registration(student_uid)
 
@@ -67,16 +66,19 @@ class StudentQuery:
                 data=result)
 
     @strawberry.field()
-    def get_allocation_students(self, allocation_uid: str) -> UaaDataResponse | None:
+    def get_allocation_students(self, allocation_uid: str, assessment_number: int, exam_category_id: int,
+                                out_off: int) -> UaaDataResponse:
         try:
-            result = StudentService().get_allocation_students(allocation_uid)
+            result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id,
+                                                              out_off)
 
             if result:
                 response = UaaDataResponse(
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'])
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'],
+                                         uid=item['uid'], score=item['marks'])
                           for item in result['data']]
                 )
 
@@ -162,9 +164,9 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
-    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category: int,
+    def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category_id: int,
                                          assessment_number: int, assessment_weight: int) -> ExcelFile:
-        result = StudentService().get_allocation_students(allocation_uid)
+        result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off)
         file_buffer = io.BytesIO()
 
         # Create a new workbook
@@ -196,7 +198,7 @@ class StudentMutation:
             "Program Code": result["program_course"].program_semester.program.code,
             "Academic Year": result["program_course"].program_semester.academic_year.name,
             "Study Year": str(result["program_course"].program_semester.study_year),
-            "Exam Category": str(exam_category),
+            "Exam Category": str(exam_category_id),
             "Assessment No": str(assessment_number),
             "Mark Out of": str(out_off),
             "Assessment Weight": str(assessment_weight)
@@ -234,7 +236,7 @@ class StudentMutation:
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
             worksheet[f"C{row}"] = item['full_name']
-            worksheet[f"D{row}"] = ""
+            worksheet[f"D{row}"] = item['marks']
             # Align the cells to the center
             for col in range(1, 5):
                 cell = worksheet.cell(row=row, column=col)
@@ -290,7 +292,7 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
 
     @strawberry.mutation
-    async def upload_score(base64_file: str) -> Response[ExtractionResponse]:
+    async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
         # Decode the base64 file content
         file_content = base64.b64decode(base64_file)
 
@@ -305,85 +307,59 @@ class StudentMutation:
         weight = float(worksheet.cell(row=8, column=3).value)
 
         # Assuming the data is in a specific sheet and columns
-        sn_column = 1  # Assuming SN is in column A
+
         reg_no_column = 2  # Assuming Reg No is in column B
-        name_column = 3  # Assuming Name is in column C
+
         marks_column = 4  # Assuming Marks is in column D
 
         with session_scope() as session:
             is_ue = session.query(ExamCategory).filter(
-                ExamCategory.id == exam_category_id).first().exam_category_group.is_ue
+                ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
             students = get_student_from_uaa()
             success = 0
             failed = 0
             failed_students = []
-            print('Student',students)
+            success_students = []
+
             for row in worksheet.iter_rows(min_row=10, values_only=True):
                 reg_number = row[reg_no_column - 1]
-                score = float(row[marks_column - 1])
                 # Find the item with the specified registration_number
-                if students:
-                    matching_item = next(
-                        (item for item in students if item["registration_number"] == reg_number), None)
-                    if matching_item:
-                        student_uid = matching_item["uid"]
-                        # print('student',reg_number,student_uid)
-                        if score <= out_off:
-                            if is_ue:
-                                result = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                            out_off,
-                                                            weight)
-                                if result:
-                                    success = success + 1
-                                else:
-                                    failed = failed + 1
-                                    # failed_students.append(
-                                    #     {"reg_number": reg_number, "reason": "Data processing error"})
-                                    failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                                           reason="Data processing error"))
-                            else:
-                                result = insert_course_work(student_uid, program_course_id, exam_category_id,
-                                                            assessment_number,
-                                                            out_off, score,
-                                                            weight)
-                                if result:
-                                    if result:
-                                        success = success + 1
-                                    else:
-                                        failed = failed + 1
-                                        # failed_students.append(
-                                        #     {"reg_number": reg_number, "reason": "Data processing error"})
-                                        failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                                               reason="Data processing error"))
+                if row[marks_column - 1] is None:
+                    continue
+                score = float(row[marks_column - 1])
 
-                        else:
-                            failed = failed + 1
-                            # failed_students.append(
-                            #     {"reg_number": reg_number, "reason": "Score is greater than out off"})
-                            failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                                   reason="Score is greater than out off"))
-                    else:
-                        failed = failed + 1
-                        # failed_students.append(
-                        #     {"reg_number": reg_number, "reason": "Data processing error ,student not found"})
-                        failed_students.append(FailedStudent(reg_number=reg_number,
-                                                                               reason="Data processing error ,student not found"))
+                success_, failed_, failed_student, success_student = general_upload(students=students,
+                                                                   program_course_id=program_course_id,
+                                                                   exam_category_id=exam_category_id, score=score,
+                                                                   out_off=out_off, weight=weight, is_ue=is_ue,
+                                                                   reg_number=reg_number,
+                                                                   assessment_number=assessment_number)
+                success = success + success_
+                failed = failed + failed_
+                if failed_student.reg_number is not None:
+                    failed_students.append(failed_student)
+                if success_student.reg_number is not None:
+                    success_students.append(success_student)
+            response_data = UploadResponse(
+                success=success,
+                failed=failed,
+                failed_students=failed_students,
+                success_students=success_students
+            )
 
-                else:
-                    failed = failed + 1
-                    # failed_students.append(
-                    #     {"reg_number": reg_number, "reason": "Data processing error , UAA service not found"})
-                    failed_students.append(FailedStudent(reg_number=reg_number, reason="Data processing error , UAA service not found"))
+            return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
 
-        # Save the extracted data in the database
-        # ...
-        # response_data["failed_students"] = failed_students
-        # response_data["failed"] = failed
-        # response_data["success"] = success
-        response_data = ExtractionResponse(
-            success=success,
-            failed=failed,
-            failed_students=failed_students
-        )
-        return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
+    @strawberry.mutation
+    async def upload_online_score(self, inputs: UploadInput) -> Response[UploadResponse]:
+        try:
+            result = StudentService().upload_online_score(inputs)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Executed successfully",
+                data=result)
+        except Exception as e:
+            print(e)
+            result = []
+        return Response(status=False, code=ResponseCode.FAILURE, message="Failed to execute", data=result)

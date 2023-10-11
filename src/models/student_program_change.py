@@ -1,11 +1,7 @@
-from typing import Optional
-
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, joinedload
+from sqlalchemy.orm import relationship
 
-from src.db.session import session_scope
-from src.models import BaseModel, Program
+from src.models import BaseModel
 
 
 class StudentProgramChange(BaseModel):
@@ -24,10 +20,6 @@ class StudentProgramChange(BaseModel):
     # ___________________________Foreign Keys ____________________________#
     academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
     academic_year = relationship('AcademicYear', lazy='subquery', back_populates="student_program_changes")
-
-    student_program_change_status_id: int = Column(Integer, ForeignKey("student_program_change_status.id"), nullable=False)
-    student_program_change_status = relationship('StudentProgramChangeStatus', lazy='subquery',
-                                                 back_populates="student_program_changes")
 
     current_program_id: int = Column(Integer, ForeignKey("programs.id"), nullable=False)
     current_program = relationship('Program', lazy='subquery', foreign_keys=[current_program_id])

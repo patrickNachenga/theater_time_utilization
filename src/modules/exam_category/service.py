@@ -5,9 +5,9 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 
 from src.db.session import session_scope
-from src.models import ExamCategoryGroup
+# from src.models import ExamCategoryGroup
 from src.models.exam_category import ExamCategory
-from src.modules.exam_category_groups.service import ExamCategoryGroupsService
+# from src.modules.exam_category_groups.service import ExamCategoryGroupsService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamCategoryInput, ExamCategoryNode
@@ -93,21 +93,13 @@ class ExamCategoryService(object):
             existed_exam_categories = self.get_exam_categories_by_uids([item.uid for item in inputs])
 
             for inputItem in inputs:
-                try:
-                    exam_category_group = ExamCategoryGroupsService.get_exam_category_groups_by_uid(inputItem.exam_category_group_uid)
-                    if exam_category_group is None:
-                        raise ValueError("You have submitted incorrect exam category group details")
-                except Exception as e:
-                    print(e)
-                    return Response(status=False, code=ResponseCode.FAILURE,
-                                    data=[],
-                                    message="You have submitted incorrect exam category group details")
-
                 if inputItem.uid is None:
                     exam_category = ExamCategory(
                         code=inputItem.code,
                         name=inputItem.name,
-                        exam_category_group=exam_category_group,
+                        is_ue=inputItem.is_ue,
+                        is_theory=inputItem.is_theory,
+                        is_oral=inputItem.is_oral,
                     )
                     local_object = session.merge(exam_category)
                     session.add(local_object)
@@ -122,7 +114,7 @@ class ExamCategoryService(object):
                     if exam_category:
                         obj_data = jsonable_encoder(inputItem)
                         # Replace referenced uids field with model required ids field
-                        obj_data['exam_category_group'] = exam_category_group
+                        # obj_data['exam_category_group'] = exam_category_group
                         for key, value in obj_data.items():
                             setattr(exam_category, key, value)
                         local_object = session.merge(exam_category)

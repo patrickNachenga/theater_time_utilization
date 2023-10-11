@@ -14,7 +14,7 @@ from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
 @strawberry.type
 class CourseQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSES"])])
-    def get_courses(self, pagination: PaginationInput, info: Info) -> Response[Optional[PaginatedCourse]]:
+    def get_courses(self, pagination: PaginationInput, info: Info) -> Response[PaginatedCourse]:
         try:
             # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
             # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
@@ -29,7 +29,7 @@ class CourseQuery:
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSES"])])
-    def get_course(self, uid: str) -> Response[CourseNode | None]:
+    def get_course(self, uid: str) -> Response[CourseNode]:
         try:
             result = CourseService.get_course_by_uid(uid)
         except Exception as e:
@@ -52,8 +52,8 @@ class CourseQuery:
 
 @strawberry.type
 class CourseMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSE"])])
-    async def register_courses(self, inputs: List[CourseInput]) -> Response[Optional[PaginatedCourse]]:
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_COURSES"])])
+    async def register_courses(self, inputs: List[CourseInput]) -> Response[PaginatedCourse]:
         try:
             return CourseService(Course).register_courses(inputs)
         except Exception as e:

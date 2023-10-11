@@ -17,6 +17,6 @@ class StudentExamRegistration(BaseModel):
     type: int = Column(Integer, nullable=False)
 
     student_course_registration = relationship("StudentCourseRegistration", lazy="subquery",
-                                                back_populates="student_exam_registration")
+                                               back_populates="student_exam_registration")
     exam_failure = relationship("StudentExamFailure", lazy="subquery",
                                 back_populates="student_exam_registration")

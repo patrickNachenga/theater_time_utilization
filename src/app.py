@@ -13,7 +13,7 @@ from src.core.rabbit import RabbitMQ
 from src.core.security import get_context, permissions
 
 
-# from src.core.security import get_context
+from src.core.security import get_context
 
 
 class RegistrationApp(FastAPI):

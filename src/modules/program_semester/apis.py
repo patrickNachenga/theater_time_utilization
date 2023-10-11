@@ -13,7 +13,7 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 @strawberry.type
 class ProgramSemesterQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
-    def get_program_semesters(self, pagination: PaginationInput) -> Response[Optional[ProgramSemesterListNode]]:
+    def get_program_semesters(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
         try:
             result = ProgramSemesterCrud.get_multi_paginated(pagination, ['study_year', 'semester', 'core_credits', 'elective_credits'], ProgramSemesterListNode, ['program', 'academic_year'])
         except Exception as e:
@@ -26,7 +26,7 @@ class ProgramSemesterQuery:
             data=result)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
-    def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode | None]:
+    def get_program_semester(self, uid: str) -> Response[ProgramSemesterNode]:
         try:
             result = ProgramSemesterService.get_program_semester_by_uid(uid)
         except Exception as e:
@@ -46,7 +46,7 @@ class ProgramSemesterQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
-    def get_program_semester_by_program_id(self, program_id: str) -> Response[ProgramSemesterNode | None]:
+    def get_program_semester_by_program_id(self, program_id: str) -> Response[ProgramSemesterNode]:
         try:
             result = ProgramSemesterService.get_program_semester_by_program_id(program_id)
         except Exception as e:
@@ -66,7 +66,7 @@ class ProgramSemesterQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
-    def get_program_semester_by_program_uid(self, program_uid: str) -> Response[ProgramSemesterNode | None]:
+    def get_program_semester_by_program_uid(self, program_uid: str) -> Response[ProgramSemesterNode]:
         try:
             result = ProgramSemesterService.get_program_semester_by_program_uid(program_uid)
         except Exception as e:
@@ -87,7 +87,7 @@ class ProgramSemesterQuery:
 @strawberry.type
 class ProgramSemesterMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_SEMESTERS"])])
-    def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[Optional[ProgramSemesterListNode]]:
+    def register_program_semester(self, inputs: List[ProgramSemesterInput]) -> Response[ProgramSemesterListNode]:
         try:
             return ProgramSemesterService(ProgramSemester).register_program_semesters(inputs)
         except Exception as e:

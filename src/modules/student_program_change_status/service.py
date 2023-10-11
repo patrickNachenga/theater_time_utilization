@@ -1,126 +1,113 @@
-from typing import List
+from typing import List, Optional
 
 import pendulum
 from sqlalchemy import select, desc
 from src.db.session import session_scope
-from src.models import ProgramCategory
-from src.modules import CRUDBase
+from src.models import ProgramCategory, StudentProgramChangeStatus
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCategoryInput, ProgramCategoryListNode
+from src.types import StudentProgramChangeStatusInput
 
 
-class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, ProgramCategoryInput]):
+class StudentProgramChangeStatusService:
     @staticmethod
-    def get_program_categories() -> List[ProgramCategory]:
+    def get_student_program_changes_status() -> List[StudentProgramChangeStatus]:
         with session_scope() as session:
-            result = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).order_by(
-                desc(ProgramCategory.updated_at)).all()
+            result = session.query(StudentProgramChangeStatus).filter(
+                StudentProgramChangeStatus.deleted_at.is_(None)).order_by(
+                desc(StudentProgramChangeStatus.updated_at)).all()
             return result
 
     @staticmethod
-    def get_program_categories_by_ids(ids: List[str]) -> List[ProgramCategory]:
+    def get_student_program_changes_status_by_uid(uid: str) -> StudentProgramChangeStatus:
         """
-        Get programs categories by ids
-        :return:
-        """
-        with session_scope() as session:
-            stmt = select(ProgramCategory).where(
-                (ProgramCategory.id.in_(ids)) & (ProgramCategory.deleted_at.is_(None))).order_by(
-                desc(ProgramCategory.updated_at))
-            result = session.scalars(stmt)
-            return result.all()
-
-    @staticmethod
-    def get_program_categories_by_uids(uids: List[str]) -> List[ProgramCategory]:
-        """
-        Get programs category by uids
-        :return:
-        """
-        with session_scope() as session:
-            stmt = select(ProgramCategory).where(
-                (ProgramCategory.uid.in_(uids)) & (ProgramCategory.deleted_at.is_(None)))
-            result = session.scalars(stmt)
-            return result.all()
-
-    @staticmethod
-    def get_program_category_by_uid(uid: str) -> ProgramCategory:
-        """
-        Get program category  by uid
+        Get student program change status category  by uid
         :param uid:
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCategory).where((ProgramCategory.uid == uid) & (ProgramCategory.deleted_at.is_(None)))
+            stmt = select(StudentProgramChangeStatus).where(
+                (StudentProgramChangeStatus.uid == uid) & (StudentProgramChangeStatus.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
 
+
     @staticmethod
-    def get_program_categories_by_names(names: List[str]) -> List[ProgramCategory]:
+    def get_student_program_changes_status_by_uids(uids: List[str]) -> List[StudentProgramChangeStatus]:
         """
-        Get programs category by name
+        Get many student programs change status by uids
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(StudentProgramChangeStatus).where(
+                (StudentProgramChangeStatus.uid.in_(uids)) & (StudentProgramChangeStatus.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
+    def get_student_program_changes_status_by_names(names: List[str]) -> List[ProgramCategory]:
+        """
+        Get student program change
         :param names:
         :return:
         """
         with session_scope() as session:
-            stmt = select(ProgramCategory).where(
-                (ProgramCategory.name.in_(names)) & (ProgramCategory.deleted_at.is_(None)))
+            stmt = select(StudentProgramChangeStatus).where(
+                (StudentProgramChangeStatus.name.in_(names)) & (StudentProgramChangeStatus.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.all()
 
-    def register_program_categories(self, inputs: List[ProgramCategoryInput]) -> Response[ProgramCategoryListNode]:
+    def register_student_program_change_status(self, inputs: List[StudentProgramChangeStatusInput]) -> (
+            Response)[List[StudentProgramChangeStatus]]:
         """
-        Register programs categories
+        Register student programs change status
         :param inputs:
-        :return Response[List[ProgramCategoryNode]]:
+        :return Response[List[Optional[StudentProgramChangeStatus]]]
         """
-        program_category_list = []
+        program_change_status_list = []
         action_type = "Register"
         with session_scope() as session:
-            # Check if the program category already exist using uid
-            existed_program_category_list = self.get_program_categories_by_names(
-                [program_category.name for program_category in inputs if program_category.uid is None])
-            if existed_program_category_list:
+            # Check if the program change category already exist using uid
+            existed_student_program_change_status_list = self.get_student_program_changes_status_by_names(
+                [student_program_change_status.code for student_program_change_status in inputs if student_program_change_status.name is None])
+            if existed_student_program_change_status_list:
                 return Response(status=False, code=ResponseCode.DUPLICATE,
-                                data=ProgramCategoryListNode(items=existed_program_category_list, total_count=0),
-                                message="Program Category Already Exists")
+                                data=existed_student_program_change_status_list,
+                                message="Program Change Status Already Exists")
+
             # check for existing programs categories using uid
-            existed_program_category = self.get_program_categories_by_uids([inputItem.uid for inputItem in inputs])
+            existed_program_change_status = self.get_student_program_changes_status_by_uids([inputItem.uid for inputItem in inputs])
             for inputItem in inputs:
                 if inputItem.uid is None:
-                    program_category = ProgramCategory(
+                    student_program_change_status = StudentProgramChangeStatus(
                         name=inputItem.name,
-                        short_name=inputItem.short_name
+                        code=inputItem.code
                     )
-                    program_category_list.append(program_category)
+                    program_change_status_list.append(student_program_change_status)
                 else:
                     action_type = "Update"
-                    program_category = next(
-                        filter(lambda program_category: str(program_category.uid) == str(inputItem.uid),
-                               existed_program_category), None)
+                    student_program_change = next(
+                        filter(lambda program_change_status: str(program_change_status.uid) == str(inputItem.uid),
+                               existed_student_program_change_status_list), None)
 
-                    if program_category:
-                        program_category.name = inputItem.name
-                        program_category.short_name = inputItem.short_name
-                        program_category_list.append(program_category)
-            session.add_all(program_category_list)
-            count = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).count()
+                    if student_program_change:
+                        student_program_change.code = inputItem.code
+                        student_program_change.name = inputItem.name
+                        program_change_status_list.append(student_program_change)
+            session.add_all(program_change_status_list)
             session.commit()
             return Response(status=True, code=ResponseCode.SUCCESS,
-                            data=ProgramCategoryListNode(items=program_category_list, total_count=count),
-                            message=f"Successfully to {action_type} Program category")
+                            data=program_change_status_list,
+                            message=f"Successfully to {action_type} Student Program Change")
 
     # Delete FUnction
     @staticmethod
-    def remove_program_category(uid: str):
+    def remove_student_program_change(uid: str):
         """
         Remove Program Category by UID
         :param uid:
         :return:
         """
         with session_scope() as session:
-            session.query(ProgramCategory).filter_by(uid=uid).update({ProgramCategory.deleted_at: pendulum.now()})
+            session.query(StudentProgramChangeStatus).filter_by(uid=uid).update({StudentProgramChangeStatus.deleted_at: pendulum.now()})
             session.commit()
-
-
-ProgramCategoryCrud = ProgramCategoryService(ProgramCategory)

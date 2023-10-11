@@ -2,34 +2,32 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
-from src.models import ProgramCategory
-from src.modules.program_category.service import ProgramCategoryService, ProgramCategoryCrud
+from src.modules.student_program_change_status.service import StudentProgramChangeStatusService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCategoryInput, ProgramCategoryListNode, PaginationInput, ProgramCategoryNode
+from src.types import ProgramCategoryInput, StudentProgramChangeNode, StudentProgramChangeStatusNode, \
+    StudentProgramChangeStatusInput
 
 
 @strawberry.type
-class ProgramCategoryQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_CATEGORIES"])])
-    def get_program_categories(self, pagination: PaginationInput) -> Response[Optional[ProgramCategoryListNode]]:
+class StudentProgramChangeStatusQuery:
+    @strawberry.field
+    def get_student_program_changes_status(self) -> Response[List[StudentProgramChangeStatusNode]]:
         try:
-            result = ProgramCategoryCrud.get_multi_paginated(pagination, ["name", "short_name"],
-                                                             ProgramCategoryListNode)
+            result = StudentProgramChangeStatusService().get_student_program_changes_status()
         except Exception as e:
             print(e)
-            result = ProgramCategoryListNode(items=[], total_count=0)
+            result = []
         return Response(
             status=True,
             code=ResponseCode.SUCCESS,
-            message="Successfully Retrieve Program Category",
+            message="Successfully Retrieve Student Program Change Status",
             data=result)
 
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_CATEGORIES"])])
-    def get_program_category(self, uid: str) -> Response[Optional[ProgramCategoryNode]]:
+    @strawberry.field
+    def get_student_program_changes_status_by_uid(self, uid: str) -> Response[StudentProgramChangeStatusNode]:
         try:
-            result = ProgramCategoryService(ProgramCategory).get_program_category_by_uid(uid)
+            result = StudentProgramChangeStatusService().get_student_program_changes_status_by_uid(uid)
         except Exception as e:
             print(e)
             result = None
@@ -37,42 +35,42 @@ class ProgramCategoryQuery:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Program Category Retrieved successfully",
+                message="Student Program Change Retrieved successfully",
                 data=result)
         else:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="Program Category not found",
+                message="Student Program Change not found",
                 data=None)
 
 
 @strawberry.type
-class ProgramCategoryMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_CATEGORIES"])])
-    def register_program_category(self, inputs: List[ProgramCategoryInput]) -> Response[Optional[ProgramCategoryListNode]]:
+class StudentProgramChangeStatusMutation:
+    @strawberry.field
+    def register_student_program_change(self, inputs: List[StudentProgramChangeStatusInput]) -> Response[List[StudentProgramChangeStatusNode]]:
         try:
-            return ProgramCategoryService(ProgramCategory).register_program_categories(inputs)
+            return StudentProgramChangeStatusService().register_student_program_change_status(inputs)
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
-                            data=ProgramCategoryListNode(items=[], total_count=0),
-                            message="Failed to Register Program Category")
+                            data=[],
+                            message="Failed to Student Program Change")
 
     # Delete programs type function
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_PROGRAM_CATEGORY"])])
-    async def remove_program_category(self, uid: str) -> Response[None]:
+    @strawberry.mutation
+    async def remove_student_program_change(self, uid: str) -> Response[None]:
         """
         Remove Program Category By UID
         :param uid:
         :return:
         """
         try:
-            ProgramCategoryService.remove_program_category(uid)
+            StudentProgramChangeStatusService().remove_student_program_change(uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Program Category Removed Successfully",
+                message="Student_program_change Removed Successfully",
                 data=None
             )
         except Exception as e:
@@ -80,6 +78,6 @@ class ProgramCategoryMutation:
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,
-                message="Failed to Remove Program Category",
+                message="Failed to Remove Student Program Change ",
                 data=None
             )
