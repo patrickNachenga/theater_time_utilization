@@ -306,9 +306,9 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
-        code="REGISTER_COURSE_CATEGORY",
-        name="Register Course",
-        description="Can Register Course Category",
+        code="REGISTER_COURSE_CATEGORIES",
+        name="Register Course Categories",
+        description="Can Register Course Categories",
         service="registration",
     ),
     Permission(
