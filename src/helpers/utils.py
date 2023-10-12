@@ -195,7 +195,6 @@ def enroll_staff_to_moodle_course():
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
-
             if course_allocation:
                 # check if this staff already enrolled to this moodle course
                 staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \

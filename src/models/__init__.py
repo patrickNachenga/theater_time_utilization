@@ -53,3 +53,6 @@ from .by_law import ByLaw
 from .student_manuscript import StudentManuscript
 from .intention_to_submit import IntentionToSubmit
 from .intention_to_submit_requirement import IntentionToSubmitRequirement
+# from .student_study_postponement import StudentStudyPostponement
+# from .student_postponement_approval_status import StudentPostponementApprovalStatus
+# from .student_postponement_reasons import StudentPostponementReason

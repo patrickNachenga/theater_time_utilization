@@ -66,7 +66,7 @@ class AcademicYearSemesterQuery:
 
 @strawberry.type
 class AcademicYearSemesterMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEAR_SEMESTER"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEAR_SEMESTERS"])])
     def register_academic_year_semester(self, inputs: List[AcademicYearSemesterInput]) -> Response[AcademicYearSemesterListNode]:
         try:
             return AcademicYearSemesterService(AcademicYearSemester).register_academic_semesters(inputs)
