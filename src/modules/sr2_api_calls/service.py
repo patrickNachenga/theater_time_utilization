@@ -82,6 +82,7 @@ class Sr2ApiCalls(object):
             # Set the request payload
             payload = {
                 "program_code": program.code,
+                "student_name": inputs.student_name,
                 "study_level": program.program_category.short_name,
                 "program_name": program.name,
                 "year_of_study": inputs.year_of_study,
