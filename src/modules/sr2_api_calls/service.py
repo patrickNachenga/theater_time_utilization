@@ -154,7 +154,8 @@ class Sr2ApiCalls(object):
                     academic_year=structure["academic_year"],
                     bill_id=structure["billid"],
                 )
-                control_number_list.append(control_number)
+                if control_number.control_number is not None:
+                    control_number_list.append(control_number)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
