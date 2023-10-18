@@ -89,7 +89,7 @@ class Sr2ApiCalls(object):
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "system": "uqf",
+                "system": "SUA-ESB",
             }
 
             # Send the Get request
