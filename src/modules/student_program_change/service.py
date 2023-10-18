@@ -14,13 +14,15 @@ from src.models import ProgramCourse, Program, AcademicYear, StudentProgramChang
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
+from src.modules.sr2_api_calls.service import Sr2ApiCalls
 from src.modules.states.service import StateService
 from src.modules.transition_metas.service import TransitionMetaService
 from src.modules.workflows.service import WorkflowService
 from src.shared.models import StudentModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode
+from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode, \
+    RequestControlNumberInput
 
 
 def map_data_to_node(data, user_data):
@@ -244,6 +246,21 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 local_object = session.merge(student_program_change)
                                 session.add(local_object)
                                 session.commit()
+
+                                # generate program change control number after request successful created
+                                request_inputs = RequestControlNumberInput(
+                                    program_uid=current_program_uid,
+                                    year_of_study=0,
+                                    student_status=student.status or "Unregistered",
+                                    countrycode="TZ",
+                                    registration_number=student.registration_number,
+                                    student_name=student.user.first_name+" "+student.user.middle_name+" "+student.user.last_name,
+                                    service_type="change-program"
+                                )
+                                # we can notify if control number is generated if necessary
+                                sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(
+                                    request_inputs)
+
                                 return Response(status=True, code=ResponseCode.SUCCESS,
                                                 data=local_object,
                                                 message=f"Your Request Submitted Successful")

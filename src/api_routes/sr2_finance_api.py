@@ -15,3 +15,5 @@ root_path = "/control_number"
 @sr2_router.post(f"{root_path}/save")
 async def register_control_number(parm: ControlNumberInput):
     return Sr2ApiCalls.register_control_numbers(parm)
+
+

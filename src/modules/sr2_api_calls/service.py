@@ -49,6 +49,7 @@ class Sr2ApiCalls(object):
                         amount=float(structure["amount"]),
                         min_amount=float(structure["min_amount"]),
                         currency=structure["currency"],
+                        pay_type=structure["pay_type"],
                         program=program,
                         study_year=inputs.year_of_study
                     )
@@ -89,11 +90,49 @@ class Sr2ApiCalls(object):
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "system": "SUA-ESB",
+                "system": "SUA-ESB"
             }
 
             # Send the Get request
             response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
+
+            # Check for errors
+            if response.status_code == 200:
+                # response_data = response.json()
+                # print(response_data["message"])
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=None, message="Control number request generated successfully")
+            elif response.status_code == 400:
+                return Response(status=False, code=ResponseCode.INVALID_REQUEST,
+                                data=None, message="Your have Submitted Incorrect Request Data")
+            else:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=None, message="Failed to generate control number request")
+
+    @staticmethod
+    def request_other_service_fees(inputs: RequestControlNumberInput) -> Response[str]:
+        with session_scope() as session:
+            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
+            if not program:
+                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                data=None, message="The Program  You Selected Not Found")
+
+            # Set the request payload
+            payload = {
+                "program_code": program.code,
+                "student_name": inputs.student_name,
+                "study_level": program.program_category.short_name,
+                "program_name": program.name,
+                "year_of_study": inputs.year_of_study,
+                "student_status": inputs.student_status,
+                "countrycode": inputs.countrycode,
+                "registration_number": inputs.registration_number,
+                "system": "SUA-ESB",
+                "service_type": inputs.service_type
+            }
+
+            # Send the Get request
+            response = requests.post(Sr2ApiCalls.site_url + f"billing/other_service_fees", data=payload)
 
             # Check for errors
             if response.status_code == 200:
