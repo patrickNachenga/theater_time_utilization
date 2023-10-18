@@ -69,7 +69,7 @@ def get_active_by_law():
     return result
 
 
-@program_router.get("/active-academic_year")
+@program_router.get("/active-academic-year")
 def get_active_by_academic_year():
     try:
         result = AcademicYearCrud.get_active_academic_year()
