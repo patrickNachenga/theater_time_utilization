@@ -51,9 +51,6 @@ class Sr2ApiCallQuery:
             )
 
 
-
-
-
 @strawberry.type
 class Sr2ApiCallMutation:
 
