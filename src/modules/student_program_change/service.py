@@ -255,11 +255,9 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                     countrycode="TZ",
                                     registration_number=student.registration_number,
                                     student_name=student.user.first_name+" "+student.user.middle_name+" "+student.user.last_name,
-                                    service_type="change-program"
                                 )
                                 # we can notify if control number is generated if necessary
-                                sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(
-                                    request_inputs)
+                                sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(inputs=request_inputs, service_type="change-program")
 
                                 return Response(status=True, code=ResponseCode.SUCCESS,
                                                 data=local_object,
