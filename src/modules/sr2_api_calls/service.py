@@ -38,7 +38,7 @@ class Sr2ApiCalls(object):
             }
             encoded_params = urlencode(payload)
             # Send the Get request
-            response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}")
+            response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}", timeout=5)
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
@@ -94,7 +94,7 @@ class Sr2ApiCalls(object):
             }
 
             # Send the Get request
-            response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
+            response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=5)
 
             # Check for errors
             if response.status_code == 200:
@@ -132,7 +132,7 @@ class Sr2ApiCalls(object):
             }
 
             # Send the Get request
-            response = requests.post(Sr2ApiCalls.site_url + f"billing/other_service_fees", data=payload)
+            response = requests.post(Sr2ApiCalls.site_url + f"billing/other_service_fees", data=payload, timeout=5)
 
             # Check for errors
             if response.status_code == 200:
@@ -158,7 +158,7 @@ class Sr2ApiCalls(object):
         }
 
         # Send the Get request
-        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=10)
+        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=5)
         # Check for errors
         if response.status_code == 200:
             return Response(status=True, code=ResponseCode.SUCCESS,
@@ -177,7 +177,7 @@ class Sr2ApiCalls(object):
             "registration_number": registration_number
         }
         encoded_params = urlencode(payload)
-        response = requests.get(Sr2ApiCalls.site_url + f"billing/get_control_numbers?{encoded_params}", timeout=10)
+        response = requests.get(Sr2ApiCalls.site_url + f"billing/get_control_numbers?{encoded_params}", timeout=5)
         # Check for errors
         if response.status_code == 200:
             response_data = response.json()
@@ -219,7 +219,7 @@ class Sr2ApiCalls(object):
             "type": "generate"
         }
         encoded_params = urlencode(payload)
-        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}", timeout=10)
+        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}", timeout=5)
         # Check for errors
         if response.status_code == 200:
             payload["type"] = "get"

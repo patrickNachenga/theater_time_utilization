@@ -28,6 +28,7 @@ def fetch_user(token: str) -> UserAuthenticatedModel | None:
     resp = requests.get(
         f"{settings.UAA_URi}/uaa/user",
         headers={"Authorization": f"Bearer {token}"},
+        timeout=5
     )
     # resp = requests.get(
     #     "http://127.0.0.1:8000/uaa/user",
