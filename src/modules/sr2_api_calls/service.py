@@ -110,7 +110,7 @@ class Sr2ApiCalls(object):
                                 data=None, message="Failed to generate control number request")
 
     @staticmethod
-    def request_other_service_fees(inputs: RequestControlNumberInput) -> Response[str]:
+    def request_other_service_fees(inputs: RequestControlNumberInput, service_type: str) -> Response[str]:
         with session_scope() as session:
             program = session.query(Program).filter_by(uid=inputs.program_uid).first()
             if not program:
@@ -128,7 +128,7 @@ class Sr2ApiCalls(object):
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
                 "system": "SUA-ESB",
-                "service_type": inputs.service_type
+                "service_type": service_type
             }
 
             # Send the Get request
