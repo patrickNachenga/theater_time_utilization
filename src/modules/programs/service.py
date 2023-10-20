@@ -353,13 +353,18 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 program = ProgramService.get_program_by_code(code)
             elif uid:
                 program = ProgramService.get_program_by_uid(uid)
+            else:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                message=f"Invalid inputs supplied!", data={})
 
             # academic_year:AcademicYear
             academic_year = AcademicYearService.get_active_academic_year()
+            print("program", academic_year)
 
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,
                 "code": program.code,
+                "registration_code": program.registration_code,
                 "name": program.name,
                 "short_name": program.short_name,
                 "duration": program.duration,
@@ -387,6 +392,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 return Response(status=True, code=ResponseCode.SUCCESS, data=[{
                     "uid": programItems.uid,
                     "code": programItems.code,
+                    "registration_code": programItems.registration_code,
                     "name": programItems.name,
                     "short_name": programItems.short_name,
                     "department_uid": programItems.department_uid,
