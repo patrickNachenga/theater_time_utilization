@@ -359,6 +359,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
 
             # academic_year:AcademicYear
             academic_year = AcademicYearService.get_active_academic_year()
+            print("program", academic_year)
 
             return Response(status=True, code=ResponseCode.SUCCESS, data={
                 "uid": program.uid,

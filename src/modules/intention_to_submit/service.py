@@ -101,7 +101,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                 intention_to_submit_list = []
                 for x in items:
                     params = {"uid": str(x.student_uid)}
-                    response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                    response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
                     response.raise_for_status()
                     response_data = response.json()
                     if response.status_code == 200:
@@ -189,7 +189,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                     payload = json.dumps(params)
 
                     response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
-                                             headers=headers)
+                                             headers=headers, timeout=5)
                     response.raise_for_status()
                     response_data = response.json()
 
@@ -231,8 +231,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                 student_seminar_list = []
                 for x in intention_to_submits:
                     params = {"uids": [str(x.student_uid)]}
-                    # response = requests.get(settings.UAA_URi + f'/users/student', params=params)
-                    response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params)
+                    response = requests.get(settings.UAA_URi + f'/students-details-by-uids', params=params, timeout=5)
                     response.raise_for_status()
                     response_data = response.json()
                     print(response_data)
@@ -344,7 +343,7 @@ class IntentionToSubmitService(CRUDBase[IntentionToSubmit, IntentionToSubmitInpu
                     # Serialize the data to JSON
                     payload = json.dumps(params)
                     response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
-                                             headers=headers)
+                                             headers=headers, timeout=5)
                     response.raise_for_status()
                     response_data = response.json()
                     # print(response_data)
