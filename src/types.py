@@ -984,10 +984,11 @@ class ExamToRegister:
 class FailedStudent:
     reg_number: str
     reason: (str)
+
+
 @strawberry.type
 class SuccessStudent:
     reg_number: str
-
 
 
 @strawberry.type
@@ -1326,10 +1327,12 @@ class IntentionToSubmitRequirementNode:
     life_span: Optional[int] = 0
     program_category: ProgramCategoryNode
 
+
 @strawberry.type(description="Intention To Submit Requirement Paginated Output")
 class IntentionToSubmitRequirementListNode:
     items: List[IntentionToSubmitRequirementNode]
     total_count: int
+
 
 @strawberry.type(description="Student Submission paginated output")
 class ThesisNode:
@@ -1353,8 +1356,25 @@ class ThesisListNode:
     items: List[ThesisNode]
     total_count: int
 
+
 @strawberry.input(description="Student Seminar Input")
 class StudentSeminarMarksInput:
     uid: str
     seminar_marks: Optional[float] = 0
     is_pass: Optional[bool] = False
+
+
+@strawberry.type(description="Registered Student")
+class RegisteredStudentNode:
+    registration_number: str
+    full_name: str
+    year_of_study: int
+    program_code: str
+    academic_year: str
+    semester: str
+
+
+@strawberry.type(description="Registered studen list")
+class RegisteredStudentListNode:
+    items: List[RegisteredStudentNode]
+    total_count: int

@@ -5,6 +5,7 @@ from src.models import ProgramSemester
 from src.models.semester_registration import SemesterRegistration
 from src.modules import CRUDBase
 from src.types import SemesterRegistrationNode, SemesterRegistrationListNode
+from sqlalchemy import create_engine, text
 
 
 class SemesterRegistrationService(object):
@@ -41,3 +42,35 @@ class SemesterRegistrationService(object):
             session.add_all(semester_registration)
             session.commit()
             return True
+
+    @staticmethod
+    def get_registered_students() -> bool:
+        # Create the SQLAlchemy engine for the first database (Server 1)
+        engine1 = create_engine("postgresql://postgres:Sua123@45.61.55.203:5434/registration_db")
+
+        # Create the SQLAlchemy engine for the second database (Server 2)
+        engine2 = create_engine("postgresql://postgres:Sua123@45.61.55.203/uaa_db")
+        conn1 = engine1.connect()
+        conn2 = engine2.connect()
+        sql_query = text("""
+            SELECT sr.study_year, sr.student_uid, st.registration_number
+            FROM semester_registrations sr
+            JOIN dblink('host=45.61.55.203 port=5433 user=postgres password=Sua123 dbname=uaa_db',
+                        'SELECT uid, registration_number FROM students') AS st(uid TEXT, registration_number TEXT)
+            ON sr.student_uid = st.uid
+           
+        """)
+        result = conn1.execute(sql_query)
+        for row in result:
+            study_year, student_uid, registration_number = row
+            print(
+                f"Study Year: {study_year}, Student UID: {student_uid}, Registration Number: {registration_number}")
+
+        return True
+
+    @staticmethod
+    def get_registered_students_plan_B() -> bool:
+        with session_scope() as session:
+            semester_registrations = session.query(SemesterRegistration).filter(
+                SemesterRegistration.deleted_at.is_(None))
+            return semester_registrations
