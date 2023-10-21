@@ -610,6 +610,7 @@ class FeeStructureNode:
     currency: str
     program: ProgramNode
     study_year: int
+    pay_type: Optional[str]
 
 
 @strawberry.input(description="Renew Control Numbers Input")

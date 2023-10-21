@@ -72,7 +72,7 @@ class AcademicYearQuery:
 
 @strawberry.type
 class AcademicYearMutation:
-    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEARS"])])
+    @strawberry.field()
     def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         try:
             return AcademicYearService(AcademicYear).register_academic_year(inputs)

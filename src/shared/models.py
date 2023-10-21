@@ -64,4 +64,5 @@ class StudentModel(BaseModel):
     registration_number: Optional[str] = None
     programme_uid: Optional[str] = None
     bylaw_uid: Optional[str] = None
+    status: Optional[str] = None
     user: Optional[UserModel] = None
