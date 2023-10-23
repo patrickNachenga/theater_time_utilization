@@ -11,44 +11,42 @@ from src.core.config import settings, QUEUES
 
 
 class RabbitMQ:
-    def __init__(self, log_incoming_message):
+    def __init__(self):
         """
             Initialize RabbitMQ Connection
         :param :
         """
 
+        self.connection_pool: Pool = Pool(self.get_connection, max_size=2)
+        self.channel_pool: Pool = Pool(self.get_channel, max_size=10)
+
+        print("***************** Rabbitmq connection initialized *****************")
+
+    async def get_connection(self) -> AbstractRobustConnection:
         loop = asyncio.get_event_loop()
-        self.log_incoming_message = log_incoming_message
+        return await connect_robust(
+            host=settings.RABBIT_HOST,
+            port=settings.RABBIT_PORT,
+            login=settings.RABBIT_USERNAME,
+            password=settings.RABBIT_PASSWORD,
+            loop=loop
+        )
 
-        async def get_connection() -> AbstractRobustConnection:
-            return await connect_robust(
-                host=settings.RABBIT_HOST,
-                port=settings.RABBIT_PORT,
-                login=settings.RABBIT_USERNAME,
-                password=settings.RABBIT_PASSWORD,
-                loop=loop
-            )
-
-        self.connection_pool: Pool = Pool(get_connection, max_size=2, loop=loop)
-
-        async def get_channel() -> aio_pika.Channel:
-            async with self.connection_pool.acquire() as connection:
-                return await connection.channel()
-
-        self.channel_pool: Pool = Pool(get_channel, max_size=10, loop=loop)
-
-        self.log_incoming_message('Rabbitmq connection initialized')
+    async def get_channel(self) -> aio_pika.Channel:
+        async with self.connection_pool.acquire() as connection:
+            return await connection.channel()
 
     async def setup(self):
         for queue in QUEUES:
             try:
-                self.log_incoming_message('Declaring queue: ' + queue['name'])
+                # self.log_incoming_message('Declaring queue: ' + queue['name'])
+                print('Declaring queue: ' + queue['name'])
                 await self.declare_exchange(queue["exchange"], queue["type"])
                 await self.declare_queue(name=queue['name'], exchange=queue['exchange'],
                                          routing_key=queue['routing_key'])
             except Exception as e:
-                print(e)
-                self.log_incoming_message('Error: ' + str(e))
+                print('***************** Error: ' + str(e) + '*****************')
+                # self.log_incoming_message('Error: ' + str(e))
 
     async def declare_queue(self, name: str, exchange, routing_key):
         async with self.channel_pool.acquire() as channel:  # type: aio_pika.Channel
@@ -81,7 +79,8 @@ class RabbitMQ:
             for queue in queues:
                 queue_obj = await channel.get_queue(queue)
                 await queue_obj.consume(self.process_incoming_message, no_ack=False)
-                self.log_incoming_message(f'Established {queue} async listener')
+                print(f'***************** Established {queue} async listener *****************')
+                # self.log_incoming_message(f'Established {queue} async listener')
 
     @staticmethod
     async def process_incoming_message(message: aio_pika.abc.AbstractIncomingMessage):
@@ -89,6 +88,7 @@ class RabbitMQ:
         try:
             if message.routing_key == 'sua-esb-permission-routing-key':
                 permissions = json.loads(message.body.decode())
+                # await PermissionService(Permission).receive_permissions(permissions, message)
             else:
                 pass
         except Exception as e:
