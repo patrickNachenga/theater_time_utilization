@@ -29,7 +29,7 @@ RUN pip install redis
 RUN pip install uvicorn[standard]
 CMD rq worker --with-scheduler
 COPY . .
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8804"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8804", "--reload"]
 
 
 
