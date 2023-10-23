@@ -4,14 +4,14 @@ import pendulum
 import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc, inspect, cast, String, or_, and_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, load_only
 
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import get_user_programs_headship, get_user_departments_headship
-from src.models import AcademicYear
+from src.models import AcademicYear, ProgramCategory
 from src.models.program import Program
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
@@ -117,11 +117,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:List[Program]
         """
         with session_scope() as session:
-            stmt = select(Program.uid).where(
-                (Program.department_uid.in_(uids)) & (Program.deleted_at.is_(None))).order_by(
-                desc(Program.updated_at))
-            result = session.scalars(stmt)
-            return result.all()
+            return session.query(Program.department_uid).filter(Program.department_uid.in_(uids)).order_by(
+                desc(Program.updated_at)).all()
 
     @staticmethod
     def get_programs_by_category(category_uid: str) -> Response[ProgramListNode]:
@@ -349,32 +346,43 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :param:
         """
         try:
-            if code:
-                program = ProgramService.get_program_by_code(code)
-            elif uid:
-                program = ProgramService.get_program_by_uid(uid)
-            else:
-                return Response(status=False, code=ResponseCode.FAILURE,
-                                message=f"Invalid inputs supplied!", data={})
+            with session_scope() as session:
+                if code:
+                    # program = ProgramService.get_program_by_code(code)
+                    program = session.query(Program).options(
+                        load_only("uid", "code", "registration_code", "name", "short_name", "duration",
+                                  "department_uid", "program_category_id")).join(ProgramCategory).filter(
+                        Program.code == code).first()
+                elif uid:
+                    # program = ProgramService.get_program_by_uid(uid)
+                    program = session.query(Program).options(
+                        load_only("uid", "code", "registration_code", "name", "short_name", "duration",
+                                  "department_uid", "program_category_id")).join(ProgramCategory).filter(
+                        Program.uid == uid).first()
+                else:
+                    return Response(status=False, code=ResponseCode.FAILURE,
+                                    message=f"Invalid inputs supplied!", data={})
 
-            # academic_year:AcademicYear
-            academic_year = AcademicYearService.get_active_academic_year()
-            print("program", academic_year)
+                # academic_year:AcademicYear
+                # academic_year = AcademicYearService.get_active_academic_year()
+                academic_year = session.query(AcademicYear.id, AcademicYear.uid, AcademicYear.name).filter(
+                    AcademicYear.status == 1).first()
+                # print("program", program)
 
-            return Response(status=True, code=ResponseCode.SUCCESS, data={
-                "uid": program.uid,
-                "code": program.code,
-                "registration_code": program.registration_code,
-                "name": program.name,
-                "short_name": program.short_name,
-                "duration": program.duration,
-                "department_uid": program.department_uid,
-                "program_category_name": program.program_category.name,
-                "program_category_short_name": program.program_category.short_name,
-                "active_academic_year": academic_year.name,
-                "active_academic_year_uid": academic_year.uid
+                return Response(status=True, code=ResponseCode.SUCCESS, data={
+                    "uid": program.uid,
+                    "code": program.code,
+                    "registration_code": program.registration_code,
+                    "name": program.name,
+                    "short_name": program.short_name,
+                    "duration": program.duration,
+                    "department_uid": program.department_uid,
+                    "program_category_name": program.program_category.name,
+                    "program_category_short_name": program.program_category.short_name,
+                    "active_academic_year": academic_year.name,
+                    "active_academic_year_uid": academic_year.uid
 
-            }, message="Program retrieved Successfully")
+                }, message="Program retrieved Successfully")
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
@@ -387,23 +395,27 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :param:
         """
         try:
-            program = ProgramService(Program).get_programs()
-            if program:
-                return Response(status=True, code=ResponseCode.SUCCESS, data=[{
-                    "uid": programItems.uid,
-                    "code": programItems.code,
-                    "registration_code": programItems.registration_code,
-                    "name": programItems.name,
-                    "short_name": programItems.short_name,
-                    "department_uid": programItems.department_uid,
-                    "duration": programItems.duration,
-                    "program_category_name": programItems.program_category.name,
-                    "program_category_short_name": programItems.program_category.short_name,
-                } for programItems in program],
-                                message="Program retrieved Successfully")
-            else:
-                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
-                                message="No program found")
+            with session_scope() as session:
+                # program = ProgramService(Program).get_programs()
+                program = session.query(Program).options(
+                    load_only("uid", "code", "registration_code", "name", "short_name", "duration",
+                              "department_uid", "program_category_id")).join(ProgramCategory).all()
+                if program:
+                    return Response(status=True, code=ResponseCode.SUCCESS, data=[{
+                        "uid": programItems.uid,
+                        "code": programItems.code,
+                        "registration_code": programItems.registration_code,
+                        "name": programItems.name,
+                        "short_name": programItems.short_name,
+                        "department_uid": programItems.department_uid,
+                        "duration": programItems.duration,
+                        "program_category_name": programItems.program_category.name,
+                        "program_category_short_name": programItems.program_category.short_name,
+                    } for programItems in program],
+                                    message="Program retrieved Successfully")
+                else:
+                    return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
+                                    message="No program found")
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
