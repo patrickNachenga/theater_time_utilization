@@ -14,6 +14,7 @@ et-xmlfile==1.1.0
 fastapi==0.95.1
 graphql-core==3.2.3
 greenlet==2.0.2
+gunicorn==21.2.0
 h11==0.14.0
 httptools==0.5.0
 idna==3.4
@@ -22,6 +23,7 @@ Mako==1.2.4
 MarkupSafe==2.1.2
 multidict==6.0.4
 openpyxl==3.1.2
+packaging==23.2
 pamqp==3.2.1
 passlib==1.7.4
 pendulum==2.1.2
