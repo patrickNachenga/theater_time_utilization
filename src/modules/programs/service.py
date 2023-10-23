@@ -348,17 +348,17 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         try:
             with session_scope() as session:
                 if code:
-                    program = ProgramService.get_program_by_code(code)
-                    # program = session.query(Program).options(
-                    #     load_only("uid", "code", "registration_code", "name", "short_name", "duration",
-                    #               "department_uid", "program_category_id")).join(ProgramCategory).filter(
-                    #     Program.code == code).first()
+                    # program = ProgramService.get_program_by_code(code)
+                    program = session.query(Program).options(
+                        load_only("uid", "code", "registration_code", "name", "short_name", "duration",
+                                  "department_uid", "program_category_id")).join(ProgramCategory).filter(
+                        Program.code == code).first()
                 elif uid:
-                    program = ProgramService.get_program_by_uid(uid)
-                    # program = session.query(Program).options(
-                    #     load_only("uid", "code", "registration_code", "name", "short_name", "duration",
-                    #               "department_uid", "program_category_id")).join(ProgramCategory).filter(
-                    #     Program.uid == uid).first()
+                    # program = ProgramService.get_program_by_uid(uid)
+                    program = session.query(Program).options(
+                        load_only("uid", "code", "registration_code", "name", "short_name", "duration",
+                                  "department_uid", "program_category_id")).join(ProgramCategory).filter(
+                        Program.uid == uid).first()
                 else:
                     return Response(status=False, code=ResponseCode.FAILURE,
                                     message=f"Invalid inputs supplied!", data={})
