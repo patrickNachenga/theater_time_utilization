@@ -27,9 +27,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install redis
 RUN pip install uvicorn[standard]
-CMD rq worker --with-scheduler
+#CMD rq worker --with-scheduler
 COPY . .
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8804", "--reload"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8804", "--reload"]
+CMD ["gunicorn", "-w", "3", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8804"]
 
 
 
