@@ -421,5 +421,26 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             return Response(status=False, code=ResponseCode.FAILURE,
                             message=f"Unable to find programs", data=None)
 
+    @staticmethod
+    async def api_get_program_name_duration(uid) -> Response:
+
+        try:
+            with session_scope() as session:
+                # program = ProgramService(Program).get_programs()
+                program = session.query(Program.duration,Program.name).filter(Program.uid ==uid).first()
+                if program:
+                    return Response(status=True, code=ResponseCode.SUCCESS, data={
+                        "name": program.name,
+                        "duration": program.duration
+                    },
+                                    message="Program retrieved Successfully")
+                else:
+                    return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
+                                    message="No program found")
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"Unable to find programs", data=None)
+
 
 ProgramCrud = ProgramService(Program)
