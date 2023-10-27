@@ -39,6 +39,8 @@ class UserModel(BaseModel):
     last_name: Optional[str] = None
     moodle_id: Optional[int] = None
     moodle_username: Optional[str] = None
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
 
 
 class UserHeadshipsModel(BaseModel):

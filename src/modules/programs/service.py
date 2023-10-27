@@ -179,6 +179,13 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             return result.all()
 
     @staticmethod
+    def get_data_by_uid(data_list, uid):
+        for data in data_list:
+            if data['uid'] == uid:
+                return data
+        return None
+
+    @staticmethod
     def get_program_by_uid(uid: str) -> Program:
         """
         Get Program by uid
