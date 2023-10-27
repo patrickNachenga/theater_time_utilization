@@ -77,7 +77,9 @@ def get_active_by_academic_year():
         print(e)
         result = None
     return result
-
+@program_router.get("/program-for-nhif")
+async def api_get_program_name_duration(uid: str):
+    return await ProgramService.api_get_program_name_duration(uid)
 
 @program_router.post("/generate-allocation-template/")
 def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_category: int, assessment_number: int,
