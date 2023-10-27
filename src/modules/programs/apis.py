@@ -87,14 +87,14 @@ class ProgramQuery:
         try:
             # Try to get data from redis first; else get from the registration service
             redis = await get_redis()
-            byte_data_set = await redis.smembers(f'program_by_uid:{uid}')
+            byte_data_set = await redis.smembers(f'program:{uid}')
             # decode bytes to string and parse JSON
             data_set = [json.loads(item.decode()) for item in byte_data_set]
             data = ProgramService.get_data_by_uid(data_set, uid)
             if data is None:
                 result = ProgramService.get_program_by_uid(uid)
                 if result:
-                    await redis.sadd(f'program_by_uid:{uid}', json.dumps({
+                    await redis.sadd(f'program:{uid}', json.dumps({
                         "uid": str(result.uid),
                         "code": result.code,
                         "name": result.name,
