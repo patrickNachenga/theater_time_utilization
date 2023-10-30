@@ -207,8 +207,10 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         """
         with session_scope() as session:
             result = session.query(Program.name).filter(Program.uid == uid).first()
-
-            return result.name
+            if result:
+                return result.name
+            else:
+                return None
 
     @staticmethod
     def get_program_by_codes(codes: List[str]) -> List[Program]:
@@ -446,7 +448,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         try:
             with session_scope() as session:
                 # program = ProgramService(Program).get_programs()
-                program = session.query(Program.duration,Program.name).filter(Program.uid ==uid).first()
+                program = session.query(Program.duration, Program.name).filter(Program.uid == uid).first()
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data={
                         "name": program.name,
