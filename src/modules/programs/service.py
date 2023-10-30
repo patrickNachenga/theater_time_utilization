@@ -199,6 +199,18 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             return result.first()
 
     @staticmethod
+    def get_program_name(uid: str) -> str:
+        """
+        Get Program by uid
+        :param uid:
+        :return:Program
+        """
+        with session_scope() as session:
+            result = session.query(Program.name).filter(Program.uid == uid).first()
+
+            return result.name
+
+    @staticmethod
     def get_program_by_codes(codes: List[str]) -> List[Program]:
         """
             Get programs by codes
