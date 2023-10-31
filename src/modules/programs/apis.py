@@ -169,6 +169,30 @@ class ProgramQuery:
                 message="Failed to get Programs",
                 data=ProgramListNode(items=[], total_count=0))
 
+    @strawberry.field()
+    def get_program_name(self, program_uid: str) -> Response[str]:
+        try:
+            name = ProgramCrud.get_program_name(program_uid)
+            if name:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully retrieve program name",
+                    data=name)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Failed to retrieve program name",
+                    data=None)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to get Programs",
+                data=None)
+
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
     def get_programs_by_department_uid(self, department_uid: str) -> Response[ProgramListNode]:
         try:
