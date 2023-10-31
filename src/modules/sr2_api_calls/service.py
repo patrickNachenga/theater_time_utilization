@@ -5,7 +5,7 @@ import requests
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.models import Program
+from src.models import Program, ProgramCategory
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode, RewControlNumberInput
@@ -23,16 +23,19 @@ class Sr2ApiCalls(object):
         """
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
+            program = session.query(Program.code, ProgramCategory.short_name).join(ProgramCategory).filter(
+                Program.uid == inputs.program_uid).first()
+            # print(program)
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
 
+            (program_code, program_category) = program
             # Set the request payload
             payload = {
-                "program_code": program.code,
+                "program_code": program_code,
                 "year_of_study": inputs.year_of_study,
-                "study_level": program.program_category.short_name,
+                "study_level": program_category,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
@@ -50,7 +53,6 @@ class Sr2ApiCalls(object):
                         min_amount=float(structure["min_amount"]),
                         currency=structure["currency"],
                         pay_type=structure["pay_type"],
-                        program=program,
                         study_year=inputs.year_of_study
                     )
                     fee_structure_list.append(fee_structure)
@@ -75,17 +77,19 @@ class Sr2ApiCalls(object):
 
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
+            program = session.query(Program.code, Program.name, ProgramCategory.short_name).join(
+                ProgramCategory).filter(
+                Program.uid == inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
-
+            (program_code, program_name, program_category) = program
             # Set the request payload
             payload = {
-                "program_code": program.code,
+                "program_code": program_code,
                 "student_name": inputs.student_name,
-                "study_level": program.program_category.short_name,
-                "program_name": program.name,
+                "study_level": program_category,
+                "program_name": program_name,
                 "year_of_study": inputs.year_of_study,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
@@ -112,17 +116,21 @@ class Sr2ApiCalls(object):
     @staticmethod
     def request_other_service_fees(inputs: RequestControlNumberInput, service_type: str) -> Response[str]:
         with session_scope() as session:
-            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
+            program = session.query(Program.code, Program.name, ProgramCategory.short_name).join(
+                ProgramCategory).filter(
+                Program.uid == inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="The Program  You Selected Not Found")
 
+            (program_code, program_name, program_category) = program
+
             # Set the request payload
             payload = {
-                "program_code": program.code,
+                "program_code": program_code,
                 "student_name": inputs.student_name,
-                "study_level": program.program_category.short_name,
-                "program_name": program.name,
+                "study_level": program_category,
+                "program_name": program_name,
                 "year_of_study": inputs.year_of_study,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,

@@ -173,11 +173,18 @@ class ProgramQuery:
     def get_program_name(self, program_uid: str) -> Response[str]:
         try:
             name = ProgramCrud.get_program_name(program_uid)
-            return Response(
-                status=False,
-                code=ResponseCode.SUCCESS,
-                message="Successfully retrieve program name",
-                data=name)
+            if name:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully retrieve program name",
+                    data=name)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Failed to retrieve program name",
+                    data=None)
         except Exception as e:
             print(e)
             return Response(
