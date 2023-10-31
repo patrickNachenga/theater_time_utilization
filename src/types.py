@@ -601,6 +601,12 @@ class FeeStructureInput:
     student_status: str
     countrycode: str
 
+@strawberry.type(description="Program Output")
+class ProgramFeeStructureNode:
+    uid: str
+    code: str
+    name: str
+    short_name: str
 
 @strawberry.type(description="Fee Structure Output")
 class FeeStructureNode:
@@ -608,7 +614,6 @@ class FeeStructureNode:
     amount: float
     min_amount: float
     currency: str
-    program: ProgramNode
     study_year: int
     pay_type: Optional[str]
 
