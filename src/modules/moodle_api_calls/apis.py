@@ -23,8 +23,8 @@ class MoodleApiCallQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_moodle_url(self, inputs: MoodleGetUrlInput, info: Info) -> Response[str]:
         try:
-            if info and info.context.user.profile.moodle_username:
-                moodle_username = info.context.user.profile.moodle_username
+            if info and info.context.user.moodle_username:
+                moodle_username = info.context.user.moodle_username
                 moodle = MoodleApi()
                 moodle_response = moodle.getloginurl(moodle_username, course_id=inputs.course_moodle_id)
                 if moodle_response:

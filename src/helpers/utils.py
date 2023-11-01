@@ -326,25 +326,25 @@ def get_user_departments_headship(info: Info):
     c_list = []
     u_list = []
     d_list = []
-    if len(info.context.user.headships.campus_headships) > 0:
+    if len(info.context.user.campus_headships) > 0:
         try:
             url = f"{settings.UAA_URi}/departments/campuses"
             # url = "http://127.0.0.1:8000/departments/campuses"
-            response = requests.post(url, json=info.context.user.headships.campus_headships, timeout=5)
+            response = requests.post(url, json=info.context.user.campus_headships, timeout=5)
             c_list = response.json()
             # print('c_list', c_list)
         except Exception as e:
             print(e)
-    if len(info.context.user.headships.unit_headships) > 0:
+    if len(info.context.user.unit_headships) > 0:
         try:
             url = f"{settings.UAA_URi}/departments/units"
             # url = "http://127.0.0.1:8000/departments/units"
-            response = requests.post(url, json=info.context.user.headships.unit_headships, timeout=5)
+            response = requests.post(url, json=info.context.user.unit_headships, timeout=5)
             u_list = response.json()
         except Exception as e:
             print(e)
-    if len(info.context.user.headships.department_headships) > 0:
-        d_list = info.context.user.headships.department_headships
+    if len(info.context.user.department_headships) > 0:
+        d_list = info.context.user.department_headships
     combined_list = set(c_list + u_list + d_list)
 
     return combined_list
@@ -352,8 +352,8 @@ def get_user_departments_headship(info: Info):
 
 def get_user_programs_headship(info: Info):
     user_program_uids = []
-    if len(info.context.user.headships.program_headships) > 0:
-        user_program_uids = info.context.user.headships.program_headships
+    if len(info.context.user.program_headships) > 0:
+        user_program_uids = info.context.user.program_headships
 
     return user_program_uids
 
