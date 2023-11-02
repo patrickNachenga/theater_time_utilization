@@ -106,7 +106,7 @@ class TransitionMetaService(CRUDBase[TransitionMeta, TransitionMetaInput, Transi
                 if input1.uid is None:
                     transition_meta = TransitionMeta(workflow=workflow, source_state=source_state,
                                                      destination_state=destination_state,
-                                                     created_by=info.context.user.profile.id, groups=input1.groups,
+                                                     created_by=info.context.user.id, groups=input1.groups,
                                                      permissions=input1.permissions)
                     session.add(transition_meta)
                     session.commit()
