@@ -71,7 +71,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
 
         response = requests.post(settings.UAA_URi + '/students-details-by-uids',
                                  json={"uids": students_uids},
-                                 headers=headers, timeout=5)
+                                 headers=headers, timeout=10)
 
         response.raise_for_status()
 
@@ -133,7 +133,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
                 # get student
                 params = {"uid": input.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=10)
                 if response.status_code == 200:
                     result = response.json()
                     if result:
