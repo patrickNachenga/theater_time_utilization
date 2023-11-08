@@ -133,17 +133,21 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
                 # get student
                 params = {"uid": input.student_uid}
-                print("===================  1 ======================")
-                response = requests.get(f'http://10.10.97.236:8389/users/student', params=params, timeout=5)
-                print("===================  2 ======================")
+                #print("===================  1 ======================")
+                #response = requests.get(f'http://10.10.97.236:8389/users/student', params=params, timeout=5)
+                #print("===================  2 ======================")
 
 
-                if response.status_code == 200:
-                    result = response.json()
-                    if result:
-                        student = StudentModel(**result)
-                        current_program_uid = student.programme_uid
-                        current_registration_number = student.registration_number
+                # if response.status_code == 200:
+                if True:
+                    # result = response.json()
+                    # if result:
+                    if True:
+                        # student = StudentModel(**result)
+                        # current_program_uid = student.programme_uid
+                        current_program_uid = input.current_program_uid
+                        # current_registration_number = student.registration_number
+                        current_registration_number = input.current_registration_number
                         print("===================  3 ======================")
 
 
