@@ -538,6 +538,8 @@ class PaginatedCourse:
 class StudentProgramChangeInput:
     uid: Optional[str] = None
     student_uid: str
+    current_registration_number: str
+    current_program_uid: str
     new_program_uid: str
     reason: str
 
