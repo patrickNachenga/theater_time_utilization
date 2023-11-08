@@ -133,7 +133,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
                 # get student
                 params = {"uid": input.student_uid}
-                response = requests.get(f'http://yeesi.sua.ac.tz:8389/users/student', params=params, timeout=10)
+                response = requests.get(f'http://10.10.97.236:8389/users/student', params=params, timeout=5)
                 if response.status_code == 200:
                     result = response.json()
                     if result:
