@@ -133,13 +133,19 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
                 # get student
                 params = {"uid": input.student_uid}
+                print("===================  1 ======================")
                 response = requests.get(f'http://10.10.97.236:8389/users/student', params=params, timeout=5)
+                print("===================  2 ======================")
+
+
                 if response.status_code == 200:
                     result = response.json()
                     if result:
                         student = StudentModel(**result)
                         current_program_uid = student.programme_uid
                         current_registration_number = student.registration_number
+                        print("===================  3 ======================")
+
 
                         # Check if this is the same program
                         if input.new_program_uid == current_program_uid:
@@ -163,6 +169,8 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 message="Your already have Program change request on Go"
                             )
 
+                        
+                        print("===================  4 ======================")
                         # Verify and get supplied Current Program uid to get existed program model
                         current_program = ProgramService(Program).get(current_program_uid)
                         if current_program is None:
@@ -191,6 +199,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 data=None,
                                 message="Program Change Workflow Does not exist"
                             )
+                        print("===================  5 ======================")
 
                         if input.student_uid is None:
                             state = StateService(State).get_state_by_label('Requested')
@@ -216,6 +225,8 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                             local_object = session.merge(student_program_change)
                             session.add(local_object)
                             session.commit()
+                            
+                            print("===================  6 ======================")
                             # process = session.query(Process).filter(
                             #     Process.process_unique_uid == student_program_change.uid).first()
                             # if process is None:
@@ -283,7 +294,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
 
             except Exception as e:
-                print(e)
+                print('==========>>>', e)
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None,
                                 message=f"Your Request is Unsuccessful")
