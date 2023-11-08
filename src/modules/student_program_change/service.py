@@ -192,7 +192,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 message="Program Change Workflow Does not exist"
                             )
 
-                        if input.student_uid is None:
+                        if input.uid is None:
                             state = StateService(State).get_state_by_label('Requested')
                             if state is None:
                                 return Response(
