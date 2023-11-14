@@ -23,8 +23,8 @@ class MoodleApiCallQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_moodle_url(self, inputs: MoodleGetUrlInput, info: Info) -> Response[str]:
         try:
-            if info and info.context.user.profile.moodle_username:
-                moodle_username = info.context.user.profile.moodle_username
+            if info and info.context.user.moodle_username:
+                moodle_username = info.context.user.moodle_username
                 moodle = MoodleApi()
                 moodle_response = moodle.getloginurl(moodle_username, course_id=inputs.course_moodle_id)
                 if moodle_response:
@@ -151,7 +151,7 @@ class MoodleApiCallQuery:
                             "Content-Type": "application/json"
                         }
                         # Send the Get request
-                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload, headers=headers)
+                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload, headers=headers, timeout=5)
                         response.raise_for_status()
                         if response.status_code == 200:
                             responseData = response.json()

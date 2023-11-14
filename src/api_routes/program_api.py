@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from src.db.session import session_scope
 from src.helpers.utils import insert_exam_result, insert_course_work, get_student_from_uaa
 from src.models import ExamCategory
+from src.modules.academic_year.service import AcademicYearCrud
 from src.modules.by_law.by_law_classes import BYLAW
 from src.modules.by_law.by_law_files.by_law_2019 import ByLaw2019
 from src.modules.by_law.service import ByLawCrud
@@ -59,13 +60,32 @@ async def get_program_data(parm: ProgramDepartmentInput):
 
 @program_router.get("/active-by-law")
 def get_active_by_law():
-
     try:
         result = ByLawCrud.get_active_by_law()
     except Exception as e:
         print(e)
         result = None
     return result
+
+
+@program_router.get("/active-academic-year")
+def get_active_by_academic_year():
+    try:
+        result = AcademicYearCrud.get_active_academic_year()
+    except Exception as e:
+        print(e)
+        result = None
+    return result
+
+
+@program_router.get("/program-for-nhif")
+async def api_get_program_name_duration(uid: str):
+    return await ProgramService.api_get_program_name_duration(uid)
+
+
+@program_router.get("/program-change-students")
+async def api_get_program_change_student_list():
+    return await ProgramService.api_get_program_change_student_list()
 
 
 @program_router.post("/generate-allocation-template/")

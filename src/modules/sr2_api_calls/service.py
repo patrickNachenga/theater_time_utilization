@@ -5,7 +5,7 @@ import requests
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.models import Program
+from src.models import Program, ProgramCategory
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import FeeStructureInput, RequestControlNumberInput, ControlNumberNode, RewControlNumberInput
@@ -23,22 +23,25 @@ class Sr2ApiCalls(object):
         """
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
+            program = session.query(Program.code, ProgramCategory.short_name).join(ProgramCategory).filter(
+                Program.uid == inputs.program_uid).first()
+            # print(program)
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
 
+            (program_code, program_category) = program
             # Set the request payload
             payload = {
-                "program_code": program.code,
+                "program_code": program_code,
                 "year_of_study": inputs.year_of_study,
-                "study_level": program.program_category.short_name,
+                "study_level": program_category,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
             }
             encoded_params = urlencode(payload)
             # Send the Get request
-            response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}")
+            response = requests.get(Sr2ApiCalls.site_url + f"billing/program_fee_structure?{encoded_params}", timeout=5)
             # Check for errors
             if response.status_code == 200:
                 response_data = response.json()
@@ -49,7 +52,7 @@ class Sr2ApiCalls(object):
                         amount=float(structure["amount"]),
                         min_amount=float(structure["min_amount"]),
                         currency=structure["currency"],
-                        program=program,
+                        pay_type=structure["pay_type"],
                         study_year=inputs.year_of_study
                     )
                     fee_structure_list.append(fee_structure)
@@ -74,25 +77,70 @@ class Sr2ApiCalls(object):
 
         # Verify and get supplied Program code and exists
         with session_scope() as session:
-            program = session.query(Program).filter_by(uid=inputs.program_uid).first()
+            program = session.query(Program.code, Program.name, ProgramCategory.short_name).join(
+                ProgramCategory).filter(
+                Program.uid == inputs.program_uid).first()
             if not program:
                 return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None, message="Program Not Found")
-
+            (program_code, program_name, program_category) = program
             # Set the request payload
             payload = {
-                "program_code": program.code,
-                "study_level": program.program_category.short_name,
-                "program_name": program.name,
+                "program_code": program_code,
+                "student_name": inputs.student_name,
+                "study_level": program_category,
+                "program_name": program_name,
                 "year_of_study": inputs.year_of_study,
                 "student_status": inputs.student_status,
                 "countrycode": inputs.countrycode,
                 "registration_number": inputs.registration_number,
-                "system": "uqf",
+                "system": "SUA-ESB"
             }
 
             # Send the Get request
-            response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload)
+            response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=5)
+
+            # Check for errors
+            if response.status_code == 200:
+                # response_data = response.json()
+                # print(response_data["message"])
+                return Response(status=True, code=ResponseCode.SUCCESS,
+                                data=None, message="Control number request generated successfully")
+            elif response.status_code == 400:
+                return Response(status=False, code=ResponseCode.INVALID_REQUEST,
+                                data=None, message="Your have Submitted Incorrect Request Data")
+            else:
+                return Response(status=False, code=ResponseCode.FAILURE,
+                                data=None, message="Failed to generate control number request")
+
+    @staticmethod
+    def request_other_service_fees(inputs: RequestControlNumberInput, service_type: str) -> Response[str]:
+        with session_scope() as session:
+            program = session.query(Program.code, Program.name, ProgramCategory.short_name).join(
+                ProgramCategory).filter(
+                Program.uid == inputs.program_uid).first()
+            if not program:
+                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
+                                data=None, message="The Program  You Selected Not Found")
+
+            (program_code, program_name, program_category) = program
+
+            # Set the request payload
+            payload = {
+                "program_code": program_code,
+                "student_name": inputs.student_name,
+                "study_level": program_category,
+                "program_name": program_name,
+                "year_of_study": inputs.year_of_study,
+                "student_status": inputs.student_status,
+                "countrycode": inputs.countrycode,
+                "registration_number": inputs.registration_number,
+                "system": "SUA-ESB",
+                "service_type": service_type
+            }
+
+            # Send the Get request
+            response = requests.post(Sr2ApiCalls.site_url + f"billing/other_service_fees", data=payload, timeout=5)
 
             # Check for errors
             if response.status_code == 200:
@@ -118,7 +166,7 @@ class Sr2ApiCalls(object):
         }
 
         # Send the Get request
-        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=10)
+        response = requests.post(Sr2ApiCalls.site_url + f"billing/program_fee_structure", data=payload, timeout=5)
         # Check for errors
         if response.status_code == 200:
             return Response(status=True, code=ResponseCode.SUCCESS,
@@ -137,7 +185,7 @@ class Sr2ApiCalls(object):
             "registration_number": registration_number
         }
         encoded_params = urlencode(payload)
-        response = requests.get(Sr2ApiCalls.site_url + f"billing/get_control_numbers?{encoded_params}", timeout=10)
+        response = requests.get(Sr2ApiCalls.site_url + f"billing/get_control_numbers?{encoded_params}", timeout=5)
         # Check for errors
         if response.status_code == 200:
             response_data = response.json()
@@ -179,7 +227,7 @@ class Sr2ApiCalls(object):
             "type": "generate"
         }
         encoded_params = urlencode(payload)
-        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}", timeout=10)
+        response = requests.get(Sr2ApiCalls.site_url + f"students/statement?{encoded_params}", timeout=5)
         # Check for errors
         if response.status_code == 200:
             payload["type"] = "get"

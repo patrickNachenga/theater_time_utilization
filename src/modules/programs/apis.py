@@ -1,13 +1,15 @@
+import json
 from typing import List, Optional
 
 import strawberry
 
+from src.core.redis import get_redis
 from src.core.security import CustomPermissionExtension, Info
 from src.models import Program
 from src.modules.programs.service import ProgramService, ProgramCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramInput, PaginationInput, ProgramListNode, ProgramNode
+from src.types import ProgramInput, PaginationInput, ProgramListNode, ProgramNode, ProgramCategoryNode
 
 
 @strawberry.type
@@ -59,10 +61,66 @@ class ProgramQuery:
                 message="Program not found",
                 data=result)
 
-    @strawberry.field
-    def get_program(self, uid: str) -> Response[ProgramNode]:
+    @staticmethod
+    def program_node_to_dict(node: ProgramNode):
+        return {
+            "uid": node.uid,
+            "code": node.code,
+            "name": node.name,
+            "short_name": node.short_name,
+            "tcu_code": node.tcu_code,
+            "nacte_code": node.nacte_code,
+            "duration": node.duration,
+            "program_category": {
+                "uid": node.program_category.uid,
+                "name": node.program_category.name,
+                "short_name": node.program_category.short_name
+            },
+            "department_uid": node.department_uid,
+            "moodle_id": node.moodle_id,
+            "registration_code": node.registration_code
+        }
+
+    @strawberry.field()
+    async def get_program(self, uid: str) -> Response[ProgramNode]:
+        result = None
         try:
-            result = ProgramService.get_program_by_uid(uid)
+            # Try to get data from redis first; else get from the registration service
+            redis = await get_redis()
+            byte_data_set = await redis.smembers(f'program:{uid}')
+            # decode bytes to string and parse JSON
+            data_set = [json.loads(item.decode()) for item in byte_data_set]
+            data = ProgramService.get_data_by_uid(data_set, uid)
+            if data is None:
+                result = ProgramService.get_program_by_uid(uid)
+                if result:
+                    await redis.sadd(f'program:{uid}', json.dumps({
+                        "uid": str(result.uid),
+                        "code": result.code,
+                        "name": result.name,
+                        "short_name": result.short_name,
+                        "tcu_code": result.tcu_code,
+                        "nacte_code": result.nacte_code,
+                        "duration": result.duration,
+                        "program_category": {
+                            "uid": str(result.program_category.uid),
+                            "name": result.program_category.name,
+                            "short_name": result.program_category.short_name
+                        },
+                        "department_uid": result.department_uid,
+                        "moodle_id": result.moodle_id,
+                        "registration_code": result.registration_code
+                    }))
+            else:
+                result = ProgramNode(uid=data['uid'], code=data['code'], name=data['name'],
+                                     short_name=data['short_name'], tcu_code=data['tcu_code'],
+                                     nacte_code=data['nacte_code'], duration=data['duration'],
+                                     program_category=ProgramCategoryNode(
+                                         uid=data['program_category']['uid'],
+                                         short_name=data['program_category']['short_name'],
+                                         name=data['program_category']['name']
+                                     ), department_uid=data['department_uid'], moodle_id=data['moodle_id'],
+                                     registration_code=data['registration_code'])
         except Exception as e:
             print(e)
             result = None
@@ -110,6 +168,30 @@ class ProgramQuery:
                 code=ResponseCode.FAILURE,
                 message="Failed to get Programs",
                 data=ProgramListNode(items=[], total_count=0))
+
+    @strawberry.field()
+    def get_program_name(self, program_uid: str) -> Response[str]:
+        try:
+            name = ProgramCrud.get_program_name(program_uid)
+            if name:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully retrieve program name",
+                    data=name)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Failed to retrieve program name",
+                    data=None)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to get Programs",
+                data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
     def get_programs_by_department_uid(self, department_uid: str) -> Response[ProgramListNode]:

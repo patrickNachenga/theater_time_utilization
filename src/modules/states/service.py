@@ -76,7 +76,7 @@ class StateService(CRUDBase[State, StateInput, StateInput]):
             for input1 in inputs:
                 if input1.uid is None:
                     state = State(label=input1.label, description=input1.description,
-                                  created_by=info.context.user.profile.id)
+                                  created_by=info.context.user.id)
                     session.add(state)
                     session.commit()
                     state_list.append(state)

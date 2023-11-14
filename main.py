@@ -40,7 +40,7 @@ async def startup():
     await redis_dependency.init()
     if not app.debug:
         await app.initialize_async()
-        scheduler.start()
+        # scheduler.start()
 
 
 @app.on_event("shutdown")

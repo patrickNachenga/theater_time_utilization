@@ -64,13 +64,15 @@ class StudentProgramChangeCourseQuery:
                 status=True,
                 code=ResponseCode.SUCCESS,
                 message="Program Change Retrieved successfully",
-                data=result)
+                data=result
+            )
         else:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="No Requested Program Change Found",
-                data=None)
+                data=None
+            )
 
 
 @strawberry.type

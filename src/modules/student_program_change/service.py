@@ -14,13 +14,15 @@ from src.models import ProgramCourse, Program, AcademicYear, StudentProgramChang
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
+from src.modules.sr2_api_calls.service import Sr2ApiCalls
 from src.modules.states.service import StateService
 from src.modules.transition_metas.service import TransitionMetaService
 from src.modules.workflows.service import WorkflowService
 from src.shared.models import StudentModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode
+from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode, \
+    RequestControlNumberInput
 
 
 def map_data_to_node(data, user_data):
@@ -69,7 +71,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
 
         response = requests.post(settings.UAA_URi + '/students-details-by-uids',
                                  json={"uids": students_uids},
-                                 headers=headers)
+                                 headers=headers, timeout=10)
 
         response.raise_for_status()
 
@@ -131,13 +133,23 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
                 # get student
                 params = {"uid": input.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
-                if response.status_code == 200:
-                    result = response.json()
-                    if result:
-                        student = StudentModel(**result)
-                        current_program_uid = student.programme_uid
-                        current_registration_number = student.registration_number
+                #print("===================  1 ======================")
+                #response = requests.get(f'http://10.10.97.236:8389/users/student', params=params, timeout=5)
+                #print("===================  2 ======================")
+
+
+                # if response.status_code == 200:
+                if True:
+                    # result = response.json()
+                    # if result:
+                    if True:
+                        # student = StudentModel(**result)
+                        # current_program_uid = student.programme_uid
+                        current_program_uid = input.current_program_uid
+                        # current_registration_number = student.registration_number
+                        current_registration_number = input.current_registration_number
+                        print("===================  3 ======================")
+
 
                         # Check if this is the same program
                         if input.new_program_uid == current_program_uid:
@@ -161,6 +173,8 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 message="Your already have Program change request on Go"
                             )
 
+                        
+                        print("===================  4 ======================")
                         # Verify and get supplied Current Program uid to get existed program model
                         current_program = ProgramService(Program).get(current_program_uid)
                         if current_program is None:
@@ -189,6 +203,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 data=None,
                                 message="Program Change Workflow Does not exist"
                             )
+                        print("===================  5 ======================")
 
                         if input.uid is None:
                             state = StateService(State).get_state_by_label('Requested')
@@ -214,18 +229,20 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                             local_object = session.merge(student_program_change)
                             session.add(local_object)
                             session.commit()
-                            process = session.query(Process).filter(
-                                Process.process_unique_uid == student_program_change.uid).first()
-                            if process is None:
-                                process = Process(description='PROGRAM_CHANGE',
-                                                  process_unique_uid=student_program_change.uid,
-                                                  workflow_id=workflow.id)
-                                session.add(process)
-                                session.commit()
-                            # Change state process
-                            process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
-                            session.add(process_flow)
-                            session.commit()
+                            
+                            print("===================  6 ======================")
+                            # process = session.query(Process).filter(
+                            #     Process.process_unique_uid == student_program_change.uid).first()
+                            # if process is None:
+                            #     process = Process(description='PROGRAM_CHANGE',
+                            #                       process_unique_uid=student_program_change.uid,
+                            #                       workflow_id=workflow.id)
+                            #     session.add(process)
+                            #     session.commit()
+                            # # Change state process
+                            # process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
+                            # session.add(process_flow)
+                            # session.commit()
 
                             student_program_change = self.get(local_object.uid)
                             return Response(status=True, code=ResponseCode.SUCCESS,
@@ -244,6 +261,19 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 local_object = session.merge(student_program_change)
                                 session.add(local_object)
                                 session.commit()
+
+                                # generate program change control number after request successful created
+                                request_inputs = RequestControlNumberInput(
+                                    program_uid=current_program_uid,
+                                    year_of_study=0,
+                                    student_status=student.status or "Unregistered",
+                                    countrycode="TZ",
+                                    registration_number=student.registration_number,
+                                    student_name=student.user.first_name+" "+student.user.middle_name+" "+student.user.last_name,
+                                )
+                                # we can notify if control number is generated if necessary
+                                #sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(inputs=request_inputs, service_type="change-program")
+
                                 return Response(status=True, code=ResponseCode.SUCCESS,
                                                 data=local_object,
                                                 message=f"Your Request Submitted Successful")
@@ -268,7 +298,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
 
             except Exception as e:
-                print(e)
+                print('==========>>>', e)
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None,
                                 message=f"Your Request is Unsuccessful")

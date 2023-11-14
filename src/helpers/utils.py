@@ -69,7 +69,7 @@ def create_course_to_moodle():
             Call Department moodle id for uuid
             """
             try:
-                response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}")
+                response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}", timeout=5)
                 if response.status_code == 200:
                     responseData = response.json()
                     if responseData["status"] and responseData["data"]['moodle_id']:
@@ -131,7 +131,7 @@ def enroll_student_to_moodle_course():
                 .first()
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -164,7 +164,7 @@ def unroll_student_to_moodle_course():
                 .first()
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -195,7 +195,6 @@ def enroll_staff_to_moodle_course():
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
-
             if course_allocation:
                 # check if this staff already enrolled to this moodle course
                 staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \
@@ -210,7 +209,7 @@ def enroll_staff_to_moodle_course():
 
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
-                    response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
+                    response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
                     response.raise_for_status()
                     if response.status_code == 200:
                         responseData = response.json()
@@ -246,7 +245,7 @@ def enroll_student_to_moodle_group():
 
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params)
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -280,7 +279,7 @@ def enroll_staff_to_moodle_group():
 
             if staff_course_allocation:
                 params = {"uid": staff_course_allocation.staff_uid}
-                response = requests.get(settings.UAA_URi + f'/users/staff', params=params)
+                response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -327,25 +326,25 @@ def get_user_departments_headship(info: Info):
     c_list = []
     u_list = []
     d_list = []
-    if len(info.context.user.headships.campus_headships) > 0:
+    if len(info.context.user.campus_headships) > 0:
         try:
             url = f"{settings.UAA_URi}/departments/campuses"
             # url = "http://127.0.0.1:8000/departments/campuses"
-            response = requests.post(url, json=info.context.user.headships.campus_headships)
+            response = requests.post(url, json=info.context.user.campus_headships, timeout=5)
             c_list = response.json()
             # print('c_list', c_list)
         except Exception as e:
             print(e)
-    if len(info.context.user.headships.unit_headships) > 0:
+    if len(info.context.user.unit_headships) > 0:
         try:
             url = f"{settings.UAA_URi}/departments/units"
             # url = "http://127.0.0.1:8000/departments/units"
-            response = requests.post(url, json=info.context.user.headships.unit_headships)
+            response = requests.post(url, json=info.context.user.unit_headships, timeout=5)
             u_list = response.json()
         except Exception as e:
             print(e)
-    if len(info.context.user.headships.department_headships) > 0:
-        d_list = info.context.user.headships.department_headships
+    if len(info.context.user.department_headships) > 0:
+        d_list = info.context.user.department_headships
     combined_list = set(c_list + u_list + d_list)
 
     return combined_list
@@ -353,8 +352,8 @@ def get_user_departments_headship(info: Info):
 
 def get_user_programs_headship(info: Info):
     user_program_uids = []
-    if len(info.context.user.headships.program_headships) > 0:
-        user_program_uids = info.context.user.headships.program_headships
+    if len(info.context.user.program_headships) > 0:
+        user_program_uids = info.context.user.program_headships
 
     return user_program_uids
 
@@ -451,7 +450,7 @@ def get_student_from_uaa():
             "Content-Type": "application/json"
         }
 
-        response = requests.get(settings.UAA_URi + '/users/students', headers=headers)
+        response = requests.get(settings.UAA_URi + '/users/students', headers=headers, timeout=5)
 
     except Exception as e:
         print('excption occurred', e)

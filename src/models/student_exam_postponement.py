@@ -20,11 +20,9 @@ class StudentExamPostponement(BaseModel):
     type: int = Column(Integer, nullable=False)
 
     student_course_registration = relationship("StudentCourseRegistration", lazy="subquery",
-                                                back_populates="student_exam_postponement")
-    is_resumed: bool=Column(Boolean, default=False)
+                                               back_populates="student_exam_postponement")
+    is_resumed: bool = Column(Boolean, default=False)
     reason: str = Column(String(600), nullable=False)
     approved_at = Column(DateTime, default=datetime.utcnow)
     # user who approved
     approved_uid = Column(UUID(as_uuid=True), unique=True, index=True, default=uuid.uuid4)
-
-

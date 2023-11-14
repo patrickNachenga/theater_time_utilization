@@ -12,36 +12,37 @@ from strawberry.utils.cached_property import cached_property
 from strawberry.extensions import FieldExtension
 
 from src.core.config import settings
-from src.shared.models import Permission, UserAuthenticatedModel, UserHeadshipsModel
+from src.core.jwt_auth import get_data
+from src.shared.models import Permission, UserAuthenticatedModel, UserHeadshipsModel, UserAuthModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 
 route = APIRouter()
 
 
-def fetch_user(token: str) -> UserAuthenticatedModel | None:
-    """
-        Fetch User By Token
-    :param token:
-    :return:
-    """
-    resp = requests.get(
-        f"{settings.UAA_URi}/uaa/user",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    # resp = requests.get(
-    #     "http://127.0.0.1:8000/uaa/user",
-    #     headers={"Authorization": f"Bearer {token}"},
-    # )
-
-    if resp.status_code == 200 and resp.json():
-        user_dict = {
-            "authorities": resp.json()["authorities"],
-            "profile": resp.json()["user"],
-            "headships": UserHeadshipsModel(**resp.json()['headships'])
-        }
-        return UserAuthenticatedModel(**user_dict)
-    return None
+# def fetch_user(token: str) -> UserAuthenticatedModel | None:
+#     """
+#         Fetch User By Token
+#     :param token:
+#     :return:
+#     """
+#     resp = requests.get(
+#         f"{settings.UAA_URi}/uaa/user",
+#         headers={"Authorization": f"Bearer {token}"}
+#     )
+#     # resp = requests.get(
+#     #     "http://127.0.0.1:8000/uaa/user",
+#     #     headers={"Authorization": f"Bearer {token}"},
+#     # )
+#
+#     if resp.status_code == 200 and resp.json():
+#         user_dict = {
+#             "authorities": resp.json()["authorities"],
+#             "profile": resp.json()["user"],
+#             "headships": UserHeadshipsModel(**resp.json()['headships'])
+#         }
+#         return UserAuthenticatedModel(**user_dict)
+#     return None
 
 
 class IsAuthenticated(BasePermission):
@@ -92,19 +93,15 @@ class CustomPermissionExtension(FieldExtension):
 
 class Context(BaseContext):
     @cached_property
-    def user(self) -> UserAuthenticatedModel | None | Response:
-        """
-            Get User From Token
-        :return:
-        """
+    def user(self) -> UserAuthModel | None | Response:
         if not self.request:
             return None
         authorization = self.request.headers.get("Authorization", None)
-        params = self.request.query_params
         if authorization:
-            return fetch_user(authorization.split(" ")[1])
-        if params and params.get("access_token"):
-            return fetch_user(params.get("access_token"))
+            user_data = get_data(authorization.split(" ")[1])
+            if user_data:
+                return UserAuthModel(**user_data)
+            return None
         return None
 
     @cached_property
@@ -307,9 +304,9 @@ permissions: typing.List[Permission] = [
         service="registration",
     ),
     Permission(
-        code="REGISTER_COURSE_CATEGORY",
-        name="Register Course",
-        description="Can Register Course Category",
+        code="REGISTER_COURSE_CATEGORIES",
+        name="Register Course Categories",
+        description="Can Register Course Categories",
         service="registration",
     ),
     Permission(

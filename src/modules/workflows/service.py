@@ -76,7 +76,7 @@ class WorkflowService(CRUDBase[Workflow, WorkflowInput, WorkflowInput]):
             for input1 in inputs:
                 if input1.uid is None:
                     workflow = Workflow(name=input1.name, description=input1.description,
-                                        created_by=info.context.user.profile.id)
+                                        created_by=info.context.user.id)
                     session.add(workflow)
                     session.commit()
                     workflow_list.append(workflow)

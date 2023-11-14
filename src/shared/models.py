@@ -29,6 +29,30 @@ class TokenDetailsModel(BaseModel):
     username: Optional[str] = None
 
 
+class StudentAuthModel(BaseModel):
+    uid: Optional[UUID] = None
+    registration_number: Optional[str] = None
+
+
+class StaffAuthModel(BaseModel):
+    uid: Optional[UUID] = None
+    pf_number: Optional[str] = None
+
+
+class UserAuthModel(BaseModel):
+    id: Optional[int] = None
+    uid: Optional[UUID] = None
+    username: Optional[str] = None
+    moodle_username: Optional[str] = None
+    authorities: Optional[List[str]] = None
+    student: Optional[StudentAuthModel] = None
+    staff: Optional[StaffAuthModel] = None
+    campus_headships: Optional[List[str]] = None
+    unit_headships: Optional[List[str]] = None
+    department_headships: Optional[List[str]] = None
+    program_headships: Optional[List[str]] = None
+
+
 class UserModel(BaseModel):
     id: Optional[int] = None
     uid: Optional[UUID] = None
@@ -39,6 +63,8 @@ class UserModel(BaseModel):
     last_name: Optional[str] = None
     moodle_id: Optional[int] = None
     moodle_username: Optional[str] = None
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
 
 
 class UserHeadshipsModel(BaseModel):
@@ -64,4 +90,5 @@ class StudentModel(BaseModel):
     registration_number: Optional[str] = None
     programme_uid: Optional[str] = None
     bylaw_uid: Optional[str] = None
+    status: Optional[str] = None
     user: Optional[UserModel] = None
