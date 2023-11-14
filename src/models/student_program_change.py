@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
 
-
 class StudentProgramChange(BaseModel):
     """
     In every start academic year a student  are able to change program if all minimum requirement pass
