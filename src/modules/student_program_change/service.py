@@ -71,7 +71,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
 
         response = requests.post(settings.UAA_URi + '/students-details-by-uids',
                                  json={"uids": students_uids},
-                                 headers=headers, timeout=5)
+                                 headers=headers, timeout=10)
 
         response.raise_for_status()
 
@@ -133,13 +133,23 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
                 # get student
                 params = {"uid": input.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
-                if response.status_code == 200:
-                    result = response.json()
-                    if result:
-                        student = StudentModel(**result)
-                        current_program_uid = student.programme_uid
-                        current_registration_number = student.registration_number
+                #print("===================  1 ======================")
+                #response = requests.get(f'http://10.10.97.236:8389/users/student', params=params, timeout=5)
+                #print("===================  2 ======================")
+
+
+                # if response.status_code == 200:
+                if True:
+                    # result = response.json()
+                    # if result:
+                    if True:
+                        # student = StudentModel(**result)
+                        # current_program_uid = student.programme_uid
+                        current_program_uid = input.current_program_uid
+                        # current_registration_number = student.registration_number
+                        current_registration_number = input.current_registration_number
+                        print("===================  3 ======================")
+
 
                         # Check if this is the same program
                         if input.new_program_uid == current_program_uid:
@@ -163,6 +173,8 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 message="Your already have Program change request on Go"
                             )
 
+                        
+                        print("===================  4 ======================")
                         # Verify and get supplied Current Program uid to get existed program model
                         current_program = ProgramService(Program).get(current_program_uid)
                         if current_program is None:
@@ -191,6 +203,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 data=None,
                                 message="Program Change Workflow Does not exist"
                             )
+                        print("===================  5 ======================")
 
                         if input.uid is None:
                             state = StateService(State).get_state_by_label('Requested')
@@ -216,18 +229,20 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                             local_object = session.merge(student_program_change)
                             session.add(local_object)
                             session.commit()
-                            process = session.query(Process).filter(
-                                Process.process_unique_uid == student_program_change.uid).first()
-                            if process is None:
-                                process = Process(description='PROGRAM_CHANGE',
-                                                  process_unique_uid=student_program_change.uid,
-                                                  workflow_id=workflow.id)
-                                session.add(process)
-                                session.commit()
-                            # Change state process
-                            process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
-                            session.add(process_flow)
-                            session.commit()
+                            
+                            print("===================  6 ======================")
+                            # process = session.query(Process).filter(
+                            #     Process.process_unique_uid == student_program_change.uid).first()
+                            # if process is None:
+                            #     process = Process(description='PROGRAM_CHANGE',
+                            #                       process_unique_uid=student_program_change.uid,
+                            #                       workflow_id=workflow.id)
+                            #     session.add(process)
+                            #     session.commit()
+                            # # Change state process
+                            # process_flow = ProcessFlow(state_id=state.id, process_id=process.id)
+                            # session.add(process_flow)
+                            # session.commit()
 
                             student_program_change = self.get(local_object.uid)
                             return Response(status=True, code=ResponseCode.SUCCESS,
@@ -283,66 +298,10 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
 
             except Exception as e:
-                print(e)
+                print('==========>>>', e)
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None,
                                 message=f"Your Request is Unsuccessful")
-
-    @staticmethod
-    def get_students_change_program_requests_report() -> [dict]:
-        headers = {
-            "Content-Type": "application/json"
-        }
-        try:
-            response = requests.get(settings.REGISTRATION_SERVICE_URL + '/students/get_program_change_students',
-                                    headers=headers, timeout=5)
-        except Exception as e:
-            print('Exception occurred', e)
-            response = None
-
-        if response.status:
-            program_data = response.json()
-
-            result = [{'student_uid': item['student_uid'], 'code': item['code'], 'name': item['name']} for item in program_data['data']]
-            result_list = []
-            with (session_scope() as session):
-
-                for item in result:
-                    uid = item['uid']
-                    code = item['code']
-                    name = item['name']
-
-                    # Query the Student model to count students with matching 'program_uid'
-                    student_count = session.query(Student).join(Status).filter(Student.programme_uid == uid,
-                                                                               Student.study_year == 1).count()
-
-                    # Query the Student model and join it with the User model to count male students
-                    male_student_count = (
-                        session.query(Student)
-                        .join(User)
-                        .join(Status)
-                        .filter(Student.programme_uid == uid, User.gender == 'Male', Student.study_year == 1)
-                        .count()
-                    )
-
-                    # Query the Student model and join it with the User model to count female students
-                    female_student_count = (
-                        session.query(Student)
-                        .join(User)
-                        .join(Status)
-                        .filter(Student.programme_uid == uid, User.gender == 'Female', Student.study_year == 1)
-                        .count()
-                    )
-
-                    # Add the counts to the dictionary
-                    item['total_program_student'] = student_count
-                    item['total_program_male_student'] = male_student_count
-                    item['total_program_female_student'] = female_student_count
-
-                    # Add the updated dictionary to the result list
-                    result_list.append(item)
-
-        return result_list
 
 
 ProgramCourseCrud = StudentProgramChangeService(StudentProgramChange)
