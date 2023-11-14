@@ -309,16 +309,16 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
             "Content-Type": "application/json"
         }
         try:
-            response = requests.get(settings.REGISTRATION_SERVICE_URL + '/programs',
+            response = requests.get(settings.REGISTRATION_SERVICE_URL + '/students/get_program_change_students',
                                     headers=headers, timeout=5)
         except Exception as e:
             print('Exception occurred', e)
             response = None
 
-        if response.status_code == 200:
+        if response.status:
             program_data = response.json()
 
-            result = [{'uid': item['uid'], 'code': item['code'], 'name': item['name']} for item in program_data['data']]
+            result = [{'student_uid': item['student_uid'], 'code': item['code'], 'name': item['name']} for item in program_data['data']]
             result_list = []
             with (session_scope() as session):
 
