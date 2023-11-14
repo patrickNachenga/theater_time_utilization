@@ -483,9 +483,11 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                                                     ).join(Program,
                                                            StudentProgramChange.new_program_id == Program.id).all()
                 if program_change_data:
+                    print('Data zimekujaa')
                     return Response(status=True, code=ResponseCode.SUCCESS, data=program_change_data,
                                     message="Program change retrieved Successfully")
                 else:
+                    print('Data holaaaa')
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
                                     message="No students for program change found")
         except Exception as e:
