@@ -11,7 +11,7 @@ from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import get_user_programs_headship, get_user_departments_headship
-from src.models import AcademicYear, ProgramCategory
+from src.models import AcademicYear, ProgramCategory, StudentProgramChange
 from src.models.program import Program
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
@@ -462,6 +462,30 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
                             message=f"Unable to find programs", data=None)
+
+    @staticmethod
+    async def api_get_program_change_student_list() -> Response:
+
+        try:
+            with session_scope() as session:
+                # program = ProgramService(Program).get_programs()
+                program_change_data = session.query(StudentProgramChange.student_uid,
+                                                    StudentProgramChange.new_program_id,
+                                                    StudentProgramChange.current_program_id,
+                                                    StudentProgramChange.current_registration_number,
+                                                    StudentProgramChange.reason,
+                                                    StudentProgramChange.academic_year,
+                                                    StudentProgramChange.approve_status).all()
+                if program_change_data:
+                    return Response(status=True, code=ResponseCode.SUCCESS, data=program_change_data,
+                                    message="Program change retrieved Successfully")
+                else:
+                    return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
+                                    message="No students for program change found")
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"Unable to find students for program change", data=None)
 
 
 ProgramCrud = ProgramService(Program)
