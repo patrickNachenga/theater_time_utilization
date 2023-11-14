@@ -467,15 +467,21 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
     async def api_get_program_change_student_list() -> Response:
 
         try:
-            with session_scope() as session:
+            with (session_scope() as session):
                 # program = ProgramService(Program).get_programs()
                 program_change_data = session.query(StudentProgramChange.student_uid,
                                                     StudentProgramChange.new_program_id,
+                                                    Program.uid,
+                                                    Program.name,
+                                                    Program.code,
+                                                    Program.registration_code,
                                                     StudentProgramChange.current_program_id,
                                                     StudentProgramChange.current_registration_number,
                                                     StudentProgramChange.reason,
                                                     StudentProgramChange.academic_year,
-                                                    StudentProgramChange.approve_status).all()
+                                                    StudentProgramChange.approve_status
+                                                    ).join(Program,
+                                                           StudentProgramChange.new_program_id == Program.id).all()
                 if program_change_data:
                     return Response(status=True, code=ResponseCode.SUCCESS, data=program_change_data,
                                     message="Program change retrieved Successfully")
