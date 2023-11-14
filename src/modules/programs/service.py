@@ -481,11 +481,11 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                                     message="Program change retrieved Successfully")
                 else:
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
-                                    message="No program change found")
+                                    message="No students for program change found")
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
-                            message=f"Unable to find program change", data=None)
+                            message=f"Unable to find students for program change", data=None)
 
 
 ProgramCrud = ProgramService(Program)
