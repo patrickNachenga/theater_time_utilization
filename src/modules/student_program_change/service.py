@@ -114,7 +114,6 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                for data in response_data
                                for change in student_program_changes_result
                                if data['uid'] == change.student_uid]
-
                 items = [map_data_to_node(result, result.pop('user')) for result in results]
                 return StudentProgramChangeRequestReport(items=items)
             return []
