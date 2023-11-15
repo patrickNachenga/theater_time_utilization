@@ -22,7 +22,7 @@ from src.shared.models import StudentModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode, \
-    RequestControlNumberInput
+    RequestControlNumberInput,StudentProgramChangeRequestReport
 
 
 def map_data_to_node(data, user_data):
@@ -87,6 +87,35 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                    if data['uid'] == change.student_uid]
 
         return [map_data_to_node(result, result.pop('user')) for result in results]
+
+
+
+    @staticmethod
+    def get_student_program_change_report() -> [StudentProgramChangeRequestReport]:
+        with session_scope() as session:
+            result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
+                desc(StudentProgramChange.updated_at)).all()
+            if result:
+                for x in result:
+                    # params = {"uid": str(x.student_uid)}
+                    try:
+                        data_obj = {
+                            "uids": x.student_uid
+                        }
+                        payload = json.dumps(data_obj)
+                        headers = {
+                            "Content-Type": "application/json"
+                        }
+                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                                 headers=headers)
+                        response.raise_for_status()
+                        print(response)
+                    except Exception as e:
+                        print(e)
+                    # response.raise_for_status()
+                    # response_data = response.json()
+
+            return StudentProgramChangeRequestReport(items=result)
 
     @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:

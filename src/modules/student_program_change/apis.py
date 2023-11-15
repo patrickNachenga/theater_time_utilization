@@ -7,7 +7,7 @@ from src.models import StudentProgramChange
 from src.modules.student_program_change.service import StudentProgramChangeService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentProgramChangeInput, StudentProgramChangeNode
+from src.types import StudentProgramChangeInput, StudentProgramChangeNode, StudentProgramChangeRequestReport
 
 
 @strawberry.type
@@ -73,6 +73,32 @@ class StudentProgramChangeCourseQuery:
                 message="No Requested Program Change Found",
                 data=None
             )
+
+    @strawberry.field()
+    def get_student_program_change_report(self) -> Response[StudentProgramChangeRequestReport]:
+        try:
+            result_list = StudentProgramChangeService.get_student_program_change_report()
+            # print(result_list)
+        except Exception as e:
+            print(e)
+            result_list = None
+        if result_list:
+            # result = [StudentProgramChangeRequestReport(
+            #     student_uid=item['student_uid'],
+            #     uid=item['uid']
+            # ) for item in result_list]
+
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message='Successfully retrieve Data',
+                data=result_list)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Requested Programs Change Found",
+                data=None)
 
 
 @strawberry.type
