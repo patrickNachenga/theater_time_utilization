@@ -118,7 +118,6 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 items = [map_data_to_node(result, result.pop('user')) for result in results]
                 return StudentProgramChangeRequestReport(items=items)
             return []
-
     @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
         """
