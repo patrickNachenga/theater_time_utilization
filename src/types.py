@@ -1386,3 +1386,7 @@ class RegisteredStudentNode:
 class RegisteredStudentListNode:
     items: List[RegisteredStudentNode]
     total_count: int
+
+@strawberry.type(description="Get Student Change Program Request")
+class StudentProgramChangeRequestReport:
+    items: List[StudentProgramChangeNode]

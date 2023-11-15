@@ -1,5 +1,7 @@
 import json
 from typing import Optional, List
+from urllib.request import urlopen
+import urllib.request
 
 import requests
 from fastapi.encoders import jsonable_encoder
@@ -22,7 +24,7 @@ from src.shared.models import StudentModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode, \
-    RequestControlNumberInput
+    RequestControlNumberInput, StudentProgramChangeRequestReport
 
 
 def map_data_to_node(data, user_data):
@@ -88,6 +90,33 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
 
         return [map_data_to_node(result, result.pop('user')) for result in results]
 
+    @staticmethod
+    def get_student_program_change_report() -> [StudentProgramChangeRequestReport]:
+        with session_scope() as session:
+            student_program_changes_result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
+                desc(StudentProgramChange.updated_at)).all()
+            if student_program_changes_result:
+                data_obj = {
+                    "uids": []
+                }
+                for x in student_program_changes_result:
+                    data_obj['uids'].append(str(x.student_uid))
+                payload = json.dumps(data_obj)
+                # Set the Content-Type header to indicate that the request body is JSON
+                headers = {"Content-Type": "application/json"}
+                # Send the Get request
+                response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                         headers=headers)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    response_data = response.json()
+                    results = [dict(data, **change.__dict__)
+                               for data in response_data
+                               for change in student_program_changes_result
+                               if data['uid'] == change.student_uid]
+                items = [map_data_to_node(result, result.pop('user')) for result in results]
+                return StudentProgramChangeRequestReport(items=items)
+            return []
     @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
         """
@@ -269,10 +298,10 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                     student_status=student.status or "Unregistered",
                                     countrycode="TZ",
                                     registration_number=student.registration_number,
-                                    student_name=student.user.first_name+" "+student.user.middle_name+" "+student.user.last_name,
+                                    student_name=student.user.first_name + " " + student.user.middle_name + " " + student.user.last_name,
                                 )
                                 # we can notify if control number is generated if necessary
-                                #sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(inputs=request_inputs, service_type="change-program")
+                                # sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(inputs=request_inputs, service_type="change-program")
 
                                 return Response(status=True, code=ResponseCode.SUCCESS,
                                                 data=local_object,
@@ -302,62 +331,6 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None,
                                 message=f"Your Request is Unsuccessful")
-
-    @staticmethod
-    def get_students_change_program_requests_report() -> [dict]:
-        headers = {
-            "Content-Type": "application/json"
-        }
-        try:
-            response = requests.get(settings.REGISTRATION_SERVICE_URL + '/students/get_program_change_students',
-                                    headers=headers, timeout=5)
-        except Exception as e:
-            print('Exception occurred', e)
-            response = None
-
-        if response.status:
-            program_data = response.json()
-
-            result = [{'student_uid': item['student_uid'], 'code': item['code'], 'name': item['name']} for item in program_data['data']]
-            result_list = []
-            with (session_scope() as session):
-
-                for item in result:
-                    uid = item['uid']
-                    code = item['code']
-                    name = item['name']
-
-                    # Query the Student model to count students with matching 'program_uid'
-                    student_count = session.query(Student).join(Status).filter(Student.programme_uid == uid,
-                                                                               Student.study_year == 1).count()
-
-                    # Query the Student model and join it with the User model to count male students
-                    male_student_count = (
-                        session.query(Student)
-                        .join(User)
-                        .join(Status)
-                        .filter(Student.programme_uid == uid, User.gender == 'Male', Student.study_year == 1)
-                        .count()
-                    )
-
-                    # Query the Student model and join it with the User model to count female students
-                    female_student_count = (
-                        session.query(Student)
-                        .join(User)
-                        .join(Status)
-                        .filter(Student.programme_uid == uid, User.gender == 'Female', Student.study_year == 1)
-                        .count()
-                    )
-
-                    # Add the counts to the dictionary
-                    item['total_program_student'] = student_count
-                    item['total_program_male_student'] = male_student_count
-                    item['total_program_female_student'] = female_student_count
-
-                    # Add the updated dictionary to the result list
-                    result_list.append(item)
-
-        return result_list
 
 
 ProgramCourseCrud = StudentProgramChangeService(StudentProgramChange)
