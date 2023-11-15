@@ -1,5 +1,7 @@
 import json
 from typing import Optional, List
+from urllib.request import urlopen
+import urllib.request
 
 import requests
 from fastapi.encoders import jsonable_encoder
@@ -22,7 +24,7 @@ from src.shared.models import StudentModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseListNode, StudentProgramChangeInput, StudentProgramChangeNode, \
-    RequestControlNumberInput,StudentProgramChangeRequestReport
+    RequestControlNumberInput, StudentProgramChangeRequestReport
 
 
 def map_data_to_node(data, user_data):
@@ -88,34 +90,34 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
 
         return [map_data_to_node(result, result.pop('user')) for result in results]
 
-
-
     @staticmethod
     def get_student_program_change_report() -> [StudentProgramChangeRequestReport]:
         with session_scope() as session:
-            result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
+            student_program_changes_result = session.query(StudentProgramChange).filter(StudentProgramChange.deleted_at.is_(None)).order_by(
                 desc(StudentProgramChange.updated_at)).all()
-            if result:
-                for x in result:
-                    # params = {"uid": str(x.student_uid)}
-                    try:
-                        data_obj = {
-                            "uids": x.student_uid
-                        }
-                        payload = json.dumps(data_obj)
-                        headers = {
-                            "Content-Type": "application/json"
-                        }
-                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
-                                                 headers=headers)
-                        response.raise_for_status()
-                        print(response)
-                    except Exception as e:
-                        print(e)
-                    # response.raise_for_status()
-                    # response_data = response.json()
+            if student_program_changes_result:
+                data_obj = {
+                    "uids": []
+                }
+                for x in student_program_changes_result:
+                    data_obj['uids'].append(str(x.student_uid))
+                payload = json.dumps(data_obj)
+                # Set the Content-Type header to indicate that the request body is JSON
+                headers = {"Content-Type": "application/json"}
+                # Send the Get request
+                response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload,
+                                         headers=headers)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    response_data = response.json()
+                    results = [dict(data, **change.__dict__)
+                               for data in response_data
+                               for change in student_program_changes_result
+                               if data['uid'] == change.student_uid]
 
-            return StudentProgramChangeRequestReport(items=result)
+                items = [map_data_to_node(result, result.pop('user')) for result in results]
+                return StudentProgramChangeRequestReport(items=items)
+            return []
 
     @staticmethod
     def get_student_change_programs(uid: str) -> List[StudentProgramChange]:
@@ -298,10 +300,10 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                     student_status=student.status or "Unregistered",
                                     countrycode="TZ",
                                     registration_number=student.registration_number,
-                                    student_name=student.user.first_name+" "+student.user.middle_name+" "+student.user.last_name,
+                                    student_name=student.user.first_name + " " + student.user.middle_name + " " + student.user.last_name,
                                 )
                                 # we can notify if control number is generated if necessary
-                                #sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(inputs=request_inputs, service_type="change-program")
+                                # sr2Response: Response[str] = Sr2ApiCalls.request_other_service_fees(inputs=request_inputs, service_type="change-program")
 
                                 return Response(status=True, code=ResponseCode.SUCCESS,
                                                 data=local_object,
