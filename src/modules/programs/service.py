@@ -481,7 +481,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                     record.approval_status = student_input.remarks
                     session.commit()
                     session.refresh(record)
-                    return Response(status=True, code=ResponseCode.SUCCESS, data=record,
+                    return Response(status=True, code=ResponseCode.SUCCESS, data=student_input,
                                     message="Program change updated Successfully")
                 else:
                     return {'status': False, 'code': ResponseCode.FAILURE,
