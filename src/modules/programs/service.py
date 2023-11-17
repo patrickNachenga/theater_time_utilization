@@ -483,7 +483,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                                     message="Program change updated Successfully")
                 else:
                     return {'status': False, 'code': ResponseCode.FAILURE,
-                            'data': '', 'message': "Failed to update student"}
+                            'data': '', 'message': "Failed to update students"}
 
         except Exception as e:
             print(e)
