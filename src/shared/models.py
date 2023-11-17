@@ -20,6 +20,14 @@ class Permission(object):
     service: str
 
 
+@dataclass
+class StudentPChangeModel(object):
+    registration_number: str
+    remarks: str
+    approval_status: str
+    f4indexno: str
+
+
 class AuthorityModel(BaseModel):
     authority: Optional[str] = None
 
