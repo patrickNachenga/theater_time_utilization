@@ -41,6 +41,10 @@ class ProgramDepartmentInput(BaseModel):
     departments: List[str]
 
 
+class StudentPChangeInput(BaseModel):
+    students: List[str]
+
+
 # @program_router.get("/program")
 # async def get_program_data(parm: ProgramCodeInput):
 #     print(parm)
@@ -88,9 +92,14 @@ async def api_get_program_change_student_list():
     return await ProgramService.api_get_program_change_student_list()
 
 
-@program_router.get("/get-uqf-pchanges")
-async def api_get_uqf_pchanges_list():
-    return await ProgramService.api_get_uqf_pchanges_list()
+@program_router.post("/program/department")
+async def get_program_data(parm: ProgramDepartmentInput):
+    return ProgramService.api_get_program_by_departments(parm.departments)
+
+
+@program_router.post("/get-uqf-pchanges")
+async def api_get_uqf_pchanges_list(parm: StudentPChangeInput):
+    return await ProgramService.api_get_uqf_pchanges_list(parm.students)
 
 
 @program_router.post("/generate-allocation-template/")
