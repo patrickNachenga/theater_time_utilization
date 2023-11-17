@@ -477,8 +477,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
 
                 # Update the remarks field
                 if record:
-                    record.remarks = student_input.remarks
-                    record.approval_status = student_input.remarks
+                    record.approve_remark = student_input.remarks
+                    record.approve_status = student_input.approval_status
                     session.commit()
                     session.refresh(record)
                     return Response(status=True, code=ResponseCode.SUCCESS, data=student_input,
