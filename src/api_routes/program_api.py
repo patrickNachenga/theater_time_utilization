@@ -88,6 +88,11 @@ async def api_get_program_change_student_list():
     return await ProgramService.api_get_program_change_student_list()
 
 
+@program_router.get("/get-uqf-pchanges")
+async def api_get_uqf_pchanges_list():
+    return await ProgramService.api_get_uqf_pchanges_list()
+
+
 @program_router.post("/generate-allocation-template/")
 def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_category: int, assessment_number: int,
                                      assessment_weight: int):

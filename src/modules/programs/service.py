@@ -16,6 +16,7 @@ from src.models.program import Program
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_category.service import ProgramCategoryService
+from src.shared.models import StudentPChangeModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramInput, ProgramListNode, ProgramCodeInput
@@ -462,6 +463,32 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE,
                             message=f"Unable to find programs", data=None)
+
+    @staticmethod
+    async def api_get_uqf_pchanges_list(student_input: StudentPChangeModel) -> Response:
+
+        try:
+            with (session_scope() as session):
+
+                # Query the database to find the record
+                record = session.query(StudentProgramChange).filter(
+                    student_input.registration_number == StudentProgramChange.current_registration_number).first()
+
+                # Update the remarks field
+                if record:
+                    record.remarks = student_input.remarks
+                    session.commit()
+                    session.refresh(record)
+                    return Response(status=True, code=ResponseCode.SUCCESS, data=[],
+                                    message="Program change updated Successfully")
+                else:
+                    return {'status': False, 'code': ResponseCode.FAILURE,
+                            'data': '', 'message': "Failed to update studentss"}
+
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"Unable to find students for program change", data=None)
 
     @staticmethod
     async def api_get_program_change_student_list() -> Response:
