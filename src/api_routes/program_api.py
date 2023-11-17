@@ -16,6 +16,7 @@ from src.modules.by_law.by_law_files.by_law_2019 import ByLaw2019
 from src.modules.by_law.service import ByLawCrud
 from src.modules.programs.service import ProgramService
 from src.modules.student.service import StudentService
+from src.shared.models import StudentPChangeModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 
@@ -39,6 +40,10 @@ async def get_program_data(code: str | None = None, uid: str | None = None):
 
 class ProgramDepartmentInput(BaseModel):
     departments: List[str]
+
+
+# class StudentPChangeInput(BaseModel):
+#     students: List[str]
 
 
 # @program_router.get("/program")
@@ -88,9 +93,9 @@ async def api_get_program_change_student_list():
     return await ProgramService.api_get_program_change_student_list()
 
 
-@program_router.get("/get-uqf-pchanges")
-async def api_get_uqf_pchanges_list():
-    return await ProgramService.api_get_uqf_pchanges_list()
+@program_router.post("/get-uqf-pchanges")
+async def api_get_uqf_pchanges_list(parm: StudentPChangeModel):
+    return await ProgramService.api_get_uqf_pchanges_list(parm)
 
 
 @program_router.post("/generate-allocation-template/")
