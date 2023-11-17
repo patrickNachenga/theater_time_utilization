@@ -12,6 +12,11 @@ class PermissionDto(BaseModel):
     description: str = None
 
 
+class StudentPChangeModel(BaseModel):
+    registration_number: str = None
+    remarks: str = None
+
+
 @dataclass
 class Permission(object):
     name: str
