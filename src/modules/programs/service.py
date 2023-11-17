@@ -17,6 +17,7 @@ from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_category.service import ProgramCategoryService
 from src.shared.models import StudentPChangeModel
+# from src.shared.models import StudentPChangeModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramInput, ProgramListNode, ProgramCodeInput
@@ -477,6 +478,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 # Update the remarks field
                 if record:
                     record.remarks = student_input.remarks
+                    record.approval_status = student_input.remarks
                     session.commit()
                     session.refresh(record)
                     return Response(status=True, code=ResponseCode.SUCCESS, data=[],
