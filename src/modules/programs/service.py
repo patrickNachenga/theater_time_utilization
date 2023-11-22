@@ -454,7 +454,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data={
                         "name": program.name,
-                        "duration": program.duration
+                        "duration": program.duration,
+                        "department_uid": program.department_uid,
                     },
                                     message="Program retrieved Successfully")
                 else:
