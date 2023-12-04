@@ -454,6 +454,8 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
 
                 program = session.query(Program.duration, Program.name, Program.uid, Program.department_uid, Program.duration).filter(Program.uid == uid).first()
 
+                print('====>>>>', program)
+
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data={
                         "name": program.name,
