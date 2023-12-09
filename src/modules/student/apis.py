@@ -231,6 +231,8 @@ class StudentMutation:
             cell.border = border
 
         count = 0
+
+        print('data ===>', result['data'])
         for row, item in enumerate(result['data'], start=10):
             count += 1
             worksheet[f"A{row}"] = count
