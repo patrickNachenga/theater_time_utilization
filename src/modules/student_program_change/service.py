@@ -177,7 +177,6 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                         current_program_uid = input.current_program_uid
                         # current_registration_number = student.registration_number
                         current_registration_number = input.current_registration_number
-                        print("===================  3 ======================")
 
 
                         # Check if this is the same program
@@ -202,8 +201,7 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 message="Your already have Program change request on Go"
                             )
 
-                        
-                        print("===================  4 ======================")
+
                         # Verify and get supplied Current Program uid to get existed program model
                         current_program = ProgramService(Program).get(current_program_uid)
                         if current_program is None:
@@ -232,7 +230,6 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                                 data=None,
                                 message="Program Change Workflow Does not exist"
                             )
-                        print("===================  5 ======================")
 
                         if input.uid is None:
                             state = StateService(State).get_state_by_label('Requested')
@@ -327,7 +324,6 @@ class StudentProgramChangeService(CRUDBase[StudentProgramChange, StudentProgramC
                     )
 
             except Exception as e:
-                print('==========>>>', e)
                 return Response(status=False, code=ResponseCode.FAILURE,
                                 data=None,
                                 message=f"Your Request is Unsuccessful")

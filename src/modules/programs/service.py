@@ -454,7 +454,6 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
 
                 program = session.query(Program.duration, Program.name, Program.uid, Program.department_uid, Program.duration).filter(Program.uid == uid).first()
 
-                print('====>>>>', program)
 
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data={
@@ -518,11 +517,9 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                                                     ).join(Program,
                                                            StudentProgramChange.new_program_id == Program.id).all()
                 if program_change_data:
-                    print('Data zimekujaa')
                     return Response(status=True, code=ResponseCode.SUCCESS, data=program_change_data,
                                     message="Program change retrieved Successfully")
                 else:
-                    print('Data holaaaa')
                     return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, data=[],
                                     message="No students for program change found")
         except Exception as e:
