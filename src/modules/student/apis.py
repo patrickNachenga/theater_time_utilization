@@ -237,7 +237,7 @@ class StudentMutation:
             count += 1
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
-            worksheet[f"C{row}"] = item['full_name']
+            worksheet[f"C{row}"] = item.get('user', {}).get('full_name')
             worksheet[f"D{row}"] = item['marks']
             # Align the cells to the center
             for col in range(1, 5):
