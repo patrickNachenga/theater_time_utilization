@@ -77,7 +77,7 @@ class StudentQuery:
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item['full_name'],
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item.get('user', {}).get('full_name'),
                                          uid=item['uid'], score=item['marks'])
                           for item in result['data']]
                 )
