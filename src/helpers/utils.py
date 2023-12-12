@@ -476,10 +476,10 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             student_uid = matching_item["uid"]
             registration_number = matching_item["registration_number"]
             by_law_uid = matching_item["bylaw_uid"]
-            first_name = matching_item["user"]["first_name"]
-            middle_name = matching_item["user"]["middle_name"]
-            last_name = matching_item["user"]["last_name"]
-            gender = matching_item["user"]["gender"]
+            first_name = matching_item["first_name"]
+            middle_name = matching_item["middle_name"]
+            last_name = matching_item["last_name"]
+            gender = matching_item["gender"]
 
             if not by_law_uid:
                 failed = failed + 1
