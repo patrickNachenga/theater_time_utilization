@@ -451,6 +451,7 @@ def get_student_from_uaa():
         }
 
         response = requests.get(settings.UAA_URi + '/users/students', headers=headers, timeout=5)
+        print(response.json())
 
     except Exception as e:
         print('excption occurred', e)
