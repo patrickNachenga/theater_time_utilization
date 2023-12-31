@@ -452,13 +452,16 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 # program = ProgramService(Program).get_programs()
                 # program = session.query(Program.duration, Program.name, Program.uid).filter(Program.uid == uid).first()
 
-                program = session.query(Program.duration, Program.name, Program.uid, Program.department_uid, Program.duration).filter(Program.uid == uid).first()
+                program = session.query(Program.duration, Program.name, Program.uid, Program.department_uid, Program.duration, Program.code, Program.tcu_code).filter(Program.uid == uid).first()
 
 
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data={
                         "name": program.name,
+                        "programme_uid": program.uid,
                         "duration": program.duration,
+                        "code": program.code,
+                        "tcu_code": program.tcu_code,
                         "department_uid": program.department_uid,
                     },
                                     message="Program retrieved Successfully")
