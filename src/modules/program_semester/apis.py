@@ -3,8 +3,10 @@ from typing import List, Optional
 import strawberry
 
 from src.core.security import CustomPermissionExtension
-from src.models import ProgramSemester
+from src.models import ProgramSemester, Program
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_semester.service import ProgramSemesterService, ProgramSemesterCrud
+from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput, ProgramSemesterListNode
@@ -12,10 +14,36 @@ from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput
 
 @strawberry.type
 class ProgramSemesterQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
-    def get_program_semesters(self, pagination: PaginationInput) -> Response[ProgramSemesterListNode]:
+    # @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    @strawberry.field()
+    def get_program_semesters(self, pagination: PaginationInput, program_uid: str,
+                              academic_year_uid: Optional[str] = None) -> Response[ProgramSemesterListNode]:
+
         try:
-            result = ProgramSemesterCrud.get_multi_paginated(pagination, ['study_year', 'semester', 'core_credits', 'elective_credits'], ProgramSemesterListNode, ['program', 'academic_year'])
+            program = ProgramService.get_program_by_uid(program_uid)
+        except Exception as e:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program is Not Found",
+                data=None)
+
+        if academic_year_uid is not None:
+            try:
+                academic_year = AcademicYearService.get_academic_year_by_uid(academic_year_uid)
+            except Exception as e:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Academic Year is Not Found",
+                    data=None)
+
+            filters = [{'program_id': program.id, 'academic_year_id': academic_year.id}]
+        else:
+            filters = [{'program_id': program.id}]
+
+        try:
+            result = ProgramSemesterCrud.get_multi_paginated(pagination, ['study_year', 'semester', 'core_credits', 'elective_credits'], ProgramSemesterListNode, ['program', 'academic_year'], filters)
         except Exception as e:
             print(e)
             result = ProgramSemesterListNode(items=[], total_count=0)
