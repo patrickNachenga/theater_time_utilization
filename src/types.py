@@ -459,9 +459,9 @@ class ProgramCourseInput:
 class ProgramCourseNode:
     id: int
     uid: str
-    program_semester: "ProgramSemesterNode"
-    course: CourseNode
-    course_category: "CourseCategoryNode"
+    program_semester: Optional[ProgramSemesterNode]
+    course: Optional[CourseNode]
+    course_category: Optional[CourseCategoryNode]
     credit: float
     lecture_hours: float
     seminar_hours: float
@@ -470,7 +470,7 @@ class ProgramCourseNode:
     independent_study_hours: float
     pass_hours: float
     moodle_id: Optional[str]
-    program_course_assessments: List[ProgramCourseAssessmentNode]
+    program_course_assessments: Optional[List[ProgramCourseAssessmentNode]]
 
     @strawberry.field
     async def program_course_assessments(self, info) -> list[ProgramCourseAssessmentNode]:
