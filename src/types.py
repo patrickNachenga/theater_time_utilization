@@ -353,7 +353,7 @@ class ProgramNode:
     nacte_code: Optional[str]
     duration: Optional[int]
     registration_code: str
-    program_category: ProgramCategoryNode
+    program_category: Optional[ProgramCategoryNode] #Make it optional
     department_uid: str
     moodle_id: Optional[str]
     registration_code: Optional[str]
