@@ -17,12 +17,14 @@ class ProgramQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAMS"])])
     def get_programs(self, pagination: PaginationInput, info: Info) -> Response[ProgramListNode]:
         try:
-            # result = ProgramCrud.get_multi_paginated(pagination,
-            #                                          ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
-            #                                           'registration_code'], ProgramListNode, ["program_category"])
-            result = ProgramCrud.get_programs_with_headship(info, pagination,
-                                                            ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
-                                                             'registration_code'], ["program_category"])
+
+            # Enable Program List Node
+            result = ProgramCrud.get_multi_paginated(pagination,
+                                                     ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
+                                                      'registration_code'], ProgramListNode, ["program_category"])
+            # result = ProgramCrud.get_programs_with_headship(info, pagination,
+            #                                                 ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
+            #                                                  'registration_code'], ["program_category"])
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)
@@ -42,9 +44,14 @@ class ProgramQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ALL_PROGRAMS"])])
     def get_all_programs(self, pagination: PaginationInput, info: Info) -> Response[ProgramListNode]:
         try:
+            # result = ProgramCrud.get_multi_paginated(pagination,
+            #                                          ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
+            #                                           'registration_code'], ProgramListNode, ["program_category"])
+
             result = ProgramCrud.get_multi_paginated(pagination,
                                                      ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
-                                                      'registration_code'], ProgramListNode, ["program_category"])
+                                                      'registration_code'], ["program_category"])
+
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)
