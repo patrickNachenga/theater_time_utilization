@@ -55,7 +55,7 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             return result.all()
 
     @staticmethod
-    def get_academic_year_by_uid(uid: str) -> AcademicYear:
+    def get_academic_year_by_uid(uid: str) -> List[AcademicYearNode]:
         """
         Get Academic Year by uid
         :param uid:
