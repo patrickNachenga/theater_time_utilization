@@ -62,8 +62,16 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
         :return:
         """
         with session_scope() as session:
-            stmt = select(AcademicYear.name, AcademicYear.id, AcademicYear.uid, AcademicYear.status, AcademicYear.start_date).where((AcademicYear.uid == uid) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
+            # print
+            # stmt = select(AcademicYear.name, AcademicYear.id, AcademicYear.uid, AcademicYear.status, AcademicYear.start_date).where((AcademicYear.uid == uid) & (AcademicYear.deleted_at.is_(None)))
+            # result = session.scalars(stmt)
+
+
+            result = session.query(AcademicYear.id, AcademicYear.name, AcademicYear.uid, AcademicYear.status,
+                                   AcademicYear.start_date, AcademicYear.end_date).filter(
+                AcademicYear.uid == uid, AcademicYear.deleted_at.is_(None))
+
+
             return result.first()
 
     @staticmethod
