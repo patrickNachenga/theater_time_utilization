@@ -15,6 +15,7 @@ from src.modules.by_law.by_law_classes import BYLAW
 from src.modules.by_law.by_law_files.by_law_2019 import ByLaw2019
 from src.modules.by_law.service import ByLawCrud
 from src.modules.programs.service import ProgramService
+from src.modules.semester_registration.service import SemesterRegistrationService
 from src.modules.student.service import StudentService
 from src.shared.models import StudentPChangeModel
 from src.shared.response import Response
@@ -86,6 +87,18 @@ def get_active_by_academic_year():
 @program_router.get("/program-for-nhif")
 async def api_get_program_name_duration(uid: str):
     return await ProgramService.api_get_program_name_duration(uid)
+
+
+@program_router.get('/get-semester-registered-students')
+def get_semester_registered_students():
+    try:
+        student_uids = SemesterRegistrationService.get_active_year_student_semester_registrations()
+        if student_uids:
+            return Response(status=True, code=ResponseCode.SUCCESS,
+                            message="Success", data=student_uids)
+    except Exception as e:
+        print(e)
+    return Response(status=False, code=ResponseCode.NO_RECORD_FOUND, message="No Record", data=[])
 
 
 @program_router.get("/program-change-students")

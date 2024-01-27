@@ -1,11 +1,12 @@
+from datetime import datetime
 from typing import List
 
 from src.db.session import session_scope
-from src.models import ProgramSemester
+from src.models import ProgramSemester, AcademicYear
 from src.models.semester_registration import SemesterRegistration
 from src.modules import CRUDBase
 from src.types import SemesterRegistrationNode, SemesterRegistrationListNode
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, and_, func
 
 
 class SemesterRegistrationService(object):
@@ -20,6 +21,29 @@ class SemesterRegistrationService(object):
             result = session.query(SemesterRegistration).filter(SemesterRegistration.student_uid == student_uid,
                                                                 SemesterRegistration.deleted_at.is_(None)).all()
             return result
+
+    @staticmethod
+    def get_active_year_student_semester_registrations():
+        with session_scope() as session:
+            current_academic_year = session.query(AcademicYear).filter(AcademicYear.status == 1).first()
+            if current_academic_year is None:
+                return []
+
+            current_month = int(datetime.now().strftime('%m'))
+            semesters = ['10', '11', '12', '01', '02']
+            is_odd_semester = str(current_month).zfill(2) in semesters
+            result = session.query(SemesterRegistration.student_uid,ProgramSemester.semester, func.count().label('registration_count')). \
+                join(ProgramSemester).filter(
+                and_(
+                    ProgramSemester.academic_year.has(id=current_academic_year.id),
+                    SemesterRegistration.deleted_at.is_(None),
+                    ProgramSemester.semester % 2 == (1 if is_odd_semester else 0)
+                )
+            ).group_by(SemesterRegistration.student_uid, ProgramSemester.semester).all()
+            return {
+                'academic_year': current_academic_year.name,
+                'student_uids': result
+            }
 
     def register_student_semester(self, inputs) -> bool:
         """
