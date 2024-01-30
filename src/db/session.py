@@ -9,7 +9,7 @@ from src.core.config import settings
 
 metadata = sqlalchemy.MetaData()
 database = databases.Database(settings.DATABASE_URL)
-engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True, pool_size=15, max_overflow=0)
+engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True, pool_size=50, max_overflow=0)
 
 
 class SoftDelete:
