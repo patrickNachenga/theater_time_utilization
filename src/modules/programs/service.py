@@ -420,9 +420,12 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         try:
             with session_scope() as session:
                 program = ProgramService(Program).get_programs()
-                # program = session.query(Program).options(
-                #     load_only("uid", "code", "registration_code", "name", "short_name", "duration",
-                #               "department_uid", "program_category_id")).join(ProgramCategory).all()
+
+                print("start 1 ==>", program)
+                program = session.query(Program).options(
+                    load_only("uid", "code", "registration_code", "name", "short_name", "duration",
+                              "department_uid", "program_category_id")).join(ProgramCategory).all()
+                print("start 2 ==>", program)
                 # program = session.query(Program).join(ProgramCategory).all()
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data=[{
