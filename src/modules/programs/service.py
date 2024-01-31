@@ -421,11 +421,11 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
             with session_scope() as session:
                 program = ProgramService(Program).get_programs()
 
-                print("start 1 ==>", program['name'])
+                print("start 1 ==>", program[3])
                 program = session.query(Program).options(
                     load_only("uid", "code", "registration_code", "name", "short_name", "duration",
                               "department_uid", "program_category_id")).join(ProgramCategory).all()
-                print("start 2 ==>", program['name'])
+                print("start 2 ==>", program[6])
                 # program = session.query(Program).join(ProgramCategory).all()
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data=[{
