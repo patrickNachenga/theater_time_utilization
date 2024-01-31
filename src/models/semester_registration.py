@@ -11,7 +11,7 @@ class SemesterRegistration(BaseModel):
 
     # ---------------Mapped Columns ---------------------
     semester_program_id: int = Column(Integer, ForeignKey("program_semesters.id"), nullable=False)
-    semester_program = relationship('ProgramSemester', lazy='subquery', back_populates="semester_registrations")
+    semester_program = relationship('ProgramSemester', lazy='noload', back_populates="semester_registrations")
 
 
 
