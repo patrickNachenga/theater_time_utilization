@@ -16,7 +16,7 @@ class StudentExamRegistration(BaseModel):
     # failure type 1 is first sitting, 2 probation, 3 third attempt, 4 retake
     type: int = Column(Integer, nullable=False)
 
-    student_course_registration = relationship("StudentCourseRegistration", lazy="subquery",
+    student_course_registration = relationship("StudentCourseRegistration", lazy="noload",
                                                back_populates="student_exam_registration")
-    exam_failure = relationship("StudentExamFailure", lazy="subquery",
+    exam_failure = relationship("StudentExamFailure", lazy="noload",
                                 back_populates="student_exam_registration")

@@ -10,5 +10,5 @@ class StudentPostponementApprovalStatus(BaseModel):
     description: str = Column(String, nullable=False, unique=True)
 
     # ---------------Referenced Columns ---------------------
-    student_study_postponements = relationship('StudentStudyPostponement', lazy='subquery',
+    student_study_postponements = relationship('StudentStudyPostponement', lazy='noload',
                                                back_populates="student_postponement_approval_status")
