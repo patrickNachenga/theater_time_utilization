@@ -17,8 +17,8 @@ class CourseQuery:
     def get_courses(self, pagination: PaginationInput, info: Info) -> Response[PaginatedCourse]:
         try:
             # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
-            result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
-            # result = CourseCrud.get_courses_with_headship(info, pagination, ['name', 'code', 'description'])
+            # result = CourseCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], PaginatedCourse)
+            result = CourseCrud.get_courses_with_headship(info, pagination, ['name', 'code', 'description'])
         except Exception as e:
             print(e)
             result = PaginatedCourse(items=[], total_count=0)
