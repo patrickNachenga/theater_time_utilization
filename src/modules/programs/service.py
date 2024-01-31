@@ -425,7 +425,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
                 program = session.query(Program).options(
                     load_only("uid", "code", "registration_code", "name", "short_name", "duration",
                               "department_uid", "program_category_id")).join(ProgramCategory).all()
-                print(f"UID: {p.uid}")
+                print(f"UID: {program.uid}")
                 # program = session.query(Program).join(ProgramCategory).all()
                 if program:
                     return Response(status=True, code=ResponseCode.SUCCESS, data=[{
