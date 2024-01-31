@@ -21,5 +21,5 @@ class StudentSeminar(BaseModel):
     seminar_type_id: int = Column(Integer, ForeignKey("seminar_types.id"), nullable=False)
 
     # ---------------Referenced Columns ---------------------
-    seminar_types = relationship('SeminarType', lazy='subquery', back_populates="student_seminar")
+    seminar_types = relationship('SeminarType', lazy='noload', back_populates="student_seminar")
 

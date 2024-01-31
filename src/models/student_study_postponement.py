@@ -14,9 +14,9 @@ class StudentStudyPostponement(BaseModel):
 
     # ___________________________Foreign Keys ____________________________#
     reason_id: int = Column(Integer, ForeignKey("student_study_postponement.id"), nullable=False)
-    student_postponement_reason = relationship('StudentPostponementReason', lazy='subquery', back_populates="student_study_postponements")
+    student_postponement_reason = relationship('StudentPostponementReason', lazy='noload', back_populates="student_study_postponements")
 
     approval_status_id: int = Column(Integer, ForeignKey("student_study_postponement.id"), nullable=False)
-    student_postponement_approval_status = relationship('StudentPostponementApprovalStatus', lazy='subquery', back_populates="student_study_postponements")
+    student_postponement_approval_status = relationship('StudentPostponementApprovalStatus', lazy='noload', back_populates="student_study_postponements")
 
 
