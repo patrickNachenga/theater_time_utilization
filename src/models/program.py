@@ -18,7 +18,7 @@ class Program(BaseModel):
     program_id = Column(Integer, index=True)
     # ---------------Mapped Columns ---------------------
     program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False)
-    program_category = relationship('ProgramCategory', lazy='noload', back_populates="programs")
+    program_category = relationship('ProgramCategory', lazy='subquery', back_populates="programs")
 
     department_uid: str = Column(String, nullable=True)
 
