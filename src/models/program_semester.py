@@ -16,7 +16,7 @@ class ProgramSemester(BaseModel):
     academic_year = relationship('AcademicYear', lazy='noload', back_populates="program_semesters")
 
     program_id: int = Column(Integer, ForeignKey("programs.id"), nullable=False)
-    program = relationship('Program', lazy='noload', back_populates="program_semesters")
+    program = relationship('Program', lazy='subquery', back_populates="program_semesters")
 
     # ---------------Referenced Columns ---------------------
     program_courses = relationship('ProgramCourse', lazy='subquery', back_populates="program_semester")
