@@ -459,9 +459,9 @@ class ProgramCourseInput:
 class ProgramCourseNode:
     id: int
     uid: str
-    program_semester: Optional[ProgramSemesterNode]
-    course: Optional[CourseNode]
-    course_category: Optional[CourseCategoryNode]
+    program_semester: ProgramSemesterNode
+    course: CourseNode
+    course_category: CourseCategoryNode
     credit: float
     lecture_hours: float
     seminar_hours: float
