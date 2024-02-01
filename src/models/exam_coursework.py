@@ -21,8 +21,8 @@ class ExamCoursework(BaseModel):
 
     # ___________________________Relationships__________________________________________________#
 
-    program_course = relationship("ProgramCourse", lazy="noload",
+    program_course = relationship("ProgramCourse", lazy="subquery",
                                                   back_populates="exam_courseworks")
 
-    exam_category = relationship("ExamCategory", lazy="noload",
+    exam_category = relationship("ExamCategory", lazy="subquery",
                                                  back_populates="exam_courseworks")
