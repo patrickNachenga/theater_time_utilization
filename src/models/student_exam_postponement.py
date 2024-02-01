@@ -19,7 +19,7 @@ class StudentExamPostponement(BaseModel):
     # failure type 1 is first sitting, 2 probation, 3 third attempt, 4 retake
     type: int = Column(Integer, nullable=False)
 
-    student_course_registration = relationship("StudentCourseRegistration", lazy="noload",
+    student_course_registration = relationship("StudentCourseRegistration", lazy="subquery",
                                                back_populates="student_exam_postponement")
     is_resumed: bool = Column(Boolean, default=False)
     reason: str = Column(String(600), nullable=False)
