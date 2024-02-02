@@ -97,6 +97,13 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     .filter(ProgramSemester.semester.in_(semesters)) \
                     .filter(CourseAllocation.staff_uid == inputs.staff_uid) \
                     .filter(CourseAllocation.deleted_at.is_(None))
+
+                # Retrieve the compiled SQL statement
+                sql_statement = query.statement
+
+                # Print the SQL statement
+                print(sql_statement)
+
                 return result
             else:
                 return []
