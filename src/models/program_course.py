@@ -17,17 +17,17 @@ class ProgramCourse(BaseModel):
 
     # ___________________________Foreign Keys ____________________________#
     course_category_id: int = Column(Integer, ForeignKey("course_categories.id"), nullable=False)
-    course_category = relationship('CourseCategory', lazy='noload', back_populates="program_courses")
+    course_category = relationship('CourseCategory', lazy='subquery', back_populates="program_courses")
 
     program_semester_id: int = Column(Integer, ForeignKey("program_semesters.id"), nullable=False)
-    program_semester = relationship('ProgramSemester', lazy='noload', back_populates="program_courses")
+    program_semester = relationship('ProgramSemester', lazy='subquery', back_populates="program_courses")
 
     course_id: int = Column(Integer, ForeignKey("courses.id"), nullable=False)
     course = relationship('Course', lazy='subquery', back_populates="program_courses")
 
     # ______________________________________Relationships ____________________________________________#
 
-    program_course_assessments = relationship('ProgramCourseAssessment', lazy='noload',
+    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
                                               back_populates="program_course")
     course_allocations = relationship("CourseAllocation", lazy="subquery", back_populates="program_course")
 
