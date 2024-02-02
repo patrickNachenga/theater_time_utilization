@@ -23,13 +23,13 @@ class ProgramCourse(BaseModel):
     program_semester = relationship('ProgramSemester', lazy='noload', back_populates="program_courses")
 
     course_id: int = Column(Integer, ForeignKey("courses.id"), nullable=False)
-    course = relationship('Course', lazy='noload', back_populates="program_courses")
+    course = relationship('Course', lazy='subquery', back_populates="program_courses")
 
     # ______________________________________Relationships ____________________________________________#
 
     program_course_assessments = relationship('ProgramCourseAssessment', lazy='noload',
                                               back_populates="program_course")
-    course_allocations = relationship("CourseAllocation", lazy="noload", back_populates="program_course")
+    course_allocations = relationship("CourseAllocation", lazy="subquery", back_populates="program_course")
 
     student_course_registrations = relationship("StudentCourseRegistration", lazy="noload",
                                                 back_populates="program_course")
