@@ -99,7 +99,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     .filter(CourseAllocation.deleted_at.is_(None))
 
                 # Retrieve the compiled SQL statement
-                sql_statement = query.statement
+                sql_statement = result.statement
 
                 # Print the SQL statement
                 print(sql_statement)
