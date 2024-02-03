@@ -2,14 +2,14 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 from src.models import ProgramCourse
 from src.modules.program_course.service import ProgramCourseService, ProgramCourseCrud
 from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode, \
-    RequestProgramSemester
+    RequestProgramSemester, CourseNode, ProgramCourseWithHeadshipListNode
 
 
 @strawberry.type
@@ -85,6 +85,23 @@ class ProgramCourseQuery:
                 status=False,
                 code=ResponseCode.FAILURE,
                 data=ProgramCourseListNode(items=[], total_count=0),
+                message="Unable to retrieve program courses"
+            )
+
+    # @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
+    @strawberry.field()
+    async def get_program_course_by_program_semester_uid_with_headship(self, program_semester_uid: str,  info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
+        try:
+            program_courses = ProgramCourseService.get_program_course_by_program_semester_uid_with_headship(program_semester_uid, info)
+            if program_courses:
+                return program_courses
+            raise ValueError("Unable to retrieve program courses")
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                data=[],
                 message="Unable to retrieve program courses"
             )
 

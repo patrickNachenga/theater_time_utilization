@@ -20,4 +20,4 @@ class AcademicYearSemester(BaseModel):
 
     # ___________________________Foreign Keys ____________________________#
     academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
-    academic_year = relationship('AcademicYear', lazy='subquery', back_populates="academic_year_semesters")
+    academic_year = relationship('AcademicYear', lazy='subquery')

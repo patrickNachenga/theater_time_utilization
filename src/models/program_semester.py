@@ -13,7 +13,7 @@ class ProgramSemester(BaseModel):
 
     # ---------------Mapped Columns ---------------------
     academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
-    academic_year = relationship('AcademicYear', lazy='subquery', back_populates="program_semesters")
+    academic_year = relationship('AcademicYear', lazy='subquery')
 
     program_id: int = Column(Integer, ForeignKey("programs.id"), nullable=False)
     program = relationship('Program', lazy='subquery', back_populates="program_semesters")
