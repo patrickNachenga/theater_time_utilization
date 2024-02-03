@@ -192,6 +192,11 @@ class StudentService:
                        StudentCourseRegistration.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester).all()
 
+            sql_statement = program_courses.statement
+
+            # Print the SQL statement
+            print("Course Registration==>", sql_statement)
+
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,
                                                 course_registered=registered_course)
         pass
