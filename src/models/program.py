@@ -26,7 +26,7 @@ class Program(BaseModel):
 
     # ---------------Referenced Columns ---------------------
     program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
-    program_capacities = relationship('ProgramCapacity', lazy='subquery', back_populates="program")
+    program_capacities = relationship('ProgramCapacity', lazy='noload', back_populates="program")
     # Add the reverse relationship for current_program in Program
     # current_program_student_program_changes = relationship("StudentProgramChange", lazy='subquery',
     #                                                        back_populates="current_program")

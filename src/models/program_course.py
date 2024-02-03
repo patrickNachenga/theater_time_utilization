@@ -34,8 +34,8 @@ class ProgramCourse(BaseModel):
     student_course_registrations = relationship("StudentCourseRegistration", lazy="subquery",
                                                 back_populates="program_course")
 
-    exam_results = relationship("ExamResult", lazy="subquery",
+    exam_results = relationship("ExamResult", lazy="noload",
                                 back_populates="program_course")
 
-    exam_courseworks = relationship("ExamCoursework", lazy="subquery",
+    exam_courseworks = relationship("ExamCoursework", lazy="noload",
                                     back_populates="program_course")

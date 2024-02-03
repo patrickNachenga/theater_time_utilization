@@ -10,7 +10,7 @@ from src.models import AcademicYear, AcademicYearSemester
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, AcademicYearListNode
+from src.types import AcademicYearInput, AcademicYearListNode, AcademicYearNode
 
 
 class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYearInput]):
@@ -55,15 +55,23 @@ class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYear
             return result.all()
 
     @staticmethod
-    def get_academic_year_by_uid(uid: str) -> AcademicYear:
+    def get_academic_year_by_uid(uid: str) -> List[AcademicYearNode]:
         """
         Get Academic Year by uid
         :param uid:
         :return:
         """
         with session_scope() as session:
-            stmt = select(AcademicYear).where((AcademicYear.uid == uid) & (AcademicYear.deleted_at.is_(None)))
-            result = session.scalars(stmt)
+            # print
+            # stmt = select(AcademicYear.name, AcademicYear.id, AcademicYear.uid, AcademicYear.status, AcademicYear.start_date).where((AcademicYear.uid == uid) & (AcademicYear.deleted_at.is_(None)))
+            # result = session.scalars(stmt)
+
+
+            result = session.query(AcademicYear.id, AcademicYear.name, AcademicYear.uid, AcademicYear.status,
+                                   AcademicYear.start_date, AcademicYear.end_date).filter(
+                AcademicYear.uid == uid, AcademicYear.deleted_at.is_(None))
+
+
             return result.first()
 
     @staticmethod

@@ -187,7 +187,7 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
         # Align the cells to the center
         for col in range(1, 5):
             cell = worksheet.cell(row=row, column=col)
-            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.alignment = Alignment(horizontal='left', vertical='center')
             cell.font = font
             cell.border = border
     worksheet.cell(row=1, column=4, value=str(result["program_course"].id))

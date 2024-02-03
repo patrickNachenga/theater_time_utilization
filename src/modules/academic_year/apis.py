@@ -28,7 +28,7 @@ class AcademicYearQuery:
         )
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
-    def get_academic_year(self, uid: str) -> Response[AcademicYearNode]:
+    def get_academic_year(self, uid: str) -> Response[AcademicYearListNode]:
         try:
             result = AcademicYearService.get_academic_year_by_uid(uid)
         except Exception as e:

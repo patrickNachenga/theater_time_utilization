@@ -16,7 +16,7 @@ class Workflow(BaseModel):
     name = Column(String)
     description = Column(String)
     processes = relationship('Process', lazy='subquery', back_populates="workflow")
-    transition_metas = relationship('TransitionMeta', lazy='subquery', back_populates="workflow")
+    transition_metas = relationship('TransitionMeta', lazy='noload', back_populates="workflow")
 
 
 class State(BaseModel):
@@ -24,7 +24,7 @@ class State(BaseModel):
 
     label = Column(String)
     description = Column(String)
-    process_flows = relationship('ProcessFlow', lazy='subquery', back_populates="state")
+    process_flows = relationship('ProcessFlow', lazy='noload', back_populates="state")
 
 
 class TransitionMeta(BaseModel):
@@ -36,8 +36,8 @@ class TransitionMeta(BaseModel):
 
     # Relationships
     workflow = relationship('Workflow', lazy='subquery', back_populates="transition_metas")
-    source_state = relationship('State', foreign_keys=[source_state_id])
-    destination_state = relationship('State', foreign_keys=[destination_state_id])
+    source_state = relationship('State', lazy='noload', foreign_keys=[source_state_id])
+    destination_state = relationship('State', lazy='noload', foreign_keys=[destination_state_id])
 
     permissions = Column(MutableList.as_mutable(PickleType), default=list)
     groups = Column(MutableList.as_mutable(PickleType), default=list)
@@ -55,8 +55,8 @@ class Process(BaseModel):
     description = Column(String(255), nullable=False)
     process_unique_uid = Column(UUID(as_uuid=True), unique=True, index=True, default=uuid.uuid4)
     workflow_id: int = Column(Integer, ForeignKey("workflows.id"))
-    workflow: Mapped["Workflow"] = relationship('Workflow', lazy='subquery', back_populates="processes")
-    process_flows = relationship('ProcessFlow', lazy='subquery', back_populates="process")
+    workflow: Mapped["Workflow"] = relationship('Workflow', lazy='noload', back_populates="processes")
+    process_flows = relationship('ProcessFlow', lazy='noload', back_populates="process")
     completed_on = Column(DateTime, nullable=True)
 
     @hybrid_property
@@ -75,8 +75,8 @@ class ProcessFlow(BaseModel):
     __tablename__ = 'process_flows'
     state_id = Column(ForeignKey('states.id'))
     process_id = Column(ForeignKey('processes.id'))
-    state = relationship("State", lazy='subquery', back_populates="process_flows")
-    process = relationship("Process", lazy='subquery', back_populates="process_flows")
+    state = relationship("State", lazy='noload', back_populates="process_flows")
+    process = relationship("Process", lazy='noload', back_populates="process_flows")
     comment = Column(String(255), nullable=True)
 
 

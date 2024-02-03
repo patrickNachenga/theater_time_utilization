@@ -10,4 +10,4 @@ class StudentPostponementReason(BaseModel):
     descriptions = Column(String, nullable=False)
 
     # ---------------Referenced Columns ---------------------
-    student_study_postponements = relationship('StudentStudyPostponement', lazy='subquery', back_populates="student_postponement_reason")
+    student_study_postponements = relationship('StudentStudyPostponement', lazy='noload', back_populates="student_postponement_reason")
