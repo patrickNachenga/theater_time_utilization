@@ -15,5 +15,5 @@ class Course(BaseModel):
     department_uid: str = Column(String, nullable=False, unique=False)
 
     # ---------------Referenced Columns ---------------------
-    # program_courses = relationship('ProgramCourse', lazy='subquery', back_populates="course")
+    program_courses = relationship('ProgramCourse', lazy='subquery', back_populates="course")
     course_learn_outcomes = relationship("CourseLearnOutcome", lazy="subquery", back_populates="course")
