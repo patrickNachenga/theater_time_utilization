@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
@@ -6,8 +6,10 @@ from sqlalchemy import select, desc
 
 from src.core.moodle_api import MoodleApi
 from src.core.redis import get_redis
+from src.core.security import Info
 from src.db.session import session_scope
-from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration
+from src.helpers.utils import get_user_departments_headship
+from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration, Course
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.course.service import CourseService
@@ -17,7 +19,8 @@ from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode, ProgramSemesterInput, \
-    ProgramCourseNode, InnerStudentProgramSemester, RequestProgramSemester
+    ProgramCourseNode, InnerStudentProgramSemester, RequestProgramSemester, CourseNode, \
+    ProgramCourseWithHeadshipListNode
 
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
@@ -58,6 +61,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     data=ProgramCourseListNode(items=[], total_count=0),
                     message="You have submitted incorrect programs semester details"
                 )
+
             stmt = select(ProgramCourse).where((ProgramCourse.program_semester_id == program_semester.id) & (ProgramCourse.deleted_at.is_(None)))
             result_raw = session.scalars(stmt)
             result = result_raw.all()
@@ -69,6 +73,46 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                 message="Program Course Retrieved Successful"
             )
 
+
+    @staticmethod
+    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
+        """
+        Get Program Course by program semester uid
+        :return:
+        """
+        with (session_scope() as session):
+            try:
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(uid)
+                if program_semester is None:
+                    raise ValueError("You have submitted incorrect programs semester details")
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    data=[],
+                    message="You have submitted incorrect programs semester details"
+                )
+
+            user_h_department_uids = get_user_departments_headship(info)
+
+            result = (
+                session.query(
+                    ProgramCourse.uid,
+                    Course.name,
+                    Course.code
+                )
+                .join(Course, ProgramCourse.course_id == Course.id)
+                .filter(ProgramCourse.program_semester_id == program_semester.id,Course.department_uid.in_(user_h_department_uids),  ProgramCourse.deleted_at.is_(None))
+                .all()
+            )
+            # print(result)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                data=result,
+                message="Program Course Retrieved Successful"
+            )
 
     @staticmethod
     def get_program_courses_by_uids(uids: List[str]) -> List[ProgramCourse]:
