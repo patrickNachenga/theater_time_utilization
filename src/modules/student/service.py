@@ -176,7 +176,7 @@ class StudentService:
         return data
 
     def get_student_course_to_register(self, inputs) -> StudentProgramCourseListNode:
-        with session_scope() as session:
+        with (session_scope() as session):
             program_courses = session.query(ProgramCourse). \
                 join(ProgramSemester). \
                 join(Program). \
@@ -185,20 +185,15 @@ class StudentService:
                 filter(Program.uid == inputs.program_uid). \
                 filter(ProgramSemester.semester == inputs.semester). \
                 filter(ProgramSemester.study_year == inputs.study_year).all()
+
             total_count = len(program_courses)
             registered_course = session.query(StudentCourseRegistration). \
                 join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == 1). \
                 filter(StudentCourseRegistration.student_uid == inputs.student_uid,
                        StudentCourseRegistration.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester).all()
-
-            sql_statement = program_courses.statement
-
-            # Print the SQL statement
-            print("Course Registration==>", sql_statement)
-
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,
-                                                course_registered=registered_course)
+                                         course_registered=registered_course)
         pass
 
     def register_student_exam(self, inputs) -> ExamRegistrationListNode:
@@ -307,12 +302,15 @@ class StudentService:
                 reg_number = row.registration_number
                 score = float(row.score)
 
-                success_, failed_, failed_student,success_student = general_upload(students=students,
-                                                                   program_course_id=program_course_id,
-                                                                   exam_category_id=exam_category_id, score=score,
-                                                                   out_off=out_off, weight=weight, is_ue=is_ue,
-                                                                   reg_number=reg_number,
-                                                                   assessment_number=assessment_number, source=source)
+                success_, failed_, failed_student, success_student = general_upload(students=students,
+                                                                                    program_course_id=program_course_id,
+                                                                                    exam_category_id=exam_category_id,
+                                                                                    score=score,
+                                                                                    out_off=out_off, weight=weight,
+                                                                                    is_ue=is_ue,
+                                                                                    reg_number=reg_number,
+                                                                                    assessment_number=assessment_number,
+                                                                                    source=source)
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:

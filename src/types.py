@@ -832,6 +832,13 @@ class ProgramCourseListNode:
     total_count: int
 
 
+@strawberry.type(description="Program Course With Headship Output")
+class ProgramCourseWithHeadshipListNode:
+    uid: str
+    name: str
+    code: str
+
+
 @strawberry.input(description="Course Allocation Staff update Input")
 class CourseAllocationStaffUpdateInput:
     uid: str

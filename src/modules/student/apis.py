@@ -31,7 +31,7 @@ class StudentQuery:
     def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
-
+            print(result)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -39,12 +39,12 @@ class StudentQuery:
                 data=result)
         except Exception as e:
             print(e)
-            result = [CourseRegistrationListNode(course_to_register=None, total_count=0, course_registered=None)]
+            # result = [CourseRegistrationListNode(course_to_register=None, total_count=0, course_registered=None)]
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program courses not found",
-                data=result)
+                data=[])
 
     @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_student_current_course_registration(self, student_uid: str) -> Response[CourseRegistrationListNode]:
