@@ -16,10 +16,11 @@ class ProgramSemester(BaseModel):
     academic_year = relationship('AcademicYear', lazy='subquery')
 
     program_id: int = Column(Integer, ForeignKey("programs.id"), nullable=False)
-    program = relationship('Program', lazy='subquery', back_populates="program_semesters")
+    # program = relationship('Program', lazy='subquery', back_populates="program_semesters")
+    program = relationship('Program', lazy='subquery')
 
     # ---------------Referenced Columns ---------------------
-    program_courses = relationship('ProgramCourse', lazy='subquery', back_populates="program_semester")
-    semester_registrations = relationship('SemesterRegistration', lazy='subquery', back_populates="semester_program")
+    # program_courses = relationship('ProgramCourse', lazy='subquery', back_populates="program_semester")
+    # semester_registrations = relationship('SemesterRegistration', lazy='subquery', back_populates="semester_program")
 
 
