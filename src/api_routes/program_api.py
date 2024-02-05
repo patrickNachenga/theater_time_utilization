@@ -172,7 +172,7 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
 
     for col, header in enumerate(horizontal_headers, start=start_col):
         cell = worksheet.cell(row=start_row, column=col, value=header)
-        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.alignment = Alignment(horizontal='left', vertical='center')
         cell.font = font_border
         cell.border = border
 
