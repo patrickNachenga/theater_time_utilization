@@ -165,8 +165,8 @@ class StudentMutation:
 
     @strawberry.field
     def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category_id: int,
-                                         assessment_number: int, assessment_weight: int) -> ExcelFile:
-        result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off)
+                                         assessment_number: int, assessment_weight: int, excel_sorting:str) -> ExcelFile:
+        result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off, excel_sorting)
         file_buffer = io.BytesIO()
 
         # Create a new workbook
