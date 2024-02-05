@@ -85,7 +85,7 @@ class StudentService:
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
-    def get_allocation_students(self, allocation_uid, assessment_number, exam_category, out_off) -> [StudentUaaData]:
+    def get_allocation_students(self, allocation_uid, assessment_number, exam_category, out_off, sort_excel) -> [StudentUaaData]:
         """
         Retrieve all students located to a particular allocation
         """
