@@ -26,7 +26,8 @@ class Program(BaseModel):
     campus_uid: str = Column(String, nullable=True)
 
     # ---------------Referenced Columns ---------------------
-    program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
+    # program_semesters = relationship('ProgramSemester', lazy='subquery', back_populates="program")
+    program_semesters = relationship('ProgramSemester', lazy='subquery')
     # program_capacities = relationship('ProgramCapacity', lazy='noload', back_populates="program")
     program_capacities = relationship('ProgramCapacity', lazy='subquery')
     # Add the reverse relationship for current_program in Program
