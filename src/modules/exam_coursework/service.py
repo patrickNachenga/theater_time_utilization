@@ -15,7 +15,11 @@ class ExamCourseworkService:
     @staticmethod
     def get_student_exam_course_work_results(student_uid) -> List[ExamCoursework]:
         with session_scope() as session:
-            result = session.query(ExamCoursework).filter(ExamCoursework.student_uid == student_uid,
+            result = session.query(ExamCoursework) \
+                .join(ProgramCourse) \
+                .join(ProgramSemester) \
+                .join(Course) \
+                .filter(ExamCoursework.student_uid == student_uid,
                                                       ExamCoursework.deleted_at.is_(None)).all()
             return result
 
