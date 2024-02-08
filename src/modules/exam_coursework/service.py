@@ -18,7 +18,15 @@ class ExamCourseworkService:
     @staticmethod
     def get_student_exam_course_work_results(student_uid) -> List[ExamCoursework]:
         with session_scope() as session:
-            result = session.query(ExamCoursework) \
+            result = session.query(ExamCoursework.assessment_number
+                                   ,ExamCoursework.score
+                                   ,ExamCoursework.weight
+                                   ,Course.code
+                                   ,Course.name
+                                   ,Course.course_learn_outcomes
+                                   ,ProgramSemester.semester
+                                   ,ProgramSemester.academic_year
+                                   , ExamCoursework) \
                 .join(ProgramCourse) \
                 .join(ProgramSemester) \
                 .join(Course) \
