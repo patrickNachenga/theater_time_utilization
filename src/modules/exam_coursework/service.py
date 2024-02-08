@@ -2,9 +2,9 @@ from typing import List
 
 from src.db.session import session_scope
 from src.models.exam_coursework import ExamCoursework
-from src.modules.program_course import ProgramCourse
-from src.modules.course import Course
-from src.modules.program_semester import ProgramSemester
+from src.models.program_course import ProgramCourse
+from src.models.course import Course
+from src.models.program_semester import ProgramSemester
 
 
 class ExamCourseworkService:
