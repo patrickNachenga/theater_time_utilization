@@ -353,7 +353,7 @@ class ProgramNode:
     nacte_code: Optional[str]
     duration: Optional[int]
     registration_code: str
-    program_category: Optional[ProgramCategoryNode] #Make it optional
+    program_category: Optional[ProgramCategoryNode]  # Make it optional
     department_uid: str
     moodle_id: Optional[str]
     registration_code: Optional[str]
@@ -603,12 +603,14 @@ class FeeStructureInput:
     student_status: str
     countrycode: str
 
+
 @strawberry.type(description="Program Output")
 class ProgramFeeStructureNode:
     uid: str
     code: str
     name: str
     short_name: str
+
 
 @strawberry.type(description="Fee Structure Output")
 class FeeStructureNode:
@@ -1162,6 +1164,48 @@ class StudentSeminarsInputNode:
     student_uid: str
     seminar_type_uid: Optional[str] = None
 
+@strawberry.type()
+class Score:
+    score: float
+    overall_marks: float
+
+@strawberry.type()
+class CourseWorkTypeOutput:
+    type: str
+    score: List[Score]
+
+@strawberry.type()
+class StudentCourseWorkOutput:
+    course_code: str
+    course_work_type: List[CourseWorkTypeOutput]
+
+
+@strawberry.input(description="Student Course Works Input")
+class StudentCourseWorkInput:
+    student_uid: str
+    study_year: int
+    academic_year_uid: str
+    semester: int
+
+
+@strawberry.type(description="Student Course Works Score Output")
+class Score:
+    score: float
+    overall_marks: float
+    assessment_number: float
+
+
+@strawberry.type(description="Student Course Works Type Output")
+class CourseWorkTypeOutput:
+    type: str
+    scores: List[Score]
+
+
+@strawberry.type(description="Student Course Works Output")
+class StudentCourseWorkOutput:
+    course_code: str
+    course_work_type: List[CourseWorkTypeOutput]
+
 
 @strawberry.type(description="All Student Seminars Output")
 class AllStudentSeminarNode:
@@ -1393,6 +1437,7 @@ class RegisteredStudentNode:
 class RegisteredStudentListNode:
     items: List[RegisteredStudentNode]
     total_count: int
+
 
 @strawberry.type(description="Get Student Change Program Request")
 class StudentProgramChangeRequestReport:
