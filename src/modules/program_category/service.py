@@ -14,7 +14,10 @@ class ProgramCategoryService(CRUDBase[ProgramCategory, ProgramCategoryInput, Pro
     @staticmethod
     def get_program_categories() -> List[ProgramCategory]:
         with session_scope() as session:
-            result = session.query(ProgramCategory).filter(ProgramCategory.deleted_at.is_(None)).order_by(
+            result = session.query(ProgramCategory.name,
+                                   ProgramCategory.short_name,
+                                   ProgramCategory.uid
+                                   ).filter(ProgramCategory.deleted_at.is_(None)).order_by(
                 desc(ProgramCategory.updated_at)).all()
             return result
 
