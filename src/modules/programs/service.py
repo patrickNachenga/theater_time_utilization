@@ -80,7 +80,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         :return:
         """
         with session_scope() as session:
-            result = session.query(Program).filter(Program.deleted_at.is_(None)).order_by(
+            result = session.query(Program.name,Program.code,Program.registration_code,Program.duration,Program.tcu_code,Program.nacte_code, Program.program_category).filter(Program.deleted_at.is_(None)).order_by(
                 desc(Program.updated_at)).all()
             return result
 
