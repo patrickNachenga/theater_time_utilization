@@ -107,7 +107,8 @@ class StudentService:
             student_uids = [uid for uid, in student_uids]
             data = None
             data_obj = {
-                "uids": student_uids
+                "uids": student_uids,
+                "excel_sort_type":sort_excel
             }
             try:
                 # Serialize the data to JSON
