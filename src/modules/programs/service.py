@@ -419,7 +419,7 @@ class ProgramService(CRUDBase[Program, ProgramInput, ProgramInput]):
         """
         try:
             with session_scope() as session:
-                program = ProgramService(Program).get_programs()
+                # program = ProgramService(Program).get_programs()
 
                 # print("start 1 ==>", program[3])
                 program = session.query(Program).options(
