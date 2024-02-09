@@ -10,4 +10,5 @@ class CourseLearnOutcome(BaseModel):
 
     # ---------------Mapped Columns ---------------------
     course_id: int = Column(Integer, ForeignKey('courses.id'), nullable=False)
-    course = relationship("Course", lazy="subquery", back_populates="course_learn_outcomes")
+    # course = relationship("Course", lazy="subquery", back_populates="course_learn_outcomes")
+    course = relationship("Course", lazy="subquery")
