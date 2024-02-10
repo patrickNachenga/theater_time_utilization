@@ -27,10 +27,10 @@ class ExamCategory(BaseModel):
     # exam_results = relationship("ExamResult", lazy="subquery",
     #                             back_populates="exam_category")
 
-    exam_courseworks = relationship("ExamCoursework", lazy="subquery",
-                                    back_populates="exam_category")
+    # exam_courseworks = relationship("ExamCoursework", lazy="subquery",
+    #                                 back_populates="exam_category")
 
 
 
-    program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
-                                              back_populates="exam_category")
+    # program_course_assessments = relationship('ProgramCourseAssessment', lazy='subquery',
+    #                                           back_populates="exam_category")

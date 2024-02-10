@@ -12,10 +12,10 @@ class ProgramCourseAssessment(BaseModel):
 
     exam_category_id: int = Column(Integer, ForeignKey("exam_categories.id"),  nullable=False, unique=False)
     # exam_category = relationship('ExamCategory', lazy='subquery', back_populates="program_course_assessments")
-    exam_category = relationship('ExamCategory', lazy='subquery', back_populates="program_course_assessments")
+    # exam_category = relationship('ExamCategory', lazy='subquery', back_populates="program_course_assessments")
+    exam_category = relationship('ExamCategory', lazy='subquery')
 
     program_course_id: int = Column(Integer, ForeignKey("program_courses.id"),  nullable=False, unique=False)
     # program_course = relationship('ProgramCourse', lazy='subquery', back_populates="program_course_assessments")
     program_course = relationship('ProgramCourse', lazy='subquery')
-    # program_course = relationship('ProgramCourse', lazy='subquery')
 
