@@ -295,11 +295,9 @@ class StudentMutation:
     @strawberry.mutation
     async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
         # Decode the base64 file content
-
         print("1")
         file_content = base64.b64decode(base64_file)
         print("2")
-
         # Load the workbook from the file content
         workbook = openpyxl.load_workbook(io.BytesIO(file_content))
         # Get the desired worksheet by name or index
@@ -331,14 +329,11 @@ class StudentMutation:
                 # Find the item with the specified registration_number
                 if row[marks_column - 1] is None:
                     continue
-                # score = float(row[marks_column - 1])
-
                 try:
                     score = float(row[marks_column - 1])
                 except ValueError:
                     score = 'InvalidMarks'
                     # print("Could not convert string to float.")
-
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,

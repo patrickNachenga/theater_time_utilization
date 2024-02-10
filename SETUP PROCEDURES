@@ -1,0 +1,49 @@
+* Create virtualenv for python 3.10
+* Activate the virtualenv
+- go to cmd/terminal
+    * pip install -r requirements.txt
+- create .env file inside src/core/.env
+- put settings parameters for project environment
+* create postgres db
+    - go to cmd/terminal
+        > sudo su postgres psql
+        > create database test_db;
+        > create user test_user with password 'mu123456';
+        > GRANT ALL PRIVILEGES ON DATABASE test_db TO test_user;
+        > \q
+        > exit
+* go to src/core/.env end edit accordingly
+* Auto generate Alembic revisions for the models present
+        - go to cmd/terminal
+        > alembic revision --autogenerate -m "Adding User .."  ** put your comments
+        > alembic upgrade head
+
+** Project Structure **
+
+test_app_directory
+├── alembic
+|   ├── versions
+│   └── ...
+├── src
+│   ├── core
+│       ├── env.py
+|       └── ...
+│   ├── db.py
+│       └── session.py
+│   ├── models.py
+│       ├── __init__.py
+│       ├── test_model.py
+|       └── ...
+│   ├── shared
+│       ├── response.py
+│       ├── response_code.py
+|       └── ...
+│   ├── test_module
+│       ├── __init__.py
+│       ├── apis.py
+│       └── service.py
+│   ├── apis.py
+│   ├── app.py
+│   └── types.py
+├── main.py
+└── requirements.txt

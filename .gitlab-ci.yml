@@ -1,0 +1,84 @@
+image: $REGISTRY_SERVER/docker:dind
+services:
+  - name: $REGISTRY_SERVER/docker:dind
+    command:
+      - /bin/sh
+      - -c
+      - |
+        echo "$REGISTRY_SERVER_IP  $REGISTRY_SERVER" >> /etc/hosts
+        echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
+        mkdir -p /etc/docker/certs.d/$REGISTRY_SERVER/
+        echo "$REGISTRY_SERVER_CA" > /etc/docker/certs.d/$REGISTRY_SERVER/ca.crt
+        cp /etc/docker/certs.d/$REGISTRY_SERVER/ca.crt /usr/local/share/ca-certificates/$REGISTRY_SERVER && update-ca-certificates
+        dockerd-entrypoint.sh || exit 
+
+variables:
+  DOCKER_DRIVER: overlay 
+
+cache:
+  policy: pull
+  paths:
+    - .venv/  
+
+stages:
+  - build 
+  - package
+  - deploy
+
+before_script:
+   - echo "$REGISTRY_SERVER_IP  $REGISTRY_SERVER" >> /etc/hosts
+   - echo "$GIT_SERVER_IP  git.sua.go.tz" >> /etc/hosts
+   
+   
+   
+
+
+build:
+  image: $REGISTRY_SERVER/python:3.10
+  stage: build
+  tags:
+    - sua-runner02
+  only:
+    - develop
+    - staging
+    - live
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    #- npm install --force
+    #- npm run build
+  artifacts:
+    paths:
+      - .venv/
+
+
+
+package:
+  stage: package
+  tags:
+    - sua-runner02
+  only:
+    - develop
+    - staging
+    - live
+  script:
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} $REGISTRY_SERVER
+    #- docker build -t $REGISTRY_SERVER/sua-frontend:{CI_COMMIT_SHA:0:8} .
+    - docker build -t $REGISTRY_SERVER/registration:${CI_COMMIT_SHA:0:8} .
+    - docker push $REGISTRY_SERVER/registration:${CI_COMMIT_SHA:0:8}
+
+
+
+deploy-dev:
+  image: $REGISTRY_SERVER/helm:latest
+  stage: deploy
+  tags:
+    - sua-runner02
+  only:
+    - staging
+  script:
+    - mkdir -p $HOME/.kube
+    - echo "$KUBERNETES_ADMIN" >> $HOME/.kube/config
+    - helm upgrade --install --set image.tag=${CI_COMMIT_SHA:0:8}  $CI_PROJECT_NAME --namespace sua chart/
+
+
