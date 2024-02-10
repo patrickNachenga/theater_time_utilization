@@ -487,41 +487,46 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                 failed_student.reason = "Student has no by-law"
             else:
 
-                if score is None:
-                    score = 0
+                if score != 'InvalidMarks':
+                    if score is None:
+                        score = 0
 
-                if score <= out_off:
-                    if is_ue:
-                        result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
-                                                            out_off,
-                                                            weight, by_law_uid, source)
-                        if result:
-                            success = success + 1
-                            success_student.reg_number = reg_number
+                    if score <= out_off:
+                        if is_ue:
+                            result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                                                                out_off,
+                                                                weight, by_law_uid, source)
+                            if result:
+                                success = success + 1
+                                success_student.reg_number = reg_number
+                            else:
+                                failed = failed + 1
+                                failed_student.reg_number = reg_number
+                                failed_student.reason = reason
                         else:
-                            failed = failed + 1
-                            failed_student.reg_number = reg_number
-                            failed_student.reason = reason
+                            result, reason = insert_course_work(registration_number, first_name, middle_name, last_name,
+                                                                gender,
+                                                                student_uid, program_course_id, exam_category_id,
+                                                                assessment_number,
+                                                                out_off, score,
+                                                                weight, source, by_law_uid)
+                            if result:
+                                success = success + 1
+                                success_student.reg_number = reg_number
+
+                            else:
+                                failed = failed + 1
+                                failed_student.reg_number = reg_number
+                                failed_student.reason = reason
+
                     else:
-                        result, reason = insert_course_work(registration_number, first_name, middle_name, last_name,
-                                                            gender,
-                                                            student_uid, program_course_id, exam_category_id,
-                                                            assessment_number,
-                                                            out_off, score,
-                                                            weight, source, by_law_uid)
-                        if result:
-                            success = success + 1
-                            success_student.reg_number = reg_number
-
-                        else:
-                            failed = failed + 1
-                            failed_student.reg_number = reg_number
-                            failed_student.reason = reason
-
+                        failed = failed + 1
+                        failed_student.reg_number = reg_number
+                        failed_student.reason = "Score is greater than " + str(out_off)
                 else:
                     failed = failed + 1
                     failed_student.reg_number = reg_number
-                    failed_student.reason = "Score is greater than " + str(out_off)
+                    failed_student.reason = "Score is not valid number"
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number

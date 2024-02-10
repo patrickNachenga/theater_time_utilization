@@ -328,7 +328,13 @@ class StudentMutation:
                 # Find the item with the specified registration_number
                 if row[marks_column - 1] is None:
                     continue
-                score = float(row[marks_column - 1])
+                # score = float(row[marks_column - 1])
+
+                try:
+                    score = float(row[marks_column - 1])
+                except ValueError:
+                    score = 'InvalidMarks'
+                    # print("Could not convert string to float.")
 
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
