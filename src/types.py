@@ -1266,7 +1266,7 @@ class ExamCourseWorkNode:
 @strawberry.input(description="Exam course work result Output | Node")
 class ExamResultSummarySearchCriteria:
     gender: Optional[str] = None
-    program_course_id: Optional[str] = None
+    program_course_id: str = None
     student_uid: Optional[str] = None
     registration_number: Optional[str] = None
     course_code: Optional[str] = None
