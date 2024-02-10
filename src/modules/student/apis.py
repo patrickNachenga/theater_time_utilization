@@ -295,7 +295,10 @@ class StudentMutation:
     @strawberry.mutation
     async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
         # Decode the base64 file content
+
+        print("1")
         file_content = base64.b64decode(base64_file)
+        print("2")
 
         # Load the workbook from the file content
         workbook = openpyxl.load_workbook(io.BytesIO(file_content))
@@ -314,7 +317,7 @@ class StudentMutation:
         marks_column = 4  # Assuming Marks is in column D
 
         with session_scope() as session:
-            is_ue = session.query(ExamCategory).filter(
+            is_ue = session.query(ExamCategory.is_ue).filter(
                 ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
             students = get_student_from_uaa()
