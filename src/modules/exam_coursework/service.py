@@ -119,7 +119,7 @@ class ExamCourseworkService:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="No Record Found",
+                message="Course work has not been uploaded yet.",
                 data=[]
             )
 
