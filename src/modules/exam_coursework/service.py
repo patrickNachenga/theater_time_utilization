@@ -41,6 +41,7 @@ class ExamCourseworkService:
                 session.query(
                     ProgramCourse.id.label("program_course_id"),
                     Course.code.label("course_code"),
+                    Course.name.label("course_name"),
                 )
                 .join(Course, ProgramCourse.course_id == Course.id)
                 .join(ExamCoursework, ExamCoursework.program_course_id == ProgramCourse.id)
@@ -94,6 +95,7 @@ class ExamCourseworkService:
 
                         c = {
                             "course_code": course.course_code,
+                            "course_name": course.course_name,
                             "course_work_type": course_type_data
                         }
                         course_data.append(c)
