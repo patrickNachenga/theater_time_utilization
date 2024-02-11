@@ -486,7 +486,6 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                 failed_student.reg_number = reg_number
                 failed_student.reason = "Student has no by-law"
             else:
-
                 if score != 'InvalidMarks':
                     if score is None:
                         score = 0
@@ -527,6 +526,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                     failed = failed + 1
                     failed_student.reg_number = reg_number
                     failed_student.reason = "Score is not valid number"
+
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number

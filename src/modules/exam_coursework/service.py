@@ -41,6 +41,7 @@ class ExamCourseworkService:
                 session.query(
                     ProgramCourse.id.label("program_course_id"),
                     Course.code.label("course_code"),
+                    Course.name.label("course_name"),
                 )
                 .join(Course, ProgramCourse.course_id == Course.id)
                 .join(ExamCoursework, ExamCoursework.program_course_id == ProgramCourse.id)
@@ -68,36 +69,36 @@ class ExamCourseworkService:
                             ExamCategory.is_ue.is_(False),
                         )
                     ).group_by(ExamCategory.name, ExamCategory.id).all()
-
-                course_type_data = []
-                if course_type:
-                    for cType in course_type:
-                        scores = session.query(ExamCoursework.score, ExamCoursework.overall_marks, ExamCoursework.assessment_number). \
-                            filter(ExamCoursework.student_uid == input.student_uid,
-                                   ExamCoursework.exam_category_id == cType.id,
-                                   ExamCoursework.program_course_id == course.program_course_id). \
-                            order_by(ExamCoursework.assessment_number.asc()).all()
-                        if scores:
-                            scoreData = []
-                            for mark in scores:
-                                s = {
-                                    "score": mark.score,
-                                    "overall_marks": mark.overall_marks,
-                                    "assessment_number": mark.assessment_number
+                    # print(course_type)
+                    course_type_data = []
+                    if course_type:
+                        for cType in course_type:
+                            scores = session.query(ExamCoursework.score, ExamCoursework.overall_marks, ExamCoursework.assessment_number). \
+                                filter(ExamCoursework.student_uid == input.student_uid,
+                                       ExamCoursework.exam_category_id == cType.id,
+                                       ExamCoursework.program_course_id == course.program_course_id). \
+                                order_by(ExamCoursework.assessment_number.asc()).all()
+                            if scores:
+                                scoreData = []
+                                for mark in scores:
+                                    s = {
+                                        "score": mark.score,
+                                        "overall_marks": mark.overall_marks,
+                                        "assessment_number": mark.assessment_number
+                                    }
+                                    scoreData.append(s)
+                                cInfo = {
+                                    "type": cType.name,
+                                    "score": scoreData
                                 }
-                                scoreData.append(s)
-                            cInfo = {
-                                "type": cType.name,
-                                "score": scoreData
-                            }
-                            course_type_data.append(cInfo)
+                                course_type_data.append(cInfo)
 
-                    c = {
-                        "course_code": course.course_code,
-                        "course_work_type": course_type_data
-                    }
-                    course_data.append(c)
-
+                        c = {
+                            "course_code": course.course_code,
+                            "course_name": course.course_name,
+                            "course_work_type": course_type_data
+                        }
+                        course_data.append(c)
                 student_course_work_output_list = []
                 for item in course_data:
                     course_work_type_list = []
@@ -118,7 +119,7 @@ class ExamCourseworkService:
             return Response(
                 status=False,
                 code=ResponseCode.NO_RECORD_FOUND,
-                message="No Record Found",
+                message="Course work has not been uploaded yet.",
                 data=[]
             )
 

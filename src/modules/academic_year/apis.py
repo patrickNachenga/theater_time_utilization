@@ -12,7 +12,8 @@ from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode, 
 
 @strawberry.type
 class AcademicYearQuery:
-    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
+    # @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
+    @strawberry.field()
     def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
         try:
             result = AcademicYearCrud.get_multi_paginated(pagination, ['name', 'status', 'start_date', 'end_date'],
