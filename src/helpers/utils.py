@@ -451,14 +451,37 @@ def get_student_from_uaa():
         }
 
         response = requests.get(settings.UAA_URi + '/users/students', headers=headers, timeout=5)
-        # print("hapaaaaa==>",response.json())
 
     except Exception as e:
-        print('excption occurred', e)
+        print('exception occurred', e)
         response = None
     if response.status_code == 200:
         data = response.json()
         return data
+
+def get_student_from_uaa_by_reg_numbers(reg_numbers):
+    try:
+
+        # Set the Content-Type header to indicate that the request body is JSON
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "registration_numbers": reg_numbers
+        }
+
+        response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers, timeout=5)
+
+    except Exception as e:
+        print('exception occurred', e)
+        response = None
+    if response.status_code == 200:
+        data = response.json()
+        return data
+
+
+
 
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
@@ -486,7 +509,6 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                 failed_student.reg_number = reg_number
                 failed_student.reason = "Student has no by-law"
             else:
-
                 if score != 'InvalidMarks':
                     if score is None:
                         score = 0
@@ -527,6 +549,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                     failed = failed + 1
                     failed_student.reg_number = reg_number
                     failed_student.reason = "Score is not valid number"
+
         else:
             failed = failed + 1
             failed_student.reg_number = reg_number
