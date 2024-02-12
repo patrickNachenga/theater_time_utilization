@@ -342,7 +342,7 @@ class StudentMutation:
                     score = float(row[marks_column - 1])
                 except ValueError:
                     score = 'InvalidMarks'
-                    # print("Could not convert string to float.")
+                    # print("Could not convert string to float." )
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,
