@@ -35,8 +35,17 @@ class ExamCourseWorkResultQuery:
     @strawberry.field() # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])]
     def get_student_active_semester_course_work_results(self, input: StudentCourseWorkInput) -> Response[List[StudentCourseWorkOutput]]:
         try:
-            result = ExamCourseworkService.get_student_active_semester_course_work_results(input)
-            return result
+
+            if input.student_uid is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Failed to retrieve exam course work result, Please logout first and try again later",
+                    data=[],
+                )
+            else:
+                result = ExamCourseworkService.get_student_active_semester_course_work_results(input)
+                return result
         except Exception as e:
             logger.error(f"Failed to retrieve exam result summaries: {e}")
             return Response(
