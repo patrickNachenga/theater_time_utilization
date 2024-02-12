@@ -41,6 +41,7 @@ class ExamCourseworkService:
                 session.query(
                     ProgramCourse.id.label("program_course_id"),
                     Course.code.label("course_code"),
+                    Course.name.label("course_name"),
                 )
                 .join(Course, ProgramCourse.course_id == Course.id)
                 .join(ExamCoursework, ExamCoursework.program_course_id == ProgramCourse.id)
@@ -52,7 +53,7 @@ class ExamCourseworkService:
                         ProgramSemester.semester == input.semester,
                         ProgramSemester.study_year == input.study_year,
                         ProgramSemester.academic_year_id == academic_year.id)
-                .group_by(ProgramCourse.id, Course.code)
+                .group_by(ProgramCourse.id, Course.code, Course.name)
                 .all()
             )
 
