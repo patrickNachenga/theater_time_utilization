@@ -95,6 +95,7 @@ class ExamCourseworkService:
 
                         c = {
                             "course_code": course.course_code,
+                            "course_name": course.course_name,
                             "course_work_type": course_type_data
                         }
                         course_data.append(c)
@@ -105,6 +106,7 @@ class ExamCourseworkService:
                         score_list = [Score(**score) for score in work_type['score']]
                         course_work_type_list.append(CourseWorkTypeOutput(type=work_type['type'], scores=score_list))
                     student_course_work_output_list.append(StudentCourseWorkOutput(course_code=item['course_code'],
+                                                                                   course_name=item['course_name'],
                                                                                    course_work_type=course_work_type_list))
                 # print(course_data)
                 # return student_course_work_output_list
