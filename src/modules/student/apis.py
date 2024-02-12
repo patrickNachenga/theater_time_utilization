@@ -13,7 +13,7 @@ from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.db.session import session_scope
-from src.helpers.utils import get_current_academic_year, get_student_from_uaa, insert_exam_result, insert_course_work, \
+from src.helpers.utils import get_current_academic_year, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, insert_exam_result, insert_course_work, \
     general_upload
 from src.models import ExamCategory
 from src.modules.student.service import StudentService
@@ -318,7 +318,16 @@ class StudentMutation:
             is_ue = session.query(ExamCategory.is_ue).filter(
                 ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
-            students = get_student_from_uaa()
+
+            # get list of registration numbers from the template
+            reg_numbers = []  # Initialize an empty list to store registration numbers
+            for row in worksheet.iter_rows(min_row=10, values_only=True):
+                reg_number_ = row[reg_no_column - 1]
+                reg_numbers.append(reg_number_)  # Append the registration number to the list
+
+            # Now reg_numbers contains all the registration numbers from the specified worksheet rows
+
+            students = get_student_from_uaa_by_reg_numbers(reg_numbers)
             success = 0
             failed = 0
             failed_students = []
