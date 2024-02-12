@@ -1204,7 +1204,6 @@ class CourseWorkTypeOutput:
 @strawberry.type(description="Student Course Works Output")
 class StudentCourseWorkOutput:
     course_code: str
-    course_name: Optional[str]
     course_work_type: List[CourseWorkTypeOutput]
 
 
