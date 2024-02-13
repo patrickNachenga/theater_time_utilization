@@ -17,5 +17,5 @@ class ProgramCourseAssessment(BaseModel):
 
     program_course_id: int = Column(Integer, ForeignKey("program_courses.id"),  nullable=False, unique=False)
     # program_course = relationship('ProgramCourse', lazy='subquery', back_populates="program_course_assessments")
-    program_course = relationship('ProgramCourse', lazy='subquery')
+    # program_course = relationship('ProgramCourse', lazy='subquery')
 
