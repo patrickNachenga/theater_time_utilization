@@ -70,7 +70,7 @@ class StudentQuery:
                                 out_off: int) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id,
-                                                              out_off)
+                                                              out_off,'REGNO')
 
             if result:
                 response = UaaDataResponse(
