@@ -246,7 +246,8 @@ class StudentMutation:
             parts[1] = parts[1][0].upper() + parts[1][1:]
 
             # Capitalize the first letter of the third part
-            parts[2] = parts[2][0].upper()
+            if len(parts) > 2:
+                parts[2] = parts[2][0].upper()
 
             # Join the parts back into a single string
             full_name_ = ' '.join(parts)
