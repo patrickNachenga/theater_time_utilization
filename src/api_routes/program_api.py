@@ -234,18 +234,19 @@ def reformat_name(full_name: str):
     parts = full_name.split()
 
     # Capitalize the first part
-    parts[0] = parts[0].upper()
+    parts[0] = parts[0].upper() + ', '
 
     # Capitalize the first letter of the second part
-    parts[1] = parts[1][0].upper() + parts[1][1:]
+    parts[1] = parts[1][0].upper() + parts[1][1:].lower()
 
     # Capitalize the first letter of the third part
-    parts[2] = parts[2][0].upper()
+    if len(parts) > 2:
+        parts[2] = parts[2][0].upper() + parts[2][1:].lower()
 
     # Join the parts back into a single string
-    modified_string = ' '.join(parts)
+    full_name_ = ' '.join(parts)
 
-    return modified_string
+    return full_name_
 
 @program_router.post("/generate-course-result-report/")
 def generate_course_result_report(allocation_uid: str):
