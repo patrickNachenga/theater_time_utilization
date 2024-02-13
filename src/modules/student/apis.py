@@ -233,11 +233,33 @@ class StudentMutation:
         count = 0
 
         for row, item in enumerate(result['data'], start=10):
+
+            full_name = item.get('user', {}).get('full_name')
+
+            # Split the input string into parts
+            parts = full_name.split()
+
+            # Capitalize the first part
+            parts[0] = parts[0].upper()
+
+            # Capitalize the first letter of the second part
+            parts[1] = parts[1][0].upper() + parts[1][1:]
+
+            # Capitalize the first letter of the third part
+            parts[2] = parts[2][0].upper()
+
+            # Join the parts back into a single string
+            full_name_ = ' '.join(parts)
+
+
+
+
+
             count += 1
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
             # worksheet[f"C{row}"] = item.get('user', {}).get('full_name')
-            worksheet[f"C{row}"] = reformat_name(item.get('user', {}).get('full_name'))
+            worksheet[f"C{row}"] = full_name_
             # worksheet[f"C{row}"] = item['last_name'].capitalize() + ", " + item['first_name'] + " " + item['middle_name']
             worksheet[f"D{row}"] = item['marks']
             # Align the cells to the center
