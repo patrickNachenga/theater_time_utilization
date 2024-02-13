@@ -77,7 +77,7 @@ class StudentQuery:
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=item.get('user', {}).get('full_name'),
+                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=reformat_name(item.get('user', {}).get('full_name')),
                                          uid=item['uid'], score=item['marks'])
                           for item in result['data']]
                 )
@@ -97,6 +97,25 @@ class StudentQuery:
                 message="Failed to retrieve",
                 data=[])
 
+    @staticmethod
+    def reformat_name(full_name: str) -> str:
+        # Split the input string into parts
+        parts = full_name.split()
+
+        # Capitalize the first part
+        parts[0] = parts[0].upper() + ', '
+
+        # Capitalize the first letter of the second part
+        parts[1] = parts[1][0].upper() + parts[1][1:].lower()
+
+        # Capitalize the first letter of the third part
+        if len(parts) > 2:
+            parts[2] = parts[2][0].upper() + parts[2][1:].lower()
+
+        # Join the parts back into a single string
+        full_name_ = ' '.join(parts)
+
+        return full_name_
     @strawberry.field
     def get_student_current_registered_exam(self, student_uid: str) -> Response[List[ExamRegistrationNode]]:
         try:
