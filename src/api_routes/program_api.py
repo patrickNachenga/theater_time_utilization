@@ -182,7 +182,7 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
         count += 1
         worksheet[f"A{row}"] = count
         worksheet[f"B{row}"] = item['registration_number']
-        worksheet[f"C{row}"] = item['full_name']
+        worksheet[f"C{row}"] = reformat_name(item['full_name'])
         worksheet[f"D{row}"] = ""
         # Align the cells to the center
         for col in range(1, 5):
@@ -228,6 +228,24 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
     # Return the workbook as a streaming response
     return StreamingResponse(content=file_buffer, headers=headers)
 
+
+def reformat_name(full_name: str):
+    # Split the input string into parts
+    parts = full_name.split()
+
+    # Capitalize the first part
+    parts[0] = parts[0].upper()
+
+    # Capitalize the first letter of the second part
+    parts[1] = parts[1][0].upper() + parts[1][1:]
+
+    # Capitalize the first letter of the third part
+    parts[2] = parts[2][0].upper()
+
+    # Join the parts back into a single string
+    modified_string = ' '.join(parts)
+
+    return modified_string
 
 @program_router.post("/generate-course-result-report/")
 def generate_course_result_report(allocation_uid: str):
