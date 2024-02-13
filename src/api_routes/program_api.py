@@ -229,7 +229,7 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
     return StreamingResponse(content=file_buffer, headers=headers)
 
 
-def reformat_name(full_name: str):
+def reformat_name(full_name: str) -> str:
     # Split the input string into parts
     parts = full_name.split()
 

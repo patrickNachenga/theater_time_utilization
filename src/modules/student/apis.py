@@ -283,7 +283,7 @@ class StudentMutation:
         # Return the Base64 string as the result
         return ExcelFile(base64_data=base64_data)
 
-    def reformat_name(full_name: str):
+    def reformat_name(full_name: str) -> str:
         # Split the input string into parts
         parts = full_name.split()
 
