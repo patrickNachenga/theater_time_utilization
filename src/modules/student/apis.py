@@ -243,7 +243,7 @@ class StudentMutation:
             parts[0] = parts[0].upper()
 
             # Capitalize the first letter of the second part
-            parts[1] = parts[1][0].upper() + parts[1][1:]
+            parts[1] = parts[1][0].upper() + parts[1][1:].lower()
 
             # Capitalize the first letter of the third part
             if len(parts) > 2:
