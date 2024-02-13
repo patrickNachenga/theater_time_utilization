@@ -236,7 +236,8 @@ class StudentMutation:
             count += 1
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
-            worksheet[f"C{row}"] = item.get('user', {}).get('full_name')
+            # worksheet[f"C{row}"] = item.get('user', {}).get('full_name')
+            worksheet[f"C{row}"] = reformat_name(item.get('user', {}).get('full_name'))
             # worksheet[f"C{row}"] = item['last_name'].capitalize() + ", " + item['first_name'] + " " + item['middle_name']
             worksheet[f"D{row}"] = item['marks']
             # Align the cells to the center
@@ -278,6 +279,24 @@ class StudentMutation:
 
         # Return the Base64 string as the result
         return ExcelFile(base64_data=base64_data)
+
+    def reformat_name(full_name: str):
+        # Split the input string into parts
+        parts = full_name.split()
+
+        # Capitalize the first part
+        parts[0] = parts[0].upper()
+
+        # Capitalize the first letter of the second part
+        parts[1] = parts[1][0].upper() + parts[1][1:]
+
+        # Capitalize the first letter of the third part
+        parts[2] = parts[2][0].upper()
+
+        # Join the parts back into a single string
+        modified_string = ' '.join(parts)
+
+        return modified_string
 
     @strawberry.field
     def register_student_exam(self, inputs: List[ExamRegistrationInput]) -> Response[ExamRegistrationListNode]:
