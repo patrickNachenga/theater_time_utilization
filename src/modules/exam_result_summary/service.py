@@ -31,7 +31,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 query = query.filter(ExamResultSummary.course_category == search_criteria.course_category)
             if search_criteria.semester:
                 query = query.filter(ExamResultSummary.semester == search_criteria.semester)
-
+            query = query.order_by(ExamResultSummary.registration_number.asc())
             # Execute the final query
             results = query.all()
             return results

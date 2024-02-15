@@ -359,9 +359,7 @@ class StudentMutation:
     @strawberry.mutation
     async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
         # Decode the base64 file content
-        print("1")
         file_content = base64.b64decode(base64_file)
-        print("2")
         # Load the workbook from the file content
         workbook = openpyxl.load_workbook(io.BytesIO(file_content))
         # Get the desired worksheet by name or index
