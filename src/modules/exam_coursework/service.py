@@ -26,7 +26,7 @@ class ExamCourseworkService:
 
             if search_criteria.exam_category_id:
                 query = query.filter(ExamCoursework.exam_category_id == search_criteria.exam_category_id)
-
+            query = query.group_by(ExamCoursework.student_uid)  # Adding group by clause
             results = query.all()
 
             return results
