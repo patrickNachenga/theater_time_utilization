@@ -6,7 +6,7 @@ import strawberry
 from src.modules.exam_coursework.service import ExamCourseworkService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamCourseWorkNode, StudentCourseWorkOutput, StudentCourseWorkInput
+from src.types import ExamCourseWorkNode, StudentCourseWorkOutput, StudentCourseWorkInput, ExamCourseWorkSearchCriteria
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class ExamCourseWorkResultQuery:
     @strawberry.field() # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])]
-    def get_exam_course_work_results(self) -> Response[List[ExamCourseWorkNode]]:
+    def get_exam_course_work_results(self, search_criteria: ExamCourseWorkSearchCriteria) -> Response[List[ExamCourseWorkNode]]:
         try:
-            result = ExamCourseworkService.get_exam_course_work_results()
+            result = ExamCourseworkService.get_exam_course_work_results(search_criteria)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
