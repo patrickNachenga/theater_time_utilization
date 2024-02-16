@@ -6,17 +6,30 @@ from src.db.session import session_scope
 from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course
 from src.models.exam_coursework import ExamCoursework
 from src.shared.response_code import ResponseCode
-from src.types import StudentCourseWorkOutput, Score, CourseWorkTypeOutput
+from src.types import StudentCourseWorkOutput, Score, CourseWorkTypeOutput, ExamCourseWorkSearchCriteria
 from src.shared.response import Response
 
 
 class ExamCourseworkService:
 
     @staticmethod
-    def get_exam_course_work_results() -> List[ExamCoursework]:
-        with session_scope() as session:
-            result = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None)).all()
-            return result
+    def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCoursework]:
+        with (session_scope() as session):
+
+            query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
+
+            if search_criteria.student_uid:
+                query = query.filter(ExamCoursework.student_uid == search_criteria.student_uid)
+
+            if search_criteria.program_course_id:
+                query = query.filter(ExamCoursework.program_course_id == search_criteria.program_course_id)
+
+            if search_criteria.exam_category_id:
+                query = query.filter(ExamCoursework.exam_category_id == search_criteria.exam_category_id)
+
+            results = query.all()
+
+            return results
 
     @staticmethod
     def get_student_exam_course_work_results(student_uid) -> List[ExamCoursework]:
