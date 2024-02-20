@@ -1019,7 +1019,7 @@ class UploadResponse:
 @strawberry.input
 class MarksInput:
     registration_number: str
-    score: float
+    score: Optional[float]
 
 
 @strawberry.input
@@ -1030,7 +1030,7 @@ class UploadInput:
     assessment_number: int
     program_course_id: int
     weight: int
-    marks: Optional[List[MarksInput]]
+    marks: List[MarksInput]
 
 
 @strawberry.input(description="Workflow Input")
