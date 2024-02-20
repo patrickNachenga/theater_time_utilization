@@ -1030,7 +1030,7 @@ class UploadInput:
     assessment_number: int
     program_course_id: int
     weight: int
-    marks: List[Optional[MarksInput]]
+    marks: Optional[List[MarksInput]]
 
 
 @strawberry.input(description="Workflow Input")
