@@ -36,6 +36,7 @@ class ExamCourseWorkResultQuery:
     def get_student_active_semester_course_work_results(self, input: StudentCourseWorkInput) -> Response[List[StudentCourseWorkOutput]]:
         try:
 
+            print("course_work: ", input)
             if input.student_uid is None:
                 return Response(
                     status=False,
