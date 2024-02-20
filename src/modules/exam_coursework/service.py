@@ -27,6 +27,8 @@ class ExamCourseworkService:
             if search_criteria.exam_category_id:
                 query = query.filter(ExamCoursework.exam_category_id == search_criteria.exam_category_id)
 
+            query = query.order_by(ExamCoursework.student_uid.asc())
+
             results = query.all()
 
             return results
