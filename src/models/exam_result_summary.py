@@ -40,6 +40,8 @@ class ExamResultSummary(BaseModel):
     academic_year_uid: str = Column(String, nullable=False)
     program_uid: str = Column(String, nullable=False)
     course_category: str = Column(String, nullable=False)
+    grade_description: str = Column(String, nullable=True)
+
 
 
 
