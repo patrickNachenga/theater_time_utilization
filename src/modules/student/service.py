@@ -286,11 +286,23 @@ class StudentService:
         weight = inputs.weight
         source = inputs.source
 
+        print("Online marks input", inputs)
+
         with session_scope() as session:
             is_ue = session.query(ExamCategory).filter(
                 ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
-            students = get_student_from_uaa()
+
+            reg_numbers = []  # Initialize an empty list to store registration numbers
+            for row in inputs.marks:
+                reg_number_ = row.registration_number
+                reg_numbers.append(reg_number_)  # Append the registration number to the list
+
+            # Now reg_numbers contains all the registration numbers from the specified worksheet rows
+
+            students = get_student_from_uaa_by_reg_numbers(reg_numbers)
+
+            # students = get_student_from_uaa()
             success = 0
             failed = 0
             failed_students = []
