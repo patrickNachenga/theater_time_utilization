@@ -6,7 +6,7 @@ from sqlalchemy.orm import aliased
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.helpers.utils import get_current_semester, get_student_from_uaa, insert_exam_result, insert_course_work, \
+from src.helpers.utils import get_current_semester, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, insert_exam_result, insert_course_work, \
     general_upload
 from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester, \
     StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement, ExamResult, ExamCoursework
