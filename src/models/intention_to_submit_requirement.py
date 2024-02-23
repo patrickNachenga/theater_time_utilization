@@ -13,6 +13,7 @@ class IntentionToSubmitRequirement(BaseModel):
 
     # ---------------Mapped Columns ---------------------
     program_category_id: int = Column(Integer, ForeignKey("program_categories.id"), nullable=False)
-    program_category = relationship('ProgramCategory', lazy='noload', back_populates="intention_to_submit_requirements")
+    # program_category = relationship('ProgramCategory', lazy='noload', back_populates="intention_to_submit_requirements")
+    program_category = relationship('ProgramCategory', lazy='noload')
 
 

@@ -442,7 +442,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
     @staticmethod
     def get_student_exam_result_summaries(student_uid: str) -> List[ExamResultSummary]:
         with session_scope() as session:
-            result = session.query(ExamResultSummary).filter(ExamResultSummary.student_uid == student_uid,
+            result = session.query(ExamResultSummary).filter(ExamResultSummary.student_uid == student_uid, ExamResultSummary.publish_status == 1,
                                                              ExamResultSummary.deleted_at.is_(None)).all()
             return result
 

@@ -1030,7 +1030,7 @@ class UploadResponse:
 @strawberry.input
 class MarksInput:
     registration_number: str
-    score: float
+    score: Optional[float]
 
 
 @strawberry.input
@@ -1286,6 +1286,12 @@ class ExamResultSummarySearchCriteria:
     program_uid: Optional[str] = None
     course_category: Optional[str] = None
     semester: Optional[int] = None
+
+@strawberry.input(description="Exam course work result Output | Node")
+class ExamCourseWorkSearchCriteria:
+    student_uid: Optional[str]  = None
+    program_course_id: Optional[str]  = None
+    exam_category_id: Optional[str] = None
 
 
 @strawberry.type(description="Student Seminar paginated output")

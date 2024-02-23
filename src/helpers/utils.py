@@ -744,6 +744,7 @@ def grade_result(session, target, by_law_uid, exam_result_summary, program_type)
         exam_result_summary.grade = performance_grade['grade']
         exam_result_summary.grade_point = performance_grade['grade_point']
         exam_result_summary.grade_remark = performance_grade['status']
+        exam_result_summary.grade_description = performance_grade['description']
         exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
         return exam_result_summary
 
