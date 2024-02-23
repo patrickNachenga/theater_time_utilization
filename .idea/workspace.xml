@@ -5,16 +5,37 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="594ec404-f1c3-4e29-bab5-18480d90edb9" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../accommodation/src/modules/room_allocations/service.py" beforeDir="false" afterPath="$PROJECT_DIR$/../accommodation/src/modules/room_allocations/service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api_routes/program_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_routes/program_api.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/.env" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/program_course.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/program_course.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/exam_result_summary/apis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/exam_result_summary/apis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/modules/exam_result_summary/service.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/exam_result_summary/service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/modules/student/apis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/student/apis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/modules/student/service.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/student/service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/program_course/service.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/program_course/service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/program_semester/service.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/program_semester/service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/programs/apis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/programs/apis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/types.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../uaa/src/core/.env" beforeDir="false" afterPath="$PROJECT_DIR$/../uaa/src/core/.env" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DjangoConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)">
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -22,32 +43,40 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2cNFD38MENi82QoN2iDhklKLFEv" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR_AND_PREVIEW&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/bicon/Development/SUA-AIMS/ESB/registration&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
+    ]
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-5a2391486177-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13763.11" />
+        <option value="bundled-python-sdk-50da183f06c8-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13135.95" />
       </set>
     </attachedChunks>
   </component>
@@ -60,6 +89,11 @@
       <option name="presentableId" value="Default" />
       <updated>1707944005774</updated>
       <workItem from="1707944007038" duration="2379000" />
+      <workItem from="1708061818777" duration="3815000" />
+      <workItem from="1708410014257" duration="6545000" />
+      <workItem from="1708418751291" duration="3220000" />
+      <workItem from="1708581854878" duration="23514000" />
+      <workItem from="1708664855571" duration="18394000" />
     </task>
     <servers />
   </component>

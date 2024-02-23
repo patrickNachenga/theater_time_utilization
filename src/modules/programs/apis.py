@@ -52,7 +52,6 @@ class ProgramQuery:
             #                                          ['code', 'short_name', 'tcu_code', 'nacte_code', 'name',
             #                                           'registration_code'], ["program_category"])
 
-            print("============>", result)
         except Exception as e:
             print(e)
             result = ProgramListNode(items=[], total_count=0)

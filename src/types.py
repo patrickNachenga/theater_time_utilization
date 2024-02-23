@@ -114,6 +114,13 @@ class ExamCategoryGroupsInput:
     name: str
 
 
+@strawberry.input()
+class ProgramSemesterResultsInput:
+    program_uid: Optional[str] = None
+    academic_year_uid: str
+    semester: Optional[str] = None
+    year_of_study: Optional[str] = None
+
 @strawberry.type(description="Exam category Groups Output")
 class ExamCategoryGroupsNode:
     uid: str
@@ -205,6 +212,10 @@ class ExamResultSummaryNode:
 class ExamResultSummaryListNode:
     items: List[ExamResultSummaryNode]
     total_count: int
+
+@strawberry.type(description="Semester Exam Result")
+class SemesterExamResultNode:
+    items: List[ExamResultSummaryNode]
 
 
 @strawberry.input(description="Exam Category Groups Input")
