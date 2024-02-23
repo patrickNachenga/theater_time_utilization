@@ -50,6 +50,20 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             return result.first()
 
     @staticmethod
+    def get_program_semester_by_data(semester, year_of_study, program_id, academic_year_id) -> ProgramSemester:
+        """
+        Get program semester by uid
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(ProgramSemester).where(
+                ProgramSemester.semester == semester, ProgramSemester.study_year == year_of_study,
+                ProgramSemester.program_id == program_id,
+                ProgramSemester.academic_year_id == academic_year_id and (ProgramSemester.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.first()
+
+    @staticmethod
     def get_program_semester_by_program_id(program_id: int) -> ProgramSemester:
         """
         Get program semester by program_id
