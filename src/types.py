@@ -1270,6 +1270,7 @@ class ExamCourseWorkNode:
     score: float
     out_of: float
     weight: int
+    assessment_number: int
     source: str
     overall_marks: float
     program_course: ProgramCourseNode
