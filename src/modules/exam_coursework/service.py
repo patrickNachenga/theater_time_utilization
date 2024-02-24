@@ -4,7 +4,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 
 from src.db.session import session_scope
-from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course
+from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course,ExamResultSummary
 from src.models.exam_coursework import ExamCoursework
 from src.shared.response_code import ResponseCode
 from src.types import StudentCourseWorkOutput, Score, CourseWorkTypeOutput, ExamCourseWorkSearchCriteria
