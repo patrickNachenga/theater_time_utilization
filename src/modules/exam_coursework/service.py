@@ -25,8 +25,9 @@ class ExamCourseworkService:
             distinct_exam_categories_subquery = (
                 session.query(
                     ExamCoursework.exam_category_id,
-                    func.max(exam_category_alias.code).label('exam_category_code')
-                )
+                    func.max(exam_category_alias.code).label('exam_category_code'),
+                    func.max(exam_category_alias.name).label('exam_category_name')
+            )
                 .join(exam_category_alias, ExamCoursework.exam_category_id == exam_category_alias.id)
                 .group_by(ExamCoursework.exam_category_id)
                 .subquery()
@@ -57,6 +58,7 @@ class ExamCourseworkService:
                     ExamCoursework.overall_marks,
                     ExamCoursework.exam_category_id,
                     distinct_exam_categories_subquery.c.exam_category_code.label('exam_category_code'),
+                    distinct_exam_categories_subquery.c.exam_category_name.label('exam_category_name'),
                     ExamResultSummary.first_name,
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
@@ -88,6 +90,8 @@ class ExamCourseworkService:
                     ExamCoursework.source,
                     ExamCoursework.weight,
                     ExamCoursework.overall_marks,
+                    distinct_exam_categories_subquery.c.exam_category_code,
+                    distinct_exam_categories_subquery.c.exam_category_name
             )
             )
 
