@@ -7,14 +7,14 @@ from src.db.session import session_scope
 from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course,ExamResultSummary
 from src.models.exam_coursework import ExamCoursework
 from src.shared.response_code import ResponseCode
-from src.types import StudentCourseWorkOutput, Score, CourseWorkTypeOutput, ExamCourseWorkSearchCriteria
+from src.types import StudentCourseWorkOutput, ExamCourseWorkNode, Score, CourseWorkTypeOutput, ExamCourseWorkSearchCriteria
 from src.shared.response import Response
 
 
 class ExamCourseworkService:
 
     @staticmethod
-    def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCoursework]:
+    def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCourseWorkNode]:
         with (session_scope() as session):
 
             # query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
