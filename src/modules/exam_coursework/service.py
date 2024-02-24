@@ -37,13 +37,18 @@ class ExamCourseworkService:
             # Modify the original query to filter based on the subquery
             query = (
                 session.query(
-                    ExamCoursework,
+                    ExamCoursework.student_uid,
+                    ExamCoursework.assessment_number,
+                    ExamCoursework.score,
+                    ExamCoursework.source,
+                    ExamCoursework.overall_marks,
                     exam_category_alias.code.label('exam_category_code'),
                     exam_category_alias.name.label('exam_category_name'),
                     ExamResultSummary.first_name,
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
                     ExamResultSummary.registration_number,
+                    ExamResultSummary.student_uid,
                 )
                 .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
                 .join(
