@@ -63,10 +63,10 @@ class ExamCourseworkService:
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
                     ExamResultSummary.registration_number,
-                    ProgramCourse
+                    # ProgramCourse
                 )
                 .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
-                .join(ProgramCourse, ExamCoursework.program_course_id == ProgramCourse.id)
+                # .join(ProgramCourse, ExamCoursework.program_course_id == ProgramCourse.id)
                 .join(
                     ExamResultSummary,
                     ExamCoursework.student_uid == ExamResultSummary.student_uid
@@ -97,7 +97,7 @@ class ExamCourseworkService:
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
                     ExamResultSummary.registration_number,
-                    ProgramCourse.id
+                    # ProgramCourse.id
             )
             )
 
