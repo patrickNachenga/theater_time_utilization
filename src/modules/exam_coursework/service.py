@@ -97,6 +97,7 @@ class ExamCourseworkService:
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
                     ExamResultSummary.registration_number,
+                    ProgramCourse.id
             )
             )
 
