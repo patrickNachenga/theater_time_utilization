@@ -47,7 +47,7 @@ class ExamCourseworkService:
             query = query.order_by(ExamCoursework.student_uid.asc(), ExamCoursework.exam_category_id.asc(), ExamCoursework.assessment_number.asc())
 
             results = query.all()
-
+            print("results:", results)
             return results
 
     @staticmethod
