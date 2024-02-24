@@ -1265,11 +1265,18 @@ class ExamResultNode:
 @strawberry.type(description="Exam course work result Output | Node")
 class ExamCourseWorkNode:
     student_uid: str
+    registration_number: Optional[str] = None
+    first_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    last_name: Optional[str] = None
+    exam_category_code: Optional[str] = None
+    exam_category_name: Optional[str] = None
     program_course_id: int
     exam_category_id: int
     score: float
     out_of: float
     weight: int
+    assessment_number: int
     source: str
     overall_marks: float
     program_course: ProgramCourseNode
