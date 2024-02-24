@@ -21,6 +21,13 @@ class ExamCourseworkService:
             # query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
             exam_category_alias = aliased(ExamCategory)
 
+            # Subquery to select distinct exam categories present in the ExamCoursework table
+            distinct_exam_categories_subquery = (
+                session.query(
+                    distinct(ExamCoursework.exam_category_id).label('exam_category_id')
+                )
+            )
+
             # Subquery to select the latest entry for each student_uid
             latest_exam_result_summary_subquery = (
                 session.query(
@@ -41,7 +48,9 @@ class ExamCourseworkService:
                     ExamCoursework.assessment_number,
                     ExamCoursework.score,
                     ExamCoursework.source,
+                    ExamCoursework.weight,
                     ExamCoursework.overall_marks,
+                    ExamCoursework.exam_category_id,
                     exam_category_alias.code.label('exam_category_code'),
                     exam_category_alias.name.label('exam_category_name'),
                     ExamResultSummary.first_name,
@@ -61,7 +70,8 @@ class ExamCourseworkService:
                 )
                 .filter(
                     ExamCoursework.deleted_at.is_(None),
-                    latest_exam_result_summary_subquery.c.row_number == 1  # Select only the latest entry
+                    latest_exam_result_summary_subquery.c.row_number == 1,  # Select only the latest entry
+                    ExamCategory.id.in_(distinct_exam_categories_subquery)  # Filter based on distinct exam categories
                 )
             )
 
