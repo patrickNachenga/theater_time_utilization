@@ -24,9 +24,11 @@ class ExamCourseworkService:
             # Subquery to select distinct exam categories present in the ExamCoursework table
             distinct_exam_categories_subquery = (
                 session.query(
-                    ExamCoursework.exam_category_id
+                    ExamCoursework.exam_category_id,
+                    func.max(exam_category_alias.code).label('exam_category_code')
                 )
-                .distinct()
+                .join(exam_category_alias, ExamCoursework.exam_category_id == exam_category_alias.id)
+                .group_by(ExamCoursework.exam_category_id)
                 .subquery()
             )
 
@@ -46,6 +48,7 @@ class ExamCourseworkService:
             # Modify the original query to filter based on the subquery
             query = (
                 session.query(
+
                     ExamCoursework.student_uid,
                     ExamCoursework.assessment_number,
                     ExamCoursework.score,
@@ -53,8 +56,7 @@ class ExamCourseworkService:
                     ExamCoursework.weight,
                     ExamCoursework.overall_marks,
                     ExamCoursework.exam_category_id,
-                    exam_category_alias.code.label('exam_category_code'),
-                    exam_category_alias.name.label('exam_category_name'),
+                    distinct_exam_categories_subquery.c.exam_category_code.label('exam_category_code'),
                     ExamResultSummary.first_name,
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
@@ -70,10 +72,13 @@ class ExamCourseworkService:
                     latest_exam_result_summary_subquery,
                     latest_exam_result_summary_subquery.c.student_uid == ExamResultSummary.student_uid
                 )
+                .join(
+                    distinct_exam_categories_subquery,
+                    ExamCoursework.exam_category_id == distinct_exam_categories_subquery.c.exam_category_id
+                )
                 .filter(
                     ExamCoursework.deleted_at.is_(None),
-                    latest_exam_result_summary_subquery.c.row_number == 1,  # Select only the latest entry
-                    ExamCategory.id.in_(distinct_exam_categories_subquery)  # Filter based on distinct exam categories
+                    latest_exam_result_summary_subquery.c.row_number == 1  # Select only the latest entry
                 )
             )
 
