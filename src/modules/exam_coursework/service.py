@@ -1,6 +1,7 @@
 from typing import List
 
 from sqlalchemy import and_
+from sqlalchemy.orm import aliased
 
 from src.db.session import session_scope
 from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course
