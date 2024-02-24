@@ -1279,7 +1279,7 @@ class ExamCourseWorkNode:
     assessment_number: int
     source: str
     overall_marks: float
-    program_course: ProgramCourseNode
+    program_course: Optional[ProgramCourseNode] = None
     exam_category: ExamCategoryNode
 
 
