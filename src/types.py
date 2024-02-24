@@ -1280,6 +1280,7 @@ class ExamCourseWorkNode:
     source: str
     overall_marks: float
     program_course: ProgramCourseNode
+    exam_category: ExamCategoryNode
 
 
 @strawberry.input(description="Exam course work result Output | Node")
