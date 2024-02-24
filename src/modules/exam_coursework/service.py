@@ -85,7 +85,8 @@ class ExamCourseworkService:
                     ExamCoursework.assessment_number,
                     ExamCoursework.program_course_id,
                     ExamCoursework.score,
-                    ExamCoursework.source
+                    ExamCoursework.weight,
+                    ExamCoursework.overall_marks,
             )
             )
 
