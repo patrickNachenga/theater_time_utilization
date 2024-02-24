@@ -16,7 +16,23 @@ class ExamCourseworkService:
     def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCoursework]:
         with (session_scope() as session):
 
-            query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
+            # query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
+            exam_category_alias = aliased(ExamCategory)
+
+            query = (
+                session.query(
+                    ExamCoursework,
+                    ExamResultSummary.first_name,
+                    ExamResultSummary.middle_name,
+                    ExamResultSummary.last_name,
+                    ExamResultSummary.registration_number,
+                    exam_category_alias.code.label('exam_category_code'),  # Alias for code column
+                    exam_category_alias.name.label('exam_category_name'),  # Alias for name column
+                )
+                .join(ExamResultSummary, ExamCoursework.student_uid == ExamResultSummary.student_uid)
+                .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
+                .filter(ExamCoursework.deleted_at.is_(None))
+            )
 
             if search_criteria.student_uid:
                 query = query.filter(ExamCoursework.student_uid == search_criteria.student_uid)
