@@ -79,7 +79,12 @@ class ExamCourseworkService:
                 .filter(
                     ExamCoursework.deleted_at.is_(None),
                     latest_exam_result_summary_subquery.c.row_number == 1  # Select only the latest entry
-                )
+                ).group_by(
+                    ExamCoursework.student_id,
+                    ExamCoursework.exam_category_id,
+                    ExamCoursework.assessment_number,
+                    ExamCoursework.program_course_id
+            )
             )
 
             if search_criteria.student_uid:
