@@ -63,7 +63,6 @@ class ExamCourseworkService:
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
                     ExamResultSummary.registration_number,
-                    ExamResultSummary.student_uid,
                 )
                 .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
                 .join(
@@ -91,7 +90,11 @@ class ExamCourseworkService:
                     ExamCoursework.weight,
                     ExamCoursework.overall_marks,
                     distinct_exam_categories_subquery.c.exam_category_code,
-                    distinct_exam_categories_subquery.c.exam_category_name
+                    distinct_exam_categories_subquery.c.exam_category_name,
+                    ExamResultSummary.first_name,
+                    ExamResultSummary.middle_name,
+                    ExamResultSummary.last_name,
+                    ExamResultSummary.registration_number,
             )
             )
 
