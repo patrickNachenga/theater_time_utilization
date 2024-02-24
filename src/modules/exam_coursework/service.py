@@ -83,7 +83,8 @@ class ExamCourseworkService:
                     ExamCoursework.student_uid,
                     ExamCoursework.exam_category_id,
                     ExamCoursework.assessment_number,
-                    ExamCoursework.program_course_id
+                    ExamCoursework.program_course_id,
+                    ExamCoursework.score
             )
             )
 
