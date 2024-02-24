@@ -20,19 +20,43 @@ class ExamCourseworkService:
             # query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
             exam_category_alias = aliased(ExamCategory)
 
+            # Subquery to select the latest entry for each student_uid
+            latest_exam_result_summary_subquery = (
+                session.query(
+                    ExamResultSummary.student_uid,
+                    func.row_number().over(
+                        partition_by=ExamResultSummary.student_uid,
+                        order_by=ExamResultSummary.created_at.desc()
+                        # Assuming there's a date column indicating the latest entry
+                    ).label('row_number')
+                )
+                .subquery()
+            )
+
+            # Modify the original query to filter based on the subquery
             query = (
                 session.query(
                     ExamCoursework,
+                    exam_category_alias.code.label('exam_category_code'),
+                    exam_category_alias.name.label('exam_category_name'),
                     ExamResultSummary.first_name,
                     ExamResultSummary.middle_name,
                     ExamResultSummary.last_name,
                     ExamResultSummary.registration_number,
-                    exam_category_alias.code.label('exam_category_code'),  # Alias for code column
-                    exam_category_alias.name.label('exam_category_name'),  # Alias for name column
                 )
-                .join(ExamResultSummary, ExamCoursework.student_uid == ExamResultSummary.student_uid)
                 .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
-                .filter(ExamCoursework.deleted_at.is_(None))
+                .join(
+                    ExamResultSummary,
+                    ExamCoursework.student_uid == ExamResultSummary.student_uid
+                )
+                .join(
+                    latest_exam_result_summary_subquery,
+                    latest_exam_result_summary_subquery.c.student_uid == ExamResultSummary.student_uid
+                )
+                .filter(
+                    ExamCoursework.deleted_at.is_(None),
+                    latest_exam_result_summary_subquery.c.row_number == 1  # Select only the latest entry
+                )
             )
 
             if search_criteria.student_uid:
