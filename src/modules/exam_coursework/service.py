@@ -24,8 +24,10 @@ class ExamCourseworkService:
             # Subquery to select distinct exam categories present in the ExamCoursework table
             distinct_exam_categories_subquery = (
                 session.query(
-                    distinct(ExamCoursework.exam_category_id).label('exam_category_id')
+                    ExamCoursework.exam_category_id
                 )
+                .distinct()
+                .subquery()
             )
 
             # Subquery to select the latest entry for each student_uid
