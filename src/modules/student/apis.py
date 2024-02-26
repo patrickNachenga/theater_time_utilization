@@ -17,6 +17,7 @@ from src.helpers.utils import get_current_academic_year, get_student_from_uaa, g
     general_upload
 from src.models import ExamCategory
 from src.modules.student.service import StudentService
+from src.modules.exam_category.service import ExamCategoryService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
@@ -289,6 +290,14 @@ class StudentMutation:
                 cell.font = font
                 cell.border = border
         worksheet.cell(row=1, column=4, value=str(result["program_course"].id))
+
+        worksheet.cell(row=2, column=4, value=str(result["program_course"].course.code))
+
+        # get exam category
+
+        exam_cat_result = ExamCategoryService().get_exam_categories_by_id(result["program_course"].id)
+        print(exam_cat_result)
+        worksheet.cell(row=2, column=4, value=str(exam_cat_result["data"]["name"]))
         # Set the specific column where cells should be non-editable (except column D)
         editable_column = 'D'
 

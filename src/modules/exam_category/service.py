@@ -35,6 +35,18 @@ class ExamCategoryService(object):
             return result.all()
 
     @staticmethod
+    def get_exam_categories_by_id(id: List[str]) -> List[ExamCategory]:
+        """
+            Get Exam Categories by code
+        :return:
+        """
+        with session_scope() as session:
+            stmt = select(ExamCategory).where(
+                (ExamCategory.id.in_(id)) & (ExamCategory.deleted_at.is_(None)))
+            result = session.scalars(stmt)
+            return result.all()
+
+    @staticmethod
     def get_exam_categories_by_uid(uid: str) -> ExamCategory:
         """
             Get Exam Categories by uid
