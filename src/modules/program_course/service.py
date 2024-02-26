@@ -46,7 +46,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
     def get_program_course_by_program_semester(program_semester_id: int) -> ProgramCourse:
         with session_scope() as session:
             query = session.query(ProgramCourse).filter(ProgramCourse.program_semester_id == program_semester_id, ProgramCourse.deleted_at.is_(None))
-            query = query.order_by(ProgramCourse.course_id.asc())
+            query = query.order_by(ProgramCourse.course_category_id.asc(), ProgramCourse.course_id.asc())
             return query.all()
 
     @staticmethod
