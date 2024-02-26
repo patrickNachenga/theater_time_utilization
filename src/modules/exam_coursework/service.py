@@ -18,100 +18,37 @@ class ExamCourseworkService:
     def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCourseWorkNode]:
         with (session_scope() as session):
 
-            # query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
-            exam_category_alias = aliased(ExamCategory)
 
-            # Subquery to select distinct exam categories present in the ExamCoursework table
-            distinct_exam_categories_subquery = (
-                session.query(
-                    ExamCoursework.exam_category_id,
-                    func.max(exam_category_alias.code).label('exam_category_code'),
-                    func.max(exam_category_alias.name).label('exam_category_name')
-            )
-                .join(exam_category_alias, ExamCoursework.exam_category_id == exam_category_alias.id)
-                .group_by(ExamCoursework.exam_category_id)
-                .subquery()
-            )
-
-            # Subquery to select the latest entry for each student_uid
-            latest_exam_result_summary_subquery = (
-                session.query(
-                    ExamResultSummary.student_uid,
-                    func.row_number().over(
-                        partition_by=ExamResultSummary.student_uid,
-                        order_by=ExamResultSummary.created_at.desc()
-                        # Assuming there's a date column indicating the latest entry
-                    ).label('row_number')
-                )
-                .subquery()
-            )
-
-            # Modify the original query to filter based on the subquery
             query = (
                 session.query(
-
-                    ExamCoursework.student_uid,
-                    ExamCoursework.assessment_number,
-                    ExamCoursework.score,
-                    ExamCoursework.source,
-                    ExamCoursework.weight,
-                    ExamCoursework.overall_marks,
-                    ExamCoursework.exam_category_id,
-                    distinct_exam_categories_subquery.c.exam_category_code.label('exam_category_code'),
-                    distinct_exam_categories_subquery.c.exam_category_name.label('exam_category_name'),
-                    ExamResultSummary.first_name,
-                    ExamResultSummary.middle_name,
-                    ExamResultSummary.last_name,
-                    ExamResultSummary.registration_number
-                )
-                .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
-                .join(
-                    ExamResultSummary,
-                    ExamCoursework.student_uid == ExamResultSummary.student_uid
-                )
-                .join(
-                    latest_exam_result_summary_subquery,
-                    latest_exam_result_summary_subquery.c.student_uid == ExamResultSummary.student_uid
-                )
-                .join(
-                    distinct_exam_categories_subquery,
-                    ExamCoursework.exam_category_id == distinct_exam_categories_subquery.c.exam_category_id
+                    ExamResultSummary
                 )
                 .filter(
-                    ExamCoursework.deleted_at.is_(None),
-                    latest_exam_result_summary_subquery.c.row_number == 1  # Select only the latest entry
-                ).group_by(
-                    ExamCoursework.student_uid,
-                    ExamCoursework.exam_category_id,
-                    ExamCoursework.assessment_number,
-                    ExamCoursework.program_course_id,
-                    ExamCoursework.score,
-                    ExamCoursework.source,
-                    ExamCoursework.weight,
-                    ExamCoursework.overall_marks,
-                    distinct_exam_categories_subquery.c.exam_category_code,
-                    distinct_exam_categories_subquery.c.exam_category_name,
-                    ExamResultSummary.first_name,
-                    ExamResultSummary.middle_name,
-                    ExamResultSummary.last_name,
-                    ExamResultSummary.registration_number
-            )
+                    ExamResultSummary.deleted_at.is_(None),
+                )
             )
 
             if search_criteria.student_uid:
-                query = query.filter(ExamCoursework.student_uid == search_criteria.student_uid)
+                query = query.filter(ExamResultSummary.student_uid == search_criteria.student_uid)
 
             if search_criteria.program_course_id:
-                query = query.filter(ExamCoursework.program_course_id == search_criteria.program_course_id)
+                query = query.filter(ExamResultSummary.program_course_id == search_criteria.program_course_id)
 
-            if search_criteria.exam_category_id:
-                query = query.filter(ExamCoursework.exam_category_id == search_criteria.exam_category_id)
+            results = query.order_by(ExamResultSummary.registration_number.asc()).all()
 
-            query = query.order_by(ExamCoursework.student_uid.asc(), ExamCoursework.exam_category_id.asc(), ExamCoursework.assessment_number.asc())
+            # Retrieve the relevant ExamCoursework records based on the filtered ExamResultSummary records
+            all_results = []
 
-            results = query.all()
-            print("results:", results)
-            return results
+            for exam_result_summary in results:
+                exam_coursework_records = (
+                    session.query(ExamCoursework)
+                    .filter_by(student_uid=exam_result_summary.student_uid,
+                               program_course_id=exam_result_summary.program_course_id)
+                    .all()
+                )
+                all_results.append(exam_result_summary,exam_coursework_records)
+            print("all_results:",all_results)
+            return all_results
 
     @staticmethod
     def get_student_exam_course_work_results(student_uid) -> List[ExamCoursework]:
