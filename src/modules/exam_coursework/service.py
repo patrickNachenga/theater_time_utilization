@@ -1,22 +1,79 @@
 from typing import List
 
 from sqlalchemy import and_
+from sqlalchemy.orm import aliased
+from sqlalchemy import func
 
 from src.db.session import session_scope
-from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course
+from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course,ExamResultSummary
 from src.models.exam_coursework import ExamCoursework
 from src.shared.response_code import ResponseCode
-from src.types import StudentCourseWorkOutput, Score, CourseWorkTypeOutput, ExamCourseWorkSearchCriteria
+from src.types import StudentCourseWorkOutput, ExamCourseWorkNode, Score, CourseWorkTypeOutput, ExamCourseWorkSearchCriteria
 from src.shared.response import Response
 
 
 class ExamCourseworkService:
 
     @staticmethod
-    def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCoursework]:
+    def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCourseWorkNode]:
         with (session_scope() as session):
 
-            query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
+            # query = session.query(ExamCoursework).filter(ExamCoursework.deleted_at.is_(None))
+            exam_category_alias = aliased(ExamCategory)
+
+            # Subquery to select distinct exam categories present in the ExamCoursework table
+            distinct_exam_categories_subquery = (
+                session.query(
+                    distinct(ExamCoursework.exam_category_id).label('exam_category_id')
+                )
+            )
+
+            # Subquery to select the latest entry for each student_uid
+            latest_exam_result_summary_subquery = (
+                session.query(
+                    ExamResultSummary.student_uid,
+                    func.row_number().over(
+                        partition_by=ExamResultSummary.student_uid,
+                        order_by=ExamResultSummary.created_at.desc()
+                        # Assuming there's a date column indicating the latest entry
+                    ).label('row_number')
+                )
+                .subquery()
+            )
+
+            # Modify the original query to filter based on the subquery
+            query = (
+                session.query(
+                    ExamCoursework.student_uid,
+                    ExamCoursework.assessment_number,
+                    ExamCoursework.score,
+                    ExamCoursework.source,
+                    ExamCoursework.weight,
+                    ExamCoursework.overall_marks,
+                    ExamCoursework.exam_category_id,
+                    exam_category_alias.code.label('exam_category_code'),
+                    exam_category_alias.name.label('exam_category_name'),
+                    ExamResultSummary.first_name,
+                    ExamResultSummary.middle_name,
+                    ExamResultSummary.last_name,
+                    ExamResultSummary.registration_number,
+                    ExamResultSummary.student_uid,
+                )
+                .join(ExamCategory, ExamCoursework.exam_category_id == ExamCategory.id)
+                .join(
+                    ExamResultSummary,
+                    ExamCoursework.student_uid == ExamResultSummary.student_uid
+                )
+                .join(
+                    latest_exam_result_summary_subquery,
+                    latest_exam_result_summary_subquery.c.student_uid == ExamResultSummary.student_uid
+                )
+                .filter(
+                    ExamCoursework.deleted_at.is_(None),
+                    latest_exam_result_summary_subquery.c.row_number == 1,  # Select only the latest entry
+                    ExamCategory.id.in_(distinct_exam_categories_subquery)  # Filter based on distinct exam categories
+                )
+            )
 
             if search_criteria.student_uid:
                 query = query.filter(ExamCoursework.student_uid == search_criteria.student_uid)
@@ -27,10 +84,10 @@ class ExamCourseworkService:
             if search_criteria.exam_category_id:
                 query = query.filter(ExamCoursework.exam_category_id == search_criteria.exam_category_id)
 
-            query = query.order_by(ExamCoursework.student_uid.asc())
+            query = query.order_by(ExamCoursework.student_uid.asc(), ExamCoursework.exam_category_id.asc(), ExamCoursework.assessment_number.asc())
 
             results = query.all()
-
+            print("results:", results)
             return results
 
     @staticmethod
