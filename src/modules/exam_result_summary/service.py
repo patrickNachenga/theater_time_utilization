@@ -5,6 +5,7 @@ from typing import List
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
 from openpyxl.styles import Alignment, Font, Border, Side, Protection, PatternFill
+from openpyxl.utils import get_column_letter
 from sqlalchemy import func
 
 from src.api_routes.program_api import reformat_name
@@ -96,8 +97,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
             # Set the font style to Times New Roman
             font = Font(name="Times New Roman", size=12)
+            small_font = Font(name="Times New Roman", size=10)
             fill_color = PatternFill(start_color='FF999999', end_color='FF999999', fill_type='solid')
             font_border = Font(name="Times New Roman", bold=True, size=12)
+            small_font_border = Font(name="Times New Roman", bold=True, size=10)
             # Set the border style
             border = Border(left=Side(border_style="thin"),
                             right=Side(border_style="thin"),
@@ -228,7 +231,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_elective_courses += 1
                     courses_list += f"{pc.course.code}: {pc.course.name}, "
 
-                worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=16)
+                worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=len(program_courses) + 11)
                 cell = worksheet.cell(row=count_rows, column=1, value=courses_list)
                 cell.alignment = Alignment(horizontal='center', vertical='top', wrap_text=True, indent=1)
                 cell.font = font
@@ -238,7 +241,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 num_lines = max(1,
                                 text_length // 100)  # Assuming an average line width of 100 characters, adjust as needed
                 # Set the row height based on the number of lines
-                row_height_per_line = 10  # Adjust as needed
+                row_height_per_line = 15  # Adjust as needed
                 worksheet.row_dimensions[count_rows].height = num_lines * row_height_per_line
                 count_rows += 1
 
@@ -325,17 +328,27 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     # Set the row height based on the number of lines
                     row_height_per_line = 10  # Adjust as needed
                     worksheet.row_dimensions[count_rows].height = 8 * row_height_per_line
+
+                    column_letter = get_column_letter(course_code_colum_merge)
+                    # Set the width of the column
+                    worksheet.column_dimensions[column_letter].width = 3
                 total_titles = ["TOTAL CREDITS TAKEN", "CREDITS ACQUIRED", "CORE COURSES FAILED", "GPA", "Remarks",
                                 "Courses Under Probation"]
                 for title in total_titles:
                     course_code_colum_merge += 1
                     start_column = course_code_colum_merge
                     end_column = course_code_colum_merge
+                    column_letter = get_column_letter(start_column)
 
                     # Set the value of the cell before merging
                     cel = worksheet.cell(row=count_rows - 2, column=start_column, value=title)
                     if title == 'Remarks' or title == 'Courses Under Probation':
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True, indent=1)
+                        if title == 'Remarks':
+                            column_letter = get_column_letter(start_column)
+                            # Set the width of the column
+                            worksheet.column_dimensions[column_letter].width = 10
+
                     else:
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', textRotation=90)
                         # Increment the course_code_colum_merge by the width of the merged area minus 1
@@ -343,6 +356,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         # Set the row height based on the number of lines
                         row_height_per_line = 10  # Adjust as needed
                         worksheet.row_dimensions[count_rows].height = 12 * row_height_per_line
+                        # Set the width of the column
+                        worksheet.column_dimensions[column_letter].width = 4
 
                     cel.font = font_border
                     cel.border = border
@@ -376,11 +391,11 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         worksheet[f"B{row}"] = reformat_name(item['full_name'])
                         worksheet[f"C{row}"] = item['registration_number']
                         worksheet[f"D{row}"] = item['sex'][0]
-                        worksheet[f"E{row}"] = "---"
-                        for col in range(1, 5):
+                        worksheet[f"E{row}"] = program.code
+                        for col in range(1, 6):
                             cell = worksheet.cell(row=row, column=col)
                             cell.alignment = Alignment(horizontal='left', vertical='center')
-                            cell.font = font
+                            cell.font = small_font
                             cell.border = border
                         col = 5
                         for pc in program_courses:
@@ -404,10 +419,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 value = '-'
                             cel = worksheet.cell(row=count_rows, column=col, value=value)
                             cel.alignment = Alignment(horizontal='center')
-                            cel.font = font
+                            cel.font = small_font
                             if exam_result:
                                 if value != 'I' and exam_result.grade_remark.upper() != "PASS":
-                                    cel.font = font_border
+                                    cel.font = small_font_border
                                     cel.fill = fill_color
                             cel.border = border
                             # Check if student have registered this course sum its credit to total_credit_hrs_taken
@@ -423,17 +438,18 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
                                                total_failed_core_subject, "-", remark_status,courses_under_probation]
+
                         for title_ in total_title_results:
                             col += 1
                             cel = worksheet.cell(row=count_rows, column=col, value=title_)
                             cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True,
                                                       indent=1)
-                            cel.font = font
+                            cel.font = small_font
                             cel.border = border
                         count_rows += 1
-                    worksheet.column_dimensions['B'].width = 30
-                    worksheet.column_dimensions['U'].width = 15
-                    worksheet.column_dimensions['C'].width = 15
+                    worksheet.column_dimensions['A'].width = 4
+                    worksheet.column_dimensions['B'].width = 25
+                    worksheet.column_dimensions['C'].width = 13
                     worksheet.column_dimensions['D'].width = 3
             # Iterate over rows in the worksheet
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
@@ -443,6 +459,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
                 # Protect the worksheet to make cells not editable
                 worksheet.protection.sheet = True
+
 
             # Save the workbook
             # workbook.save("layout.xlsx")
