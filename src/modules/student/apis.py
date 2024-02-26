@@ -293,8 +293,8 @@ class StudentMutation:
         worksheet.cell(row=1, column=4).font = font_border
 
 
-        worksheet.cell(row=2, column=4, value=str(result["program_course"].course.code))
-        worksheet.cell(row=2, column=4).font = font_border
+        worksheet.cell(row=2, column=4, value=str(result["program_course"].course.name))
+        worksheet.cell(row=1, column=5).font = font_border
 
         # get exam category
 
