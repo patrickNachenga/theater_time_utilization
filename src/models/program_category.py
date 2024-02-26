@@ -12,4 +12,4 @@ class ProgramCategory(BaseModel):
     # intention_to_submit_requirements = relationship('IntentionToSubmitRequirement', lazy='noload',
     #                                                back_populates="program_category")
 
-    intention_to_submit_requirements = relationship('IntentionToSubmitRequirement', lazy='noload')
+    # intention_to_submit_requirements = relationship('IntentionToSubmitRequirement', lazy='noload')
