@@ -41,10 +41,10 @@ class ExamCategoryService(object):
         :return:
         """
         with session_scope() as session:
-            stmt = select(ExamCategory).where(
+            stmt = select(ExamCategory.id,ExamCategory.name,ExamCategory.code, ExamCategory.is_ue, ExamCategory.is_theory, ExamCategory.is_oral).where(
                 (ExamCategory.id.in_(id)) & (ExamCategory.deleted_at.is_(None)))
             result = session.scalars(stmt)
-            return result.all()
+            return result
 
     @staticmethod
     def get_exam_categories_by_uid(uid: str) -> ExamCategory:
