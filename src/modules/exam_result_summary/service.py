@@ -205,7 +205,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             count_rows += 1
 
             status_info = ["CONTINUING", "PROBATION", "INCOMPLETE", "POSTPONE", "RETAKE"]
-            status_data = []
             for status in status_info:
                 worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=2)
                 cell = worksheet.cell(row=count_rows, column=1, value=status)
@@ -344,10 +343,11 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     cel = worksheet.cell(row=count_rows - 2, column=start_column, value=title)
                     if title == 'Remarks' or title == 'Courses Under Probation':
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True, indent=1)
+                        column_letter = get_column_letter(start_column)
                         if title == 'Remarks':
-                            column_letter = get_column_letter(start_column)
-                            # Set the width of the column
                             worksheet.column_dimensions[column_letter].width = 10
+                        else:
+                            worksheet.column_dimensions[column_letter].width = 25
 
                     else:
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', textRotation=90)
@@ -442,8 +442,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         for title_ in total_title_results:
                             col += 1
                             cel = worksheet.cell(row=count_rows, column=col, value=title_)
-                            cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True,
-                                                      indent=1)
+                            cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True, indent=1)
                             cel.font = small_font
                             cel.border = border
                         count_rows += 1
@@ -451,6 +450,15 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     worksheet.column_dimensions['B'].width = 25
                     worksheet.column_dimensions['C'].width = 13
                     worksheet.column_dimensions['D'].width = 3
+
+            # status_data = ["M", "F", "T", "M%", "F%", "T%"]
+            # count_rows = 13
+            # for status in status_info:
+            #     worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=2)
+            #     cell = worksheet.cell(row=count_rows, column=1, value=status)
+            #     cell.alignment = Alignment(horizontal='left', vertical='center')
+            #     cell.font = font_border
+            #     cell.border = border
             # Iterate over rows in the worksheet
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):
