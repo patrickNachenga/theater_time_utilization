@@ -4,7 +4,7 @@ from typing import List
 
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
-from openpyxl.styles import Alignment, Font, Border, Side, Protection
+from openpyxl.styles import Alignment, Font, Border, Side, Protection, PatternFill
 from sqlalchemy import func
 
 from src.api_routes.program_api import reformat_name
@@ -50,8 +50,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             # Execute the final query
             results = query.all()
             return results
+
     @staticmethod
-    def generate_semester_exam_results(program_uid: str, academic_year_uid: str, semester: int, year_of_study: int) -> ExcelFile:
+    def generate_semester_exam_results(program_uid: str, academic_year_uid: str, semester: int,
+                                       year_of_study: int) -> ExcelFile:
         with (session_scope() as session):
             # result = StudentService().get_allocation_students(allocation_uid)
             # Create a new workbook
@@ -94,6 +96,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
             # Set the font style to Times New Roman
             font = Font(name="Times New Roman", size=12)
+            fill_color = PatternFill(start_color='FF999999', end_color='FF999999', fill_type='solid')
             font_border = Font(name="Times New Roman", bold=True, size=12)
             # Set the border style
             border = Border(left=Side(border_style="thin"),
@@ -361,8 +364,13 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     count = 0
                     for row, item in enumerate(results, start=count_rows):
                         count += 1
+                        courses_under_probation = ""
                         total_credit_hrs_taken = 0
                         total_credit_hrs_acquired = 0
+                        total_failed_core_subject = 0
+                        failed_subjects = 0
+                        passed_subjects = 0
+                        remark_status = 0
                         # count_rows += 1
                         worksheet[f"A{row}"] = count
                         worksheet[f"B{row}"] = reformat_name(item['full_name'])
@@ -385,29 +393,46 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 # Check if student have passed this course sum
                                 if exam_result.grade_remark.upper() == "PASS":
                                     total_credit_hrs_acquired += pc.credit
+                                    passed_subjects += 1
+                                else:
+                                    if pc.course_category.name.upper() == 'CORE' and value != 'I':
+                                        total_failed_core_subject += 1
+                                    if value != 'I':
+                                        courses_under_probation += pc.course.code + ", "
+                                        failed_subjects += 1
                             else:
                                 value = '-'
                             cel = worksheet.cell(row=count_rows, column=col, value=value)
                             cel.alignment = Alignment(horizontal='center')
                             cel.font = font
+                            if exam_result:
+                                if value != 'I' and exam_result.grade_remark.upper() != "PASS":
+                                    cel.font = font_border
+                                    cel.fill = fill_color
                             cel.border = border
-
-                            # Check if student have registered this course sum its credit hour to total_credit_hrs_taken
+                            # Check if student have registered this course sum its credit to total_credit_hrs_taken
                             if session.query(StudentCourseRegistration.id).filter(
                                     StudentCourseRegistration.student_uid == item['student_uid'],
                                     StudentCourseRegistration.program_course_id == pc.id).first():
                                 total_credit_hrs_taken += pc.credit
-                        total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired, "-",
-                                               "-", "-", "-"]
-                        for title in total_title_results:
+
+                        if failed_subjects > 0:
+                            remark_status = 'PROBATION'
+                        elif len(program_courses) != passed_subjects:
+                            remark_status = 'INCOMPLETE'
+
+                        total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
+                                               total_failed_core_subject, "-", remark_status,courses_under_probation]
+                        for title_ in total_title_results:
                             col += 1
-                            cel = worksheet.cell(row=count_rows, column=col, value=title)
+                            cel = worksheet.cell(row=count_rows, column=col, value=title_)
                             cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True,
                                                       indent=1)
                             cel.font = font
                             cel.border = border
                         count_rows += 1
                     worksheet.column_dimensions['B'].width = 30
+                    worksheet.column_dimensions['U'].width = 15
                     worksheet.column_dimensions['C'].width = 15
                     worksheet.column_dimensions['D'].width = 3
             # Iterate over rows in the worksheet
@@ -438,11 +463,11 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 data=ExcelFile(base64_data=base64_data)
             )
 
-
     @staticmethod
     def get_student_exam_result_summaries(student_uid: str) -> List[ExamResultSummary]:
         with session_scope() as session:
-            result = session.query(ExamResultSummary).filter(ExamResultSummary.student_uid == student_uid, ExamResultSummary.publish_status == 1,
+            result = session.query(ExamResultSummary).filter(ExamResultSummary.student_uid == student_uid,
+                                                             ExamResultSummary.publish_status == 1,
                                                              ExamResultSummary.deleted_at.is_(None)).all()
             return result
 
