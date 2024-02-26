@@ -44,7 +44,7 @@ class ExamCategoryService(object):
             # stmt = select(ExamCategory.id,ExamCategory.name,ExamCategory.code, ExamCategory.is_ue, ExamCategory.is_theory, ExamCategory.is_oral).where(
             #     (ExamCategory.id.in_(id)) & (ExamCategory.deleted_at.is_(None)))
             print("iddddddddddddddddd", id)
-            result = session.query(ExamCategory.id,ExamCategory.name,ExamCategory.code, ExamCategory.is_ue, ExamCategory.is_theory, ExamCategory.is_oral).where(
+            result = session.query(ExamCategory).where(
                 (ExamCategory.id.in_(id)) & (ExamCategory.deleted_at.is_(None))).all()
             # result = session.scalars(stmt)
             print("resultttttttttttttttttttttttttttttt", result)
