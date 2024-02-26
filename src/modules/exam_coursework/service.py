@@ -46,7 +46,7 @@ class ExamCourseworkService:
                                program_course_id=exam_result_summary.program_course_id)
                     .all()
                 )
-                all_results.append(exam_result_summary,exam_coursework_records)
+                all_results.append((exam_result_summary,exam_coursework_records))
             print("all_results:",all_results)
             return all_results
 
