@@ -298,8 +298,8 @@ class StudentMutation:
 
         # get exam category
 
-        # exam_cat_result = ExamCategoryService().get_exam_categories_by_id(exam_category_id)
-        # # print(exam_cat_result)
+        exam_cat_result = ExamCategoryService().get_exam_categories_by_id(exam_category_id)
+        print("exam_cat_result======================>>>>>>>>>>>>",exam_cat_result)
         # for row in exam_cat_result:
         #     exam_cat_name = row.name
         #     worksheet.cell(row=2, column=5, value=str(exam_cat_name))
