@@ -295,9 +295,9 @@ class StudentMutation:
 
         # get exam category
 
-        exam_cat_result = ExamCategoryService().get_exam_categories_by_id(result["program_course"].id)
-        print(exam_cat_result)
-        worksheet.cell(row=2, column=4, value=str(exam_cat_result["data"]["name"]))
+        # exam_cat_result = ExamCategoryService().get_exam_categories_by_id(result["program_course"].id)
+        # print(exam_cat_result)
+        # worksheet.cell(row=2, column=4, value=str(exam_cat_result["data"]["name"]))
         # Set the specific column where cells should be non-editable (except column D)
         editable_column = 'D'
 
