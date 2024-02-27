@@ -783,6 +783,7 @@ class Base64String:
 @strawberry.type
 class ExcelFile:
     base64_data: Base64String
+    file_name: Optional[str]
 
 
 @strawberry.input
