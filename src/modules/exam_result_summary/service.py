@@ -406,7 +406,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         worksheet[f"B{row}"] = reformat_name(item['full_name'])
                         worksheet[f"C{row}"] = item['registration_number']
                         worksheet[f"D{row}"] = item['sex'][0]
-                        worksheet[f"E{row}"] = program.code
+                        worksheet[f"E{row}"] = program.registration_code
                         sex = item['sex'][0].upper()
                         for col in range(1, 6):
                             cell = worksheet.cell(row=row, column=col)
@@ -484,7 +484,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     worksheet.column_dimensions['A'].width = 4
                     worksheet.column_dimensions['B'].width = 25
                     worksheet.column_dimensions['C'].width = 13
-                    worksheet.column_dimensions['D'].width = 13
+                    worksheet.column_dimensions['D'].width = 20
                 else:
                     return Response(
                         status=False,
