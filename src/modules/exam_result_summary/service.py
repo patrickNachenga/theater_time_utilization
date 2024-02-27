@@ -362,7 +362,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         if title == 'Remarks':
                             worksheet.column_dimensions[column_letter].width = 10
                         else:
-                            worksheet.column_dimensions[column_letter].width = 25
+                            worksheet.column_dimensions[column_letter].width = 35
 
                     else:
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', textRotation=90)
@@ -484,7 +484,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     worksheet.column_dimensions['A'].width = 4
                     worksheet.column_dimensions['B'].width = 25
                     worksheet.column_dimensions['C'].width = 13
-                    worksheet.column_dimensions['D'].width = 20
+                    worksheet.column_dimensions['D'].width = 13
                 else:
                     return Response(
                         status=False,
