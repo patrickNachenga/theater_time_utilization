@@ -1,6 +1,6 @@
 import base64
 from io import BytesIO
-from typing import List
+from typing import List, Type
 
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
@@ -54,7 +54,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
     @staticmethod
     def generate_semester_exam_results(program_uid: str, academic_year_uid: str, semester: int,
-                                       year_of_study: int) -> ExcelFile:
+                                       year_of_study: int) -> Response[ExcelFile]:
         with (session_scope() as session):
             # result = StudentService().get_allocation_students(allocation_uid)
             # Create a new workbook
@@ -65,7 +65,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     status=False,
                     code=ResponseCode.FAILURE,
                     message="Program is not found",
-                    data=ExcelFile(base64_data=[]),
+                    data=ExcelFile(base64_data=[], file_name=""),
                 )
 
             academic_year = AcademicYearCrud.get_academic_year_by_uid(academic_year_uid)
@@ -74,7 +74,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     status=False,
                     code=ResponseCode.FAILURE,
                     message="Academic Year Is Not Found",
-                    data=ExcelFile(base64_data=[]),
+                    data=ExcelFile(base64_data=[], file_name=""),
                 )
             # Get Program Semester Information
             program_semester = ProgramSemesterCrud.get_program_semester_by_data(semester=semester,
@@ -86,8 +86,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     status=False,
                     code=ResponseCode.FAILURE,
                     message="Program Semester Is Not Defined",
-                    data=ExcelFile(base64_data=[]),
+                    data=ExcelFile(base64_data=[], file_name=""),
                 )
+
+            file_name = f"{program.name}({program.code}) {academic_year.name} - YEAR {year_of_study} SEMESTER {semester} EXAMINATION RESULT"
             # Create a new worksheet
             worksheet = workbook.active
             # Set column widths
@@ -204,8 +206,20 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             summary_text.border = border
             count_rows += 1
 
-            status_info = ["CONTINUING", "PROBATION", "INCOMPLETE", "POSTPONE", "RETAKE"]
+            status_info = ["CONTINUING", "PROBATION", "INCOMPLETE", "POSTPONE", "RETAKE", "TOTAL"]
+            status_data = []
             for status in status_info:
+                info = {
+                    status: {
+                        'male': 0,
+                        'female': 0,
+                        'total': 0,
+                        'male%': 0,
+                        'female%': 0,
+                        'total%': 0,
+                    }
+                }
+                status_data.append(info)
                 worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=2)
                 cell = worksheet.cell(row=count_rows, column=1, value=status)
                 cell.alignment = Alignment(horizontal='left', vertical='center')
@@ -230,7 +244,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_elective_courses += 1
                     courses_list += f"{pc.course.code}: {pc.course.name}, "
 
-                worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=len(program_courses) + 11)
+                worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows,
+                                      end_column=len(program_courses) + 11)
                 cell = worksheet.cell(row=count_rows, column=1, value=courses_list)
                 cell.alignment = Alignment(horizontal='center', vertical='top', wrap_text=True, indent=1)
                 cell.font = font
@@ -392,6 +407,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         worksheet[f"C{row}"] = item['registration_number']
                         worksheet[f"D{row}"] = item['sex'][0]
                         worksheet[f"E{row}"] = program.code
+                        sex = item['sex'][0].upper()
                         for col in range(1, 6):
                             cell = worksheet.cell(row=row, column=col)
                             cell.alignment = Alignment(horizontal='left', vertical='center')
@@ -431,13 +447,32 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                     StudentCourseRegistration.program_course_id == pc.id).first():
                                 total_credit_hrs_taken += pc.credit
 
+                        continuing_data = status_data[0]['CONTINUING']
+                        probation_data = status_data[1]['PROBATION']
+                        incomplete_data = status_data[2]['INCOMPLETE']
+                        postpone_data = status_data[3]['POSTPONE']
+                        retake_data = status_data[4]['RETAKE']
                         if failed_subjects > 0:
                             remark_status = 'PROBATION'
+                            if sex == 'M':
+                                probation_data['male'] += 1
+                            else:
+                                probation_data['female'] += 1
                         elif len(program_courses) != passed_subjects:
                             remark_status = 'INCOMPLETE'
+                            if sex == 'M':
+                                incomplete_data['male'] += 1
+                            else:
+                                incomplete_data['female'] += 1
+                        else:
+                            remark_status = 'CONTINUING'
+                            if sex == 'M':
+                                continuing_data['male'] += 1
+                            else:
+                                continuing_data['female'] += 1
 
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
-                                               total_failed_core_subject, "-", remark_status,courses_under_probation]
+                                               total_failed_core_subject, "-", remark_status, courses_under_probation]
 
                         for title_ in total_title_results:
                             col += 1
@@ -449,16 +484,61 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     worksheet.column_dimensions['A'].width = 4
                     worksheet.column_dimensions['B'].width = 25
                     worksheet.column_dimensions['C'].width = 13
-                    worksheet.column_dimensions['D'].width = 3
+                    worksheet.column_dimensions['D'].width = 13
+                else:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.FAILURE,
+                        message=f"No Result Found For {file_name}",
+                        data=ExcelFile(base64_data=[], file_name=""),
+                    )
+            simplified_status_data = []
 
-            # status_data = ["M", "F", "T", "M%", "F%", "T%"]
-            # count_rows = 13
-            # for status in status_info:
-            #     worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=2)
-            #     cell = worksheet.cell(row=count_rows, column=1, value=status)
-            #     cell.alignment = Alignment(horizontal='left', vertical='center')
-            #     cell.font = font_border
-            #     cell.border = border
+            total_data = status_data[5]['TOTAL']
+            for status in status_data:
+                key = list(status.keys())[0].lower()
+                values = status[key.upper()]
+                if key.upper() != 'TOTAL':
+                    total = values['male'] + values['female']
+                    total_data['total'] += total
+                    total_data['male'] += values['male']
+                    total_data['female'] += values['female']
+                    male_perc = round((values['male'] / count) * 100, 2)
+                    total_data['male%'] += male_perc
+                    female_perc = round((values['female'] / count) * 100, 2)
+                    total_data['female%'] += female_perc
+                    total_perc = male_perc + female_perc
+                    total_data['total%'] += total_perc
+                    simplified_status_data.append(
+                        [values['male'], values['female'], total, male_perc, female_perc, total_perc])
+                else:
+                    simplified_status_data.append(
+                        [total_data['male'], total_data['female'], total_data['total'], round(total_data['male%'], 2),
+                         round(total_data['female%'], 2), round(total_data['total%'])])
+
+            # print(simplified_status_data)
+            count_rows = 13
+            # print(simplified_status_data)
+            for status in simplified_status_data:
+                # print("===== =======")
+                start_column = 2
+                end_column = 2
+                status_column = 0
+                for value in status:
+                    start_column += 1
+                    end_column += 1
+                    status_column += 1
+                    if status_column > 2:
+                        end_column += 2
+                        start_column = end_column - 2
+                        # print(f"{count_rows} ====> {start_column} - {end_column}")
+                        worksheet.merge_cells(start_row=count_rows, start_column=start_column, end_row=count_rows,
+                                              end_column=end_column)
+                    cell = worksheet.cell(row=count_rows, column=start_column, value=value)
+                    cell.alignment = Alignment(horizontal='center', vertical='top')
+                    cell.font = font_border
+                    cell.border = border
+                count_rows += 1
             # Iterate over rows in the worksheet
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):
@@ -467,7 +547,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
                 # Protect the worksheet to make cells not editable
                 worksheet.protection.sheet = True
-
 
             # Save the workbook
             # workbook.save("layout.xlsx")
@@ -485,7 +564,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 status=True,
                 code=ResponseCode.SUCCESS,
                 message="Semester Exam Results Retrieved Successfully",
-                data=ExcelFile(base64_data=base64_data)
+                data=ExcelFile(base64_data=base64_data, file_name=file_name.upper())
             )
 
     @staticmethod
