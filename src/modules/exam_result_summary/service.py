@@ -362,7 +362,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         if title == 'Remarks':
                             worksheet.column_dimensions[column_letter].width = 10
                         else:
-                            worksheet.column_dimensions[column_letter].width = 25
+                            worksheet.column_dimensions[column_letter].width = 35
 
                     else:
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', textRotation=90)
@@ -406,7 +406,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         worksheet[f"B{row}"] = reformat_name(item['full_name'])
                         worksheet[f"C{row}"] = item['registration_number']
                         worksheet[f"D{row}"] = item['sex'][0]
-                        worksheet[f"E{row}"] = program.code
+                        worksheet[f"E{row}"] = program.registration_code
                         sex = item['sex'][0].upper()
                         for col in range(1, 6):
                             cell = worksheet.cell(row=row, column=col)
