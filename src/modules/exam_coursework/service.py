@@ -17,8 +17,6 @@ class ExamCourseworkService:
     @staticmethod
     def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCourseWorkNode]:
         with (session_scope() as session):
-
-
             query = (
                 session.query(
                     ExamResultSummary

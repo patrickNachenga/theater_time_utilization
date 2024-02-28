@@ -783,7 +783,7 @@ class Base64String:
 @strawberry.type
 class ExcelFile:
     base64_data: Base64String
-    file_name: Optional[str]
+    file_name: Optional[str] = None
 
 
 @strawberry.input
@@ -1282,6 +1282,7 @@ class ExamCourseWorkNode:
     overall_marks: float
     # program_course: Optional[ProgramCourseNode] = None
     exam_category: ExamCategoryNode
+    # exam_course_work: Optional[ExamCoursework] = None
 
 
 @strawberry.input(description="Exam course work result Output | Node")
