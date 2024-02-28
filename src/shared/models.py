@@ -54,6 +54,7 @@ class StaffAuthModel(BaseModel):
 
 class UserAuthModel(BaseModel):
     id: Optional[int] = None
+    full_name: Optional[str] = None
     uid: Optional[UUID] = None
     username: Optional[str] = None
     moodle_username: Optional[str] = None
