@@ -1,14 +1,19 @@
 import base64
+import json
 from io import BytesIO
 from typing import List, Type
+import requests
 
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
+from openpyxl.drawing.image import Image
 from openpyxl.styles import Alignment, Font, Border, Side, Protection, PatternFill
 from openpyxl.utils import get_column_letter
 from sqlalchemy import func
 
 from src.api_routes.program_api import reformat_name
+from src.core.config import settings
+from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import can_progress
 from src.models import ExamResultSummary, Process, Workflow, State, ProcessFlow, StudentCourseRegistration
@@ -54,7 +59,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
     @staticmethod
     def generate_semester_exam_results(program_uid: str, academic_year_uid: str, semester: int,
-                                       year_of_study: int) -> Response[ExcelFile]:
+                                       year_of_study: int, info: Info) -> Response[ExcelFile]:
         with (session_scope() as session):
             # result = StudentService().get_allocation_students(allocation_uid)
             # Create a new workbook
@@ -67,7 +72,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     message="Program is not found",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
-
             academic_year = AcademicYearCrud.get_academic_year_by_uid(academic_year_uid)
             if academic_year is None:
                 return Response(
@@ -76,6 +80,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     message="Academic Year Is Not Found",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
+
             # Get Program Semester Information
             program_semester = ProgramSemesterCrud.get_program_semester_by_data(semester=semester,
                                                                                 year_of_study=year_of_study,
@@ -89,6 +94,61 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Session Expired",
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+            data_obj = {
+                "user_uid": str(info.context.user.uid),
+                "document_type": "signature"
+            }
+            payload = json.dumps(data_obj)
+            # Send the POST request
+            response = requests.get(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
+            response.raise_for_status()
+            if response.status_code != 200:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Failed To Get User Signature",
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+            signature_data = response.json()
+            if not signature_data['status']:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message=signature_data['message'],
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+
+            get_headship = requests.get(
+                settings.UAA_URi + f'/user/check-user-headship?user_uid={info.context.user.uid}&'
+                                   f'department_uid={program.department_uid}', headers=headers)
+            get_headship.raise_for_status()
+            if get_headship.status_code != 200:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Failed To Find Headship",
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+            headship = get_headship.json()
+            if headship['status'] != 200:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message=headship['message'],
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+            # print(signature_data)
             file_name = f"{program.name}({program.code}) {academic_year.name} - YEAR {year_of_study} SEMESTER {semester} EXAMINATION RESULT"
             # Create a new worksheet
             worksheet = workbook.active
@@ -209,7 +269,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             status_info = ["CONTINUING", "PROBATION", "INCOMPLETE", "POSTPONE", "RETAKE", "TOTAL"]
             status_data = []
             for status in status_info:
-                info = {
+                s_info = {
                     status: {
                         'male': 0,
                         'female': 0,
@@ -219,7 +279,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         'total%': 0,
                     }
                 }
-                status_data.append(info)
+                status_data.append(s_info)
                 worksheet.merge_cells(start_row=count_rows, start_column=1, end_row=count_rows, end_column=2)
                 cell = worksheet.cell(row=count_rows, column=1, value=status)
                 cell.alignment = Alignment(horizontal='left', vertical='center')
@@ -517,6 +577,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                          round(total_data['female%'], 2), round(total_data['total%'])])
 
             # print(simplified_status_data)
+            signature_row = count_rows
             count_rows = 13
             # print(simplified_status_data)
             for status in simplified_status_data:
@@ -540,6 +601,60 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     cell.border = border
                 count_rows += 1
             # Iterate over rows in the worksheet
+
+
+            column_no = len(program_courses) + 11
+            # Decode the Base64 image
+            base64_image = signature_data['data']['base64doc']
+            decoded_image = base64.b64decode(base64_image)
+
+            # Load the image into BytesIO
+            image_stream = BytesIO(decoded_image)
+
+            # Create an Image object from BytesIO
+            img = Image(image_stream)
+
+            # Calculate the coordinates of the bottom center cell
+            bottom_center_cell = openpyxl.utils.coordinate_to_tuple(
+                f'{openpyxl.utils.get_column_letter(column_no)}{signature_row+1}')
+
+            # Calculate the column letter for the anchor cell (e.g., "B" for column number 2)
+            anchor_column = openpyxl.utils.get_column_letter(bottom_center_cell[1]-13)
+
+            # Set the row number for the anchor cell
+            anchor_row = bottom_center_cell[0]
+
+            print(anchor_column)
+            print(bottom_center_cell[0])
+
+            # Set the anchor cell for the image to the bottom center cell
+            anchor_cell = f'{anchor_column}{anchor_row}'
+            # Add image to the worksheet and set the anchor cell
+            worksheet.add_image(img, anchor_cell)
+            worksheet[anchor_cell].alignment = Alignment(horizontal='center', vertical='bottom')
+
+
+
+
+            name_row = signature_row + 4
+            colum_no = len(program_courses) + 11
+            worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row, end_column=colum_no)
+            summary_text = worksheet.cell(row=name_row, column=1, value=info.context.user.full_name)
+            summary_text.alignment = Alignment(horizontal='center')
+            summary_text.font = font_border
+            # print(info.context.user.full_name)
+
+
+            name_row += 1
+            worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row,
+                                  end_column=colum_no)
+            summary_text = worksheet.cell(row=name_row, column=1, value=headship['data'])
+            summary_text.alignment = Alignment(horizontal='center')
+            summary_text.font = font_border
+
+
+
+
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):
                 for cell in row:
