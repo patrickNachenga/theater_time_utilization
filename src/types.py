@@ -1282,7 +1282,7 @@ class ExamCourseWorkNode:
     overall_marks: float
     # program_course: Optional[ProgramCourseNode] = None
     exam_category: ExamCategoryNode
-    exam_course_work: Optional[ExamCoursework] = None
+    # exam_course_work: Optional[ExamCoursework] = None
 
 
 @strawberry.input(description="Exam course work result Output | Node")
