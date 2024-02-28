@@ -129,7 +129,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
-            get_headship = requests.post(
+            get_headship = requests.get(
                 settings.UAA_URi + f'/user/check-user-headship?user_uid={info.context.user.uid}&'
                                    f'department_uid={program.department_uid}', headers=headers)
             get_headship.raise_for_status()
