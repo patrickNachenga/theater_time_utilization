@@ -111,7 +111,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             }
             payload = json.dumps(data_obj)
             # Send the POST request
-            response = requests.get(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
+            response = requests.post(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
             response.raise_for_status()
             if response.status_code != 200:
                 return Response(
