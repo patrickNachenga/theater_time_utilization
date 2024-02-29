@@ -368,9 +368,11 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             #                                                      ProgramCourse.deleted_at.is_(None)).first()
             # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
             #                                                    ExamCategory.deleted_at.is_(None)).first()
-            exam_course_work = session.query(ExamCoursework).filter(ExamCoursework.student_uid == student_uid,
-                                                                    ExamCoursework.program_course == program_course,
-                                                                    ExamCoursework.exam_category == exam_category,
+            exam_course_work = session.query(
+                ExamCoursework
+            ).filter(ExamCoursework.student_uid == student_uid,
+                                                                    ExamCoursework.program_course_id == program_course_id,
+                                                                    ExamCoursework.exam_category_id == exam_category_id,
                                                                     ExamCoursework.assessment_number == assessment_number).first()
             score = (score / out_off) * 100
             if exam_course_work:
@@ -410,7 +412,6 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
         if is_inserted:
             try:
 
-                print(program_course)
                 # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                 #                                                      ProgramCourse.deleted_at.is_(None)).first()
                 # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
@@ -419,11 +420,11 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                 #                                                ExamResult.program_course == program_course,
                 #                                                ExamResult.exam_category == exam_category).first()
 
-
-                exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
-                                                               ExamResult.program_course == program_course,
-                                                               ExamResult.exam_category == exam_category).first()
-
+                exam_result = session.query(
+                                            ExamResult
+                                            ).filter(ExamResult.student_uid == student_uid,
+                                                               ExamResult.program_course_id == program_course_id,
+                                                               ExamResult.exam_category_id == exam_category_id).first()
 
                 score = (score / out_off) * 100
                 if exam_result:
@@ -508,6 +509,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
                    is_ue=None, reg_number=None, assessment_number=None, source='Excel', program_course = None, exam_category = None):
+    counter = 0
     success = 0
     failed = 0
     failed_student = FailedStudent(reg_number=None, reason=None)
@@ -540,6 +542,8 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                             result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
                                                                 out_off,
                                                                 weight, by_law_uid, source, program_course, exam_category)
+
+                            print("============> " + str(program_course_id) + ": ", reg_number , ": ", score, ": ",  out_off)
                             if result:
                                 success = success + 1
                                 success_student.reg_number = reg_number
