@@ -1300,7 +1300,7 @@ class ExamResultSummarySearchCriteria:
 @strawberry.input(description="Exam course work result Output | Node")
 class ExamCourseWorkSearchCriteria:
     student_uid: Optional[str]  = None
-    program_course_id: Optional[str]  = None
+    program_course_id: str
     exam_category_id: Optional[str] = None
 
 
