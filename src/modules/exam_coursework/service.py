@@ -22,6 +22,7 @@ class ExamCourseworkService:
                     ExamResultSummary
                 )
                 .filter(
+                    ExamResultSummary.program_course_id == search_criteria.program_course_id,
                     ExamResultSummary.deleted_at.is_(None),
                 )
             )
