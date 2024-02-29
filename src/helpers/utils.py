@@ -407,6 +407,8 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
         is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
         if is_inserted:
             try:
+
+                print(program_course)
                 # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                 #                                                      ProgramCourse.deleted_at.is_(None)).first()
                 # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
@@ -440,7 +442,9 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                     new_exam_result = ExamResult(
                         student_uid=student_uid,
                         exam_category=exam_category,
+                        program_course_id=program_course_id,
                         program_course=program_course,
+                        exam_category_id=exam_category_id,
                         score=score,
                         weight=weight,
                         source=source

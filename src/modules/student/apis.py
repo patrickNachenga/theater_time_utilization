@@ -15,7 +15,7 @@ from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.db.session import session_scope
 from src.helpers.utils import get_current_academic_year, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, insert_exam_result, insert_course_work, \
     general_upload
-from src.models import ExamCategory
+from src.models import ExamCategory, ProgramCourse
 from src.modules.student.service import StudentService
 from src.modules.exam_category.service import ExamCategoryService
 from src.shared.response import Response
