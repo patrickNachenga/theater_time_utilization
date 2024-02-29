@@ -420,12 +420,22 @@ class StudentMutation:
                 except ValueError:
                     score = 'InvalidMarks'
                     # print("Could not convert string to float." )
+
+
+                program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+                                                                     ProgramCourse.deleted_at.is_(None)).first()
+                exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                                                                       ExamCategory.deleted_at.is_(None)).first()
+
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,
                                                                    out_off=out_off, weight=weight, is_ue=is_ue,
                                                                    reg_number=reg_number,
-                                                                   assessment_number=assessment_number)
+                                                                   assessment_number=assessment_number,
+                                                                    program_course=program_course,
+                                                                    exam_category = exam_category
+                                                                    )
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:

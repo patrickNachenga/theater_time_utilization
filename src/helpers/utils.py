@@ -360,14 +360,14 @@ def get_user_programs_headship(info: Info):
 
 def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
                        exam_category_id, assessment_number, out_off, score,
-                       weight, source, by_law_uid):
+                       weight, source, by_law_uid, program_course = None, exam_category = None):
     with session_scope() as session:
 
         try:
-            program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
-                                                                 ProgramCourse.deleted_at.is_(None)).first()
-            exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
-                                                               ExamCategory.deleted_at.is_(None)).first()
+            # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+            #                                                      ProgramCourse.deleted_at.is_(None)).first()
+            # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+            #                                                    ExamCategory.deleted_at.is_(None)).first()
             exam_course_work = session.query(ExamCoursework).filter(ExamCoursework.student_uid == student_uid,
                                                                     ExamCoursework.program_course == program_course,
                                                                     ExamCoursework.exam_category == exam_category,
@@ -401,19 +401,26 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             return False, "Data Processing Error in Exception"
 
 
-def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source):
+def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source, program_course = None, exam_category = None):
     with session_scope() as session:
 
         is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
         if is_inserted:
             try:
-                program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
-                                                                     ProgramCourse.deleted_at.is_(None)).first()
-                exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
-                                                                   ExamCategory.deleted_at.is_(None)).first()
+                # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+                #                                                      ProgramCourse.deleted_at.is_(None)).first()
+                # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                #                                                    ExamCategory.deleted_at.is_(None)).first()
+                # exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
+                #                                                ExamResult.program_course == program_course,
+                #                                                ExamResult.exam_category == exam_category).first()
+
+
                 exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
                                                                ExamResult.program_course == program_course,
                                                                ExamResult.exam_category == exam_category).first()
+
+
                 score = (score / out_off) * 100
                 if exam_result:
                     exam_result.score = score
@@ -421,6 +428,15 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                     exam_result.source = source
                     instance = exam_result
                 else:
+                    # new_exam_result = ExamResult(
+                    #     student_uid=student_uid,
+                    #     exam_category=exam_category,
+                    #     program_course=program_course,
+                    #     score=score,
+                    #     weight=weight,
+                    #     source=source
+                    # )
+
                     new_exam_result = ExamResult(
                         student_uid=student_uid,
                         exam_category=exam_category,
@@ -485,7 +501,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
 
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
-                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', ):
+                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', program_course = None, exam_category = None):
     success = 0
     failed = 0
     failed_student = FailedStudent(reg_number=None, reason=None)
@@ -517,7 +533,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                         if is_ue:
                             result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
                                                                 out_off,
-                                                                weight, by_law_uid, source)
+                                                                weight, by_law_uid, source, program_course, exam_category)
                             if result:
                                 success = success + 1
                                 success_student.reg_number = reg_number
@@ -531,7 +547,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                                                 student_uid, program_course_id, exam_category_id,
                                                                 assessment_number,
                                                                 out_off, score,
-                                                                weight, source, by_law_uid)
+                                                                weight, source, by_law_uid, program_course, exam_category)
                             if result:
                                 success = success + 1
                                 success_student.reg_number = reg_number
