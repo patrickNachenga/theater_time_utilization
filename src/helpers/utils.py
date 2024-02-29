@@ -494,7 +494,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
             "registration_numbers": reg_numbers
         }
 
-        response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers, timeout=5)
+        response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers, timeout=60)
         print("students_by_reg_numbers: ", response)
     except Exception as e:
         print('exception occurred', e)
