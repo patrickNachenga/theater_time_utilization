@@ -358,118 +358,110 @@ def get_user_programs_headship(info: Info):
     return user_program_uids
 
 
-def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
+def insert_course_work(session, registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
                        exam_category_id, assessment_number, out_off, score,
                        weight, source, by_law_uid,
                         program_course,
                         exam_category
                        ):
-    with session_scope() as session:
+    # with session_scope() as session:
 
+    try:
+        # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+        #                                                      ProgramCourse.deleted_at.is_(None)).first()
+        # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+        #                                                    ExamCategory.deleted_at.is_(None)).first()
+        exam_course_work = session.query(
+            ExamCoursework
+        ).filter(ExamCoursework.student_uid == student_uid,
+                                                                ExamCoursework.program_course_id == program_course_id,
+                                                                ExamCoursework.exam_category_id == exam_category_id,
+                                                                ExamCoursework.assessment_number == assessment_number).first()
+        score = (score / out_off) * 100
+        if exam_course_work:
+            exam_course_work.score = custom_round(score)
+            exam_course_work.weight = weight
+            exam_course_work.source = source
+            exam_course_work.program_course = program_course
+            exam_course_work.exam_category = exam_category
+            instance = exam_course_work
+        else:
+            new_exam_coursework = ExamCoursework(
+                student_uid=student_uid,
+                # exam_category=exam_category,
+                program_course_id=program_course_id,
+                # program_course=program_course,
+                exam_category_id=exam_category_id,
+                assessment_number=assessment_number,
+                score=custom_round(score),
+                weight=weight,
+                source=source
+            )
+            session.add(new_exam_coursework)
+            instance = new_exam_coursework
+        session.commit()
+        attach_coursework_listener(target=instance, registration_number=registration_number, first_name=first_name,
+                                   middle_name=middle_name, last_name=last_name, gender=gender,
+                                   by_law_uid=by_law_uid)
+
+        return True, "successfully"
+    except Exception as e:
+        print(e)
+        return False, "Data Processing Error in Exception"
+
+
+def insert_exam_result(session, student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source, program_course, exam_course_work):
+    # with session_scope() as session:
+
+    is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
+    if is_inserted:
         try:
+
             # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
             #                                                      ProgramCourse.deleted_at.is_(None)).first()
             # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
             #                                                    ExamCategory.deleted_at.is_(None)).first()
-            exam_course_work = session.query(
-                ExamCoursework
-            ).filter(ExamCoursework.student_uid == student_uid,
-                                                                    ExamCoursework.program_course_id == program_course_id,
-                                                                    ExamCoursework.exam_category_id == exam_category_id,
-                                                                    ExamCoursework.assessment_number == assessment_number).first()
+            # exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
+            #                                                ExamResult.program_course == program_course,
+            #                                                ExamResult.exam_category == exam_category).first()
+
+            exam_result = session.query(
+                                        ExamResult
+                                        ).filter(ExamResult.student_uid == student_uid,
+                                                           ExamResult.program_course_id == program_course_id,
+                                                           ExamResult.exam_category_id == exam_category_id).first()
+
             score = (score / out_off) * 100
-            if exam_course_work:
-                exam_course_work.score = custom_round(score)
-                exam_course_work.weight = weight
-                exam_course_work.source = source
-                exam_course_work.program_course = program_course
-                exam_course_work.exam_category = exam_category
-                instance = exam_course_work
+            if exam_result:
+                exam_result.score = score
+                exam_result.weight = weight
+                exam_result.source = source
+                # exam_result.program_course = program_course
+                # exam_result.exam_course_work = exam_course_work
+                instance = exam_result
             else:
-                new_exam_coursework = ExamCoursework(
+
+                new_exam_result = ExamResult(
                     student_uid=student_uid,
                     # exam_category=exam_category,
                     program_course_id=program_course_id,
                     # program_course=program_course,
                     exam_category_id=exam_category_id,
-                    assessment_number=assessment_number,
-                    score=custom_round(score),
+                    score=score,
                     weight=weight,
                     source=source
                 )
-                session.add(new_exam_coursework)
-                instance = new_exam_coursework
-            session.commit()
-            attach_coursework_listener(target=instance, registration_number=registration_number, first_name=first_name,
-                                       middle_name=middle_name, last_name=last_name, gender=gender,
-                                       by_law_uid=by_law_uid)
 
-            return True, "successfully"
+                session.add(new_exam_result)
+                instance = new_exam_result
+            session.commit()
+            attach_exam_result_listener(target=instance, by_law_uid=by_law_uid)
+            return True, "Successfully"
         except Exception as e:
             print(e)
-            return False, "Data Processing Error in Exception"
-
-
-def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source, program_course, exam_course_work):
-    with session_scope() as session:
-
-        is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
-        if is_inserted:
-            try:
-
-                # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
-                #                                                      ProgramCourse.deleted_at.is_(None)).first()
-                # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
-                #                                                    ExamCategory.deleted_at.is_(None)).first()
-                # exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
-                #                                                ExamResult.program_course == program_course,
-                #                                                ExamResult.exam_category == exam_category).first()
-
-                exam_result = session.query(
-                                            ExamResult
-                                            ).filter(ExamResult.student_uid == student_uid,
-                                                               ExamResult.program_course_id == program_course_id,
-                                                               ExamResult.exam_category_id == exam_category_id).first()
-
-                score = (score / out_off) * 100
-                if exam_result:
-                    exam_result.score = score
-                    exam_result.weight = weight
-                    exam_result.source = source
-                    # exam_result.program_course = program_course
-                    # exam_result.exam_course_work = exam_course_work
-                    instance = exam_result
-                else:
-                    # new_exam_result = ExamResult(
-                    #     student_uid=student_uid,
-                    #     exam_category=exam_category,
-                    #     program_course=program_course,
-                    #     score=score,
-                    #     weight=weight,
-                    #     source=source
-                    # )
-
-                    new_exam_result = ExamResult(
-                        student_uid=student_uid,
-                        # exam_category=exam_category,
-                        program_course_id=program_course_id,
-                        # program_course=program_course,
-                        exam_category_id=exam_category_id,
-                        score=score,
-                        weight=weight,
-                        source=source
-                    )
-
-                    session.add(new_exam_result)
-                    instance = new_exam_result
-                session.commit()
-                attach_exam_result_listener(target=instance, by_law_uid=by_law_uid)
-                return True, "Successfully"
-            except Exception as e:
-                print(e)
-                return False, "Data processing error"
-        else:
-            return False, "Can not Upload UE, Other course works assessment not yet uploaded"
+            return False, "Data processing error"
+    else:
+        return False, "Can not Upload UE, Other course works assessment not yet uploaded"
 
 
 def get_student_from_uaa():
@@ -515,7 +507,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
 
 
 
-def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
+def general_upload(session = None, students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
                    is_ue=None, reg_number=None, assessment_number=None, source='Excel',
                    program_course=None,
                    exam_category=None
@@ -552,7 +544,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
 
                     if score <= out_off:
                         if is_ue:
-                            result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
+                            result, reason = insert_exam_result(session, student_uid, program_course_id, exam_category_id, score,
                                                                 out_off,
                                                                 weight, by_law_uid, source,
                                                                 program_course,
@@ -568,7 +560,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                 failed_student.reg_number = reg_number
                                 failed_student.reason = reason
                         else:
-                            result, reason = insert_course_work(registration_number, first_name, middle_name, last_name,
+                            result, reason = insert_course_work(session, registration_number, first_name, middle_name, last_name,
                                                                 gender,
                                                                 student_uid, program_course_id, exam_category_id,
                                                                 assessment_number,
