@@ -436,8 +436,8 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                     exam_result.score = score
                     exam_result.weight = weight
                     exam_result.source = source
-                    exam_result.program_course = program_course
-                    exam_result.exam_course_work = exam_course_work
+                    # exam_result.program_course = program_course
+                    # exam_result.exam_course_work = exam_course_work
                     instance = exam_result
                 else:
                     # new_exam_result = ExamResult(
