@@ -360,7 +360,10 @@ def get_user_programs_headship(info: Info):
 
 def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
                        exam_category_id, assessment_number, out_off, score,
-                       weight, source, by_law_uid):
+                       weight, source, by_law_uid,
+                        program_course,
+                        exam_category
+                       ):
     with session_scope() as session:
 
         try:
@@ -379,6 +382,8 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                 exam_course_work.score = custom_round(score)
                 exam_course_work.weight = weight
                 exam_course_work.source = source
+                exam_course_work.program_course = program_course
+                exam_course_work.exam_category = exam_category
                 instance = exam_course_work
             else:
                 new_exam_coursework = ExamCoursework(
@@ -405,7 +410,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             return False, "Data Processing Error in Exception"
 
 
-def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source):
+def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source, program_course, exam_course_work):
     with session_scope() as session:
 
         is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
@@ -431,6 +436,8 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                     exam_result.score = score
                     exam_result.weight = weight
                     exam_result.source = source
+                    exam_result.program_course = program_course
+                    exam_result.exam_course_work = exam_course_work
                     instance = exam_result
                 else:
                     # new_exam_result = ExamResult(
@@ -509,7 +516,10 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
 
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
-                   is_ue=None, reg_number=None, assessment_number=None, source='Excel'):
+                   is_ue=None, reg_number=None, assessment_number=None, source='Excel',
+                   program_course=None,
+                   exam_category=None
+                   ):
     counter = 0
     success = 0
     failed = 0
@@ -544,7 +554,10 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                         if is_ue:
                             result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
                                                                 out_off,
-                                                                weight, by_law_uid, source)
+                                                                weight, by_law_uid, source,
+                                                                program_course,
+                                                                exam_category
+                                                                )
 
 
                             if result:
@@ -560,7 +573,10 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                                                 student_uid, program_course_id, exam_category_id,
                                                                 assessment_number,
                                                                 out_off, score,
-                                                                weight, source, by_law_uid)
+                                                                weight, source, by_law_uid,
+                                                                program_course,
+                                                                exam_category
+                                                                )
                             if result:
                                 success = success + 1
                                 success_student.reg_number = reg_number
