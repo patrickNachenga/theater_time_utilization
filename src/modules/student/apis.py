@@ -373,6 +373,7 @@ class StudentMutation:
 
     @strawberry.mutation
     async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
+
         # Decode the base64 file content
         file_content = base64.b64decode(base64_file)
         # Load the workbook from the file content
@@ -383,6 +384,16 @@ class StudentMutation:
         assessment_number = worksheet.cell(row=6, column=3).value
         out_off = float(worksheet.cell(row=7, column=3).value)
         program_course_id = worksheet.cell(row=1, column=4).value
+
+        if program_course_id != 407:
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message="Please try after 1 hour (1400), there is upgrade ongoing", data=UploadResponse(
+                    success=0,
+                    failed=0,
+                    failed_students=[],
+                    success_students=[]
+                ))
+
         weight = float(worksheet.cell(row=8, column=3).value)
 
         # Assuming the data is in a specific sheet and columns
@@ -422,11 +433,11 @@ class StudentMutation:
                     # print("Could not convert string to float." )
 
 
-                # program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
-                #                                                      ProgramCourse.deleted_at.is_(None)).first()
-                #
-                # exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
-                #                                                        ExamCategory.deleted_at.is_(None)).first()
+                program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+                                                                     ProgramCourse.deleted_at.is_(None)).first()
+
+                exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                                                                       ExamCategory.deleted_at.is_(None)).first()
 
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
@@ -434,8 +445,8 @@ class StudentMutation:
                                                                    out_off=out_off, weight=weight, is_ue=is_ue,
                                                                    reg_number=reg_number,
                                                                    assessment_number=assessment_number,
-                                                                    # program_course=program_course,
-                                                                    # exam_category = exam_category
+                                                                    program_course=program_course,
+                                                                    exam_category = exam_category
                                                                     )
                 success = success + success_
                 failed = failed + failed_
