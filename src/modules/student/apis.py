@@ -385,14 +385,14 @@ class StudentMutation:
         out_off = float(worksheet.cell(row=7, column=3).value)
         program_course_id = worksheet.cell(row=1, column=4).value
 
-        if program_course_id != 407:
-            return Response(status=False, code=ResponseCode.FAILURE,
-                            message="Please try after 1 hour (1400), there is upgrade ongoing", data=UploadResponse(
-                    success=0,
-                    failed=0,
-                    failed_students=[],
-                    success_students=[]
-                ))
+        # if program_course_id != 407:
+        #     return Response(status=False, code=ResponseCode.FAILURE,
+        #                     message="Please try after 1 hour (1400), there is upgrade ongoing", data=UploadResponse(
+        #             success=0,
+        #             failed=0,
+        #             failed_students=[],
+        #             success_students=[]
+        #         ))
 
         weight = float(worksheet.cell(row=8, column=3).value)
 
