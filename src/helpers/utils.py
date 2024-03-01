@@ -360,7 +360,7 @@ def get_user_programs_headship(info: Info):
 
 def insert_course_work(registration_number, first_name, middle_name, last_name, gender, student_uid, program_course_id,
                        exam_category_id, assessment_number, out_off, score,
-                       weight, source, by_law_uid, program_course = None, exam_category = None):
+                       weight, source, by_law_uid):
     with session_scope() as session:
 
         try:
@@ -405,7 +405,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             return False, "Data Processing Error in Exception"
 
 
-def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source, program_course = None, exam_category = None):
+def insert_exam_result(student_uid, program_course_id, exam_category_id, score, out_off, weight, by_law_uid, source):
     with session_scope() as session:
 
         is_inserted = are_minimum_course_work_exams_inserted(session, program_course_id, student_uid)
@@ -494,8 +494,9 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
             "registration_numbers": reg_numbers
         }
 
+        print("kabla uaa: ")
         response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers, timeout=240)
-        print("students_by_reg_numbers: ", response)
+        print("baada uaa: ")
     except Exception as e:
         print('exception occurred', e)
         response = None
@@ -508,7 +509,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
 
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
-                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', program_course = None, exam_category = None):
+                   is_ue=None, reg_number=None, assessment_number=None, source='Excel'):
     counter = 0
     success = 0
     failed = 0
@@ -528,6 +529,8 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             last_name = matching_item["last_name"]
             gender = matching_item["gender"]
 
+            print("============> " + str(program_course_id) + ": ", reg_number, ": ", score, ": ", out_off)
+
             if not by_law_uid:
                 failed = failed + 1
                 failed_student.reg_number = reg_number
@@ -541,9 +544,9 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                         if is_ue:
                             result, reason = insert_exam_result(student_uid, program_course_id, exam_category_id, score,
                                                                 out_off,
-                                                                weight, by_law_uid, source, program_course, exam_category)
+                                                                weight, by_law_uid, source)
 
-                            print("============> " + str(program_course_id) + ": ", reg_number , ": ", score, ": ",  out_off)
+
                             if result:
                                 success = success + 1
                                 success_student.reg_number = reg_number
@@ -557,7 +560,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                                                 student_uid, program_course_id, exam_category_id,
                                                                 assessment_number,
                                                                 out_off, score,
-                                                                weight, source, by_law_uid, program_course, exam_category)
+                                                                weight, source, by_law_uid)
                             if result:
                                 success = success + 1
                                 success_student.reg_number = reg_number
