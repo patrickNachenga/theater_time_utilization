@@ -46,7 +46,7 @@ class ExamCourseworkService:
                     .all()
                 )
                 all_results.append((exam_result_summary,exam_coursework_records))
-            print("all_results:",all_results)
+            # print("all_results:",all_results)
             return all_results
 
     @staticmethod
