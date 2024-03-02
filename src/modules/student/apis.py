@@ -32,7 +32,7 @@ class StudentQuery:
     def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
-            print(result)
+            # print(result)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
