@@ -286,7 +286,7 @@ class StudentService:
         weight = inputs.weight
         source = inputs.source
 
-        print("Online marks input", inputs)
+        # print("Online marks input", inputs)
 
         with session_scope() as session:
             is_ue = session.query(ExamCategory).filter(
