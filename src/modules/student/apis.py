@@ -375,7 +375,9 @@ class StudentMutation:
     async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
 
         # Decode the base64 file content
+        print("1")
         file_content = base64.b64decode(base64_file)
+        print("2")
         # Load the workbook from the file content
         workbook = openpyxl.load_workbook(io.BytesIO(file_content))
         # Get the desired worksheet by name or index
@@ -384,7 +386,7 @@ class StudentMutation:
         assessment_number = worksheet.cell(row=6, column=3).value
         out_off = float(worksheet.cell(row=7, column=3).value)
         program_course_id = worksheet.cell(row=1, column=4).value
-
+        print("3")
         # if program_course_id != 407:
         #     return Response(status=False, code=ResponseCode.FAILURE,
         #                     message="Please try after 1 hour (1400), there is upgrade ongoing", data=UploadResponse(
@@ -403,6 +405,7 @@ class StudentMutation:
         marks_column = 4  # Assuming Marks is in column D
 
         with session_scope() as session:
+            print("4")
             is_ue = session.query(ExamCategory.is_ue).filter(
                 ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
@@ -414,8 +417,10 @@ class StudentMutation:
                 reg_numbers.append(reg_number_)  # Append the registration number to the list
 
             # Now reg_numbers contains all the registration numbers from the specified worksheet rows
-
+            print("5")
             students = get_student_from_uaa_by_reg_numbers(reg_numbers)
+
+            print("6")
             success = 0
             failed = 0
             failed_students = []
