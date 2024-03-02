@@ -388,9 +388,9 @@ def insert_course_work(session, registration_number, first_name, middle_name, la
         else:
             new_exam_coursework = ExamCoursework(
                 student_uid=student_uid,
-                # exam_category=exam_category,
+                exam_category=exam_category,
                 program_course_id=program_course_id,
-                # program_course=program_course,
+                program_course=program_course,
                 exam_category_id=exam_category_id,
                 assessment_number=assessment_number,
                 score=custom_round(score),
