@@ -189,6 +189,7 @@ class StudentMutation:
         result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off, excel_sorting)
         file_buffer = io.BytesIO()
 
+        file_name = ''
         # Create a new workbook
         workbook = Workbook()
 
@@ -212,6 +213,10 @@ class StudentMutation:
         vertical_headers = ["Course Ante", "Program Code", "Academic Year", "Study Year", "Exam Category",
                             "Assessment No", "Mark Out of",
                             "Assessment Weight"]
+
+        file_name += result["program_course"].program_semester.program.code + "_"
+        file_name += result["program_course"].course.code + "_"
+
         # Sample data for the vertical header
         data = {
             "Course Ante": result["program_course"].course.code,
@@ -302,6 +307,7 @@ class StudentMutation:
 
         exam_cat_result = ExamCategoryService().get_exam_categories_by_id(exam_category_id)
         for row in exam_cat_result:
+            file_name += str(row.code + "_" + str(assessment_number))
             exam_cat_name = row.name
             worksheet.cell(row=2, column=5, value=str(exam_cat_name + ": " + str(assessment_number)))
             worksheet.cell(row=2, column=5).font = font_border
@@ -336,8 +342,9 @@ class StudentMutation:
         file_data = file_buffer.getvalue()
         base64_data = base64.b64encode(file_data).decode()
 
+
         # Return the Base64 string as the result
-        return ExcelFile(base64_data=base64_data)
+        return ExcelFile(base64_data=base64_data, file_name=file_name)
 
     def reformat_name(full_name: str):
         # Split the input string into parts
