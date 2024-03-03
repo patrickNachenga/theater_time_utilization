@@ -460,6 +460,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_credit_hrs_acquired = 0
                         total_failed_core_subject = 0
                         sum_grade_point_credit = 0
+                        has_incomplete_course = false
                         failed_subjects = 0
                         passed_subjects = 0
                         remark_status = 0
@@ -485,6 +486,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 if exam_result.grade_point_credit is not None:
                                     sum_grade_point_credit += exam_result.grade_point_credit
                                 value = exam_result.grade
+
                                 # Check if student have passed this course sum
                                 if exam_result.grade_remark.upper() == "PASS":
                                     total_credit_hrs_acquired += pc.credit
@@ -495,6 +497,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                     if value != 'I':
                                         courses_under_probation += pc.course.code + ", "
                                         failed_subjects += 1
+                                    else:
+                                        has_incomplete_course = True
                             else:
                                 value = '-'
                             cel = worksheet.cell(row=count_rows, column=col, value=value)
@@ -537,7 +541,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         # calculate the GPA
 
                         gpa = '-'
-                        if remark_status != 'INCOMPLETE':
+                        if not has_incomplete_course:
                             gpa = sum_grade_point_credit / total_credit_hrs_taken
                             gpa =  math.floor(gpa * 10) / 10
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
