@@ -421,7 +421,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True, indent=1)
                         column_letter = get_column_letter(start_column)
                         if title == 'Remarks':
-                            worksheet.column_dimensions[column_letter].width = 10
+                            worksheet.column_dimensions[column_letter].width = 13
                         else:
                             worksheet.column_dimensions[column_letter].width = 35
 
@@ -433,7 +433,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         row_height_per_line = 10  # Adjust as needed
                         worksheet.row_dimensions[count_rows].height = 12 * row_height_per_line
                         # Set the width of the column
-                        worksheet.column_dimensions[column_letter].width = 6
+                        worksheet.column_dimensions[column_letter].width = 7
 
                     cel.font = font_border
                     cel.border = border
