@@ -280,7 +280,7 @@ class StudentMutation:
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
             # worksheet[f"C{row}"] = item.get('user', {}).get('full_name')
-            worksheet[f"C{roxlsw}"] = full_name_
+            worksheet[f"C{row}"] = full_name_
             # worksheet[f"C{row}"] = item['last_name'].capitalize() + ", " + item['first_name'] + " " + item['middle_name']
             worksheet[f"D{row}"] = round(item['marks'] * 10) / 10
             # Align the cells to the center
