@@ -536,10 +536,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 continuing_data['female'] += 1
                         # calculate the GPA
 
-                        # gpa = '-'
-                        # if remark_status != 'INCOMPLETE':
-                        gpa = sum_grade_point_credit / total_credit_hrs_taken
-                        gpa =  math.floor(gpa * 10) / 10
+                        gpa = '-'
+                        if remark_status != 'INCOMPLETE':
+                            gpa = sum_grade_point_credit / total_credit_hrs_taken
+                            gpa =  math.floor(gpa * 10) / 10
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
                                                total_failed_core_subject, gpa, remark_status, courses_under_probation]
 
