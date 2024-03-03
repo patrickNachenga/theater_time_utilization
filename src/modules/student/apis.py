@@ -282,7 +282,9 @@ class StudentMutation:
             # worksheet[f"C{row}"] = item.get('user', {}).get('full_name')
             worksheet[f"C{row}"] = full_name_
             # worksheet[f"C{row}"] = item['last_name'].capitalize() + ", " + item['first_name'] + " " + item['middle_name']
-            worksheet[f"D{row}"] = round(item['marks'] * 10) / 10
+            worksheet[f"D{row}"] = item['marks']
+            if isinstance(item['marks'], (int, float)):
+                worksheet[f"D{row}"] = round(item['marks'] * 10) / 10
             # Align the cells to the center
             for col in range(1, 5):
                 cell = worksheet.cell(row=row, column=col)
