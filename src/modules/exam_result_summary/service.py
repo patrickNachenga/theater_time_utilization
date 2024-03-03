@@ -26,6 +26,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamResultSummaryInput, ExamResultSummarySearchCriteria, ExcelFile
 from openpyxl import Workbook
+import math
 
 
 class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInput, ExamResultSummaryInput])):
