@@ -477,11 +477,11 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         col = 5
                         for pc in program_courses:
                             col += 1
-                            exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark).filter(
+                            exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark, ExamResultSummary.sum_grade_point_credit).filter(
                                 ExamResultSummary.student_uid == item['student_uid'],
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
-                                sum_grade_point_credit += exam_result.sum_grade_point_credit
+                                sum_grade_point_credit += exam_result.grade_point_credit
                                 value = exam_result.grade
                                 # Check if student have passed this course sum
                                 if exam_result.grade_remark.upper() == "PASS":
