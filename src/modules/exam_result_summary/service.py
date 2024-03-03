@@ -481,7 +481,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 ExamResultSummary.student_uid == item['student_uid'],
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
-                                sum_grade_point_credit += exam_result.grade_point_credit
+                                if exam_result.grade_point_credit is not None:
+                                    sum_grade_point_credit += exam_result.grade_point_credit
                                 value = exam_result.grade
                                 # Check if student have passed this course sum
                                 if exam_result.grade_remark.upper() == "PASS":
@@ -533,6 +534,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                             else:
                                 continuing_data['female'] += 1
                         # calculate the GPA
+
+                        # gpa = '-'
+                        # if remark_status != 'INCOMPLETE':
                         gpa = sum_grade_point_credit / total_credit_hrs_taken
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
                                                total_failed_core_subject, gpa, remark_status, courses_under_probation]
