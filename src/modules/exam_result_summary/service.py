@@ -432,7 +432,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         row_height_per_line = 10  # Adjust as needed
                         worksheet.row_dimensions[count_rows].height = 12 * row_height_per_line
                         # Set the width of the column
-                        worksheet.column_dimensions[column_letter].width = 4
+                        worksheet.column_dimensions[column_letter].width = 6
 
                     cel.font = font_border
                     cel.border = border
@@ -458,6 +458,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_credit_hrs_taken = 0
                         total_credit_hrs_acquired = 0
                         total_failed_core_subject = 0
+                        sum_gp_times_credit = 0
                         failed_subjects = 0
                         passed_subjects = 0
                         remark_status = 0
@@ -480,6 +481,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 ExamResultSummary.student_uid == item['student_uid'],
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
+                                sum_gp_times_credit += (exam_result.gp * exam_result.credit)
                                 value = exam_result.grade
                                 # Check if student have passed this course sum
                                 if exam_result.grade_remark.upper() == "PASS":
@@ -530,9 +532,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 continuing_data['male'] += 1
                             else:
                                 continuing_data['female'] += 1
-
+                        # calculate the GPA
+                        gpa = sum_gp_times_credit / total_credit_hrs_taken
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
-                                               total_failed_core_subject, "-", remark_status, courses_under_probation]
+                                               total_failed_core_subject, gpa, remark_status, courses_under_probation]
 
                         for title_ in total_title_results:
                             col += 1

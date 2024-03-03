@@ -69,7 +69,7 @@ def create_course_to_moodle():
             Call Department moodle id for uuid
             """
             try:
-                response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}", timeout=5)
+                response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}", timeout=180)
                 if response.status_code == 200:
                     responseData = response.json()
                     if responseData["status"] and responseData["data"]['moodle_id']:
@@ -131,7 +131,7 @@ def enroll_student_to_moodle_course():
                 .first()
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=180)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -164,7 +164,7 @@ def unroll_student_to_moodle_course():
                 .first()
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
+                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=180)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -470,7 +470,7 @@ def get_student_from_uaa():
             "Content-Type": "application/json"
         }
 
-        response = requests.get(settings.UAA_URi + '/users/students', headers=headers, timeout=5)
+        response = requests.get(settings.UAA_URi + '/users/students', headers=headers, timeout=180)
 
     except Exception as e:
         print('exception occurred', e)

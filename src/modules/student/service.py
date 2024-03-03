@@ -120,7 +120,7 @@ class StudentService:
                 }
 
                 response = requests.post(settings.UAA_URi + '/students-details-by-uids', data=data_json,
-                                         headers=headers, timeout=10)
+                                         headers=headers, timeout=180)
 
             except Exception as e:
                 print(e)
