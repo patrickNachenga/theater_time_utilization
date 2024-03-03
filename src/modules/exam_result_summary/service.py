@@ -460,7 +460,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_credit_hrs_acquired = 0
                         total_failed_core_subject = 0
                         sum_grade_point_credit = 0
-                        has_incomplete_course = false
+                        has_incomplete_course = False
                         failed_subjects = 0
                         passed_subjects = 0
                         remark_status = 0
