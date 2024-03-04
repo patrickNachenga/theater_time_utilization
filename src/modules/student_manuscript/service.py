@@ -72,7 +72,7 @@ class StudentManuscriptService(CRUDBase[StudentManuscript, StudentManuscriptInpu
                 intention_to_submit_list = []
                 for x in items:
                     params = {"uid": str(x.student_uid)}
-                    response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=180)
+                    response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
                     response.raise_for_status()
                     response_data = response.json()
                     if response.status_code == 200:
