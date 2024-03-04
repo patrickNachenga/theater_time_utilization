@@ -113,6 +113,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             payload = json.dumps(data_obj)
             # Send the POST request
             response = requests.post(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
+
             response.raise_for_status()
             if response.status_code != 200:
                 return Response(
@@ -126,7 +127,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message=signature_data['message'],
+                    message="Please upload your signature before downloading Semester results",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
