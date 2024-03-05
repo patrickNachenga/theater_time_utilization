@@ -151,7 +151,7 @@ class MoodleApiCallQuery:
                             "Content-Type": "application/json"
                         }
                         # Send the Get request
-                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload, headers=headers, timeout=3)
+                        response = requests.post(settings.UAA_URi + f'/students-details-by-uids', data=payload, headers=headers, timeout=5)
                         response.raise_for_status()
                         if response.status_code == 200:
                             responseData = response.json()
