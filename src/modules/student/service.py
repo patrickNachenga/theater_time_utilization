@@ -92,9 +92,9 @@ class StudentService:
 
         print('reached: get_allocation_students()')
         with session_scope() as session:
-            student_uids = session.query(StudentCourseRegistration.student_uid, StudentCourseRegistration.program_course_id). \
-                join(ProgramCourse, ProgramCourse.program_course_id == StudentCourseRegistration.program_course_id). \
-                join(CourseAllocation, CourseAllocation.program_course_id == ProgramCourse.program_course_id). \
+            student_uids = session.query(StudentCourseRegistration.student_uid). \
+                join(ProgramCourse). \
+                join(CourseAllocation). \
                 filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
                 all()
 
