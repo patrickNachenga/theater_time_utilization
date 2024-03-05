@@ -89,15 +89,21 @@ class StudentService:
         """
         Retrieve all students located to a particular allocation
         """
+
+        print('reached: get_allocation_students()')
         with session_scope() as session:
-            student_uids = session.query(StudentCourseRegistration.student_uid). \
-                join(ProgramCourse). \
-                join(CourseAllocation). \
+            student_uids = session.query(StudentCourseRegistration.student_uid, StudentCourseRegistration.program_course_id). \
+                join(ProgramCourse, ProgramCourse.program_course_id == StudentCourseRegistration.program_course_id). \
+                join(CourseAllocation, CourseAllocation.program_course_id == ProgramCourse.program_course_id). \
                 filter(CourseAllocation.uid == allocation_uid, CourseAllocation.deleted_at.is_(None)). \
                 all()
+
+            print('reached: get_allocation_students() : student_uids')
             # Extract the student UIDs from the query result
             allocation = session.query(CourseAllocation).filter(CourseAllocation.uid == allocation_uid,
                                                                 CourseAllocation.deleted_at.is_(None)).first()
+            print('reached: get_allocation_students() : allocation')
+
             program_course = None
 
             if allocation:
@@ -141,6 +147,8 @@ class StudentService:
                             marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
                             if marks:
                                 item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
+                                if isinstance(item["marks"], (int, float)):
+                                    item["marks"] = round((ifloat(marks) * out_off / 100) * 10) / 10
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 

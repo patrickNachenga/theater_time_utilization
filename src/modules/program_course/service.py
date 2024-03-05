@@ -72,7 +72,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             stmt = select(ProgramCourse).where((ProgramCourse.program_semester_id == program_semester.id) & (ProgramCourse.deleted_at.is_(None)))
             result_raw = session.scalars(stmt)
             result = result_raw.all()
-            count = session.query(ProgramCourse).filter(ProgramCourse.deleted_at.is_(None)).count()
+            count = session.query(ProgramCourse.id).filter(ProgramCourse.deleted_at.is_(None)).count()
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
