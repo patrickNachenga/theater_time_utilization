@@ -148,7 +148,7 @@ class StudentService:
                             if marks:
                                 item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
                                 if isinstance(item["marks"], (int, float)):
-                                    item["marks"] = round((ifloat(marks) * out_off / 100) * 10) / 10
+                                    item["marks"] = round((float(marks) * out_off / 100) * 10) / 10
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 
@@ -321,7 +321,18 @@ class StudentService:
                     continue
 
                 reg_number = row.registration_number
-                score = float(row.score)
+
+                try:
+                    score = float(row.score)
+                except ValueError:
+                    score = 'InvalidMarks'
+                # score = float(row.score)
+
+                program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+                                                                     ProgramCourse.deleted_at.is_(None)).first()
+
+                exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                                                                   ExamCategory.deleted_at.is_(None)).first()
 
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                                     program_course_id=program_course_id,
@@ -331,7 +342,10 @@ class StudentService:
                                                                                     is_ue=is_ue,
                                                                                     reg_number=reg_number,
                                                                                     assessment_number=assessment_number,
-                                                                                    source=source)
+                                                                                    source=source,
+                                                                                    program_course=program_course,
+                                                                                    exam_category=exam_category
+                                                                                    )
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:
