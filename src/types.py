@@ -121,6 +121,7 @@ class ProgramSemesterResultsInput:
     semester: Optional[str] = None
     year_of_study: Optional[str] = None
 
+
 @strawberry.type(description="Exam category Groups Output")
 class ExamCategoryGroupsNode:
     uid: str
@@ -212,6 +213,7 @@ class ExamResultSummaryNode:
 class ExamResultSummaryListNode:
     items: List[ExamResultSummaryNode]
     total_count: int
+
 
 @strawberry.type(description="Semester Exam Result")
 class SemesterExamResultNode:
@@ -1176,15 +1178,18 @@ class StudentSeminarsInputNode:
     student_uid: str
     seminar_type_uid: Optional[str] = None
 
+
 @strawberry.type()
 class Score:
     score: float
     overall_marks: float
 
+
 @strawberry.type()
 class CourseWorkTypeOutput:
     type: str
     score: List[Score]
+
 
 @strawberry.type()
 class StudentCourseWorkOutput:
@@ -1297,12 +1302,12 @@ class ExamResultSummarySearchCriteria:
     course_category: Optional[str] = None
     semester: Optional[int] = None
 
-@strawberry.input(description="Exam course work result Output | Node")
-class ExamCourseWorkSearchCriteria:
-    student_uid: Optional[str]  = None
-    program_course_id: Optional[str]  = None
-    exam_category_id: Optional[str] = None
 
+@strawberry.input(description="Student Course work result Output | Node")
+class ExamCourseWorkSearchCriteria:
+    student_uid: Optional[str] = None
+    program_course_id: Optional[str] = None
+    exam_category_id: Optional[str] = None
 
 @strawberry.type(description="Student Seminar paginated output")
 class StudentManuscriptNode:
