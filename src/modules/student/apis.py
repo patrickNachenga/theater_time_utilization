@@ -468,6 +468,8 @@ class StudentMutation:
                     failed_students.append(failed_student)
                 if success_student.reg_number is not None:
                     success_students.append(success_student)
+
+            # session.commit()
             response_data = UploadResponse(
                 success=success,
                 failed=failed,
