@@ -356,4 +356,21 @@ class StudentService:
                 failed_students=failed_students,
                 success_students=success_students
             )
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "email": "husseinmkwazu@sua.ac.tz",
+                "course_code": "DIT0105"
+            }
+            print("kabla uaaaaaaa: ", payload)
+            response = requests.post(settings.UAA_URi + '/course/upload/status', json=payload, headers=headers,
+                                     timeout=5)
+            print("baada uaaaaaaaaaa: ")
+
+            if response.status_code != 200:
+                print("imefeli kutuma email")
+
             return response_data

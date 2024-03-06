@@ -154,11 +154,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             file_name = f"{program.name}({program.code}) {academic_year.name} - YEAR {year_of_study} SEMESTER {semester} EXAMINATION RESULT"
             # Create a new worksheet
             worksheet = workbook.active
-            # Set column widths
-            # worksheet.column_dimensions['A'].width = 15
-            # worksheet.column_dimensions['B'].width = 20
-            # worksheet.column_dimensions['C'].width = 45
-
             # Set the font style to Times New Roman
             font = Font(name="Times New Roman", size=12)
             small_font = Font(name="Times New Roman", size=10)
@@ -637,9 +632,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
             # Set the row number for the anchor cell
             anchor_row = bottom_center_cell[0]
-
-            print(anchor_column)
-            print(bottom_center_cell[0])
 
             # Set the anchor cell for the image to the bottom center cell
             anchor_cell = f'{anchor_column}{anchor_row}'
