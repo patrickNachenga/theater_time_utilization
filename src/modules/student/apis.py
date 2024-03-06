@@ -3,6 +3,8 @@ import io
 from typing import List, Optional
 
 import openpyxl
+import requests
+from src.core.config import settings
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from io import BytesIO
 
@@ -381,7 +383,7 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
 
     @strawberry.mutation
-    async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
+    def upload_score(self, base64_file: str) -> Response[UploadResponse]:
 
         # Decode the base64 file content
         print("1")
@@ -421,7 +423,9 @@ class StudentMutation:
 
             # get list of registration numbers from the template
             reg_numbers = []  # Initialize an empty list to store registration numbers
+            total_students = 0
             for row in worksheet.iter_rows(min_row=10, values_only=True):
+                total_students += 1
                 reg_number_ = row[reg_no_column - 1]
                 reg_numbers.append(reg_number_)  # Append the registration number to the list
 
@@ -474,6 +478,26 @@ class StudentMutation:
                 failed_students=failed_students,
                 success_students=success_students
             )
+
+
+            # send email to user
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "email": "husseinmkwazu@sua.ac.tz",
+                "course_code": "DIT0105"
+            }
+
+            print("kabla uaaaaaaa: ", payload)
+            response = requests.post(settings.UAA_URi + '/course/upload/status', json=payload, headers=headers,
+                                     timeout=5)
+            print("baada uaaaaaaaaaa: ")
+
+            if response.status_code != 200:
+                print("imefeli kutuma email")
 
             return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
 
