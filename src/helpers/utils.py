@@ -423,11 +423,14 @@ def insert_exam_result(session, student_uid, program_course_id, exam_category_id
             #                                                ExamResult.program_course == program_course,
             #                                                ExamResult.exam_category == exam_category).first()
 
+            print("kabla insert: ", score)
             exam_result = session.query(
                                         ExamResult
                                         ).filter(ExamResult.student_uid == student_uid,
                                                            ExamResult.program_course_id == program_course_id,
                                                            ExamResult.exam_category_id == exam_category_id).first()
+
+
 
             score = (score / out_off) * 100
             if exam_result:
@@ -453,6 +456,8 @@ def insert_exam_result(session, student_uid, program_course_id, exam_category_id
                 session.add(new_exam_result)
                 instance = new_exam_result
             session.commit()
+
+            print("baada insert: ", score)
             attach_exam_result_listener(target=instance, by_law_uid=by_law_uid)
             return True, "Successfully"
         except Exception as e:
