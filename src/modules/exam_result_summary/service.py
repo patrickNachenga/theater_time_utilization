@@ -112,7 +112,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             }
             payload = json.dumps(data_obj)
             # Send the POST request
-            response = requests.post(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
+            response = requests.post(
+                settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature',
+                headers=headers)
 
             response.raise_for_status()
             if response.status_code != 200:
@@ -475,7 +477,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         col = 5
                         for pc in program_courses:
                             col += 1
-                            exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark, ExamResultSummary.grade_point_credit).filter(
+                            exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark,
+                                                        ExamResultSummary.grade_point_credit).filter(
                                 ExamResultSummary.student_uid == item['student_uid'],
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
@@ -539,7 +542,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         gpa = '-'
                         if not has_incomplete_course:
                             gpa = sum_grade_point_credit / total_credit_hrs_taken
-                            gpa =  math.floor(gpa * 10) / 10
+                            gpa = math.floor(gpa * 10) / 10
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
                                                total_failed_core_subject, gpa, remark_status, courses_under_probation]
 
@@ -611,7 +614,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 count_rows += 1
             # Iterate over rows in the worksheet
 
-
             column_no = len(program_courses) + 11
             # Decode the Base64 image
             base64_image = signature_data['data']['base64doc']
@@ -625,10 +627,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
             # Calculate the coordinates of the bottom center cell
             bottom_center_cell = openpyxl.utils.coordinate_to_tuple(
-                f'{openpyxl.utils.get_column_letter(column_no)}{signature_row+1}')
+                f'{openpyxl.utils.get_column_letter(column_no)}{signature_row + 1}')
 
             # Calculate the column letter for the anchor cell (e.g., "B" for column number 2)
-            anchor_column = openpyxl.utils.get_column_letter(bottom_center_cell[1]-13)
+            anchor_column = openpyxl.utils.get_column_letter(bottom_center_cell[1] - 13)
 
             # Set the row number for the anchor cell
             anchor_row = bottom_center_cell[0]
@@ -639,9 +641,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             worksheet.add_image(img, anchor_cell)
             worksheet[anchor_cell].alignment = Alignment(horizontal='center', vertical='bottom')
 
-
-
-
             name_row = signature_row + 4
             colum_no = len(program_courses) + 11
             worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row, end_column=colum_no)
@@ -650,16 +649,12 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             summary_text.font = font_border
             # print(info.context.user.full_name)
 
-
             name_row += 1
             worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row,
                                   end_column=colum_no)
             summary_text = worksheet.cell(row=name_row, column=1, value=headship['data'])
             summary_text.alignment = Alignment(horizontal='center')
             summary_text.font = font_border
-
-
-
 
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):
