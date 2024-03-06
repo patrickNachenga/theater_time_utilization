@@ -26,6 +26,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ExamResultSummaryInput, ExamResultSummarySearchCriteria, ExcelFile
 from openpyxl import Workbook
+import math
 
 
 class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInput, ExamResultSummaryInput])):
@@ -111,7 +112,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             }
             payload = json.dumps(data_obj)
             # Send the POST request
-            response = requests.get(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
+            response = requests.post(settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature', headers=headers)
+
             response.raise_for_status()
             if response.status_code != 200:
                 return Response(
@@ -125,7 +127,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message=signature_data['message'],
+                    message="Please upload your signature before downloading Semester results",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
@@ -415,7 +417,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         cel.alignment = Alignment(horizontal='center', vertical='bottom', wrap_text=True, indent=1)
                         column_letter = get_column_letter(start_column)
                         if title == 'Remarks':
-                            worksheet.column_dimensions[column_letter].width = 10
+                            worksheet.column_dimensions[column_letter].width = 13
                         else:
                             worksheet.column_dimensions[column_letter].width = 35
 
@@ -427,7 +429,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         row_height_per_line = 10  # Adjust as needed
                         worksheet.row_dimensions[count_rows].height = 12 * row_height_per_line
                         # Set the width of the column
-                        worksheet.column_dimensions[column_letter].width = 4
+                        worksheet.column_dimensions[column_letter].width = 7
 
                     cel.font = font_border
                     cel.border = border
@@ -453,6 +455,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_credit_hrs_taken = 0
                         total_credit_hrs_acquired = 0
                         total_failed_core_subject = 0
+                        sum_grade_point_credit = 0
+                        has_incomplete_course = False
                         failed_subjects = 0
                         passed_subjects = 0
                         remark_status = 0
@@ -471,11 +475,14 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         col = 5
                         for pc in program_courses:
                             col += 1
-                            exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark).filter(
+                            exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark, ExamResultSummary.grade_point_credit).filter(
                                 ExamResultSummary.student_uid == item['student_uid'],
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
+                                if exam_result.grade_point_credit is not None:
+                                    sum_grade_point_credit += exam_result.grade_point_credit
                                 value = exam_result.grade
+
                                 # Check if student have passed this course sum
                                 if exam_result.grade_remark.upper() == "PASS":
                                     total_credit_hrs_acquired += pc.credit
@@ -486,6 +493,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                     if value != 'I':
                                         courses_under_probation += pc.course.code + ", "
                                         failed_subjects += 1
+                                    else:
+                                        has_incomplete_course = True
                             else:
                                 value = '-'
                             cel = worksheet.cell(row=count_rows, column=col, value=value)
@@ -525,9 +534,14 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 continuing_data['male'] += 1
                             else:
                                 continuing_data['female'] += 1
+                        # calculate the GPA
 
+                        gpa = '-'
+                        if not has_incomplete_course:
+                            gpa = sum_grade_point_credit / total_credit_hrs_taken
+                            gpa =  math.floor(gpa * 10) / 10
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
-                                               total_failed_core_subject, "-", remark_status, courses_under_probation]
+                                               total_failed_core_subject, gpa, remark_status, courses_under_probation]
 
                         for title_ in total_title_results:
                             col += 1

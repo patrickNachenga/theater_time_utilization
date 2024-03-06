@@ -51,7 +51,7 @@ class ExamCourseWorkResultQuery:
         List[StudentCourseWorkOutput]]:
         try:
 
-            print("course_work: ", input)
+            print("checking course_work: ", input.student_uid)
             if input.student_uid is None:
                 return Response(
                     status=False,

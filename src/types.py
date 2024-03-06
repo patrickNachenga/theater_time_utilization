@@ -1303,11 +1303,19 @@ class ExamResultSummarySearchCriteria:
     semester: Optional[int] = None
 
 
+@strawberry.input(description="Exam course work result Output | Node")
+class ExamCourseWorkSearchCriteria:
+    student_uid: Optional[str] = None
+    program_course_id: str
+    exam_category_id: Optional[str] = None
+
+
 @strawberry.input(description="Student Course work result Output | Node")
 class ExamCourseWorkSearchCriteria:
     student_uid: Optional[str] = None
     program_course_id: Optional[str] = None
     exam_category_id: Optional[str] = None
+
 
 @strawberry.type(description="Student Seminar paginated output")
 class StudentManuscriptNode:

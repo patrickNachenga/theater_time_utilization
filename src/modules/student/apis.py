@@ -15,7 +15,7 @@ from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.db.session import session_scope
 from src.helpers.utils import get_current_academic_year, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, insert_exam_result, insert_course_work, \
     general_upload
-from src.models import ExamCategory
+from src.models import ExamCategory, ProgramCourse
 from src.modules.student.service import StudentService
 from src.modules.exam_category.service import ExamCategoryService
 from src.shared.response import Response
@@ -32,7 +32,7 @@ class StudentQuery:
     def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
             result = StudentService().get_student_course_to_register(inputs)
-            print(result)
+            # print(result)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -189,6 +189,7 @@ class StudentMutation:
         result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off, excel_sorting)
         file_buffer = io.BytesIO()
 
+        file_name = ''
         # Create a new workbook
         workbook = Workbook()
 
@@ -212,6 +213,10 @@ class StudentMutation:
         vertical_headers = ["Course Ante", "Program Code", "Academic Year", "Study Year", "Exam Category",
                             "Assessment No", "Mark Out of",
                             "Assessment Weight"]
+
+        file_name += result["program_course"].program_semester.program.code + "_"
+        file_name += result["program_course"].course.code + "_"
+
         # Sample data for the vertical header
         data = {
             "Course Ante": result["program_course"].course.code,
@@ -283,6 +288,8 @@ class StudentMutation:
             worksheet[f"C{row}"] = full_name_
             # worksheet[f"C{row}"] = item['last_name'].capitalize() + ", " + item['first_name'] + " " + item['middle_name']
             worksheet[f"D{row}"] = item['marks']
+            if isinstance(item['marks'], (int, float)):
+                worksheet[f"D{row}"] = round(item['marks'] * 10) / 10
             # Align the cells to the center
             for col in range(1, 5):
                 cell = worksheet.cell(row=row, column=col)
@@ -300,6 +307,7 @@ class StudentMutation:
 
         exam_cat_result = ExamCategoryService().get_exam_categories_by_id(exam_category_id)
         for row in exam_cat_result:
+            file_name += str(row.code + "_" + str(assessment_number))
             exam_cat_name = row.name
             worksheet.cell(row=2, column=5, value=str(exam_cat_name + ": " + str(assessment_number)))
             worksheet.cell(row=2, column=5).font = font_border
@@ -334,8 +342,9 @@ class StudentMutation:
         file_data = file_buffer.getvalue()
         base64_data = base64.b64encode(file_data).decode()
 
+
         # Return the Base64 string as the result
-        return ExcelFile(base64_data=base64_data)
+        return ExcelFile(base64_data=base64_data, file_name=file_name)
 
     def reformat_name(full_name: str):
         # Split the input string into parts
@@ -373,8 +382,11 @@ class StudentMutation:
 
     @strawberry.mutation
     async def upload_score(self, base64_file: str) -> Response[UploadResponse]:
+
         # Decode the base64 file content
+        print("1")
         file_content = base64.b64decode(base64_file)
+        print("2")
         # Load the workbook from the file content
         workbook = openpyxl.load_workbook(io.BytesIO(file_content))
         # Get the desired worksheet by name or index
@@ -383,6 +395,16 @@ class StudentMutation:
         assessment_number = worksheet.cell(row=6, column=3).value
         out_off = float(worksheet.cell(row=7, column=3).value)
         program_course_id = worksheet.cell(row=1, column=4).value
+        print("3")
+        # if program_course_id != 407:
+        #     return Response(status=False, code=ResponseCode.FAILURE,
+        #                     message="Please try after 1 hour (1400), there is upgrade ongoing", data=UploadResponse(
+        #             success=0,
+        #             failed=0,
+        #             failed_students=[],
+        #             success_students=[]
+        #         ))
+
         weight = float(worksheet.cell(row=8, column=3).value)
 
         # Assuming the data is in a specific sheet and columns
@@ -392,6 +414,7 @@ class StudentMutation:
         marks_column = 4  # Assuming Marks is in column D
 
         with session_scope() as session:
+            print("4")
             is_ue = session.query(ExamCategory.is_ue).filter(
                 ExamCategory.id == exam_category_id).first().is_ue
             # get student list from uaa service to get student uid after filtering
@@ -403,8 +426,10 @@ class StudentMutation:
                 reg_numbers.append(reg_number_)  # Append the registration number to the list
 
             # Now reg_numbers contains all the registration numbers from the specified worksheet rows
-
+            print("5")
             students = get_student_from_uaa_by_reg_numbers(reg_numbers)
+
+            print("6")
             success = 0
             failed = 0
             failed_students = []
@@ -420,18 +445,29 @@ class StudentMutation:
                 except ValueError:
                     score = 'InvalidMarks'
                     # print("Could not convert string to float." )
+
+
+                program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
+                                                                     ProgramCourse.deleted_at.is_(None)).first()
+
+                exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
+                                                                       ExamCategory.deleted_at.is_(None)).first()
+
                 success_, failed_, failed_student, success_student = general_upload(students=students,
                                                                    program_course_id=program_course_id,
                                                                    exam_category_id=exam_category_id, score=score,
                                                                    out_off=out_off, weight=weight, is_ue=is_ue,
                                                                    reg_number=reg_number,
-                                                                   assessment_number=assessment_number)
+                                                                   assessment_number=assessment_number,
+                                                                    )
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:
                     failed_students.append(failed_student)
                 if success_student.reg_number is not None:
                     success_students.append(success_student)
+
+            # session.commit()
             response_data = UploadResponse(
                 success=success,
                 failed=failed,

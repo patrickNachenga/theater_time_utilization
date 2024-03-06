@@ -180,7 +180,7 @@ def generate_allocation_xls_template(allocation_uid: str, out_off: int, exam_cat
         cell.border = border
 
     count = 0
-    print('data ===>', result['data'])
+    # print('data ===>', result['data'])
     for row, item in enumerate(result['data'], start=10):
         count += 1
         worksheet[f"A{row}"] = count
@@ -373,8 +373,8 @@ def generate_course_result_report(allocation_uid: str):
                 .all()
             )
 
-            for row_ in query:
-                print(row_)
+            # for row_ in query:
+            #     print(row_)
 
         # Protect the worksheet to make cells not editable
         worksheet.protection.sheet = True
