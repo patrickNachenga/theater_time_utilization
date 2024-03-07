@@ -128,7 +128,7 @@ class ExamCourseworkService:
             results = session.query(ExamResultSummary.student_uid, func.max(ExamResultSummary.gender).label('sex'),
                                     func.max(ExamResultSummary.grade).label('grade'),
                                     func.max(ExamResultSummary.grade_remark).label('grade_remark'),
-                                    func.max(ExamResultSummary.cw_theory).label('cw_theory'),
+                                    func.max(ExamResultSummary.cw_score).label('cw_theory'),
                                     func.max(ExamResultSummary.ue_theory).label('ue_theory'),
                                     func.max(ExamResultSummary.grade_point).label('grade_point'),
                                     func.max(ExamResultSummary.total_score).label('total_score'),
