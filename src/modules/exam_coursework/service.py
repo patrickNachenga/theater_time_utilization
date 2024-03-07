@@ -28,37 +28,39 @@ class ExamCourseworkService:
     @staticmethod
     def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCourseWorkNode]:
         with (session_scope() as session):
-            query = (
-                session.query(
-                    ExamResultSummary
-                )
-                .filter(
-                    ExamResultSummary.program_course_id == search_criteria.program_course_id,
-                    ExamResultSummary.deleted_at.is_(None),
-                )
-            )
 
-            if search_criteria.student_uid:
-                query = query.filter(ExamResultSummary.student_uid == search_criteria.student_uid)
-
-            if search_criteria.program_course_id:
-                query = query.filter(ExamResultSummary.program_course_id == search_criteria.program_course_id)
-
-            results = query.order_by(ExamResultSummary.registration_number.asc()).all()
-
-            # Retrieve the relevant ExamCoursework records based on the filtered ExamResultSummary records
-            all_results = []
-
-            for exam_result_summary in results:
-                exam_coursework_records = (
-                    session.query(ExamCoursework)
-                    .filter_by(student_uid=exam_result_summary.student_uid,
-                               program_course_id=exam_result_summary.program_course_id)
-                    .all()
-                )
-                all_results.append((exam_result_summary, exam_coursework_records))
-            print("all_results:", all_results)
-            return all_results
+            # query = (
+            #     session.query(
+            #         ExamResultSummary
+            #     )
+            #     .filter(
+            #         ExamResultSummary.program_course_id == search_criteria.program_course_id,
+            #         ExamResultSummary.deleted_at.is_(None),
+            #     )
+            # )
+            #
+            # if search_criteria.student_uid:
+            #     query = query.filter(ExamResultSummary.student_uid == search_criteria.student_uid)
+            #
+            # if search_criteria.program_course_id:
+            #     query = query.filter(ExamResultSummary.program_course_id == search_criteria.program_course_id)
+            #
+            # results = query.order_by(ExamResultSummary.registration_number.asc()).all()
+            #
+            # # Retrieve the relevant ExamCoursework records based on the filtered ExamResultSummary records
+            # all_results = []
+            #
+            # for exam_result_summary in results:
+            #     exam_coursework_records = (
+            #         session.query(ExamCoursework)
+            #         .filter_by(student_uid=exam_result_summary.student_uid,
+            #                    program_course_id=exam_result_summary.program_course_id)
+            #         .all()
+            #     )
+            #     all_results.append((exam_result_summary, exam_coursework_records))
+            # # print("all_results:", all_results)
+            # return all_results
+            return []
 
     @staticmethod
     def get_semester_course_results(program_course_uid) -> Response[ExcelFile]:
