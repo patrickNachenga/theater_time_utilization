@@ -130,7 +130,7 @@ class ExamCourseworkService:
             results = session.query(ExamResultSummary.student_uid, func.max(ExamResultSummary.gender).label('sex'),
                                     func.max(ExamResultSummary.grade).label('grade'),
                                     func.max(ExamResultSummary.grade_remark).label('grade_remark'),
-                                    func.max(ExamResultSummary.cw_theory).label('cw_theory'),
+                                    func.max(ExamResultSummary.cw_score).label('cw_theory'),
                                     func.max(ExamResultSummary.ue_theory).label('ue_theory'),
                                     func.max(ExamResultSummary.grade_point).label('grade_point'),
                                     func.max(ExamResultSummary.total_score).label('total_score'),
@@ -386,6 +386,22 @@ class ExamCourseworkService:
             count_rows += 2
             count = 0
             count_rows += 1
+            grade_a_male = 0
+            grade_a_female = 0
+            grade_b_male = 0
+            grade_b_female = 0
+            grade_bp_male = 0
+            grade_bp_female = 0
+            grade_c_male = 0
+            grade_c_female = 0
+            grade_fail_pt_male = 0
+            grade_fail_pt_female = 0
+            grade_d_male = 0
+            grade_d_female = 0
+            grade_e_male = 0
+            grade_e_female = 0
+            incomplete_male = 0
+            incomplete_female = 0
             for row, item in enumerate(results, start=count_rows):
                 count += 1
                 # print(item)
@@ -402,6 +418,37 @@ class ExamCourseworkService:
                 worksheet[f"C{row}"] = item['registration_number']
                 worksheet[f"D{row}"] = item['sex'][0]
                 sex = item['sex'][0].upper()
+                if sex == 'M':
+                    if item['grade'].upper() == 'A':
+                        grade_a_male += 1
+                    if item['grade'].upper() == 'B':
+                        grade_b_male += 1
+                    if item['grade'].upper() == 'B+':
+                        grade_bp_male += 1
+                    if item['grade'].upper() == 'C':
+                        grade_c_male += 1
+                    if item['grade'].upper() == 'D':
+                        grade_d_male += 1
+                    if item['grade'].upper() == 'E':
+                        grade_e_male += 1
+                    if item['grade'].upper() == 'I':
+                        incomplete_male += 1
+                else:
+                    if item['grade'].upper() == 'A':
+                        grade_a_female += 1
+                    if item['grade'].upper() == 'B':
+                        grade_b_female += 1
+                    if item['grade'].upper() == 'B+':
+                        grade_bp_female += 1
+                    if item['grade'].upper() == 'C':
+                        grade_c_female += 1
+                    if item['grade'].upper() == 'D':
+                        grade_d_female += 1
+                    if item['grade'].upper() == 'E':
+                        grade_e_female += 1
+                    if item['grade'].upper() == 'I':
+                        incomplete_female += 1
+
                 for col in range(1, 5):
                     cell = worksheet.cell(row=row, column=col)
                     cell.alignment = Alignment(horizontal='left', vertical='center')
@@ -451,7 +498,7 @@ class ExamCourseworkService:
                     #     ExamResultSummary.student_uid == item['student_uid']).first()
                     score = '-'
                     if item['cw_theory']:
-                        score = round(item['cw_theory'],2)
+                        score = round(item['cw_theory'], 2)
                     text = worksheet.cell(row=row, column=col_no + 1, value=score)
                     text.alignment = Alignment(horizontal='center')
                     text.font = small_font
@@ -500,7 +547,6 @@ class ExamCourseworkService:
                     text.font = small_font
                     text.border = border
 
-
                     total_list_to_display = [item['grade'], item['grade_point'], item['grade_remark']]
                     total_score = '-'
                     if item['total_score']:
@@ -522,8 +568,87 @@ class ExamCourseworkService:
             worksheet.column_dimensions['A'].width = 4
             worksheet.column_dimensions['B'].width = 25
             worksheet.column_dimensions['C'].width = 13
-            worksheet.column_dimensions['D'].width = 4
+            worksheet.column_dimensions['D'].width = 5
 
+            for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
+                                           max_col=worksheet.max_column):
+                for cell in row:
+                    cell.protection = Protection(locked=True)
+
+                # Protect the worksheet to make cells not editable
+                worksheet.protection.sheet = True
+
+            count_rows += 1
+            worksheet.merge_cells(start_row=count_rows, start_column=1,
+                                  end_row=count_rows,
+                                  end_column=8)
+            text = worksheet.cell(row=count_rows, column=1, value="Summary")
+            text.alignment = Alignment(horizontal='center', vertical='center')
+            text.font = small_font_border
+            text.border = border
+
+            count_rows += 1
+            summary_headers = ['Grade', 'Male', 'Female', '%']
+
+            sn = 0
+            st_col = 0
+            for sh in summary_headers:
+                sn += 1
+                st_col += 1
+                if sn == 1:
+                    worksheet.merge_cells(start_row=count_rows, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col + 1)
+
+                text = worksheet.cell(row=count_rows, column=st_col, value=sh)
+                text.alignment = Alignment(horizontal='center', vertical='center')
+                text.font = small_font_border
+                text.border = border
+
+                if sn == 1:
+                    st_col += 1
+
+            grade_data = [{'grade': 'A', 'male': grade_a_male, 'female': grade_a_female},
+                          {'grade': 'B+', 'male': grade_bp_male, 'female': grade_bp_female},
+                          {'grade': 'B', 'male': grade_b_male, 'female': grade_b_female},
+                          {'grade': 'C', 'male': grade_c_male, 'female': grade_c_female},
+                          {'grade': 'Fail (P|T)', 'male': grade_fail_pt_male, 'female': grade_fail_pt_female},
+                          {'grade': 'D', 'male': grade_d_male, 'female': grade_d_female},
+                          {'grade': 'E', 'male': grade_e_male, 'female': grade_e_female},
+                          {'grade': 'Incomplete', 'male': incomplete_male, 'female': incomplete_female},
+                          ]
+
+            for sh in grade_data:
+                count_rows += 1
+                st_col = 1
+                worksheet.merge_cells(start_row=count_rows, start_column=st_col,
+                                      end_row=count_rows,
+                                      end_column=st_col + 1)
+                text = worksheet.cell(row=count_rows, column=st_col, value=sh['grade'])
+                text.alignment = Alignment(horizontal='left')
+                text.font = small_font
+                text.border = border
+
+                st_col += 2
+                text = worksheet.cell(row=count_rows, column=st_col, value=sh['male'])
+                text.alignment = Alignment(horizontal='center')
+                text.font = small_font
+                text.border = border
+                st_col += 1
+                text = worksheet.cell(row=count_rows, column=st_col, value=sh['female'])
+                text.alignment = Alignment(horizontal='center')
+                text.font = small_font
+                text.border = border
+
+                percent = ((sh['male'] + sh['female']) / len(results)) * 100
+                st_col += 1
+                text = worksheet.cell(row=count_rows, column=st_col, value=round(percent,2))
+                text.alignment = Alignment(horizontal='center')
+                text.font = small_font
+                text.border = border
+
+            # pr
+            # print(count_rows)
             # Save the workbook to a BytesIO buffer
             file_buffer = BytesIO()
             workbook.save(file_buffer)
