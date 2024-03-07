@@ -569,6 +569,7 @@ class ExamCourseworkService:
             worksheet.column_dimensions['B'].width = 25
             worksheet.column_dimensions['C'].width = 13
             worksheet.column_dimensions['D'].width = 5
+            # worksheet.column_dimensions['F'].width = 11
 
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):
@@ -588,7 +589,7 @@ class ExamCourseworkService:
             text.border = border
 
             count_rows += 1
-            summary_headers = ['Grade', 'Male', 'Female', '%']
+            summary_headers = ['Grade', 'Male', 'Female', '%', 'Remarks', 'Count', '%']
 
             sn = 0
             st_col = 0
@@ -608,6 +609,11 @@ class ExamCourseworkService:
                 if sn == 1:
                     st_col += 1
 
+            total_male = (
+                    grade_a_male + grade_bp_male + grade_b_male + grade_c_male + grade_fail_pt_male + grade_d_male + grade_e_male + incomplete_male)
+            total_female = (
+                    grade_a_female + grade_bp_female + grade_b_female + grade_c_female + grade_fail_pt_female + grade_d_female + grade_e_female + incomplete_female)
+
             grade_data = [{'grade': 'A', 'male': grade_a_male, 'female': grade_a_female},
                           {'grade': 'B+', 'male': grade_bp_male, 'female': grade_bp_female},
                           {'grade': 'B', 'male': grade_b_male, 'female': grade_b_female},
@@ -616,11 +622,19 @@ class ExamCourseworkService:
                           {'grade': 'D', 'male': grade_d_male, 'female': grade_d_female},
                           {'grade': 'E', 'male': grade_e_male, 'female': grade_e_female},
                           {'grade': 'Incomplete', 'male': incomplete_male, 'female': incomplete_female},
-                          ]
+                          {'grade': 'Total', 'male': total_male, 'female': total_female}, ]
+
+            rows = 0
+            total_fail = 0
+            total = 0
+            total_pec = 0
+            total_all = 0
 
             for sh in grade_data:
+                rows += 1
                 count_rows += 1
                 st_col = 1
+                total += sh['male'] + sh['female']
                 worksheet.merge_cells(start_row=count_rows, start_column=st_col,
                                       end_row=count_rows,
                                       end_column=st_col + 1)
@@ -632,20 +646,169 @@ class ExamCourseworkService:
                 st_col += 2
                 text = worksheet.cell(row=count_rows, column=st_col, value=sh['male'])
                 text.alignment = Alignment(horizontal='center')
-                text.font = small_font
+                text.font = small_font_border
                 text.border = border
                 st_col += 1
                 text = worksheet.cell(row=count_rows, column=st_col, value=sh['female'])
                 text.alignment = Alignment(horizontal='center')
-                text.font = small_font
+                text.font = small_font_border
                 text.border = border
 
                 percent = ((sh['male'] + sh['female']) / len(results)) * 100
                 st_col += 1
-                text = worksheet.cell(row=count_rows, column=st_col, value=round(percent,2))
+                text = worksheet.cell(row=count_rows, column=st_col, value=round(percent, 2))
                 text.alignment = Alignment(horizontal='center')
-                text.font = small_font
+                text.font = small_font_border
                 text.border = border
+                st_col += 1
+                if rows == 4:
+                    worksheet.merge_cells(start_row=count_rows - 3, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col)
+                    text = worksheet.cell(row=count_rows - 3, column=st_col, value="PASS")
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    worksheet.merge_cells(start_row=count_rows - 3, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col)
+                    text = worksheet.cell(row=count_rows - 3, column=st_col, value=total)
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+
+                    st_col += 1
+                    worksheet.merge_cells(start_row=count_rows - 3, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col)
+                    percent = (total / len(results)) * 100
+                    total_pec += percent
+                    text = worksheet.cell(row=count_rows - 3, column=st_col, value=round(percent, 2))
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    total_all += total
+                    total = 0
+
+                if rows == 7:
+                    worksheet.merge_cells(start_row=count_rows - 2, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col)
+                    text = worksheet.cell(row=count_rows - 2, column=st_col, value="FAIL")
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    worksheet.merge_cells(start_row=count_rows - 2, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col)
+                    text = worksheet.cell(row=count_rows - 2, column=st_col, value=total)
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    worksheet.merge_cells(start_row=count_rows - 2, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col)
+                    percent = (total / len(results)) * 100
+                    total_pec += percent
+                    text = worksheet.cell(row=count_rows - 2, column=st_col, value=round(percent, 2))
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    total_all += total
+                    total = 0
+
+                if rows == 8:
+                    text = worksheet.cell(row=count_rows, column=st_col, value="INCOMPLETE")
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    text = worksheet.cell(row=count_rows, column=st_col, value=total)
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    percent = (total / len(results)) * 100
+                    total_pec += percent
+                    text = worksheet.cell(row=count_rows, column=st_col, value=round(percent, 2))
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    total_all += total
+                    total = 0
+                #
+                if rows == 9:
+                    text = worksheet.cell(row=count_rows, column=st_col, value="")
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    text = worksheet.cell(row=count_rows, column=st_col, value=total_all)
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 1
+                    text = worksheet.cell(row=count_rows, column=st_col, value=total_pec)
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+
+            count_rows += 3
+            worksheet.merge_cells(start_row=count_rows, start_column=1,
+                                  end_row=count_rows,
+                                  end_column=8)
+            text = worksheet.cell(row=count_rows, column=1, value="Key")
+            text.alignment = Alignment(horizontal='center', vertical='center')
+            text.font = small_font_border
+            text.border = border
+            key_data = [{'name': 'Code', 'dec': 'Description'},
+                        {'name': 'ASS', 'dec': 'Assignment'},
+                        {'name': 'TT', 'dec': 'Theory Test'},
+                        {'name': 'UE', 'dec': 'UE Theory'},
+                        {'name': 'SR', 'dec': 'Seminar Report'}]
+            sn = 0
+            for key in key_data:
+                count_rows += 1
+                sn += 1
+                st_col = 0
+                st_col += 1
+                if sn == 1:
+                    worksheet.merge_cells(start_row=count_rows, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col + 1)
+                    text = worksheet.cell(row=count_rows, column=st_col, value=key['name'])
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                    st_col += 2
+                    worksheet.merge_cells(start_row=count_rows, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col + 5)
+                    text = worksheet.cell(row=count_rows, column=st_col, value=key['dec'])
+                    text.alignment = Alignment(horizontal='center', vertical="center", wrapText=True)
+                    text.font = small_font_border
+                    text.border = border
+                else:
+                    worksheet.merge_cells(start_row=count_rows, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col + 1)
+                    text = worksheet.cell(row=count_rows, column=st_col, value=key['name'])
+                    text.alignment = Alignment(horizontal='left')
+                    text.font = small_font
+                    text.border = border
+                    st_col += 2
+                    worksheet.merge_cells(start_row=count_rows, start_column=st_col,
+                                          end_row=count_rows,
+                                          end_column=st_col + 5)
+                    text = worksheet.cell(row=count_rows, column=st_col, value=key['dec'])
+                    text.alignment = Alignment(horizontal='left')
+                    text.font = small_font
+                    text.border = border
+
+
 
             # pr
             # print(count_rows)
