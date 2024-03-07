@@ -461,6 +461,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         has_incomplete_course = False
                         failed_subjects = 0
                         passed_subjects = 0
+
                         remark_status = 0
                         # count_rows += 1
                         worksheet[f"A{row}"] = count
@@ -500,6 +501,16 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                         has_incomplete_course = True
                             else:
                                 value = '-'
+                            # Check if student have registered this course sum its credit to total_credit_hrs_taken
+                            if session.query(StudentCourseRegistration.id).filter(
+                                    StudentCourseRegistration.student_uid == item['student_uid'],
+                                    StudentCourseRegistration.program_course_id == pc.id).first():
+                                total_credit_hrs_taken += pc.credit
+                                if value == '-':
+                                    value = 'I'
+                            elif pc.course_category.name.upper() == 'ELECTIVE':
+                                passed_subjects += 1
+
                             cel = worksheet.cell(row=count_rows, column=col, value=value)
                             cel.alignment = Alignment(horizontal='center')
                             cel.font = small_font
@@ -508,11 +519,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                     cel.font = small_font_border
                                     cel.fill = fill_color
                             cel.border = border
-                            # Check if student have registered this course sum its credit to total_credit_hrs_taken
-                            if session.query(StudentCourseRegistration.id).filter(
-                                    StudentCourseRegistration.student_uid == item['student_uid'],
-                                    StudentCourseRegistration.program_course_id == pc.id).first():
-                                total_credit_hrs_taken += pc.credit
 
                         continuing_data = status_data[0]['CONTINUING']
                         probation_data = status_data[1]['PROBATION']
