@@ -3,7 +3,7 @@ from io import BytesIO
 from typing import List, Optional
 
 import openpyxl
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Request
 from openpyxl.styles import Alignment, Font, Border, Side, Protection
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -23,6 +23,9 @@ from src.modules.student.service import StudentService
 from src.shared.models import StudentPChangeModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
+
+
+from pyinstrument import Profiler
 
 program_router = APIRouter()
 root_path = "/program"
@@ -60,6 +63,20 @@ class ProgramDepartmentInput(BaseModel):
 async def get_program_data():
     return await ProgramService.api_get_programs()
 
+
+
+@program_router.get("/profiling")
+async def get_profiling(request: Request, call_next):
+    # @program_router.middleware("http")
+    profiling = True
+    if profiling:
+        profiler = Profiler(interval=settings.profiling_interval, async_mode="enabled")
+        profiler.start()
+        await call_next(request)
+        profiler.stop()
+        return HTMLResponse(profiler.output_html())
+    else:
+        return await call_next(request)
 
 # These will get all programs uid by passed list of department
 @program_router.post("/program/department")
