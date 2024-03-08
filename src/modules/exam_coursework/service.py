@@ -1,8 +1,10 @@
 import base64
+import json
 from io import BytesIO
 from typing import List, Type
 
 import openpyxl
+import requests
 from openpyxl.styles import Alignment, Side, Border, Font, PatternFill, Protection
 from openpyxl.workbook import Workbook
 from sqlalchemy import and_
@@ -10,8 +12,10 @@ from openpyxl.utils import get_column_letter
 
 from sqlalchemy.orm import aliased
 from sqlalchemy import func
+from openpyxl.drawing.image import Image
 
 from src.api_routes.program_api import reformat_name
+from src.core.config import settings
 from src.db.session import session_scope
 from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course, ExamResultSummary, \
     ProgramCourseAssessment, ExamResult
@@ -63,9 +67,46 @@ class ExamCourseworkService:
             return []
 
     @staticmethod
-    def get_semester_course_results(program_course_uid) -> Response[ExcelFile]:
+    def get_semester_course_results(program_course_uid,info) -> Response[ExcelFile]:
         with (session_scope() as session):
             workbook = Workbook()
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Session Expired",
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+            data_obj = {
+                "user_uid": str(info.context.user.uid),
+                "document_type": "signature"
+            }
+            payload = json.dumps(data_obj)
+            # Send the POST request
+            response = requests.post(
+                settings.UAA_URi + f'/user/document?user_uid={info.context.user.uid}&document_type=signature',
+                headers=headers)
+
+            response.raise_for_status()
+            if response.status_code != 200:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Failed To Get User Signature",
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
+            signature_data = response.json()
+            if not signature_data['status']:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Please upload your signature before downloading Semester results",
+                    data=ExcelFile(base64_data=[], file_name=""),
+                )
             # Get Program Semester Information
             program_course = session.query(ProgramCourse.id, ProgramCourse.program_semester_id, ProgramCourse.credit,
                                            ProgramCourse.course_id).filter(
@@ -757,6 +798,7 @@ class ExamCourseworkService:
                     text.border = border
 
             count_rows += 3
+            signature_row = count_rows
             worksheet.merge_cells(start_row=count_rows, start_column=1,
                                   end_row=count_rows,
                                   end_column=8)
@@ -807,6 +849,40 @@ class ExamCourseworkService:
                     text.alignment = Alignment(horizontal='left')
                     text.font = small_font
                     text.border = border
+
+            column_no = 14
+            # Decode the Base64 image
+            base64_image = signature_data['data']['base64doc']
+            decoded_image = base64.b64decode(base64_image)
+
+            # Load the image into BytesIO
+            image_stream = BytesIO(decoded_image)
+
+            # Create an Image object from BytesIO
+            img = Image(image_stream)
+
+            # Calculate the coordinates of the bottom center cell
+            bottom_center_cell = openpyxl.utils.coordinate_to_tuple(
+                f'{openpyxl.utils.get_column_letter(column_no)}{signature_row + 1}')
+
+            # Calculate the column letter for the anchor cell (e.g., "B" for column number 2)
+            anchor_column = openpyxl.utils.get_column_letter(14)
+
+            # Set the row number for the anchor cell
+            anchor_row = bottom_center_cell[0]
+
+            # Set the anchor cell for the image to the bottom center cell
+            anchor_cell = f'{anchor_column}{anchor_row}'
+            # Add image to the worksheet and set the anchor cell
+            worksheet.add_image(img, anchor_cell)
+            worksheet[anchor_cell].alignment = Alignment(horizontal='center', vertical='bottom')
+
+            name_row = signature_row + 4
+            colum_no = 16
+            worksheet.merge_cells(start_row=name_row, start_column=10, end_row=name_row, end_column=colum_no+2)
+            summary_text = worksheet.cell(row=name_row, column=10, value=info.context.user.full_name)
+            summary_text.alignment = Alignment(horizontal='center')
+            summary_text.font = font_border
 
 
 
