@@ -3,10 +3,12 @@ from typing import List
 
 import strawberry
 
+from src.core.security import Info
 from src.modules.exam_coursework.service import ExamCourseworkService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamCourseWorkNode, StudentCourseWorkOutput, StudentCourseWorkInput, ExamCourseWorkSearchCriteria,ExcelFile
+from src.types import ExamCourseWorkNode, StudentCourseWorkOutput, StudentCourseWorkInput, ExamCourseWorkSearchCriteria, \
+    ExcelFile
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +36,9 @@ class ExamCourseWorkResultQuery:
             )
 
     @strawberry.field()  # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])]
-    def get_semester_course_results(self, program_course_uid: str) -> Response[ExcelFile]:
+    def get_semester_course_results(self, program_course_uid: str, info: Info) -> Response[ExcelFile]:
         try:
-            return ExamCourseworkService.get_semester_course_results(program_course_uid)
+            return ExamCourseworkService.get_semester_course_results(program_course_uid, info)
         except Exception as e:
             logger.error(f"Failed to retrieve exam result summaries: {e}")
             return Response(
