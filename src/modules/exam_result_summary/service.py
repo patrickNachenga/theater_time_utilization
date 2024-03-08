@@ -29,6 +29,7 @@ from openpyxl import Workbook
 import math
 
 
+
 class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInput, ExamResultSummaryInput])):
     @staticmethod
     def get_exam_result_summaries(search_criteria: ExamResultSummarySearchCriteria) -> List[ExamResultSummary]:
