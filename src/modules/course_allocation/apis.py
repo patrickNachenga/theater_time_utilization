@@ -33,21 +33,13 @@ class CourseAllocationQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS"])])
     def get_course_allocation(self, uid: str) -> Response[CourseAllocationNode]:
         try:
-            result = CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
+            return CourseAllocationService(CourseAllocation).get_course_by_uid(uid)
         except Exception as e:
             print(e)
-            result = None
-        if result:
             return Response(
                 status=True,
-                code=ResponseCode.SUCCESS,
-                message="Successfully Retrieve Course Allocation",
-                data=result)
-        else:
-            return Response(
-                status=False,
-                code=ResponseCode.NO_RECORD_FOUND,
-                message="Course Allocation not found",
+                code=ResponseCode.FAILURE,
+                message="Failed To Get Course Allocation",
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
@@ -81,7 +73,8 @@ class CourseAllocationQuery:
             Response)[List[StaffCourseAllocationBySemesterNode]]:
         result = None
         try:
-            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation_by_Academic_year_semesters(inputs)
+            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation_by_Academic_year_semesters(
+                inputs)
         except Exception as e:
             print(e)
 

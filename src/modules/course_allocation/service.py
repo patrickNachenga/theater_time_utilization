@@ -15,7 +15,7 @@ from src.modules.program_course.service import ProgramCourseService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import CourseAllocationInput, CourseAllocationListNode, CourseAllocationStaffUpdateInput, \
-    CourseAllocationNode, StaffCourseAllocationBySemesterInputs
+    CourseAllocationNode, StaffCourseAllocationBySemesterInputs, ProgramCourseNode
 
 
 class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, CourseAllocationInput]):
@@ -39,7 +39,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             return result.all()
 
     @staticmethod
-    def get_course_by_uid(uid: str) -> CourseAllocation:
+    def get_course_by_uid(uid: str) -> Response[CourseAllocationNode]:
         """
         Get course category by uid
         :param uid:
@@ -48,7 +48,24 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         with session_scope() as session:
             result = session.query(CourseAllocation).filter(CourseAllocation.uid == uid,
                                                             CourseAllocation.deleted_at.is_(None)).first()
-            return result
+            # print(result.program_course.id)
+            program_course_assessments = session.query(ProgramCourseAssessment). \
+                filter(ProgramCourseAssessment.program_course_id == result.program_course.id,
+                       ProgramCourseAssessment.deleted_at.is_(None)).all()
+            result.program_course.program_course_assessments = program_course_assessments
+            if result:
+                return Response(
+                    status=False,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully Retrieve Course Allocation",
+                    data=CourseAllocationNode(uid=result.uid, program_course_uid=result.program_course.uid,
+                                              program_course=result.program_course, staff_uid=result.staff_uid))
+
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course Allocation not found",
+                data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
     @staticmethod
     def get_staff_course_allocation(inputs) -> List[CourseAllocation]:
@@ -102,7 +119,7 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                 sql_statement = result.statement
 
                 # Print the SQL statement
-                print(sql_statement)
+                # print(sql_statement)
 
                 return result
             else:
