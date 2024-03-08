@@ -397,6 +397,7 @@ class StudentMutation:
         assessment_number = worksheet.cell(row=6, column=3).value
         out_off = float(worksheet.cell(row=7, column=3).value)
         program_course_id = worksheet.cell(row=1, column=4).value
+        course_code = worksheet.cell(row=1, column=3).value
         print("3")
         # if program_course_id != 407:
         #     return Response(status=False, code=ResponseCode.FAILURE,
@@ -462,7 +463,7 @@ class StudentMutation:
                                                                    exam_category_id=exam_category_id, score=score,
                                                                    out_off=out_off, weight=weight, is_ue=is_ue,
                                                                    reg_number=reg_number,
-                                                                   assessment_number=assessment_number,
+                                                                   assessment_number=assessment_number,course_code = course_code
                                                                     )
                 success = success + success_
                 failed = failed + failed_

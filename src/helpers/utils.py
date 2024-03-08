@@ -509,7 +509,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
 
 
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
-                   is_ue=None, reg_number=None, assessment_number=None, source='Excel'
+                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', course_code = None
                    ):
     counter = 0
     success = 0
@@ -530,7 +530,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             last_name = matching_item["last_name"]
             gender = matching_item["gender"]
 
-            print("============> " + str(program_course_id) + ": ", reg_number, ": ", score, ": ", out_off)
+            print("============> " + str(program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ", out_off)
 
             if not by_law_uid:
                 failed = failed + 1
