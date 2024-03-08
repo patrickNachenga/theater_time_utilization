@@ -382,7 +382,7 @@ class StudentMutation:
             result = ExamRegistrationListNode(items=[], total_count=0)
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register exam", data=result)
 
-    @strawberry.mutation
+    @strawberry.field
     def upload_score(self, base64_file: str) -> Response[UploadResponse]:
 
         # Decode the base64 file content
@@ -501,7 +501,7 @@ class StudentMutation:
 
             return Response(status=True, code=ResponseCode.SUCCESS, message="Executed successfully", data=response_data)
 
-    @strawberry.mutation
+    @strawberry.field
     async def upload_online_score(self, inputs: UploadInput) -> Response[UploadResponse]:
         try:
             result = StudentService().upload_online_score(inputs)
