@@ -525,7 +525,7 @@ class ExamCourseworkService:
                             f"{openpyxl.utils.get_column_letter(col_no)}"].width = 5
                     col_no += 1
                     avg = 0
-                    if total_score > 0:
+                    if no_of_scores > 0:
                         avg = total_score / no_of_scores
                     text = worksheet.cell(row=row, column=col_no, value=round(avg, 2))
                     text.alignment = Alignment(horizontal='center')
@@ -573,7 +573,7 @@ class ExamCourseworkService:
 
                     col_no += 1
                     avg = 0
-                    if total_score > 0:
+                    if no_of_scores > 0:
                         avg = round(total_score / no_of_scores, 2)
                     text = worksheet.cell(row=row, column=col_no, value=avg)
                     text.alignment = Alignment(horizontal='center')

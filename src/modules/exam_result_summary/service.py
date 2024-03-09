@@ -740,5 +740,20 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 self.change_result_stage(result_summary.uid, stage)
         return True
 
+    @staticmethod
+    def remove_exam_summary(uid: str):
+        """
+        Remove Academic Year by UID
+        :param uid:
+        :return:
+        """
+        with session_scope() as session:
+            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
+            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
+            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
+            # session.commit()
+            return []
+
+
 
 ExamResultSummaryCrud = ExamResultSummaryService(ExamResultSummary)
