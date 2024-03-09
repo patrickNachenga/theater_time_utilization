@@ -695,6 +695,7 @@ class ExamCourseworkService:
                 text.font = small_font_border
                 text.border = border
 
+                print('len(result)', len(results))
                 percent = ((sh['male'] + sh['female']) / len(results)) * 100
                 st_col += 1
                 text = worksheet.cell(row=count_rows, column=st_col, value=round(percent, 2))
@@ -723,6 +724,7 @@ class ExamCourseworkService:
                     worksheet.merge_cells(start_row=count_rows - 3, start_column=st_col,
                                           end_row=count_rows,
                                           end_column=st_col)
+                    print('len(result)-2', len(results))
                     percent = (total / len(results)) * 100
                     total_pec += percent
                     text = worksheet.cell(row=count_rows - 3, column=st_col, value=round(percent, 2))
@@ -752,6 +754,8 @@ class ExamCourseworkService:
                     worksheet.merge_cells(start_row=count_rows - 2, start_column=st_col,
                                           end_row=count_rows,
                                           end_column=st_col)
+                    print('len(result)-3', len(results))
+
                     percent = (total / len(results)) * 100
                     total_pec += percent
                     text = worksheet.cell(row=count_rows - 2, column=st_col, value=round(percent, 2))
@@ -772,6 +776,8 @@ class ExamCourseworkService:
                     text.font = small_font_border
                     text.border = border
                     st_col += 1
+
+                    print('len(result) - 4', len(results))
                     percent = (total / len(results)) * 100
                     total_pec += percent
                     text = worksheet.cell(row=count_rows, column=st_col, value=round(percent, 2))
