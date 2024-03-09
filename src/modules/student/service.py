@@ -342,7 +342,8 @@ class StudentService:
                                                                                     is_ue=is_ue,
                                                                                     reg_number=reg_number,
                                                                                     assessment_number=assessment_number,
-                                                                                    source=source
+                                                                                    source=source,
+                                                                                    course_code=''
                                                                                     )
                 success = success + success_
                 failed = failed + failed_
