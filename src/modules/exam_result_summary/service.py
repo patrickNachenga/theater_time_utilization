@@ -6,6 +6,8 @@ import requests
 
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
+from openpyxl.cell.rich_text import CellRichText, TextBlock
+from openpyxl.cell.text import InlineFont
 from openpyxl.drawing.image import Image
 from openpyxl.styles import Alignment, Font, Border, Side, Protection, PatternFill
 from openpyxl.utils import get_column_letter
@@ -96,6 +98,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
+            total_credit_required = program_semester.core_credits + program_semester.elective_credits
+
             if info.context.user is None:
                 return Response(
                     status=False,
@@ -160,6 +164,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             # Set the font style to Times New Roman
             font = Font(name="Times New Roman", size=12)
             small_font = Font(name="Times New Roman", size=10)
+            small_font_p = Font(size=small_font.size * 0.75)
             fill_color = PatternFill(start_color='FF999999', end_color='FF999999', fill_type='solid')
             font_border = Font(name="Times New Roman", bold=True, size=12)
             small_font_border = Font(name="Times New Roman", bold=True, size=10)
@@ -448,7 +453,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     ExamResultSummary.program_uid == program_uid,
                     ExamResultSummary.academic_year_uid == academic_year_uid,
                     ExamResultSummary.semester == semester, ExamResultSummary.study_year == year_of_study).group_by(
-                    ExamResultSummary.student_uid).all()
+                    ExamResultSummary.student_uid).order_by(func.max(ExamResultSummary.first_name).asc()).all()
                 if len(results) > 0:
                     count_rows += 1
                     count = 0
@@ -458,6 +463,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         total_credit_hrs_taken = 0
                         total_credit_hrs_acquired = 0
                         total_failed_core_subject = 0
+                        incomplete_core_subjects = 0
                         sum_grade_point_credit = 0
                         has_incomplete_course = False
                         failed_subjects = 0
@@ -502,6 +508,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                         has_incomplete_course = True
                             else:
                                 value = '-'
+
                             # Check if student have registered this course sum its credit to total_credit_hrs_taken
                             if session.query(StudentCourseRegistration.id).filter(
                                     StudentCourseRegistration.student_uid == item['student_uid'],
@@ -512,9 +519,30 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                             elif pc.course_category.name.upper() == 'ELECTIVE':
                                 passed_subjects += 1
 
-                            cel = worksheet.cell(row=count_rows, column=col, value=value)
-                            cel.alignment = Alignment(horizontal='center')
-                            cel.font = small_font
+                            if pc.course_category.name.upper() == 'CORE' and (value == '-' or value == 'I'):
+                                incomplete_core_subjects += 1
+
+                            if value == 'E|P|T':
+                                pipe_index = value.index('|')  # Find the index of '|'
+                                e_value = value[:pipe_index]  # Extract 'E' before '|'
+                                pt_value = value[pipe_index + 1:]  # Extract 'PT' after '|'
+                                pt_value = pt_value.replace('|', '')
+
+                                e_cell = worksheet.cell(row=count_rows, column=col)
+                                e_cell.alignment = Alignment(horizontal='center')
+
+                                # Convert 'P' and 'T' to superscript Unicode characters
+                                superscript_pt = ''.join(chr(0x1D44E + ord(char) - ord('A')) for char in pt_value)
+                                # Combine 'E' and superscript 'PT' using Unicode characters
+                                combined_value = f"{e_value}{superscript_pt}"
+
+                                # Set the combined value to the cell
+                                e_cell.value = combined_value
+
+                            else:
+                                cel = worksheet.cell(row=count_rows, column=col, value=value)
+                                cel.alignment = Alignment(horizontal='center')
+                                cel.font = small_font
                             if exam_result:
                                 if value != 'I' and exam_result.grade_remark.upper() != "PASS":
                                     cel.font = small_font_border
@@ -526,18 +554,45 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                         incomplete_data = status_data[2]['INCOMPLETE']
                         postpone_data = status_data[3]['POSTPONE']
                         retake_data = status_data[4]['RETAKE']
-                        if failed_subjects > 0:
-                            remark_status = 'PROBATION'
-                            if sex == 'M':
-                                probation_data['male'] += 1
-                            else:
-                                probation_data['female'] += 1
-                        elif len(program_courses) != passed_subjects:
+                        if incomplete_core_subjects > 0:
                             remark_status = 'INCOMPLETE'
                             if sex == 'M':
                                 incomplete_data['male'] += 1
                             else:
                                 incomplete_data['female'] += 1
+                        elif failed_subjects > 0:
+                            if total_failed_core_subject > 0:
+                                remark_status = 'PROBATION'
+                                if sex == 'M':
+                                    probation_data['male'] += 1
+                                else:
+                                    probation_data['female'] += 1
+                            else:
+                                if total_credit_hrs_acquired >= total_credit_required:
+                                    remark_status = 'CONTINUING'
+                                    if sex == 'M':
+                                        continuing_data['male'] += 1
+                                    else:
+                                        continuing_data['female'] += 1
+                                else:
+                                    remark_status = 'PROBATION'
+                                    if sex == 'M':
+                                        probation_data['male'] += 1
+                                    else:
+                                        probation_data['female'] += 1
+                        elif len(program_courses) != passed_subjects:
+                            if total_credit_hrs_acquired >= total_credit_required:
+                                remark_status = 'CONTINUING'
+                                if sex == 'M':
+                                    continuing_data['male'] += 1
+                                else:
+                                    continuing_data['female'] += 1
+                            else:
+                                remark_status = 'INCOMPLETE'
+                                if sex == 'M':
+                                    incomplete_data['male'] += 1
+                                else:
+                                    incomplete_data['female'] += 1
                         else:
                             remark_status = 'CONTINUING'
                             if sex == 'M':
