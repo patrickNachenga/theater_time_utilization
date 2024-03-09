@@ -179,8 +179,8 @@ class ExamCourseworkService:
                                     func.concat(func.max(ExamResultSummary.first_name), ' ',
                                                 func.max(ExamResultSummary.middle_name), ' ',
                                                 func.max(ExamResultSummary.last_name)).label('full_name')).filter(
-                ExamResultSummary.program_course_id == program_course.id).group_by(
-                ExamResultSummary.student_uid).all()
+                ExamResultSummary.program_course_id == program_course.id). \
+                group_by(ExamResultSummary.student_uid).order_by(func.max(ExamResultSummary.first_name).asc()).all()
 
             worksheet = workbook.active
             # Set the font style to Times New Roman
