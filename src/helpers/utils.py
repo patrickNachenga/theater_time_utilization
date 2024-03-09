@@ -417,9 +417,9 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                                                                      ProgramCourse.deleted_at.is_(None)).first()
                 exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
                                                                    ExamCategory.deleted_at.is_(None)).first()
-                exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
-                                                               ExamResult.program_course == program_course,
-                                                               ExamResult.exam_category == exam_category).first()
+                # exam_result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
+                #                                                ExamResult.program_course == program_course,
+                #                                                ExamResult.exam_category == exam_category).first()
 
                 # print("kabla insert: ", score)
                 exam_result = session.query(
@@ -494,7 +494,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
             "registration_numbers": reg_numbers
         }
 
-        print("kabla uaa: ", payload)
+        print("kabla uaa: ")
         response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers, timeout=5)
         print("baada uaa: ")
     except Exception as e:

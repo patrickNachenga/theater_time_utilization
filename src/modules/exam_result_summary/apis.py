@@ -4,6 +4,7 @@ from typing import List
 
 import strawberry
 
+from src.models import ExamResultSummary
 from src.core.security import CustomPermissionExtension, Info
 from src.modules.exam_result_summary.service import ExamResultSummaryService, ExamResultSummaryCrud
 from src.shared.response import Response
@@ -103,4 +104,29 @@ class ExamResultSummaryMutation:
                 code=ResponseCode.FAILURE,
                 message="Action Failed",
                 data=[]
+            )
+
+
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_EXAM_SUMMARY_RESULTS"])])
+    async def remove_exam_result_summary(self, uid: str) -> Response[None]:
+        """
+        Remove Exam Result summary By UID
+        :param uid:
+        :return:
+        """
+        try:
+            ExamResultSummaryService(ExamResultSummary).remove_exam_summary(uid)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Academic Year Removed Successfully",
+                data=None
+            )
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Remove Academic Year",
+                data=None
             )
