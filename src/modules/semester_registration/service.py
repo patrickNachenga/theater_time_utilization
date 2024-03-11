@@ -32,13 +32,14 @@ class SemesterRegistrationService(object):
             if current_academic_year is None:
                 return []
             current_month = int(datetime.now().strftime('%m'))
-            semesters = ['10', '11', '12', '01', '02']
+            semesters = ['10', '11', '12', '01', '02', '03']
             is_odd_semester = str(current_month).zfill(2) in semesters
             result = session.query(StudentCourseRegistration.student_uid,
                                    case([(ProgramSemester.semester % 2 == 0, literal_column('2'))],
                                         else_=literal_column('1')).label('semester'),
                                    func.count().label('registration_count')). \
-                join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id).join(ProgramSemester, ProgramSemester.id == ProgramCourse.program_semester_id) . \
+                join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id).join(
+                ProgramSemester, ProgramSemester.id == ProgramCourse.program_semester_id). \
                 filter(
                 and_(
                     ProgramSemester.academic_year.has(id=current_academic_year.id),
@@ -53,7 +54,6 @@ class SemesterRegistrationService(object):
                 'academic_year': current_academic_year.name,
                 'student_uids': result
             }
-
 
     def register_student_semester(self, inputs) -> bool:
         """
