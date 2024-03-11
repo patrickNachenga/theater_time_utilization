@@ -2,19 +2,21 @@ import uuid
 from typing import List
 
 import pendulum
+import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc, and_, or_, inspect, cast, String
 from sqlalchemy.orm import joinedload
 
+from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import get_user_departments_headship
-from src.models import Course
+from src.models import Course, StudentCourseRegistration, ProgramCourse, ProgramSemester, AcademicYear
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, PaginatedCourse, CourseNode
+from src.types import CourseInput, PaginatedCourse, CourseNode, CourseRegistrationNode
 
 
 class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
@@ -123,6 +125,36 @@ class CourseService(CRUDBase[Course, CourseInput, CourseInput]):
             stmt = select(Course).where((Course.moodle_id.is_(None)) & (Course.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
+
+    @staticmethod
+    def get_hod_student_course_registration(input) -> List[CourseRegistrationNode]:
+        with (session_scope() as session):
+            # Get student Uid
+            response = requests.get(settings.UAA_URi + f"/users/student-uid-by-registration-number?registration_number={input.registration_number}")
+            if response.status_code == 200:
+                data = response.json()
+                if data["status"] == 200:
+                    # Get academic year    id
+                    year = session.query(AcademicYear.id).filter(AcademicYear.uid == input.academic_year_uid).first()
+                    if year:
+                        results = session.query(StudentCourseRegistration). \
+                            join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id) . \
+                            join(ProgramSemester, ProgramSemester.id == ProgramCourse.program_semester_id). \
+                            filter(StudentCourseRegistration.student_uid == data["uid"],
+                                   ProgramSemester.study_year == input.study_year,
+                                   ProgramSemester.semester == input.semester,
+                                   ProgramSemester.academic_year_id == year.id). \
+                            order_by(StudentCourseRegistration.core_elective.asc()) .all()
+                        if results:
+                            for result in results:
+                                print(result.uid)
+
+                        return results
+            # stmt = select(Course).where((Course.moodle_id.is_(None)) & (Course.deleted_at.is_(None)))
+            # result = session.scalars(stmt)
+            # return result.first()
+
+
     @staticmethod
     def get_register_moodle_course() -> Course:
         """
