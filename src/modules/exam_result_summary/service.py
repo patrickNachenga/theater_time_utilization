@@ -17,7 +17,7 @@ from src.api_routes.program_api import reformat_name
 from src.core.config import settings
 from src.core.security import Info
 from src.db.session import session_scope
-from src.helpers.utils import can_progress
+from src.helpers.utils import can_progress, to_superscript
 from src.models import ExamResultSummary, Process, Workflow, State, ProcessFlow, StudentCourseRegistration
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearCrud
@@ -30,6 +30,17 @@ from src.types import ExamResultSummaryInput, ExamResultSummarySearchCriteria, E
 from openpyxl import Workbook
 import math
 
+
+# def to_superscript(char):
+#     print(char)
+#     if char.isalpha():  # Check if the character is a letter
+#         offset = ord('ᵃ') - ord('a')  # Calculate the offset for lowercase letters
+#         return chr(ord(char) + offset)
+#     elif char.isdigit():  # Check if the character is a digit
+#         offset = ord('⁰') - ord('0')  # Calculate the offset for digits
+#         return chr(ord(char) + offset)
+#     else:
+#         return char  # Return the character unchanged if it's not a letter or digit
 
 
 class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInput, ExamResultSummaryInput])):
@@ -522,27 +533,19 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                             if pc.course_category.name.upper() == 'CORE' and (value == '-' or value == 'I'):
                                 incomplete_core_subjects += 1
 
-                            if value == 'E|P|T':
+                            if '|' in value:
                                 pipe_index = value.index('|')  # Find the index of '|'
                                 e_value = value[:pipe_index]  # Extract 'E' before '|'
                                 pt_value = value[pipe_index + 1:]  # Extract 'PT' after '|'
                                 pt_value = pt_value.replace('|', '')
-
-                                e_cell = worksheet.cell(row=count_rows, column=col)
-                                e_cell.alignment = Alignment(horizontal='center')
-
-                                # Convert 'P' and 'T' to superscript Unicode characters
-                                superscript_pt = ''.join(chr(0x1D44E + ord(char) - ord('A')) for char in pt_value)
-                                # Combine 'E' and superscript 'PT' using Unicode characters
-                                combined_value = f"{e_value}{superscript_pt}"
-
+                                # superscript_pt = ''.join(chr(0x1D44E + ord(char) - ord('a')) for char in pt_value)
+                                combined_value = f"{e_value}{to_superscript(pt_value)}"
                                 # Set the combined value to the cell
-                                e_cell.value = combined_value
+                                value = combined_value
 
-                            else:
-                                cel = worksheet.cell(row=count_rows, column=col, value=value)
-                                cel.alignment = Alignment(horizontal='center')
-                                cel.font = small_font
+                            cel = worksheet.cell(row=count_rows, column=col, value=value)
+                            cel.alignment = Alignment(horizontal='center')
+                            cel.font = small_font
                             if exam_result:
                                 if value != 'I' and exam_result.grade_remark.upper() != "PASS":
                                     cel.font = small_font_border
