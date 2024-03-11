@@ -520,6 +520,14 @@ class CourseAllocationInput:
     staff_uid: str
 
 
+@strawberry.input(description="HOD student course registration Input")
+class HODStudentCourseRegistrationInput:
+    registration_number: str
+    study_year: int
+    semester: int
+    academic_year_uid: str
+
+
 @strawberry.type(description="Course Allocation")
 class CourseAllocationNode:
     uid: str | None

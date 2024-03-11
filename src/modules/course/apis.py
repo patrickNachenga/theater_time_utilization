@@ -8,7 +8,8 @@ from src.models import Course
 from src.modules.course.service import CourseService, CourseCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse
+from src.types import CourseInput, CourseNode, PaginationInput, PaginatedCourse, CourseRegistrationNode, \
+    HODStudentCourseRegistrationInput
 
 
 @strawberry.type
@@ -32,6 +33,28 @@ class CourseQuery:
     def get_course(self, uid: str) -> Response[CourseNode]:
         try:
             result = CourseService.get_course_by_uid(uid)
+        except Exception as e:
+            print(e)
+            result = []
+
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Course not found",
+                data=None)
+
+
+    @strawberry.field()
+    def get_hod_student_course_registration(self, input: HODStudentCourseRegistrationInput) -> Response[List[CourseRegistrationNode]]:
+        try:
+            result = CourseService.get_hod_student_course_registration(input)
         except Exception as e:
             print(e)
             result = []
