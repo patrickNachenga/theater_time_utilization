@@ -172,6 +172,10 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             file_name = f"{program.name}({program.code}) {academic_year.name} - YEAR {year_of_study} SEMESTER {semester} EXAMINATION RESULT"
             # Create a new worksheet
             worksheet = workbook.active
+            # Set the orientation to landscape
+            worksheet.print_options.horizontalCentered = True
+            worksheet.page_setup.orientation = worksheet.ORIENTATION_LANDSCAPE
+
             # Set the font style to Times New Roman
             font = Font(name="Times New Roman", size=12)
             small_font = Font(name="Times New Roman", size=10)
@@ -621,7 +625,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     worksheet.column_dimensions['A'].width = 4
                     worksheet.column_dimensions['B'].width = 25
                     worksheet.column_dimensions['C'].width = 13
-                    worksheet.column_dimensions['D'].width = 13
+                    worksheet.column_dimensions['D'].width = 6
                 else:
                     return Response(
                         status=False,
@@ -729,6 +733,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 # Protect the worksheet to make cells not editable
                 worksheet.protection.sheet = True
 
+            worksheet.print_area = ''
             # Save the workbook
             # workbook.save("layout.xlsx")
 
