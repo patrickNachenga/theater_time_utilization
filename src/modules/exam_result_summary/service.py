@@ -603,11 +603,19 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                 else:
                                     incomplete_data['female'] += 1
                         else:
-                            remark_status = 'CONTINUING'
-                            if sex == 'M':
-                                continuing_data['male'] += 1
+                            if total_credit_hrs_acquired != 0:
+                                remark_status = 'CONTINUING'
+                                if sex == 'M':
+                                    continuing_data['male'] += 1
+                                else:
+                                    continuing_data['female'] += 1
                             else:
-                                continuing_data['female'] += 1
+                                remark_status = 'INCOMPLETE'
+                                if sex == 'M':
+                                    incomplete_data['male'] += 1
+                                else:
+                                    incomplete_data['female'] += 1
+
                         # calculate the GPA
 
                         gpa = '-'
