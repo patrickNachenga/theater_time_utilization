@@ -769,9 +769,12 @@ class ForceCoreCourseRegistrationInputNode:
 class ForceCoreCourseRegistrationOutput:
     program_name: str
     program_code: str
-    registered: Optional[int] = 0
-    not_registered: Optional[int] = 0
-    pushed: Optional[int] = 0
+    course_entry_registered: Optional[int] = 0
+    course_entry_to_be_registered: Optional[int] = 0
+    course_entry_not_registered: Optional[int] = 0
+    course_entry_pushed: Optional[int] = 0
+    total_courses: Optional[int] = 0
+    total_students: Optional[int] = 0
 
 
 @strawberry.type

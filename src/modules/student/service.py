@@ -42,7 +42,8 @@ class StudentService:
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
-    def force_core_course_registration(self, input: ForceCoreCourseRegistrationInputNode) -> List[ForceCoreCourseRegistrationOutput]:
+    def force_core_course_registration(self, input: ForceCoreCourseRegistrationInputNode) -> List[
+        ForceCoreCourseRegistrationOutput]:
         with session_scope() as session:
             academic_year = session.query(AcademicYear.id,
                                           AcademicYear.name).filter(AcademicYear.uid == input.academic_year_uid,
@@ -52,15 +53,16 @@ class StudentService:
                     status=False,
                     code=ResponseCode.FAILURE,
                     message="Selected academic year is not active",
-                    data=ForceCoreCourseRegistrationOutput(program_course=[], program_name=None))
+                    data=ForceCoreCourseRegistrationOutput(program_code=None, program_name=None))
 
             if input.semester not in ['Odd', 'Even']:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
                     message="Invalid Semester Selection",
-                    data=ForceCoreCourseRegistrationOutput(program_course=[], program_name=None))
+                    data=ForceCoreCourseRegistrationOutput(program_code=None, program_name=None))
 
+            summary = []
             results = session.query(ProgramSemester.id, ProgramSemester.semester, ProgramSemester.program_id,
                                     Program.name.label('program_name'), Program.code.label('program_code')). \
                 join(Program, Program.id == ProgramSemester.program_id). \
@@ -78,11 +80,17 @@ class StudentService:
                     data=False)
 
             for result in results:
+                total_students = 0
+                registered = 0
+                pushed = 0
+                not_registered = 0
+
                 # Get Core Program Courses For this program semester
                 core_course = session.query(ProgramCourse.id). \
                     filter(ProgramCourse.program_semester_id == result.id,
                            ProgramCourse.deleted_at.is_(None), ProgramCourse.course_category_id == 1).all()
-                print(f"{result.program_code} ==> Semester : {result.semester}")
+                # print(f"{result.program_code} ==> Semester : {result.semester}")
+                total_courses = len(core_course)
                 if len(core_course) > 0:
                     # Check Students Registered For at least 1 subject for this program  semester
                     student_uids = session.query(StudentCourseRegistration.student_uid). \
@@ -93,17 +101,45 @@ class StudentService:
                             ProgramSemester.id == result.id
                         )
                     ).group_by(StudentCourseRegistration.student_uid).all()
+                    # total_students = len(student_uids)
+                    total_students = len(student_uids)
                     if len(student_uids) > 0:
                         for student in student_uids:
-                            print(f"=======> {student.student_uid}")
-                        # for course in core_course:
+                            for p_course in core_course:
+                                # get list of courses the student is not registered
+                                is_registered = session.query(StudentCourseRegistration.program_course_id). \
+                                    filter(StudentCourseRegistration.program_course_id == p_course.id,
+                                           StudentCourseRegistration.student_uid == student.student_uid).first()
+                                if is_registered:
+                                    registered += 1
+                                else:
+                                    not_registered += 1
+                                    course_registration = StudentCourseRegistration(
+                                        student_uid=student.student_uid,
+                                        core_elective=1,
+                                        program_course_id=p_course.id
+                                    )
+                                    # session.add(course_registration)
+                                    pushed += 1
+
                         #     print(f"====================> {course.id}")
 
+                summary.append(ForceCoreCourseRegistrationOutput(
+                    program_name=result.program_name,
+                    program_code=result.program_code,
+                    total_courses=total_courses,
+                    course_entry_registered=registered,
+                    course_entry_not_registered=not_registered,
+                    course_entry_to_be_registered=total_students * total_courses,
+                    course_entry_pushed=pushed,
+                    total_students=total_students))
+
+            session.commit()
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
                 message="Course Registered successfully",
-                data=False)
+                data=summary)
 
     def register_student_course(self, inputs, uids_to_update) -> CourseRegistrationListNode:
         """
