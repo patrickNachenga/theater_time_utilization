@@ -4,12 +4,14 @@ from typing import List
 
 import strawberry
 
+import pendulum
+
 from src.models import ExamResultSummary
 from src.core.security import CustomPermissionExtension, Info
 from src.modules.exam_result_summary.service import ExamResultSummaryService, ExamResultSummaryCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultSummaryNode, ExamResultSummaryInput, PaginationInput, ExamResultSummaryListNode, \
+from src.types import ExamResultSummaryNode, ExamResultSummaryInput, DeleteResultDtoInput, PaginationInput, ExamResultSummaryListNode, \
     ExamResultSummarySearchCriteria, ExcelFile
 
 logger = logging.getLogger(__name__)
@@ -107,19 +109,19 @@ class ExamResultSummaryMutation:
             )
 
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_EXAM_SUMMARY_RESULTS"])])
-    async def remove_exam_result_summary(self, uid: str) -> Response[None]:
+    @strawberry.mutation()
+    async def remove_exam_result_summary(self, input: DeleteResultDtoInput) -> Response[None]:
         """
         Remove Exam Result summary By UID
         :param uid:
         :return:
         """
         try:
-            ExamResultSummaryService(ExamResultSummary).remove_exam_summary(uid)
+            ExamResultSummaryService(ExamResultSummary).remove_exam_summary(input.program_course_id, input.student_uid)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Academic Year Removed Successfully",
+                message="Student Marks Deleted Successfully",
                 data=None
             )
         except Exception as e:
@@ -127,6 +129,6 @@ class ExamResultSummaryMutation:
             return Response(
                 status=False,
                 code=ResponseCode.FAILURE,
-                message="Failed to Remove Academic Year",
+                message="Failed to Delete Student Marks",
                 data=None
             )

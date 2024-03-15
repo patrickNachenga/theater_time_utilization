@@ -519,6 +519,11 @@ class CourseAllocationInput:
     program_course_uid: str
     staff_uid: str
 
+@strawberry.input(description="Delete Result Input")
+class DeleteResultDtoInput:
+    program_course_id: str
+    student_uid: str
+
 
 @strawberry.input(description="HOD student course registration Input")
 class HODStudentCourseRegistrationInput:

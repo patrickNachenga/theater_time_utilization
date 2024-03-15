@@ -3,7 +3,7 @@ import json
 from io import BytesIO
 from typing import List, Type
 import requests
-
+import pendulum
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
 from openpyxl.cell.rich_text import CellRichText, TextBlock
@@ -18,7 +18,7 @@ from src.core.config import settings
 from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import can_progress, to_superscript
-from src.models import ExamResultSummary, Process, Workflow, State, ProcessFlow, StudentCourseRegistration
+from src.models import ExamResultSummary, ExamResult, ExamCoursework, Process, Workflow, State, ProcessFlow, StudentCourseRegistration
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearCrud
 from src.modules.program_course.service import ProgramCourseCrud
@@ -817,18 +817,21 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
         return True
 
     @staticmethod
-    def remove_exam_summary(uid: str):
+    def remove_exam_summary(program_course_id: str, student_uid: str):
         """
         Remove Academic Year by UID
         :param uid:
         :return:
         """
         with session_scope() as session:
-            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
-            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
-            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
-            # session.commit()
-            return []
+
+            print("==============>"+program_course_id + " " + student_uid)
+
+            session.query(ExamResultSummary).filter_by(program_course_id=program_course_id, student_uid=student_uid).update({ExamResultSummary.deleted_at: pendulum.now()})
+            session.query(ExamResult).filter_by(program_course_id=program_course_id, student_uid=student_uid).update({ExamResult.deleted_at: pendulum.now()})
+            session.query(ExamCoursework).filter_by(program_course_id=program_course_id, student_uid=student_uid).update({ExamCoursework.deleted_at: pendulum.now()})
+            session.commit()
+            # return []
 
 
 
