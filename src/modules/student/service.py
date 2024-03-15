@@ -1,18 +1,25 @@
 import json
 from datetime import datetime
+from typing import List
 
 import requests
+from sqlalchemy import and_
 from sqlalchemy.orm import aliased
+from src.shared.response import Response
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.helpers.utils import get_current_semester, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, insert_exam_result, insert_course_work, \
+from src.helpers.utils import get_current_semester, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, \
+    insert_exam_result, insert_course_work, \
     general_upload
 from src.models import ProgramCourse, ProgramSemester, AcademicYear, CourseAllocation, Program, AcademicYearSemester, \
-    StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement, ExamResult, ExamCoursework
+    StudentExamRegistration, ExamCategory, StudentExamFailure, StudentExamPostponement, ExamResult, ExamCoursework, \
+    Course
 from src.models.student_course_registration import StudentCourseRegistration
+from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, StudentUaaData, ProgramCourseListNode, StudentProgramCourseListNode, \
-    ExamRegistrationListNode, ExamToRegister, UploadResponse, FailedStudent
+    ExamRegistrationListNode, ExamToRegister, UploadResponse, FailedStudent, ForceCoreCourseRegistrationInputNode, \
+    ForceCoreCourseRegistrationOutput
 
 
 class StudentService:
@@ -34,6 +41,69 @@ class StudentService:
                 all()
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
+
+    def force_core_course_registration(self, input: ForceCoreCourseRegistrationInputNode) -> List[ForceCoreCourseRegistrationOutput]:
+        with session_scope() as session:
+            academic_year = session.query(AcademicYear.id,
+                                          AcademicYear.name).filter(AcademicYear.uid == input.academic_year_uid,
+                                                                    AcademicYear.status == 1).first()
+            if academic_year is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Selected academic year is not active",
+                    data=ForceCoreCourseRegistrationOutput(program_course=[], program_name=None))
+
+            if input.semester not in ['Odd', 'Even']:
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Invalid Semester Selection",
+                    data=ForceCoreCourseRegistrationOutput(program_course=[], program_name=None))
+
+            results = session.query(ProgramSemester.id, ProgramSemester.semester, ProgramSemester.program_id,
+                                    Program.name.label('program_name'), Program.code.label('program_code')). \
+                join(Program, Program.id == ProgramSemester.program_id). \
+                filter(and_(
+                ProgramSemester.academic_year.has(id=academic_year.id),
+                ProgramSemester.deleted_at.is_(None),
+                ProgramSemester.semester % 2 == (0 if input.semester == 'Even' else 1)
+            )).order_by(ProgramSemester.program_id.asc()).all()
+
+            if len(results) == 0:
+                return Response(
+                    status=True,
+                    code=ResponseCode.FAILURE,
+                    message="No any Program Semester is available",
+                    data=False)
+
+            for result in results:
+                # Get Core Program Courses For this program semester
+                core_course = session.query(ProgramCourse.id). \
+                    filter(ProgramCourse.program_semester_id == result.id,
+                           ProgramCourse.deleted_at.is_(None), ProgramCourse.course_category_id == 1).all()
+                print(f"{result.program_code} ==> Semester : {result.semester}")
+                if len(core_course) > 0:
+                    # Check Students Registered For at least 1 subject for this program  semester
+                    student_uids = session.query(StudentCourseRegistration.student_uid). \
+                        join(ProgramCourse, ProgramCourse.id == StudentCourseRegistration.program_course_id).join(
+                        ProgramSemester, ProgramSemester.id == ProgramCourse.program_semester_id). \
+                        filter(
+                        and_(
+                            ProgramSemester.id == result.id
+                        )
+                    ).group_by(StudentCourseRegistration.student_uid).all()
+                    if len(student_uids) > 0:
+                        for student in student_uids:
+                            print(f"=======> {student.student_uid}")
+                        # for course in core_course:
+                        #     print(f"====================> {course.id}")
+
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Course Registered successfully",
+                data=False)
 
     def register_student_course(self, inputs, uids_to_update) -> CourseRegistrationListNode:
         """
@@ -85,7 +155,8 @@ class StudentService:
 
             return CourseRegistrationListNode(items=result, total_count=len(result))
 
-    def get_allocation_students(self, allocation_uid, assessment_number, exam_category, out_off, sort_excel) -> [StudentUaaData]:
+    def get_allocation_students(self, allocation_uid, assessment_number, exam_category, out_off, sort_excel) -> [
+        StudentUaaData]:
         """
         Retrieve all students located to a particular allocation
         """
@@ -114,7 +185,7 @@ class StudentService:
             data = None
             data_obj = {
                 "uids": student_uids,
-                "excel_sort_type":sort_excel
+                "excel_sort_type": sort_excel
             }
             try:
                 # Serialize the data to JSON
@@ -202,7 +273,7 @@ class StudentService:
                        StudentCourseRegistration.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester).all()
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,
-                                         course_registered=registered_course)
+                                                course_registered=registered_course)
         pass
 
     def register_student_exam(self, inputs) -> ExamRegistrationListNode:

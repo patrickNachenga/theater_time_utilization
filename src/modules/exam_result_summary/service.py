@@ -348,8 +348,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 summary_text.border = border
 
                 # Core Course Title
-                worksheet.merge_cells(start_row=count_rows, start_column=course_colum_merge + 1, end_row=count_rows,
-                                      end_column=course_colum_merge + total_core_courses)
+                if total_core_courses > 0:
+                    worksheet.merge_cells(start_row=count_rows, start_column=course_colum_merge + 1, end_row=count_rows,
+                                          end_column=course_colum_merge + total_core_courses)
                 summary_text = worksheet.cell(row=count_rows, column=course_colum_merge + 1, value="Core")
                 summary_text.alignment = Alignment(horizontal='center')
                 summary_text.font = font_border
@@ -360,8 +361,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 # print("S:", total_core_courses)
                 # print("Sum of Elective Courses:", total_elective_courses)
                 # Elective Course Title
-                worksheet.merge_cells(start_row=count_rows, start_column=course_colum_merge + 1, end_row=count_rows,
-                                      end_column=total_elective_courses + course_colum_merge)
+                if total_elective_courses > 1:
+                    worksheet.merge_cells(start_row=count_rows, start_column=course_colum_merge + 1, end_row=count_rows,
+                                          end_column=total_elective_courses + course_colum_merge)
                 summary_text = worksheet.cell(row=count_rows, column=course_colum_merge + 1, value="Elective")
                 summary_text.alignment = Alignment(horizontal='center')
                 summary_text.font = font_border
@@ -610,8 +612,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
                         gpa = '-'
                         if not has_incomplete_course:
-                            gpa = sum_grade_point_credit / total_credit_hrs_taken
-                            gpa = math.floor(gpa * 10) / 10
+                            if total_credit_hrs_taken > 0:
+                                gpa = sum_grade_point_credit / total_credit_hrs_taken
+                                gpa = math.floor(gpa * 10) / 10
                         total_title_results = [total_credit_hrs_taken, total_credit_hrs_acquired,
                                                total_failed_core_subject, gpa, remark_status, courses_under_probation]
 
@@ -698,32 +701,34 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             bottom_center_cell = openpyxl.utils.coordinate_to_tuple(
                 f'{openpyxl.utils.get_column_letter(column_no)}{signature_row + 1}')
 
-            # Calculate the column letter for the anchor cell (e.g., "B" for column number 2)
-            anchor_column = openpyxl.utils.get_column_letter(bottom_center_cell[1] - 13)
+            # print(bottom_center_cell[1])
+            if bottom_center_cell[1] > 13:
+                # Calculate the column letter for the anchor cell (e.g., "B" for column number 2)
+                anchor_column = openpyxl.utils.get_column_letter(bottom_center_cell[1] - 13)
 
-            # Set the row number for the anchor cell
-            anchor_row = bottom_center_cell[0]
+                # Set the row number for the anchor cell
+                anchor_row = bottom_center_cell[0]
 
-            # Set the anchor cell for the image to the bottom center cell
-            anchor_cell = f'{anchor_column}{anchor_row}'
-            # Add image to the worksheet and set the anchor cell
-            worksheet.add_image(img, anchor_cell)
-            worksheet[anchor_cell].alignment = Alignment(horizontal='center', vertical='bottom')
+                # Set the anchor cell for the image to the bottom center cell
+                anchor_cell = f'{anchor_column}{anchor_row}'
+                # Add image to the worksheet and set the anchor cell
+                worksheet.add_image(img, anchor_cell)
+                worksheet[anchor_cell].alignment = Alignment(horizontal='center', vertical='bottom')
 
-            name_row = signature_row + 4
-            colum_no = len(program_courses) + 11
-            worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row, end_column=colum_no)
-            summary_text = worksheet.cell(row=name_row, column=1, value=info.context.user.full_name)
-            summary_text.alignment = Alignment(horizontal='center')
-            summary_text.font = font_border
-            # print(info.context.user.full_name)
+                name_row = signature_row + 4
+                colum_no = len(program_courses) + 11
+                worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row, end_column=colum_no)
+                summary_text = worksheet.cell(row=name_row, column=1, value=info.context.user.full_name)
+                summary_text.alignment = Alignment(horizontal='center')
+                summary_text.font = font_border
+                # print(info.context.user.full_name)
 
-            name_row += 1
-            worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row,
-                                  end_column=colum_no)
-            summary_text = worksheet.cell(row=name_row, column=1, value=headship['data'])
-            summary_text.alignment = Alignment(horizontal='center')
-            summary_text.font = font_border
+                name_row += 1
+                worksheet.merge_cells(start_row=name_row, start_column=1, end_row=name_row,
+                                      end_column=colum_no)
+                summary_text = worksheet.cell(row=name_row, column=1, value=headship['data'])
+                summary_text.alignment = Alignment(horizontal='center')
+                summary_text.font = font_border
 
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):

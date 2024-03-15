@@ -760,6 +760,19 @@ class CourseRegistrationInputNode:
     core_elective: int
     program_course_uid: str
 
+@strawberry.input(description="Force Core Course registration input")
+class ForceCoreCourseRegistrationInputNode:
+    academic_year_uid: str
+    semester: str
+
+@strawberry.type
+class ForceCoreCourseRegistrationOutput:
+    program_name: str
+    program_code: str
+    registered: Optional[int] = 0
+    not_registered: Optional[int] = 0
+    pushed: Optional[int] = 0
+
 
 @strawberry.type
 class StudentUaaData:
