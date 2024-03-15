@@ -15,7 +15,8 @@ from openpyxl.utils import get_column_letter
 
 from src.core.security import CustomPermissionExtension, LoginRequiredExtension
 from src.db.session import session_scope
-from src.helpers.utils import get_current_academic_year, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, insert_exam_result, insert_course_work, \
+from src.helpers.utils import get_current_academic_year, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, \
+    insert_exam_result, insert_course_work, \
     general_upload
 from src.models import ExamCategory, ProgramCourse
 from src.modules.student.service import StudentService
@@ -25,7 +26,8 @@ from src.shared.response_code import ResponseCode
 from src.types import CourseRegistrationListNode, \
     CourseRegistrationInputNode, UaaDataResponse, StudentUaaData, ExcelFile, ProgramCourseListNode, \
     CourseRegisterInputNode, StudentProgramCourseListNode, ExamRegistrationInput, ExamRegistrationListNode, \
-    ExamToRegister, ExamRegistrationNode, FailedStudent, UploadInput, UploadResponse
+    ExamToRegister, ExamRegistrationNode, FailedStudent, UploadInput, UploadResponse, \
+    ForceCoreCourseRegistrationInputNode, ForceCoreCourseRegistrationOutput
 
 
 @strawberry.type
@@ -73,14 +75,15 @@ class StudentQuery:
                                 out_off: int) -> UaaDataResponse:
         try:
             result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id,
-                                                              out_off,'REGNO')
+                                                              out_off, 'REGNO')
 
             if result:
                 response = UaaDataResponse(
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieved",
-                    data=[StudentUaaData(registration_number=item['registration_number'], full_name=StudentQuery.reformat_name(item.get('user', {}).get('full_name')),
+                    data=[StudentUaaData(registration_number=item['registration_number'],
+                                         full_name=StudentQuery.reformat_name(item.get('user', {}).get('full_name')),
                                          uid=item['uid'], score=item['marks'])
                           for item in result['data']]
                 )
@@ -119,6 +122,7 @@ class StudentQuery:
         full_name_ = ' '.join(parts)
 
         return full_name_
+
     @strawberry.field
     def get_student_current_registered_exam(self, student_uid: str) -> Response[List[ExamRegistrationNode]]:
         try:
@@ -186,9 +190,19 @@ class StudentMutation:
         return Response(status=False, code=ResponseCode.FAILURE, message="Failed to register course", data=result)
 
     @strawberry.field
+    def force_core_course_registration(self, input: ForceCoreCourseRegistrationInputNode) -> Response[List[ForceCoreCourseRegistrationOutput]]:
+        try:
+            return StudentService().force_core_course_registration(input)
+        except Exception as e:
+            print(e)
+        return Response(status=False, code=ResponseCode.FAILURE, message="Failed Force Core Course Registration to the students", data=False)
+
+    @strawberry.field
     def generate_allocation_xls_template(self, allocation_uid: str, out_off: int, exam_category_id: int,
-                                         assessment_number: int, assessment_weight: int, excel_sorting:str = 'REGNO') -> ExcelFile:
-        result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off, excel_sorting)
+                                         assessment_number: int, assessment_weight: int,
+                                         excel_sorting: str = 'REGNO') -> ExcelFile:
+        result = StudentService().get_allocation_students(allocation_uid, assessment_number, exam_category_id, out_off,
+                                                          excel_sorting)
         file_buffer = io.BytesIO()
 
         file_name = ''
@@ -279,10 +293,6 @@ class StudentMutation:
             # Join the parts back into a single string
             full_name_ = ' '.join(parts)
 
-
-
-
-
             count += 1
             worksheet[f"A{row}"] = count
             worksheet[f"B{row}"] = item['registration_number']
@@ -300,7 +310,6 @@ class StudentMutation:
                 cell.border = border
         worksheet.cell(row=1, column=4, value=str(result["program_course"].id))
         worksheet.cell(row=1, column=4).font = font_border
-
 
         worksheet.cell(row=1, column=5, value=str(result["program_course"].course.name))
         worksheet.cell(row=1, column=5).font = font_border
@@ -343,7 +352,6 @@ class StudentMutation:
         # Convert the Excel file to Base64 string
         file_data = file_buffer.getvalue()
         base64_data = base64.b64encode(file_data).decode()
-
 
         # Return the Base64 string as the result
         return ExcelFile(base64_data=base64_data, file_name=file_name)
@@ -451,20 +459,22 @@ class StudentMutation:
                     score = 'InvalidMarks'
                     # print("Could not convert string to float." )
 
-
                 program_course = session.query(ProgramCourse).filter(ProgramCourse.id == program_course_id,
                                                                      ProgramCourse.deleted_at.is_(None)).first()
 
                 exam_category = session.query(ExamCategory).filter(ExamCategory.id == exam_category_id,
-                                                                       ExamCategory.deleted_at.is_(None)).first()
+                                                                   ExamCategory.deleted_at.is_(None)).first()
 
                 success_, failed_, failed_student, success_student = general_upload(students=students,
-                                                                   program_course_id=program_course_id,
-                                                                   exam_category_id=exam_category_id, score=score,
-                                                                   out_off=out_off, weight=weight, is_ue=is_ue,
-                                                                   reg_number=reg_number,
-                                                                   assessment_number=assessment_number,course_code = course_code
-                                                                    )
+                                                                                    program_course_id=program_course_id,
+                                                                                    exam_category_id=exam_category_id,
+                                                                                    score=score,
+                                                                                    out_off=out_off, weight=weight,
+                                                                                    is_ue=is_ue,
+                                                                                    reg_number=reg_number,
+                                                                                    assessment_number=assessment_number,
+                                                                                    course_code=course_code
+                                                                                    )
                 success = success + success_
                 failed = failed + failed_
                 if failed_student.reg_number is not None:
@@ -479,7 +489,6 @@ class StudentMutation:
                 failed_students=failed_students,
                 success_students=success_students
             )
-
 
             # send email to user
 
