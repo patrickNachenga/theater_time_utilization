@@ -315,6 +315,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             total_core_courses = 0
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
+            print('program_courses:==>', program_courses)
             if program_courses is not None:
                 courses_list = ""
                 for pc in program_courses:
