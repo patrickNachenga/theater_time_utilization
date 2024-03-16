@@ -47,7 +47,7 @@ class StudentService:
         with session_scope() as session:
             academic_year = session.query(AcademicYear.id,
                                           AcademicYear.name).filter(AcademicYear.uid == input.academic_year_uid,
-                                                                    AcademicYear.status == 1).first()
+                                                                    AcademicYear.status == 1, AcademicYear.deleted_at.is_(None)).first()
             if academic_year is None:
                 return Response(
                     status=False,
@@ -98,7 +98,9 @@ class StudentService:
                         ProgramSemester, ProgramSemester.id == ProgramCourse.program_semester_id). \
                         filter(
                         and_(
-                            ProgramSemester.id == result.id
+                            ProgramSemester.id == result.id,
+                            ProgramSemester.deleted_at.is_(None),
+                            ProgramCourse.deleted_at.is_(None),
                         )
                     ).group_by(StudentCourseRegistration.student_uid).all()
                     # total_students = len(student_uids)
@@ -109,7 +111,8 @@ class StudentService:
                                 # get list of courses the student is not registered
                                 is_registered = session.query(StudentCourseRegistration.program_course_id). \
                                     filter(StudentCourseRegistration.program_course_id == p_course.id,
-                                           StudentCourseRegistration.student_uid == student.student_uid).first()
+                                           StudentCourseRegistration.student_uid == student.student_uid,
+                                           StudentCourseRegistration.deleted_at.is_(None)).first()
                                 if is_registered:
                                     registered += 1
                                 else:

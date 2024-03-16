@@ -311,7 +311,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
             # return status
             # Get Courses
-            total_elective_courses = 0
+            total_elective_coursProgramCourseCrudes = 0
             total_core_courses = 0
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
@@ -468,6 +468,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                                     func.max(ExamResultSummary.middle_name), ' ',
                                                     func.max(ExamResultSummary.last_name)).label('full_name')).filter(
                     ExamResultSummary.program_uid == program_uid,
+                    ExamResultSummary.deleted_at.is_(None),
                     ExamResultSummary.academic_year_uid == academic_year_uid,
                     ExamResultSummary.semester == semester, ExamResultSummary.study_year == year_of_study).group_by(
                     ExamResultSummary.student_uid).order_by(func.max(ExamResultSummary.first_name).asc()).all()
@@ -505,6 +506,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                             exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark,
                                                         ExamResultSummary.grade_point_credit).filter(
                                 ExamResultSummary.student_uid == item['student_uid'],
+                                ExamResultSummary.deleted_at.is_(None),
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
                                 if exam_result.grade_point_credit is not None:
@@ -528,6 +530,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
                             # Check if student have registered this course sum its credit to total_credit_hrs_taken
                             if session.query(StudentCourseRegistration.id).filter(
+                                    StudentCourseRegistration.deleted_at.is_(None),
                                     StudentCourseRegistration.student_uid == item['student_uid'],
                                     StudentCourseRegistration.program_course_id == pc.id).first():
                                 total_credit_hrs_taken += pc.credit
