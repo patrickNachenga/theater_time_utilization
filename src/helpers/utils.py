@@ -773,6 +773,9 @@ def grade_result(session, target, by_law_uid, exam_result_summary, program_type)
         by_law_code = ByLawService(ByLaw).get_by_law_by_uid(by_law_uid).code
         by_law = BYLAW[by_law_code]()
         performance_grade = by_law.get_course_performance_grade(exam_result_summary, program_type, session)
+
+        
+
         exam_result_summary.grade = performance_grade['grade']
         exam_result_summary.grade_point = performance_grade['grade_point']
         exam_result_summary.grade_remark = performance_grade['status']
