@@ -3,7 +3,7 @@ import json
 from io import BytesIO
 from typing import List, Type
 import requests
-
+import pendulum
 import openpyxl
 from fastapi import APIRouter, UploadFile, File
 from openpyxl.cell.rich_text import CellRichText, TextBlock
@@ -18,7 +18,7 @@ from src.core.config import settings
 from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import can_progress, to_superscript
-from src.models import ExamResultSummary, Process, Workflow, State, ProcessFlow, StudentCourseRegistration
+from src.models import ExamResultSummary, ExamResult, ExamCoursework, Process, Workflow, State, ProcessFlow, StudentCourseRegistration
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearCrud
 from src.modules.program_course.service import ProgramCourseCrud
@@ -78,6 +78,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
         with (session_scope() as session):
             # result = StudentService().get_allocation_students(allocation_uid)
             # Create a new workbook
+            print('1')
             workbook = Workbook()
             program = ProgramService.get_program_by_uid(program_uid)
             if program is None:
@@ -88,6 +89,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
             academic_year = AcademicYearCrud.get_academic_year_by_uid(academic_year_uid)
+            print('2')
+
             if academic_year is None:
                 return Response(
                     status=False,
@@ -101,6 +104,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                                                                 year_of_study=year_of_study,
                                                                                 program_id=program.id,
                                                                                 academic_year_id=academic_year.id)
+
+            print('3', program_semester)
+
             if not program_semester:
                 return Response(
                     status=False,
@@ -110,12 +116,13 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 )
 
             total_credit_required = program_semester.core_credits + program_semester.elective_credits
+            print('4', total_credit_required)
 
             if info.context.user is None:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Session Expired",
+                    message="Session Expired, refresh this page",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
@@ -313,8 +320,11 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             # Get Courses
             total_elective_courses = 0
             total_core_courses = 0
+
+            print("program_semester.id", program_semester.id)
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
+            print('program_courses:==>', program_courses)
             if program_courses is not None:
                 courses_list = ""
                 for pc in program_courses:
@@ -817,18 +827,21 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
         return True
 
     @staticmethod
-    def remove_exam_summary(uid: str):
+    def remove_exam_summary(program_course_id: str, student_uid: str):
         """
         Remove Academic Year by UID
         :param uid:
         :return:
         """
         with session_scope() as session:
-            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
-            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
-            # session.query(ExamResultSummary).filter_by(uid=uid).update({AcademicYear.deleted_at: pendulum.now()})
-            # session.commit()
-            return []
+
+            print("==============>"+program_course_id + " " + student_uid)
+
+            session.query(ExamResultSummary).filter_by(program_course_id=program_course_id, student_uid=student_uid).update({ExamResultSummary.deleted_at: pendulum.now()})
+            session.query(ExamResult).filter_by(program_course_id=program_course_id, student_uid=student_uid).update({ExamResult.deleted_at: pendulum.now()})
+            session.query(ExamCoursework).filter_by(program_course_id=program_course_id, student_uid=student_uid).update({ExamCoursework.deleted_at: pendulum.now()})
+            session.commit()
+            # return []
 
 
 

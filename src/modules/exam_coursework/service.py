@@ -74,7 +74,7 @@ class ExamCourseworkService:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Session Expired",
+                    message="Session Expired, refresh this page",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
@@ -110,7 +110,7 @@ class ExamCourseworkService:
             # Get Program Semester Information
             program_course = session.query(ProgramCourse.id, ProgramCourse.program_semester_id, ProgramCourse.credit,
                                            ProgramCourse.course_id).filter(
-                ProgramCourse.uid == program_course_uid).first()
+                ProgramCourse.uid == program_course_uid, ProgramCourse.deleted_at.is_(None)).first()
             if program_course is None:
                 return Response(
                     status=False,
@@ -127,12 +127,15 @@ class ExamCourseworkService:
             # Get Course Works Type
             course_work_result_type = session.query(ExamCategory.code, ExamCategory.id). \
                 join(ExamCoursework, ExamCoursework.exam_category_id == ExamCategory.id). \
-                filter(ExamCoursework.program_course_id == program_course.id).group_by(ExamCategory.code,
+                filter(ExamCoursework.program_course_id == program_course.id,
+                       ExamCategory.deleted_at.is_(None), ExamCoursework.deleted_at.is_(None)). \
+                group_by(ExamCategory.code,
                                                                                        ExamCategory.id).all()
 
             ue_result_type = session.query(ExamCategory.code, ExamCategory.id). \
                 join(ExamResult, ExamResult.exam_category_id == ExamCategory.id). \
-                filter(ExamResult.program_course_id == program_course.id, ExamResult.number_of_sitting == 1).group_by(
+                filter(ExamResult.program_course_id == program_course.id, ExamResult.number_of_sitting == 1,
+                       ExamResult.deleted_at.is_(None),ExamCategory.deleted_at.is_(None)).group_by(
                 ExamCategory.code, ExamCategory.id).all()
             # print(ue_result_type)
             theory_over_all_marks = 0
@@ -141,11 +144,13 @@ class ExamCourseworkService:
                 for type_code in course_work_result_type:
                     theory_over_all_marks += session.query(func.sum(ProgramCourseAssessment.maximum_score)). \
                                                  filter(ProgramCourseAssessment.program_course_id == program_course.id,
+                                                        ProgramCourseAssessment.deleted_at.is_(None),
                                                         ProgramCourseAssessment.exam_category_id == type_code.id).scalar() or 0
 
                     ass = session.query(ExamCoursework.assessment_number,
                                         func.max(ExamCoursework.weight).label("weight")).filter(
                         ExamCoursework.program_course_id == program_course.id,
+                        ExamCoursework.deleted_at.is_(None),
                         ExamCoursework.exam_category_id == type_code.id). \
                         order_by(ExamCoursework.assessment_number.asc()). \
                         group_by(ExamCoursework.assessment_number).all()
@@ -161,6 +166,7 @@ class ExamCourseworkService:
                 for type_code in ue_result_type:
                     ue_over_all_marks += session.query(func.sum(ProgramCourseAssessment.maximum_score)). \
                                              filter(ProgramCourseAssessment.program_course_id == program_course.id,
+                                                    ProgramCourseAssessment.deleted_at.is_(None),
                                                     ProgramCourseAssessment.exam_category_id == type_code.id).scalar() or 0
 
                     code_info = {'code': type_code.code, 'id': type_code['id'], 'type': 'ue',
@@ -179,10 +185,14 @@ class ExamCourseworkService:
                                     func.concat(func.max(ExamResultSummary.first_name), ' ',
                                                 func.max(ExamResultSummary.middle_name), ' ',
                                                 func.max(ExamResultSummary.last_name)).label('full_name')).filter(
-                ExamResultSummary.program_course_id == program_course.id). \
+                ExamResultSummary.program_course_id == program_course.id, ExamResultSummary.deleted_at.is_(None)). \
                 group_by(ExamResultSummary.student_uid).order_by(func.max(ExamResultSummary.first_name).asc()).all()
 
             worksheet = workbook.active
+            # Set the orientation to landscape
+            worksheet.print_options.horizontalCentered = True
+            worksheet.page_setup.orientation = worksheet.ORIENTATION_LANDSCAPE
+
             # Set the font style to Times New Roman
             font = Font(name="Times New Roman", size=12)
             small_font = Font(name="Times New Roman", size=10)
@@ -214,7 +224,7 @@ class ExamCourseworkService:
                                 "Course Credit"]
 
             program_semester = session.query(ProgramSemester).filter(
-                ProgramSemester.id == program_course.program_semester_id).first()
+                ProgramSemester.id == program_course.program_semester_id, ProgramSemester.deleted_at.is_(None)).first()
             course = session.query(Course.name, Course.code).filter(Course.id == program_course.course_id).first()
             file_name = f"{program_semester.program.name}({program_semester.program.code}) {program_semester.academic_year.name} - YEAR {program_semester.study_year} SEMESTER {program_semester.semester} COURSE {course.code}  RESULT"
 
@@ -695,7 +705,7 @@ class ExamCourseworkService:
                 text.font = small_font_border
                 text.border = border
 
-                print('len(result)', len(results))
+                # print('len(result)', len(results))
                 percent = ((sh['male'] + sh['female']) / len(results)) * 100
                 st_col += 1
                 text = worksheet.cell(row=count_rows, column=st_col, value=round(percent, 2))
@@ -724,7 +734,7 @@ class ExamCourseworkService:
                     worksheet.merge_cells(start_row=count_rows - 3, start_column=st_col,
                                           end_row=count_rows,
                                           end_column=st_col)
-                    print('len(result)-2', len(results))
+                    # print('len(result)-2', len(results))
                     percent = (total / len(results)) * 100
                     total_pec += percent
                     text = worksheet.cell(row=count_rows - 3, column=st_col, value=round(percent, 2))
@@ -754,7 +764,7 @@ class ExamCourseworkService:
                     worksheet.merge_cells(start_row=count_rows - 2, start_column=st_col,
                                           end_row=count_rows,
                                           end_column=st_col)
-                    print('len(result)-3', len(results))
+                    # print('len(result)-3', len(results))
 
                     percent = (total / len(results)) * 100
                     total_pec += percent
@@ -777,7 +787,7 @@ class ExamCourseworkService:
                     text.border = border
                     st_col += 1
 
-                    print('len(result) - 4', len(results))
+                    # print('len(result) - 4', len(results))
                     percent = (total / len(results)) * 100
                     total_pec += percent
                     text = worksheet.cell(row=count_rows, column=st_col, value=round(percent, 2))
