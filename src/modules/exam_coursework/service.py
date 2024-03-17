@@ -74,7 +74,7 @@ class ExamCourseworkService:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Session Expired",
+                    message="Session Expired, refresh this page",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 

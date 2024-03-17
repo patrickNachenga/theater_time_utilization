@@ -78,6 +78,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
         with (session_scope() as session):
             # result = StudentService().get_allocation_students(allocation_uid)
             # Create a new workbook
+            print('1')
             workbook = Workbook()
             program = ProgramService.get_program_by_uid(program_uid)
             if program is None:
@@ -88,6 +89,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
             academic_year = AcademicYearCrud.get_academic_year_by_uid(academic_year_uid)
+            print('2')
+
             if academic_year is None:
                 return Response(
                     status=False,
@@ -101,6 +104,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                                                                 year_of_study=year_of_study,
                                                                                 program_id=program.id,
                                                                                 academic_year_id=academic_year.id)
+
+            print('3', program_semester)
+
             if not program_semester:
                 return Response(
                     status=False,
@@ -110,12 +116,13 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 )
 
             total_credit_required = program_semester.core_credits + program_semester.elective_credits
+            print('4', total_credit_required)
 
             if info.context.user is None:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Session Expired",
+                    message="Session Expired, refresh this page",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
@@ -313,6 +320,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             # Get Courses
             total_elective_courses = 0
             total_core_courses = 0
+
+            print("program_semester.id", program_semester.id)
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
             print('program_courses:==>', program_courses)
