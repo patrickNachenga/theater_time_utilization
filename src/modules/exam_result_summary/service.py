@@ -320,8 +320,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             # Get Courses
             total_elective_courses = 0
             total_core_courses = 0
+            total_elective_courses = 0
 
-            print("program_semester.id", program_semester.id)
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
             print('program_courses:==>', program_courses)
