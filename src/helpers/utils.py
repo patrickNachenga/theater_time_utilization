@@ -774,11 +774,14 @@ def grade_result(session, target, by_law_uid, exam_result_summary, program_type)
         by_law = BYLAW[by_law_code]()
         performance_grade = by_law.get_course_performance_grade(exam_result_summary, program_type, session)
 
-        
+        status = performance_grade['status']
+        if '|' in performance_grade['grade']:
+            status = 'Fail'
 
         exam_result_summary.grade = performance_grade['grade']
         exam_result_summary.grade_point = performance_grade['grade_point']
-        exam_result_summary.grade_remark = performance_grade['status']
+        # exam_result_summary.grade_remark = performance_grade['status']
+        exam_result_summary.grade_remark = status
         exam_result_summary.grade_description = performance_grade['description']
         exam_result_summary.grade_point_credit = exam_result_summary.credit * exam_result_summary.grade_point
         return exam_result_summary

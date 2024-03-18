@@ -78,6 +78,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
         with (session_scope() as session):
             # result = StudentService().get_allocation_students(allocation_uid)
             # Create a new workbook
+            print('1')
             workbook = Workbook()
             program = ProgramService.get_program_by_uid(program_uid)
             if program is None:
@@ -88,6 +89,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
             academic_year = AcademicYearCrud.get_academic_year_by_uid(academic_year_uid)
+            print('2')
+
             if academic_year is None:
                 return Response(
                     status=False,
@@ -101,6 +104,9 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                                                                 year_of_study=year_of_study,
                                                                                 program_id=program.id,
                                                                                 academic_year_id=academic_year.id)
+
+            print('3', program_semester)
+
             if not program_semester:
                 return Response(
                     status=False,
@@ -110,12 +116,13 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 )
 
             total_credit_required = program_semester.core_credits + program_semester.elective_credits
+            print('4', total_credit_required)
 
             if info.context.user is None:
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
-                    message="Session Expired",
+                    message="Session Expired, refresh this page",
                     data=ExcelFile(base64_data=[], file_name=""),
                 )
 
@@ -311,11 +318,13 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
             # return status
             # Get Courses
-            total_elective_coursProgramCourseCrudes = 0
+            total_elective_courses = 0
             total_core_courses = 0
             total_elective_courses = 0
+
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
+            print('program_courses:==>', program_courses)
             if program_courses is not None:
                 courses_list = ""
                 for pc in program_courses:
@@ -469,7 +478,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                                                     func.max(ExamResultSummary.middle_name), ' ',
                                                     func.max(ExamResultSummary.last_name)).label('full_name')).filter(
                     ExamResultSummary.program_uid == program_uid,
-                    ExamResultSummary.deleted_at.is_(None),
                     ExamResultSummary.academic_year_uid == academic_year_uid,
                     ExamResultSummary.semester == semester, ExamResultSummary.study_year == year_of_study).group_by(
                     ExamResultSummary.student_uid).order_by(func.max(ExamResultSummary.first_name).asc()).all()
@@ -507,7 +515,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                             exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark,
                                                         ExamResultSummary.grade_point_credit).filter(
                                 ExamResultSummary.student_uid == item['student_uid'],
-                                ExamResultSummary.deleted_at.is_(None),
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
                                 if exam_result.grade_point_credit is not None:
@@ -531,7 +538,6 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
 
                             # Check if student have registered this course sum its credit to total_credit_hrs_taken
                             if session.query(StudentCourseRegistration.id).filter(
-                                    StudentCourseRegistration.deleted_at.is_(None),
                                     StudentCourseRegistration.student_uid == item['student_uid'],
                                     StudentCourseRegistration.program_course_id == pc.id).first():
                                 total_credit_hrs_taken += pc.credit
