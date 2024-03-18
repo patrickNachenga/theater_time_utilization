@@ -313,6 +313,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
             # Get Courses
             total_elective_coursProgramCourseCrudes = 0
             total_core_courses = 0
+            total_elective_courses = 0
             program_courses = ProgramCourseCrud.get_program_course_by_program_semester(
                 program_semester_id=program_semester.id)
             if program_courses is not None:

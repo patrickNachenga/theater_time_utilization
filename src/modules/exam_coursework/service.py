@@ -17,6 +17,7 @@ from openpyxl.drawing.image import Image
 from src.api_routes.program_api import reformat_name
 from src.core.config import settings
 from src.db.session import session_scope
+from src.helpers.utils import to_superscript
 from src.models import AcademicYear, ExamCategory, ProgramCourse, ProgramSemester, Course, ExamResultSummary, \
     ProgramCourseAssessment, ExamResult
 from src.models.exam_coursework import ExamCoursework
@@ -32,7 +33,6 @@ class ExamCourseworkService:
     @staticmethod
     def get_exam_course_work_results(search_criteria: ExamCourseWorkSearchCriteria) -> List[ExamCourseWorkNode]:
         with (session_scope() as session):
-
             # query = (
             #     session.query(
             #         ExamResultSummary
@@ -67,7 +67,7 @@ class ExamCourseworkService:
             return []
 
     @staticmethod
-    def get_semester_course_results(program_course_uid,info) -> Response[ExcelFile]:
+    def get_semester_course_results(program_course_uid, info) -> Response[ExcelFile]:
         with (session_scope() as session):
             workbook = Workbook()
             if info.context.user is None:
@@ -126,16 +126,16 @@ class ExamCourseworkService:
             ue_col_to_be_merged = 0
             # Get Course Works Type
             course_work_result_type = session.query(ExamCategory.code, ExamCategory.id). \
-                join(ExamCoursework, ExamCoursework.exam_category_id == ExamCategory.id). \
-                filter(ExamCoursework.program_course_id == program_course.id,
-                       ExamCategory.deleted_at.is_(None), ExamCoursework.deleted_at.is_(None)). \
-                group_by(ExamCategory.code,
-                                                                                       ExamCategory.id).all()
+                join(ProgramCourseAssessment, ProgramCourseAssessment.exam_category_id == ExamCategory.id). \
+                filter(ProgramCourseAssessment.program_course_id == program_course.id,
+                       ExamCategory.is_ue.is_(False),
+                       ProgramCourseAssessment.deleted_at.is_(None), ExamCategory.deleted_at.is_(None)). \
+                group_by(ExamCategory.code, ExamCategory.id).all()
 
             ue_result_type = session.query(ExamCategory.code, ExamCategory.id). \
                 join(ExamResult, ExamResult.exam_category_id == ExamCategory.id). \
                 filter(ExamResult.program_course_id == program_course.id, ExamResult.number_of_sitting == 1,
-                       ExamResult.deleted_at.is_(None),ExamCategory.deleted_at.is_(None)).group_by(
+                       ExamResult.deleted_at.is_(None), ExamCategory.deleted_at.is_(None)).group_by(
                 ExamCategory.code, ExamCategory.id).all()
             # print(ue_result_type)
             theory_over_all_marks = 0
@@ -597,8 +597,17 @@ class ExamCourseworkService:
                     text.alignment = Alignment(horizontal='center')
                     text.font = small_font
                     text.border = border
+                    grade = item['grade']
+                    if '|' in grade:
+                        pipe_index = grade.index('|')
+                        e_value = grade[:pipe_index]
+                        pt_value = grade[pipe_index + 1:]
+                        pt_value = pt_value.replace('|', '')
+                        combined_value = f"{e_value}{to_superscript(pt_value)}"
+                        # Set the combined value to the cell
+                        grade = combined_value
 
-                    total_list_to_display = [item['grade'], item['grade_point'], item['grade_remark']]
+                    total_list_to_display = [grade, item['grade_point'], item['grade_remark']]
                     total_score = '-'
                     if item['total_score']:
                         total_score = round(item['total_score'], 2)
@@ -895,12 +904,10 @@ class ExamCourseworkService:
 
             name_row = signature_row + 4
             colum_no = 16
-            worksheet.merge_cells(start_row=name_row, start_column=10, end_row=name_row, end_column=colum_no+2)
+            worksheet.merge_cells(start_row=name_row, start_column=10, end_row=name_row, end_column=colum_no + 2)
             summary_text = worksheet.cell(row=name_row, column=10, value=info.context.user.full_name)
             summary_text.alignment = Alignment(horizontal='center')
             summary_text.font = font_border
-
-
 
             # pr
             # print(count_rows)
