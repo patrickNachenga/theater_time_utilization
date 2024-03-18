@@ -255,10 +255,13 @@ class StudentService:
                         uid = item.get("uid")  # Use item.get to safely retrieve the UID
                         if uid is not None:
                             marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
+                            print(marks)
                             if marks:
-                                item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
-                                if isinstance(item["marks"], (int, float)):
-                                    item["marks"] = round((float(marks) * out_off / 100) * 10) / 10
+                                # ------------- I have commented this because it change raw ue scores
+                                # item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
+                                item["marks"] = marks
+                                # if isinstance(item["marks"], (int, float)):
+                                #     item["marks"] = round((float(marks) * out_off / 100) * 10) / 10
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 
