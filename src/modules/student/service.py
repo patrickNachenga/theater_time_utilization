@@ -258,7 +258,7 @@ class StudentService:
                             if marks:
                                 item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
                                 if isinstance(item["marks"], (int, float)):
-                                    item["marks"] = round((float(marks) * out_off / 100) * 10) / 10
+                                    item["marks"] = round(item["marks"], 1)
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 
