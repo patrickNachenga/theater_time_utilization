@@ -287,6 +287,8 @@ class StudentService:
                             marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
                             if marks:
                                 item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
+                                if isinstance(item["marks"], (int, float)):
+                                    item["marks"] = round(item["marks"], 1)
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 
