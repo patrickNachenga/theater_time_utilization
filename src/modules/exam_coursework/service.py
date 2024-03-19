@@ -179,6 +179,7 @@ class ExamCourseworkService:
                                     func.max(ExamResultSummary.grade_remark).label('grade_remark'),
                                     func.max(ExamResultSummary.cw_score).label('cw_theory'),
                                     func.max(ExamResultSummary.ue_theory).label('ue_theory'),
+                                    func.max(ExamResultSummary.ue_practical).label('ue_practical'),
                                     func.max(ExamResultSummary.grade_point).label('grade_point'),
                                     func.max(ExamResultSummary.total_score).label('total_score'),
                                     func.max(ExamResultSummary.registration_number).label('registration_number'),
@@ -593,6 +594,11 @@ class ExamCourseworkService:
                     score = '-'
                     if item['ue_theory']:
                         score = round(item['ue_theory'], 2)
+
+                    score_pt = 0
+                    if item['ue_practical']:
+                        score_pt = round(item['ue_practical'], 2)
+                    score = score + score_pt
                     text = worksheet.cell(row=row, column=col_no + 1, value=score)
                     text.alignment = Alignment(horizontal='center')
                     text.font = small_font
