@@ -591,13 +591,14 @@ class ExamCourseworkService:
                     text.font = small_font
                     text.border = border
 
-                    score = '-'
+                    score = 0
                     if item['ue_theory']:
                         score = round(item['ue_theory'], 2)
 
                     score_pt = 0
                     if item['ue_practical']:
                         score_pt = round(item['ue_practical'], 2)
+                    print("=============>" + str(score) + " " + str(score_pt))
                     score = score + score_pt
                     text = worksheet.cell(row=row, column=col_no + 1, value=score)
                     text.alignment = Alignment(horizontal='center')
