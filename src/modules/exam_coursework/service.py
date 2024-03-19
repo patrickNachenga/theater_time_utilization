@@ -573,7 +573,7 @@ class ExamCourseworkService:
                             if ue_score:
                                 value = ue_score.score
                                 no_of_scores += 1
-                                total_score += ass_score.score
+                                total_score += ue_score.score
                         text = worksheet.cell(row=row, column=col_no, value=value)
                         text.alignment = Alignment(horizontal='center')
                         text.font = small_font
