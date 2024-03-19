@@ -968,6 +968,10 @@ class ExamCourseworkService:
                 .filter(ExamCoursework.student_uid == input.student_uid,
                         ProgramCourse.deleted_at.is_(None),
                         ExamCategory.is_ue.is_(False),
+                        ExamCoursework.deleted_at.is_(None),
+                        ProgramSemester.deleted_at.is_(None),
+                        ExamCategory.deleted_at.is_(None),
+                        Course.deleted_at.is_(None),
                         ProgramSemester.semester == input.semester,
                         ProgramSemester.study_year == input.study_year,
                         ProgramSemester.academic_year_id == academic_year.id)
@@ -981,6 +985,8 @@ class ExamCourseworkService:
                     course_type = session.query(ExamCategory.name, ExamCategory.id). \
                         join(ExamCoursework, ExamCategory.id == ExamCoursework.exam_category_id). \
                         filter(
+                        ExamCoursework.deleted_at.is_(None),
+                        ExamCategory.deleted_at.is_(None),
                         and_(
                             ExamCoursework.program_course_id == course.program_course_id,
                             ExamCoursework.student_uid == input.student_uid,
@@ -995,6 +1001,7 @@ class ExamCourseworkService:
                                                    ExamCoursework.assessment_number). \
                                 filter(ExamCoursework.student_uid == input.student_uid,
                                        ExamCoursework.exam_category_id == cType.id,
+                                       ExamCoursework.deleted_at.is_(None),
                                        ExamCoursework.program_course_id == course.program_course_id). \
                                 order_by(ExamCoursework.assessment_number.asc()).all()
                             if scores:
