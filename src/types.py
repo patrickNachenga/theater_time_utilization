@@ -1330,6 +1330,7 @@ class ExamResultSummarySearchCriteria:
     program_uid: Optional[str] = None
     course_category: Optional[str] = None
     semester: Optional[int] = None
+    publish_status: Optional[bool] = None
 
 
 @strawberry.input(description="Exam course work result Output | Node")
