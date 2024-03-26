@@ -304,6 +304,10 @@ class StudentService:
                 join(AcademicYear). \
                 filter(AcademicYear.status == 1). \
                 filter(Program.uid == inputs.program_uid). \
+                filter(ProgramSemester.deleted_at.is_(None)). \
+                filter(Program.deleted_at.is_(None)). \
+                filter(AcademicYear.deleted_at.is_(None)). \
+                filter(ProgramCourse.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester). \
                 filter(ProgramSemester.study_year == inputs.study_year).all()
 
