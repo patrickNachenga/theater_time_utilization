@@ -67,6 +67,12 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 query = query.filter(ExamResultSummary.course_category == search_criteria.course_category)
             if search_criteria.semester:
                 query = query.filter(ExamResultSummary.semester == search_criteria.semester)
+            if search_criteria.publish_status:
+                query = query.filter(ExamResultSummary.publish_status == search_criteria.publish_status)
+            if search_criteria.study_year:
+                query = query.filter(ExamResultSummary.study_year == search_criteria.study_year)
+
+            # print('Checking UE: ', search_criteria)
             query = query.order_by(ExamResultSummary.registration_number.asc())
             # Execute the final query
             results = query.all()

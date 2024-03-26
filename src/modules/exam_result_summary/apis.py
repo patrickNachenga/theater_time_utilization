@@ -25,12 +25,20 @@ class ExamResultSummaryQuery:
         try:
             result = ExamResultSummaryService.get_exam_result_summaries(search_criteria)
 
-            return Response(
-                status=True,
-                code=ResponseCode.SUCCESS,
-                message="Exam Results Retrieved Successfully",
-                data=result,
-            )
+            if len(result) > 0:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Exam Results Retrieved Successfully",
+                    data=result,
+                )
+            else:
+                return Response(
+                    status=True,
+                    code=ResponseCode.FAILURE,
+                    message="No Results Found",
+                    data=result,
+                )
         except Exception as e:
             logger.error(f"Failed to retrieve exam result summaries: {e}")
             return Response(
