@@ -304,7 +304,7 @@ class StudentService:
                 join(AcademicYear). \
                 filter(AcademicYear.status == 1). \
                 filter(Program.uid == inputs.program_uid). \
-                filter(ProgramSemester.semester == inputs.semester). \
+                filter(ProgramSemester.semester == inputs.semester, ProgramSemester.deleted_at.is_(None)). \
                 filter(ProgramSemester.study_year == inputs.study_year).all()
 
             total_count = len(program_courses)
