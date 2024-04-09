@@ -3,11 +3,11 @@ from typing import List
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 from src.modules.exam_results.service import ExamResultService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ExamResultNode
+from src.types import ExamResultNode, ExcelFile
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,19 @@ class ExamResultQuery:
                 code=ResponseCode.FAILURE,
                 message="Failed to retrieve exam result summaries",
                 data=[],
+            )
+
+    @strawberry.field()  # extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])]
+    def generate_partial_transcript(self, registration_number: str, info: Info) -> Response[ExcelFile]:
+        try:
+            return ExamResultService.generate_partial_transcript(registration_number, info)
+        except Exception as e:
+            logger.error(f"Failed to retrieve : {e}")
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to retrieve course results",
+                data=ExcelFile(base64_data=[], file_name=""),
             )
 
     @strawberry.field()#extensions=[CustomPermissionExtension(["VIEW_EXAM_RESULTS"])]
