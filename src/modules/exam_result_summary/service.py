@@ -521,6 +521,7 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                             exam_result = session.query(ExamResultSummary.grade, ExamResultSummary.grade_remark,
                                                         ExamResultSummary.grade_point_credit).filter(
                                 ExamResultSummary.student_uid == item['student_uid'],
+                                ExamResultSummary.deleted_at.is_(None),
                                 ExamResultSummary.program_course_id == pc.id).first()
                             if exam_result:
                                 if exam_result.grade_point_credit is not None:
@@ -753,6 +754,8 @@ class ExamResultSummaryService((CRUDBase[ExamResultSummary, ExamResultSummaryInp
                 summary_text = worksheet.cell(row=name_row, column=1, value=headship['data'])
                 summary_text.alignment = Alignment(horizontal='center')
                 summary_text.font = font_border
+
+
 
             for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1,
                                            max_col=worksheet.max_column):
