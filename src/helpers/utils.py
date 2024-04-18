@@ -220,10 +220,10 @@ def enroll_staff_to_moodle_course():
                                 course_id=course_allocation.program_course.course.moodle_id,
                                 role_name="editingteacher",
                             )
-                        if enrollment_status:
-                            course_allocation.moodle_course_enrollment_status = True
-                            session.add(course_allocation)
-                            session.commit()
+                            if enrollment_status:
+                                course_allocation.moodle_course_enrollment_status = True
+                                session.add(course_allocation)
+                                session.commit()
                         else:
                             print('--- Fail to Enroll Teacher to Moodle Course --- on course_allocation:',
                                   course_allocation.uid)
