@@ -81,6 +81,7 @@ def create_course_to_moodle():
                             courseShortName=course.code,
                         )
                         if moodle_unit_id != 0:
+                            print('---- Course succesfully created to moodle:', moodle_unit_id)
                             course.moodle_id = moodle_unit_id
                             session.add(course)
                             session.commit()
@@ -104,12 +105,17 @@ def create_group_to_moodle():
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
 
+                print('program_course.course.moodle_id: ', program_course.course.moodle_id)
+                print('group_description: ', program_course.program_semester.semester)
+                print('group_name: ', f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}")
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
                     group_name=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
-                    group_description=program_course.program_semester.semester,
+                    group_description=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
+                   # group_description=program_course.program_semester.semester,
                 )
                 if moodle_unit_id != 0:
+                    print('--- Group to Moodle Successfully created --- ')
                     program_course.moodle_id = moodle_unit_id
                     session.add(program_course)
                     session.commit()

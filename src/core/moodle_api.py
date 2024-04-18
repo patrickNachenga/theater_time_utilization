@@ -275,6 +275,8 @@ class MoodleApi:
             'groups[0][visibility]': 1
         }
 
+
+        print("data: ", data)
         response = self.sendRequest(data)
 
         if response is False:
@@ -283,6 +285,7 @@ class MoodleApi:
             return False
 
         response_data = response.json()
+        print("response_data", response_data)
 
         if 'exception' in response_data:
             # Handle the API error condition
