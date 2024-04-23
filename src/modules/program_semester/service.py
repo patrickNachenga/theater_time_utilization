@@ -4,7 +4,9 @@ import pendulum
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
+from src.core.security import Info
 from src.db.session import session_scope
+from src.helpers.utils import get_user_departments_headship
 from src.models import Program, AcademicYear
 from src.models.program_semester import ProgramSemester
 from src.modules import CRUDBase
@@ -22,7 +24,6 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             result = session.query(ProgramSemester).filter(ProgramSemester.deleted_at.is_(None)).order_by(
                 desc(ProgramSemester.updated_at)).all()
             return result
-
 
     @staticmethod
     def get_program_semesters_by_ids(ids: List[str]) -> List[ProgramSemester]:
@@ -64,6 +65,22 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
             return result.first()
 
     @staticmethod
+    def get_hod_program_semester(academic_year_uid, semester, info: Info) -> List[ProgramSemester]:
+        with session_scope() as session:
+            # print(academic_year_uid)
+            academic_year = AcademicYearService.get_academic_year_by_uid(academic_year_uid)
+            if academic_year is None:
+                return []
+            user_h_department_uids = get_user_departments_headship(info)
+            programs = session.query(ProgramSemester).join(Program).filter(
+                ProgramSemester.academic_year_id == academic_year.id,
+                ProgramSemester.deleted_at.is_(None),
+                ProgramSemester.semester == semester,
+                Program.department_uid.in_(user_h_department_uids),
+                Program.deleted_at.is_(None)).order_by(Program.name.asc(), ProgramSemester.study_year.asc()) .all()
+            return programs
+
+    @staticmethod
     def get_program_semester_by_program_id(program_id: int) -> ProgramSemester:
         """
         Get program semester by program_id
@@ -86,6 +103,7 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 (ProgramSemester.programs.uid == program_uid) & (ProgramSemester.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
+
     @staticmethod
     def get_program_semester_by_uids(uids: List[str]) -> List[ProgramSemester]:
         """

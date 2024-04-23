@@ -8,8 +8,9 @@ from src.core.moodle_api import MoodleApi
 from src.core.redis import get_redis
 from src.core.security import Info
 from src.db.session import session_scope
-from src.helpers.utils import get_user_departments_headship
-from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration, Course
+from src.helpers.utils import get_user_departments_headship, get_user_unit_department_headship
+from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration, Course, ProgramSemester
+from src.models.exam_course_result_forward_logs import ExamCourseResultForwardLogs
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.course.service import CourseService
@@ -45,8 +46,9 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
     @staticmethod
     def get_program_course_by_program_semester(program_semester_id: int) -> ProgramCourse:
         with (session_scope() as session):
-            print('program_semester_id: ',program_semester_id)
-            query = session.query(ProgramCourse).join(Course, ProgramCourse.course_id == Course.id).filter(ProgramCourse.program_semester_id == program_semester_id, ProgramCourse.deleted_at.is_(None))
+            print('program_semester_id: ', program_semester_id)
+            query = session.query(ProgramCourse).join(Course, ProgramCourse.course_id == Course.id).filter(
+                ProgramCourse.program_semester_id == program_semester_id, ProgramCourse.deleted_at.is_(None))
             query = query.order_by(ProgramCourse.course_category_id.asc(), Course.code.asc())
             return query.all()
 
@@ -70,7 +72,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     message="You have submitted incorrect programs semester details"
                 )
 
-            stmt = select(ProgramCourse).where((ProgramCourse.program_semester_id == program_semester.id) & (ProgramCourse.deleted_at.is_(None)))
+            stmt = select(ProgramCourse).where(
+                (ProgramCourse.program_semester_id == program_semester.id) & (ProgramCourse.deleted_at.is_(None)))
             result_raw = session.scalars(stmt)
             result = result_raw.all()
             count = session.query(ProgramCourse.id).filter(ProgramCourse.deleted_at.is_(None)).count()
@@ -81,6 +84,27 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                 message="Program Course Retrieved Successful"
             )
 
+    @staticmethod
+    def get_hod_forward_exam_course_result_status(program_semester_uid, info: Info) -> List[ProgramCourseNode]:
+        """
+        Get Program Course by program semester uid
+        :return:
+        """
+        with (session_scope() as session):
+            user_h_department_uids = get_user_departments_headship(info)
+            program_semester = session.query(ProgramSemester).join(Program).filter(
+                ProgramSemester.uid == program_semester_uid,
+                ProgramSemester.deleted_at.is_(None),
+                Program.department_uid.in_(user_h_department_uids),
+                Program.deleted_at.is_(None)).one()
+            if program_semester is None:
+                return []
+            courses = session.query(ProgramCourse).filter(
+                ProgramCourse.program_semester_id == program_semester.id,
+                ProgramCourse.deleted_at.is_(None)).all()
+
+            return courses
+            # print(result)
 
     @staticmethod
     def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
@@ -103,7 +127,6 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                 )
 
             user_h_department_uids = get_user_departments_headship(info)
-
             result = (
                 session.query(
                     ProgramCourse.uid,
@@ -111,10 +134,10 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     Course.code
                 )
                 .join(Course, ProgramCourse.course_id == Course.id)
-                .filter(ProgramCourse.program_semester_id == program_semester.id,Course.department_uid.in_(user_h_department_uids),  ProgramCourse.deleted_at.is_(None))
+                .filter(ProgramCourse.program_semester_id == program_semester.id,
+                        Course.department_uid.in_(user_h_department_uids), ProgramCourse.deleted_at.is_(None))
                 .all()
             )
-            # print(result)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -296,7 +319,10 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     message="No Program Semester Found For Your Details"
                 )
 
-            result = session.query(ProgramCourse, StudentCourseRegistration).outerjoin(StudentCourseRegistration, ProgramCourse.id == StudentCourseRegistration.program_course).filter(ProgramCourse.program_semester_id == prog_sem.id).filter(StudentCourseRegistration.registration_number == input.registration_number).all()
+            result = session.query(ProgramCourse, StudentCourseRegistration).outerjoin(StudentCourseRegistration,
+                                                                                       ProgramCourse.id == StudentCourseRegistration.program_course).filter(
+                ProgramCourse.program_semester_id == prog_sem.id).filter(
+                StudentCourseRegistration.registration_number == input.registration_number).all()
             if result:
                 return Response(
                     status=True, code=ResponseCode.SUCCESS,
@@ -307,7 +333,6 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     status=False, code=ResponseCode.FAILURE,
                     data=result, message="No Program Course For this Student"
                 )
-
 
     # Delete FUnction
     @staticmethod
@@ -320,6 +345,149 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
         with session_scope() as session:
             session.query(ProgramCourse).filter_by(uid=uid).update({ProgramCourse.deleted_at: pendulum.now()})
             session.commit()
+
+    @staticmethod
+    def hod_forward_exam_course_result(program_course_uid, info) -> Response[None]:
+        with session_scope() as session:
+            user_h_department_uids = get_user_departments_headship(info)
+            program_courses = session.query(ProgramCourse).join(ProgramSemester).join(Program).filter(
+                ProgramCourse.uid.in_(program_course_uid),
+                ProgramCourse.forward_status == 1,
+                ProgramCourse.deleted_at.is_(None),
+                ProgramSemester.deleted_at.is_(None),
+                Program.department_uid.in_(user_h_department_uids),
+                Program.deleted_at.is_(None)).all()
+            if not program_courses:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Course Selected is not ready for forwarding",
+                    data=None
+                )
+            forward_logs = []
+            total = 0
+            staff_uid = str(info.context.user.staff.uid)
+            for pc in program_courses:
+                status = pc.forward_status + 1
+                total += 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=pc.forward_status,
+                    forwarded_to=status
+                )
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+            session.add_all(forward_logs)
+            session.commit()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message=f"{total} Courses Successfully Forwarded",
+                data=None
+            )
+
+    @staticmethod
+    def return_course_result(program_course_uid, info) -> Response[None]:
+        with session_scope() as session:
+            # Get program Course information
+            program_course = ProgramCourseService.get_program_course_by_uid(program_course_uid)
+            if program_course is None:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Invalid program course selection",
+                    data=None
+                )
+            if program_course.forward_status == 0:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Selected Course Exam Result Is in initial Stage, Results Is not forwarded yet",
+                    data=None
+                )
+
+            if program_course.forward_status > 3:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Program Course Result Can not be Edited any more, Results Already Published",
+                    data=None
+                )
+
+            # Result must be Return by principal only
+            if program_course.forward_status == 2 or program_course.forward_status == 3:
+                user_unit_department_uids = get_user_unit_department_headship(info)
+                if len(user_unit_department_uids) == 0:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="You have no any Unit/Principal Leadership assigned this time",
+                        data=None
+                    )
+
+                selected_program_department_uid = program_course.program_semester.program.department_uid
+                if selected_program_department_uid not in  user_unit_department_uids:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="You dont have any privilege for returning selected Examination Course Results to HOD",
+                        data=None
+                    )
+                status = program_course.forward_status - 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=program_course.id,
+                    staff_uid=info.context.user.staff.uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=program_course.forward_status,
+                    forwarded_to=status
+                )
+                session.query(ProgramCourse).filter_by(id=program_course.id).update({"forward_status": status})
+                session.add_all(logs)
+                session.commit()
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Course Results Successfully Returned to HOD",
+                    data=None
+                )
+            # Result must be Return by HOD only
+            if program_course.forward_status == 1:
+                    user_h_department_uids = get_user_departments_headship(info)
+                    if len(user_h_department_uids) == 0:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.NO_RECORD_FOUND,
+                            message="You have no any Unit/Principal Leadership assigned this time",
+                            data=None
+                        )
+
+                    selected_program_department_uid = program_course.program_semester.program.department_uid
+                    if selected_program_department_uid not in user_h_department_uids:
+                        return Response(
+                            status=True,
+                            code=ResponseCode.NO_RECORD_FOUND,
+                            message="You dont have any privilege for returning selected Examination Course Results to the Instructor",
+                            data=None
+                        )
+                    status = program_course.forward_status - 1
+                    logs = ExamCourseResultForwardLogs(
+                        program_course_id=program_course.id,
+                        staff_uid=info.context.user.staff.uid,
+                        staff_name=info.context.user.full_name,
+                        forwarded_from=program_course.forward_status,
+                        forwarded_to=status
+                    )
+                    session.query(ProgramCourse).filter_by(id=program_course.id).update({"forward_status": status})
+                    session.add_all(logs)
+                    session.commit()
+                    return Response(
+                        status=True,
+                        code=ResponseCode.SUCCESS,
+                        message="Course Selected is not ready for forwarding",
+                        data=None
+                    )
 
     @staticmethod
     def get_unregister_moodle_program_course_by_course_id(course_id: int) -> ProgramCourseNode:

@@ -17,4 +17,4 @@ scheduler.add_job(enroll_staff_to_moodle_group, 'interval', seconds=9)
 scheduler.add_job(unroll_student_to_moodle_course, 'interval', seconds=10)
 
 
-scheduler.start()
+# scheduler.start()

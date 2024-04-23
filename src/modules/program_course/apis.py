@@ -9,7 +9,7 @@ from src.modules.program_semester.service import ProgramSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import PaginationInput, ProgramCourseListNode, ProgramCourseInput, ProgramCourseNode, \
-    RequestProgramSemester, CourseNode, ProgramCourseWithHeadshipListNode
+    RequestProgramSemester, CourseNode, ProgramCourseWithHeadshipListNode, InstructorSemesterCourseAllocationInputNode
 
 
 @strawberry.type
@@ -52,7 +52,7 @@ class ProgramCourseQuery:
             message="Successfully Retrieve Program Courses",
             data=result)
 
-    @strawberry.field()#extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])]
+    @strawberry.field()  # extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])]
     def get_program_course(self, uid: str) -> Response[ProgramCourseNode]:
         try:
             result = ProgramCourseService.get_program_course_by_uid(uid)
@@ -73,7 +73,8 @@ class ProgramCourseQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
-    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[ProgramCourseListNode]:
+    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
+        ProgramCourseListNode]:
         try:
             program_courses = ProgramCourseService.get_program_course_by_program_semester_uid(program_semester_uid)
             if program_courses:
@@ -88,11 +89,47 @@ class ProgramCourseQuery:
                 message="Unable to retrieve program courses"
             )
 
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
+    def get_hod_forward_exam_course_result_status_by_program_semester_uid(self, program_semester_uid: str,
+                                                                          info: Info) -> Response[
+        List[ProgramCourseNode]]:
+        try:
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=[])
+
+            result = ProgramCourseService.get_hod_forward_exam_course_result_status(program_semester_uid, info)
+            if result:
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Successfully Retrieve Courses",
+                    data=result)
+            else:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Course Allocation not found",
+                    data=[])
+
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Course Allocation not found, An exception occurred",
+                data=[])
+
     # @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
     @strawberry.field()
-    async def get_program_course_by_program_semester_uid_with_headship(self, program_semester_uid: str,  info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
+    async def get_program_course_by_program_semester_uid_with_headship(self, program_semester_uid: str, info: Info) -> \
+    Response[List[ProgramCourseWithHeadshipListNode]]:
         try:
-            program_courses = ProgramCourseService.get_program_course_by_program_semester_uid_with_headship(program_semester_uid, info)
+            program_courses = ProgramCourseService.get_program_course_by_program_semester_uid_with_headship(
+                program_semester_uid, info)
             if program_courses:
                 return program_courses
             raise ValueError("Unable to retrieve program courses")
@@ -133,6 +170,44 @@ class ProgramCourseQuery:
 
 @strawberry.type
 class ProgramCourseMutation:
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
+    def forward_course_result_by_hod(self, uids: List[str], info: Info) -> Response[None]:
+        try:
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=None)
+            return ProgramCourseService.hod_forward_exam_course_result(uids, info)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Forward Course Results to Principal",
+                data=None
+            )
+
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
+    def return_course_exam_result(self, program_course_uid: str, info: Info) -> Response[None]:
+        try:
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=None)
+            return ProgramCourseService.return_course_result(program_course_uid, info)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Return Exam Course Results",
+                data=None
+            )
+
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_COURSES"])])
     def register_program_course(self, inputs: List[ProgramCourseInput]) -> Response[ProgramCourseListNode]:
         """

@@ -107,12 +107,13 @@ def create_group_to_moodle():
 
                 print('program_course.course.moodle_id: ', program_course.course.moodle_id)
                 print('group_description: ', program_course.program_semester.semester)
-                print('group_name: ', f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}")
+                print('group_name: ',
+                      f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}")
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
                     group_name=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
                     group_description=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
-                   # group_description=program_course.program_semester.semester,
+                    # group_description=program_course.program_semester.semester,
                 )
                 if moodle_unit_id != 0:
                     print('--- Group to Moodle Successfully created --- ')
@@ -163,7 +164,7 @@ def unroll_student_to_moodle_course():
     with session_scope(withDeleted=True) as session:
         try:
             # Get data that student course registration not on moodle and program course already on moodle
-            student_course_registration: StudentCourseRegistration = session. query(StudentCourseRegistration) \
+            student_course_registration: StudentCourseRegistration = session.query(StudentCourseRegistration) \
                 .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(True)) \
                 .filter(StudentCourseRegistration.deleted_at.isnot(None)) \
                 .order_by(desc(StudentCourseRegistration.deleted_at)) \
@@ -328,6 +329,19 @@ def get_current_academic_year():
         return name
 
 
+def get_user_unit_department_headship(info: Info):
+    u_list = []
+    if len(info.context.user.unit_headships) > 0:
+        try:
+            url = f"{settings.UAA_URi}/departments/units"
+            # url = "http://127.0.0.1:8000/departments/units"
+            response = requests.post(url, json=info.context.user.unit_headships, timeout=5)
+            u_list = response.json()
+        except Exception as e:
+            print(e)
+    return u_list
+
+
 def get_user_departments_headship(info: Info):
     c_list = []
     u_list = []
@@ -378,9 +392,9 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
             exam_course_work = session.query(
                 ExamCoursework
             ).filter(ExamCoursework.student_uid == student_uid,
-                                                                    ExamCoursework.program_course_id == program_course_id,
-                                                                    ExamCoursework.exam_category_id == exam_category_id,
-                                                                    ExamCoursework.assessment_number == assessment_number).first()
+                     ExamCoursework.program_course_id == program_course_id,
+                     ExamCoursework.exam_category_id == exam_category_id,
+                     ExamCoursework.assessment_number == assessment_number).first()
             score = (score / out_off) * 100
             if exam_course_work:
                 exam_course_work.score = custom_round(score)
@@ -429,12 +443,10 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
 
                 # print("kabla insert: ", score)
                 exam_result = session.query(
-                                            ExamResult
-                                            ).filter(ExamResult.student_uid == student_uid,
-                                                               ExamResult.program_course_id == program_course_id,
-                                                               ExamResult.exam_category_id == exam_category_id).first()
-
-
+                    ExamResult
+                ).filter(ExamResult.student_uid == student_uid,
+                         ExamResult.program_course_id == program_course_id,
+                         ExamResult.exam_category_id == exam_category_id).first()
 
                 score = (score / out_off) * 100
                 if exam_result:
@@ -488,6 +500,7 @@ def get_student_from_uaa():
         data = response.json()
         return data
 
+
 def get_student_from_uaa_by_reg_numbers(reg_numbers):
     try:
 
@@ -501,7 +514,8 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
         }
 
         print("kabla uaa: ")
-        response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers, timeout=5)
+        response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers,
+                                 timeout=5)
         print("baada uaa: ")
     except Exception as e:
         print('exception occurred', e)
@@ -511,11 +525,8 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
         return data
 
 
-
-
-
 def general_upload(students=None, program_course_id=None, exam_category_id=None, score=None, out_off=None, weight=None,
-                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', course_code = None
+                   is_ue=None, reg_number=None, assessment_number=None, source='Excel', course_code=None
                    ):
     counter = 0
     success = 0
@@ -536,7 +547,8 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             last_name = matching_item["last_name"]
             gender = matching_item["gender"]
 
-            print("============> " + str(program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ", out_off)
+            print("============> " + str(program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ",
+                  out_off)
 
             if not by_law_uid:
                 failed = failed + 1
@@ -553,7 +565,6 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
                                                                 out_off,
                                                                 weight, by_law_uid, source
                                                                 )
-
 
                             if result:
                                 success = success + 1

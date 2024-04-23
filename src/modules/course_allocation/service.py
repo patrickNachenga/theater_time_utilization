@@ -9,6 +9,7 @@ from sqlalchemy.orm import aliased
 from src.db.session import session_scope
 from src.models import ProgramCourse, ProgramCourseAssessment, ProgramSemester, AcademicYear
 from src.models.course_allocation import CourseAllocation
+from src.models.exam_course_result_forward_logs import ExamCourseResultForwardLogs
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_course.service import ProgramCourseService
@@ -90,6 +91,26 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
                     AcademicYear.status == inputs.is_current) \
                     .filter(CourseAllocation.staff_uid == inputs.staff_uid,
                             CourseAllocation.deleted_at.is_(None))
+
+            return result.all()
+
+    @staticmethod
+    def get_instructor_semester_course_allocation(inputs, info) -> List[ProgramCourse]:
+        with session_scope() as session:
+            academic_year = session.query(AcademicYear.id, AcademicYear.name) \
+                .filter(AcademicYear.uid == inputs.academic_year_uid, AcademicYear.status == 1,
+                        AcademicYear.deleted_at.is_(None)).first()
+            if academic_year is None:
+                return []
+            staff_uid = str(info.context.user.staff.uid)
+            result = session.query(ProgramCourse) \
+                .join(ProgramSemester).join(CourseAllocation) \
+                .filter(CourseAllocation.staff_uid == staff_uid,
+                        ProgramSemester.semester == inputs.semester,
+                        ProgramSemester.academic_year_id == academic_year.id,
+                        ProgramCourse.deleted_at.is_(None),
+                        ProgramSemester.deleted_at.is_(None),
+                        CourseAllocation.deleted_at.is_(None))
 
             return result.all()
 
@@ -230,6 +251,49 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
         with session_scope() as session:
             session.query(CourseAllocation).filter_by(uid=uid).update({CourseAllocation.deleted_at: pendulum.now()})
             session.commit()
+
+    @staticmethod
+    def forward_instructor_course_result(uids, info) -> Response[None]:
+        with session_scope() as session:
+            staff_uid = str(info.context.user.staff.uid)
+            # Check if is there any list of results that is not forwarded by the instructor
+            program_courses = session.query(ProgramCourse) \
+                .join(CourseAllocation, ProgramCourse.id == CourseAllocation.program_course_id) \
+                .filter(ProgramCourse.uid.in_(uids),
+                        CourseAllocation.staff_uid == staff_uid,
+                        CourseAllocation.deleted_at.is_(None),
+                        ProgramCourse.forward_status == 0).all()
+            if not program_courses:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Course Selected is not ready for forwarding",
+                    data=None
+                )
+
+            forward_logs = []
+            total = 0
+            status = 1
+            for pc in program_courses:
+                total += 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=pc.forward_status,
+                    forwarded_to=status
+                )
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+            session.add_all(forward_logs)
+            session.commit()
+
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message=f"{total} Courses forwarded to HOD Successfully",
+                data=None
+            )
 
     @staticmethod
     def staff_update_allocation_assessment_item(inputs) -> ProgramCourseAssessment:

@@ -483,6 +483,7 @@ class ProgramCourseNode:
     independent_study_hours: float
     pass_hours: float
     moodle_id: Optional[str]
+    forward_status: int | None
     program_course_assessments: Optional[List[ProgramCourseAssessmentNode]]
 
     @strawberry.field
@@ -519,6 +520,7 @@ class CourseAllocationInput:
     program_course_uid: str
     staff_uid: str
 
+
 @strawberry.input(description="Delete Result Input")
 class DeleteResultDtoInput:
     program_course_id: str
@@ -539,6 +541,17 @@ class CourseAllocationNode:
     program_course_uid: str | None
     program_course: ProgramCourseNode | None
     staff_uid: str | None
+
+
+@strawberry.type(description="Forward Result Node")
+class ExamCourseResultForwardLogsNode:
+    uid: str
+    program_course_uid: str
+    program_course: ProgramCourseNode | None
+    staff_uid: str
+    staff_name: str
+    forwarded_from: int
+    forwarded_to: int
 
 
 @strawberry.type(description="Program Allocation Assessment paginated Output")
@@ -765,10 +778,12 @@ class CourseRegistrationInputNode:
     core_elective: int
     program_course_uid: str
 
+
 @strawberry.input(description="Force Core Course registration input")
 class ForceCoreCourseRegistrationInputNode:
     academic_year_uid: str
     semester: str
+
 
 @strawberry.type
 class ForceCoreCourseRegistrationOutput:
@@ -854,6 +869,13 @@ class StaffAllocationInputNode:
     program_course_uid: Optional[str]
     staff_uid: str
     is_current: int
+
+
+@strawberry.input(description="Instructor Semester Allocation Courses input")
+class InstructorSemesterCourseAllocationInputNode:
+    academic_year_uid: str
+    # study_year: int
+    semester: int
 
 
 @strawberry.input(description="Course to register input")

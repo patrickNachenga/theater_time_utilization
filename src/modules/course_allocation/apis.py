@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 from src.models import CourseAllocation
 from src.modules.course_allocation.service import CourseAllocationService, CourseAllocationCrud
 from src.shared.response import Response
@@ -11,7 +11,7 @@ from src.types import CourseAllocationInput, CourseAllocationNode, PaginationInp
     ProgramCourseAssessmentNode, \
     ProgramCourseAssessmentUpdateExceedInput, \
     StaffAllocationInputNode, CourseAllocationStaffUpdateInput, StaffCourseAllocationBySemesterInputs, \
-    StaffCourseAllocationBySemesterNode
+    StaffCourseAllocationBySemesterNode, InstructorSemesterCourseAllocationInputNode, ProgramCourseNode
 
 
 @strawberry.type
@@ -43,22 +43,28 @@ class CourseAllocationQuery:
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
-    def get_staff_course_allocation(self, inputs: StaffAllocationInputNode) -> Response[CourseAllocationListNode]:
-        result = None
+    def get_instructor_semester_course_allocation(self, inputs: InstructorSemesterCourseAllocationInputNode, info: Info) -> Response[List[ProgramCourseNode]]:
         try:
-            result = CourseAllocationService(CourseAllocation).get_staff_course_allocation(inputs)
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=[])
+
+            result = CourseAllocationService(CourseAllocation).get_instructor_semester_course_allocation(inputs, info)
             if result:
                 return Response(
                     status=True,
                     code=ResponseCode.SUCCESS,
                     message="Successfully Retrieve Course Allocation",
-                    data=CourseAllocationListNode(items=result, total_count=len(result)))
+                    data=result)
             else:
                 return Response(
                     status=False,
                     code=ResponseCode.NO_RECORD_FOUND,
                     message="Course Allocation not found",
-                    data=CourseAllocationListNode(items=[], total_count=0))
+                    data=[])
 
         except Exception as e:
             print(e)
@@ -66,7 +72,7 @@ class CourseAllocationQuery:
                 status=False,
                 code=ResponseCode.FAILURE,
                 message="Course Allocation not found, An exception occurred",
-                data=CourseAllocationListNode(items=[], total_count=0))
+                data=[])
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_STAFF_COURSE_ALLOCATION_BY_ACADEMIC_YEAR"])])
     def get_staff_course_allocation_by_Academic_year_semesters(self, inputs: StaffCourseAllocationBySemesterInputs) -> (
@@ -124,6 +130,25 @@ class CourseAllocationMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed to Register Course Allocation",
                             data=CourseAllocationListNode(items=[], total_count=0), )
 
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
+    def forward_instructor_course_result(self, uids: List[str], info:Info) -> Response[None]:
+        try:
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=None)
+            return CourseAllocationService(CourseAllocation).forward_instructor_course_result(uids, info)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Forward Course Results to HOD",
+                data=None
+            )
+
     @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
     async def remove_course_allocation(self, uid: str) -> Response[None]:
         """
@@ -148,6 +173,7 @@ class CourseAllocationMutation:
                 message="Failed to Remove Course Allocation",
                 data=None
             )
+
 
     @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
     def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> (

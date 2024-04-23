@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import strawberry
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 from src.models import ProgramSemester, Program
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.program_semester.service import ProgramSemesterService, ProgramSemesterCrud
@@ -77,6 +77,26 @@ class ProgramSemesterQuery:
     def get_program_semester_by_program_id(self, program_id: str) -> Response[ProgramSemesterNode]:
         try:
             result = ProgramSemesterService.get_program_semester_by_program_id(program_id)
+        except Exception as e:
+            print(e)
+            result = None
+        if result:
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Semester retrieved successfully",
+                data=result)
+        else:
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Semester not found",
+                data=None)
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    def get_hod_program_semester(self, academic_year_uid: str, semester: int, info:Info) -> Response[List[ProgramSemesterNode]]:
+        try:
+            result = ProgramSemesterService.get_hod_program_semester(academic_year_uid, semester,info)
         except Exception as e:
             print(e)
             result = None
