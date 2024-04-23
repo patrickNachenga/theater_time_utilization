@@ -216,9 +216,11 @@ def enroll_staff_to_moodle_course():
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
                     response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
+                    print("response", params)
                     response.raise_for_status()
                     if response.status_code == 200:
                         responseData = response.json()
+                        print("responeData", responseData)
                         if responseData and responseData['user']['moodle_id']:
                             moodle = MoodleApi()
                             enrollment_status = moodle.enroll_user_as_user(
