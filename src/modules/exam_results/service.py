@@ -11,8 +11,10 @@ from sqlalchemy import select, func
 
 from src.core.config import settings
 from src.db.session import session_scope
-from src.helpers.utils import to_superscript
-from src.models import ExamResult, ExamResultSummary
+from src.helpers.utils import to_superscript, get_user_unit_department_headship
+from src.models import ExamResult, ExamResultSummary, ProgramSemester, ProgramCourse, Program, AcademicYear
+from src.models.exam_course_result_forward_logs import ExamCourseResultForwardLogs
+from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -694,3 +696,191 @@ class ExamResultService:
             result = session.query(ExamResult).filter(ExamResult.student_uid == student_uid,
                                                       ExamResult.deleted_at.is_(None)).all()
             return result
+
+    @staticmethod
+    def publish_exam_result(program_semester_uids, info) -> Response[None]:
+        with session_scope() as session:
+            user_unit_department_uids = get_user_unit_department_headship(info)
+            program_courses = session.query(ProgramCourse.id, ProgramCourse.forward_status).join(ProgramSemester).join(
+                Program).filter(
+                ProgramSemester.uid.in_(program_semester_uids),
+                ProgramCourse.forward_status == 3,
+                ProgramCourse.deleted_at.is_(None),
+                ProgramSemester.deleted_at.is_(None),
+                Program.department_uid.in_(user_unit_department_uids),
+                Program.deleted_at.is_(None)).all()
+            if not program_courses:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="No Any Examination Is ready for Publishing from selected Programs",
+                    data=None
+                )
+
+            forward_logs = []
+            total = 0
+            staff_uid = str(info.context.user.staff.uid)
+            for pc in program_courses:
+                status = pc.forward_status + 1
+                total += 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=pc.forward_status,
+                    forwarded_to=status
+                )
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+            session.add_all(forward_logs)
+            session.commit()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Examination Published Successful",
+                data=None
+            )
+
+    @staticmethod
+    def publish_all_exam_results(academic_year_uid,semester, info) -> Response[None]:
+        with session_scope() as session:
+            academic_year = AcademicYearService(AcademicYear).get(academic_year_uid)
+            if academic_year is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Invalid Academic Year Selection",
+                    data=None
+                )
+            # user_unit_department_uids = get_user_unit_department_headship(info)
+            program_courses = session.query(ProgramCourse.id, ProgramCourse.forward_status).join(ProgramSemester).join(
+                Program).filter(
+                # ProgramSemester.uid.in_(program_semester_uids),
+                ProgramSemester.academic_year_id == academic_year.id,
+                ProgramSemester.semester == semester,
+                ProgramCourse.forward_status == 3,
+                ProgramCourse.deleted_at.is_(None),
+                ProgramSemester.deleted_at.is_(None),
+                # Program.department_uid.in_(user_unit_department_uids),
+                Program.deleted_at.is_(None)).all()
+            if not program_courses:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="No Any Examination Is ready for Publishing from selected Programs",
+                    data=None
+                )
+
+            forward_logs = []
+            total = 0
+            staff_uid = str(info.context.user.staff.uid)
+            for pc in program_courses:
+                status = pc.forward_status + 1
+                total += 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=pc.forward_status,
+                    forwarded_to=status
+                )
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+            session.add_all(forward_logs)
+            session.commit()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Examination Published Successful",
+                data=None
+            )
+
+    @staticmethod
+    def un_publish_all_semester_exam_result(academic_year_uid, semester, info) -> Response[None]:
+        with session_scope() as session:
+            academic_year = AcademicYearService(AcademicYear).get(academic_year_uid)
+            if academic_year is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Invalid Academic Year Selection",
+                    data=None
+                )
+            program_courses = session.query(ProgramCourse.id, ProgramCourse.forward_status).join(ProgramSemester).join(
+                Program).filter(
+                ProgramSemester.academic_year == academic_year.id,
+                ProgramCourse.forward_status == 4,
+                ProgramCourse.deleted_at.is_(None),
+                ProgramSemester.deleted_at.is_(None),
+                Program.deleted_at.is_(None)).all()
+            if not program_courses:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message=f"No Any Examination Is Published in {academic_year.name} - Semester {semester}",
+                    data=None
+                )
+            forward_logs = []
+            total = 0
+            staff_uid = str(info.context.user.staff.uid)
+            for pc in program_courses:
+                status = pc.forward_status - 1
+                total += 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=pc.forward_status,
+                    forwarded_to=status
+                )
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+            session.add_all(forward_logs)
+            session.commit()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Examination Forwarded Successful",
+                data=None
+            )
+
+    @staticmethod
+    def un_publish_semester_exam_result_by_program_semester_uids(program_semester_uids, info) -> Response[None]:
+        with session_scope() as session:
+            program_courses = session.query(ProgramCourse.id, ProgramCourse.forward_status).join(ProgramSemester).join(
+                Program).filter(
+                ProgramSemester.uid.in_(program_semester_uids),
+                ProgramCourse.forward_status == 4,
+                ProgramCourse.deleted_at.is_(None),
+                ProgramSemester.deleted_at.is_(None),
+                Program.deleted_at.is_(None)).all()
+            if not program_courses:
+                return Response(
+                    status=True,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message=f"No Any Examination Is Published For the selected Program Semester",
+                    data=None
+                )
+            forward_logs = []
+            total = 0
+            staff_uid = str(info.context.user.staff.uid)
+            for pc in program_courses:
+                status = pc.forward_status - 1
+                total += 1
+                logs = ExamCourseResultForwardLogs(
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
+                    staff_name=info.context.user.full_name,
+                    forwarded_from=pc.forward_status,
+                    forwarded_to=status
+                )
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+            session.add_all(forward_logs)
+            session.commit()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Examination Un Published Successful",
+                data=None
+            )

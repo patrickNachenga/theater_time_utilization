@@ -54,6 +54,16 @@ class AcademicYearNode:
     end_date: str
 
 
+@strawberry.type(description="Academic Year")
+class ProgramSemesterForwardStatus:
+    program_semester_uid: str
+    program_name: str
+    program_code: str
+    study_year: int
+    forward_status: Optional[bool] = False
+    remark: Optional[str] = ""
+
+
 @strawberry.type(description="AcademicYear Country")
 class AcademicYearListNode:
     items: List[AcademicYearNode]

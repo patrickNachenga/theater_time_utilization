@@ -57,6 +57,7 @@ class UserAuthModel(BaseModel):
     full_name: Optional[str] = None
     uid: Optional[UUID] = None
     username: Optional[str] = None
+    email: Optional[str] = None
     moodle_username: Optional[str] = None
     authorities: Optional[List[str]] = None
     student: Optional[StudentAuthModel] = None

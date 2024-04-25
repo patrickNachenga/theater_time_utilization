@@ -9,7 +9,8 @@ from src.modules.program_semester.service import ProgramSemesterService, Program
 from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput, ProgramSemesterListNode
+from src.types import ProgramSemesterNode, ProgramSemesterInput, PaginationInput, ProgramSemesterListNode, \
+    ProgramSemesterForwardStatus
 
 
 @strawberry.type
@@ -132,6 +133,20 @@ class ProgramSemesterQuery:
                 code=ResponseCode.NO_RECORD_FOUND,
                 message="Program Semester not found",
                 data=None)
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_SEMESTERS"])])
+    def get_program_semester_forward_status(self, academic_year_uid: str, semester: int, forward_status: int, info:Info) -> Response[List[ProgramSemesterForwardStatus]]:
+        try:
+            return ProgramSemesterService.get_program_semester_forward_status(academic_year_uid,
+                                                                              semester, forward_status, info)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="Program Semester not found",
+                data=None)
+
 @strawberry.type
 class ProgramSemesterMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROGRAM_SEMESTERS"])])

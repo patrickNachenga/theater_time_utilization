@@ -1,15 +1,21 @@
+import json
+import time
+from datetime import datetime
 from typing import List, Optional
 
 import pendulum
+import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 
+from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.redis import get_redis
 from src.core.security import Info
 from src.db.session import session_scope
 from src.helpers.utils import get_user_departments_headship, get_user_unit_department_headship
-from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration, Course, ProgramSemester
+from src.models import ProgramCourse, Program, AcademicYear, StudentCourseRegistration, Course, ProgramSemester, \
+    ExamResultSummary, CourseAllocation
 from src.models.exam_course_result_forward_logs import ExamCourseResultForwardLogs
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
@@ -107,7 +113,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             # print(result)
 
     @staticmethod
-    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
+    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[
+        List[ProgramCourseWithHeadshipListNode]]:
         """
         Get Program Course by program semester uid
         :return:
@@ -347,12 +354,12 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             session.commit()
 
     @staticmethod
-    def hod_forward_exam_course_result(program_course_uid, info) -> Response[None]:
+    def hod_forward_exam_course_result(program_course_uids, info) -> Response[None]:
         with session_scope() as session:
             user_h_department_uids = get_user_departments_headship(info)
             program_courses = session.query(ProgramCourse).join(ProgramSemester).join(Program).filter(
-                ProgramCourse.uid.in_(program_course_uid),
-                ProgramCourse.forward_status == 1,
+                ProgramCourse.uid.in_(program_course_uids),
+                ProgramCourse.forward_status.in_([0, 1]),
                 ProgramCourse.deleted_at.is_(None),
                 ProgramSemester.deleted_at.is_(None),
                 Program.department_uid.in_(user_h_department_uids),
@@ -377,6 +384,85 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     forwarded_from=pc.forward_status,
                     forwarded_to=status
                 )
+                forced_forward_staff_uids = []
+                if pc.forward_status == 0:
+                    staff_allocations = session.query(CourseAllocation.staff_uid) \
+                        .filter(CourseAllocation.program_course_id == pc.id,
+                                CourseAllocation.deleted_at.is_(None)).all()
+                    if staff_allocations:
+                        forced_forward_staff_uids = [uid for uid, in staff_allocations]
+
+                        # for allocation in staff_allocations:
+                        #     forced_forward_staff_uids.append(str(allocation.staff_uid))
+
+                if forced_forward_staff_uids:
+
+                    # go to uaa to get student information
+                    data_obj = {
+                        "uids": forced_forward_staff_uids
+                    }
+                    # Set the Content-Type header to indicate that the request body is JSON
+                    headers = {
+                        "Content-Type": "application/json"
+                    }
+                    response = requests.post(settings.UAA_URi + '/get_staffs_by_staff_uids', json=data_obj,
+                                             headers=headers, timeout=5)
+                    #
+                    response.raise_for_status()
+                    if response.status_code == 200:
+                        response_data = response.json()
+                        if response_data:
+                            recipient = []
+                            for data in response_data:
+                                recipient.append(
+                                    {
+                                        "email": data['email'],
+                                        "name": data['full_name']
+                                    }
+                                )
+
+                            recipient = [
+                                {
+                                    "email": "husseinmkwazu@sua.ac.tz",
+                                    "name": "Hussein Mkwazu"
+                                },
+                                {
+                                    "email": "josephat.bakobile@sua.ac.tz",
+                                    "name": "Josephat Bakobile"
+                                }
+                            ]
+
+                            cc_email = [{
+                                    "email": "kadefue@sua.ac.tz",
+                                    "name": "Kadeghe Fue"
+                                }]
+                            # cc_email = [{
+                            #     "email": info.context.user.email,
+                            #     "name": info.context.user.full_name
+                            # }]
+
+                            # recipient.append(cc_email)
+
+                            data_obj = json.dumps({
+                                "title": "Force Forward Staff Course Exam Results",
+                                "message": f"Dear Instructors, <strong>{info.context.user.full_name}"
+                                           f"</strong> has forced "
+                                           f"<strong>{pc.course.name} ({pc.course.code})</strong>"
+                                           f" exam to the HOD, You can not do any thing related to "
+                                           f"uploading exam result, ESB provide this notification "
+                                           f"in case there is any update, you should contact the "
+                                           f"HOD so that to return this exam to your hands",
+                                "recipient_emails": recipient,
+                                "cc_emails": cc_email,
+                            })
+                            headers = {
+                                "Content-Type": "application/json"
+                            }
+                            try:
+                                requests.post(settings.UAA_URi + '/send_email', data=data_obj,
+                                              headers=headers, timeout=5)
+                            except Exception as e:
+                                print(e)
                 forward_logs.append(logs)
                 session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
             session.add_all(forward_logs)
@@ -389,77 +475,123 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             )
 
     @staticmethod
-    def return_course_result(program_course_uid, info) -> Response[None]:
+    def principal_forward_program_semester_exam_results(program_semester_uids, info) -> Response[None]:
         with session_scope() as session:
-            # Get program Course information
-            program_course = ProgramCourseService.get_program_course_by_uid(program_course_uid)
-            if program_course is None:
+            user_unit_department_uids = get_user_unit_department_headship(info)
+            program_courses = session.query(ProgramCourse.id, ProgramCourse.forward_status).join(ProgramSemester).join(
+                Program).filter(
+                ProgramSemester.uid.in_(program_semester_uids),
+                ProgramCourse.forward_status == 2,
+                ProgramCourse.deleted_at.is_(None),
+                ProgramSemester.deleted_at.is_(None),
+                Program.department_uid.in_(user_unit_department_uids),
+                Program.deleted_at.is_(None)).all()
+            if not program_courses:
                 return Response(
                     status=True,
                     code=ResponseCode.NO_RECORD_FOUND,
-                    message="Invalid program course selection",
-                    data=None
-                )
-            if program_course.forward_status == 0:
-                return Response(
-                    status=True,
-                    code=ResponseCode.NO_RECORD_FOUND,
-                    message="Selected Course Exam Result Is in initial Stage, Results Is not forwarded yet",
+                    message="No Any Examination Is ready for Forwarding from selected Programs",
                     data=None
                 )
 
-            if program_course.forward_status > 3:
-                return Response(
-                    status=True,
-                    code=ResponseCode.NO_RECORD_FOUND,
-                    message="Program Course Result Can not be Edited any more, Results Already Published",
-                    data=None
-                )
+            forward_logs = []
+            total = 0
 
-            # Result must be Return by principal only
-            if program_course.forward_status == 2 or program_course.forward_status == 3:
-                user_unit_department_uids = get_user_unit_department_headship(info)
-                if len(user_unit_department_uids) == 0:
-                    return Response(
-                        status=True,
-                        code=ResponseCode.NO_RECORD_FOUND,
-                        message="You have no any Unit/Principal Leadership assigned this time",
-                        data=None
-                    )
-
-                selected_program_department_uid = program_course.program_semester.program.department_uid
-                if selected_program_department_uid not in  user_unit_department_uids:
-                    return Response(
-                        status=True,
-                        code=ResponseCode.NO_RECORD_FOUND,
-                        message="You dont have any privilege for returning selected Examination Course Results to HOD",
-                        data=None
-                    )
-                status = program_course.forward_status - 1
+            staff_uid = str(info.context.user.staff.uid)
+            for pc in program_courses:
+                status = 3
+                total += 1
                 logs = ExamCourseResultForwardLogs(
-                    program_course_id=program_course.id,
-                    staff_uid=info.context.user.staff.uid,
+                    program_course_id=pc.id,
+                    staff_uid=staff_uid,
                     staff_name=info.context.user.full_name,
-                    forwarded_from=program_course.forward_status,
+                    forwarded_from=pc.forward_status,
                     forwarded_to=status
                 )
-                session.query(ProgramCourse).filter_by(id=program_course.id).update({"forward_status": status})
-                session.add_all(logs)
-                session.commit()
-                return Response(
-                    status=True,
-                    code=ResponseCode.SUCCESS,
-                    message="Course Results Successfully Returned to HOD",
-                    data=None
-                )
-            # Result must be Return by HOD only
-            if program_course.forward_status == 1:
+                forward_logs.append(logs)
+                session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": status})
+                session.query(ExamResultSummary).filter_by(program_course_id=pc.id) \
+                    .update({"publish_status": True, "publish_date": datetime.now().date(),
+                             "publisher": info.context.user.full_name})
+            session.add_all(forward_logs)
+            session.commit()
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message="Program Examination Forwarded Successful",
+                data=None
+            )
+
+    @staticmethod
+    def return_course_result(program_course_uids, info) -> Response[None]:
+        with session_scope() as session:
+            # Get program Course information
+            all_program_courses = 0
+            for program_course_uid in program_course_uids:
+                program_course = ProgramCourseService.get_program_course_by_uid(program_course_uid)
+                if program_course is None:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="Invalid program course selection",
+                        data=None
+                    )
+                if program_course.forward_status == 0:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="Selected Course Exam Result Is in initial Stage, Results Is not forwarded yet",
+                        data=None
+                    )
+
+                if program_course.forward_status > 3:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="Program Course Result Can not be Edited any more, Results Already Published",
+                        data=None
+                    )
+                # Result must be Return by principal only
+                if program_course.forward_status == 2 or program_course.forward_status == 3:
+                    user_unit_department_uids = get_user_unit_department_headship(info)
+                    if len(user_unit_department_uids) == 0:
+                        return Response(
+                            status=True,
+                            code=ResponseCode.NO_RECORD_FOUND,
+                            message="You have no any Unit/Principal Leadership assigned this time",
+                            data=None
+                        )
+
+                    selected_program_department_uid = program_course.program_semester.program.department_uid
+                    if selected_program_department_uid not in user_unit_department_uids:
+                        return Response(
+                            status=True,
+                            code=ResponseCode.NO_RECORD_FOUND,
+                            message="You dont have any privilege for returning selected Examination Course Results to HOD",
+                            data=None
+                        )
+                    status = program_course.forward_status - 1
+                    logs = ExamCourseResultForwardLogs(
+                        program_course_id=program_course.id,
+                        staff_uid=info.context.user.staff.uid,
+                        staff_name=info.context.user.full_name,
+                        forwarded_from=program_course.forward_status,
+                        forwarded_to=status
+                    )
+                    session.query(ProgramCourse).filter_by(id=program_course.id).update({"forward_status": status})
+                    if program_course.forward_status == 3:
+                        session.query(ExamResultSummary).filter_by(program_course_id=program_course.id) \
+                            .update({"publish_status": False})
+                    session.add(logs)
+                    all_program_courses += 1
+                # Result must be Return by HOD only
+                elif program_course.forward_status == 1:
                     user_h_department_uids = get_user_departments_headship(info)
                     if len(user_h_department_uids) == 0:
                         return Response(
                             status=False,
                             code=ResponseCode.NO_RECORD_FOUND,
-                            message="You have no any Unit/Principal Leadership assigned this time",
+                            message="You have no any HOD Leadership assigned this time",
                             data=None
                         )
 
@@ -480,14 +612,101 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                         forwarded_to=status
                     )
                     session.query(ProgramCourse).filter_by(id=program_course.id).update({"forward_status": status})
-                    session.add_all(logs)
-                    session.commit()
+                    session.add(logs)
+                    all_program_courses += 1
+                session.commit()
+                if all_program_courses > 0:
                     return Response(
                         status=True,
                         code=ResponseCode.SUCCESS,
-                        message="Course Selected is not ready for forwarding",
+                        message=f"{all_program_courses} Courses Returned",
                         data=None
                     )
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Course Selected is not ready for forwarding",
+                    data=None
+                )
+
+    @staticmethod
+    def return_course_result_by_program_semester_uids(program_semester_uids, info) -> Response[None]:
+        with session_scope() as session:
+            # Get program Course information
+            all_program = 0
+            for program_semester_uid in program_semester_uids:
+                program_semester = ProgramSemesterService.get_program_semester_by_uid(program_semester_uid)
+                if program_semester is None:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="Invalid program semsester  selection",
+                        data=None
+                    )
+
+                program_courses = session.query(ProgramCourse).filter(
+                    ProgramCourse.program_semester_id == program_semester.id,
+                    ProgramCourse.deleted_at.is_(None)).all()
+
+                all_program_courses = 0
+                if program_courses is None:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="Invalid program course selection",
+                        data=None
+                    )
+                for program_course in program_courses:
+                    # Result must be Return by principal only
+                    if program_course.forward_status == 2 or program_course.forward_status == 3:
+                        user_unit_department_uids = get_user_unit_department_headship(info)
+                        if len(user_unit_department_uids) == 0:
+                            return Response(
+                                status=True,
+                                code=ResponseCode.NO_RECORD_FOUND,
+                                message="You have no any Unit/Principal Leadership assigned this time",
+                                data=None
+                            )
+
+                        selected_program_department_uid = program_course.program_semester.program.department_uid
+                        if selected_program_department_uid not in user_unit_department_uids:
+                            return Response(
+                                status=True,
+                                code=ResponseCode.NO_RECORD_FOUND,
+                                message="You dont have any privilege for returning selected Examination Course Results to HOD",
+                                data=None
+                            )
+                        status = program_course.forward_status - 1
+                        logs = ExamCourseResultForwardLogs(
+                            program_course_id=program_course.id,
+                            staff_uid=info.context.user.staff.uid,
+                            staff_name=info.context.user.full_name,
+                            forwarded_from=program_course.forward_status,
+                            forwarded_to=status
+                        )
+                        session.query(ProgramCourse).filter_by(id=program_course.id).update({"forward_status": status})
+                        if program_course.forward_status == 3:
+                            session.query(ExamResultSummary).filter_by(program_course_id=program_course.id) \
+                                .update({"publish_status": False})
+                        session.add(logs)
+                        all_program_courses += 1
+                    if all_program_courses > 0:
+                        all_program += 1
+
+                session.commit()
+                if all_program > 0:
+                    return Response(
+                        status=True,
+                        code=ResponseCode.SUCCESS,
+                        message=f"{all_program} Program Examination Results Returned",
+                        data=None
+                    )
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Program Selected is not ready for return forwarding Examination Results",
+                    data=None
+                )
 
     @staticmethod
     def get_unregister_moodle_program_course_by_course_id(course_id: int) -> ProgramCourseNode:

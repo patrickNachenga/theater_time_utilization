@@ -590,4 +590,40 @@ permissions: typing.List[Permission] = [
         description="Can Delete Seminar Type",
         service="registration",
     ),
+    Permission(
+        code="PUBLISH_EXAM_RESULTS",
+        name="Publish Exam Results",
+        description="Publish Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="FORWARD_COURSE_EXAM_RESULTS",
+        name="Forward Course Exam Results",
+        description="Forward Course Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="UN_PUBLISH_EXAM_RESULTS",
+        name="Un publish Exam Results Exam Results",
+        description="Un publish Exam Results Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="RETURN_EXAM_COURSE_RESULTS",
+        name="Return Exam Course Results Exam",
+        description="Return Exam Course Results",
+        service="registration",
+    ),
+    Permission(
+        code="HOD_FORWARD_COURSE_EXAM_RESULTS",
+        name="Hod Forward Course Exam Results",
+        description="HOD Forward Course Exam Results",
+        service="registration",
+    ),
+    Permission(
+        code="FORWARD_COURSE_RESULTS_BY_HOD",
+        name="Forward Course Results by HOD",
+        description="Forward Course Results by HOD",
+        service="registration",
+    ),
 ]

@@ -11,7 +11,7 @@ from src.modules.exam_category.apis import ExamCategoryQuery, ExamCategoryMutati
 from src.modules.exam_coursework.apis import ExamCourseWorkResultQuery
 # from src.modules.exam_category_groups.apis import ExamCategoryGroupsQuery, ExamCategoryGroupsMutation
 from src.modules.exam_result_summary.apis import ExamResultSummaryQuery, ExamResultSummaryMutation
-from src.modules.exam_results.apis import ExamResultQuery
+from src.modules.exam_results.apis import ExamResultQuery, ExamResultMutation
 from src.modules.groups.apis import GroupQuery, GroupMutation
 from src.modules.intention_to_submit.apis import IntentionToSubmitQuery, IntentionToSubmitMutation
 from src.modules.intention_to_submit_requirement.apis import IntentionToSubmitRequirementQuery, \
@@ -57,7 +57,7 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   ProgramSemesterMutation, CourseLearnOutcomeMutation, ProgramCourseMutation, ProgramMutation,
                   ProgramCapacityMutation, ProgramCourseAssessmentMutation, Sr2ApiCallMutation, StudentMutation,
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
-
                   WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation,
-                  StudentManuscriptMutation, IntentionToSubmitMutation, IntentionToSubmitRequirementMutation,ExamResultSummaryMutation):
+                  StudentManuscriptMutation, IntentionToSubmitMutation, IntentionToSubmitRequirementMutation,
+                  ExamResultSummaryMutation, ExamResultMutation):
     pass
