@@ -73,7 +73,7 @@ class ProgramCourseQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
-    async def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
+    def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
         ProgramCourseListNode]:
         try:
             program_courses = ProgramCourseService.get_program_course_by_program_semester_uid(program_semester_uid)
@@ -126,7 +126,7 @@ class ProgramCourseQuery:
     # @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
     @strawberry.field()
     async def get_program_course_by_program_semester_uid_with_headship(self, program_semester_uid: str, info: Info) -> \
-    Response[List[ProgramCourseWithHeadshipListNode]]:
+            Response[List[ProgramCourseWithHeadshipListNode]]:
         try:
             program_courses = ProgramCourseService.get_program_course_by_program_semester_uid_with_headship(
                 program_semester_uid, info)
@@ -170,8 +170,8 @@ class ProgramCourseQuery:
 
 @strawberry.type
 class ProgramCourseMutation:
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
-    def forward_course_result_by_hod(self, uids: List[str], info: Info) -> Response[None]:
+    @strawberry.mutation()
+    def forward_course_result_by_hod(self, program_course_uids: List[str], info: Info) -> Response[None]:
         try:
             if info.context.user is None:
                 return Response(
@@ -179,7 +179,7 @@ class ProgramCourseMutation:
                     code=ResponseCode.UNAUTHORIZED,
                     message="Your session has expired please reset your session",
                     data=None)
-            return ProgramCourseService.hod_forward_exam_course_result(uids, info)
+            return ProgramCourseService.hod_forward_exam_course_result(program_course_uids, info)
         except Exception as e:
             print(e)
             return Response(
@@ -189,8 +189,8 @@ class ProgramCourseMutation:
                 data=None
             )
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE_ALLOCATION"])])
-    def return_course_exam_result(self, program_course_uid: str, info: Info) -> Response[None]:
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["PRINCIPAL_FORWARD_PROGRAM_SEMESTER_EXAM_RESULTS"])])
+    def forward_course_result_by_principal(self, program_semester_uids: List[str], info: Info) -> Response[None]:
         try:
             if info.context.user is None:
                 return Response(
@@ -198,7 +198,45 @@ class ProgramCourseMutation:
                     code=ResponseCode.UNAUTHORIZED,
                     message="Your session has expired please reset your session",
                     data=None)
-            return ProgramCourseService.return_course_result(program_course_uid, info)
+            return ProgramCourseService.principal_forward_program_semester_exam_results(program_semester_uids, info)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Forward Course Results to Principal",
+                data=None
+            )
+
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["RETURN_EXAM_COURSE_RESULTS"])])
+    def return_course_exam_result(self, program_course_uids: List[str], info: Info) -> Response[None]:
+        try:
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=None)
+            return ProgramCourseService.return_course_result(program_course_uids, info)
+        except Exception as e:
+            print(e)
+            return Response(
+                status=False,
+                code=ResponseCode.FAILURE,
+                message="Failed to Return Exam Course Results",
+                data=None
+            )
+
+    @strawberry.mutation(extensions=[CustomPermissionExtension(["RETURN_EXAM_COURSE_RESULTS"])])
+    def return_course_exam_result_by_program_semester_uids(self, program_semester_uids: List[str], info: Info) -> Response[None]:
+        try:
+            if info.context.user is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.UNAUTHORIZED,
+                    message="Your session has expired please reset your session",
+                    data=None)
+            return ProgramCourseService.return_course_result(program_course_uids, info)
         except Exception as e:
             print(e)
             return Response(

@@ -253,13 +253,13 @@ class CourseAllocationService(CRUDBase[CourseAllocation, CourseAllocationInput, 
             session.commit()
 
     @staticmethod
-    def forward_instructor_course_result(uids, info) -> Response[None]:
+    def forward_instructor_course_result(program_course_uids, info) -> Response[None]:
         with session_scope() as session:
             staff_uid = str(info.context.user.staff.uid)
             # Check if is there any list of results that is not forwarded by the instructor
             program_courses = session.query(ProgramCourse) \
                 .join(CourseAllocation, ProgramCourse.id == CourseAllocation.program_course_id) \
-                .filter(ProgramCourse.uid.in_(uids),
+                .filter(ProgramCourse.uid.in_(program_course_uids),
                         CourseAllocation.staff_uid == staff_uid,
                         CourseAllocation.deleted_at.is_(None),
                         ProgramCourse.forward_status == 0).all()

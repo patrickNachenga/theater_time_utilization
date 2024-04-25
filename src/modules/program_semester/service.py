@@ -6,15 +6,16 @@ from sqlalchemy import select, desc
 
 from src.core.security import Info
 from src.db.session import session_scope
-from src.helpers.utils import get_user_departments_headship
-from src.models import Program, AcademicYear
+from src.helpers.utils import get_user_departments_headship, get_user_unit_department_headship
+from src.models import Program, AcademicYear, ProgramCourse
 from src.models.program_semester import ProgramSemester
 from src.modules import CRUDBase
 from src.modules.academic_year.service import AcademicYearService
 from src.modules.programs.service import ProgramService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import ProgramSemesterInput, ProgramSemesterListNode, InnerStudentProgramSemester
+from src.types import ProgramSemesterInput, ProgramSemesterListNode, InnerStudentProgramSemester, \
+    ProgramSemesterForwardStatus
 
 
 class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, ProgramSemesterInput]):
@@ -77,8 +78,97 @@ class ProgramSemesterService(CRUDBase[ProgramSemester, ProgramSemesterInput, Pro
                 ProgramSemester.deleted_at.is_(None),
                 ProgramSemester.semester == semester,
                 Program.department_uid.in_(user_h_department_uids),
-                Program.deleted_at.is_(None)).order_by(Program.name.asc(), ProgramSemester.study_year.asc()) .all()
+                Program.deleted_at.is_(None)).order_by(Program.name.asc(), ProgramSemester.study_year.asc()).all()
             return programs
+
+    @staticmethod
+    def get_program_semester_forward_status(academic_year_uid, semester, forward_status, info: Info) \
+            -> Response[List[ProgramSemesterForwardStatus]]:
+        with session_scope() as session:
+            # print(academic_year_uid)
+            academic_year = AcademicYearService.get_academic_year_by_uid(academic_year_uid)
+            if academic_year is None:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Academic Year is not registered",
+                    data=None)
+            new_forward_status = forward_status + 1
+            programs = []
+            return_program_data = []
+            if forward_status == 2:
+                user_h_department_uids = get_user_unit_department_headship(info)
+                program_semesters = session.query(ProgramSemester).join(Program).filter(
+                    ProgramSemester.academic_year_id == academic_year.id,
+                    ProgramSemester.deleted_at.is_(None),
+                    ProgramSemester.semester == semester,
+                    Program.department_uid.in_(user_h_department_uids),
+                    Program.deleted_at.is_(None)).order_by(Program.name.asc(), ProgramSemester.study_year.asc()).all()
+
+                if program_semesters:
+                    for ps in program_semesters:
+                        all_program_courses = session.query(ProgramCourse) \
+                            .filter(
+                            ProgramCourse.deleted_at.is_(None),
+                            ProgramCourse.program_semester_id == ps.id).count()
+
+                        total_forwarded_status = session.query(ProgramCourse).filter(
+                            ProgramCourse.deleted_at.is_(None), ProgramCourse.program_semester_id == ps.id,
+                                                                ProgramCourse.forward_status >= new_forward_status).count()
+                        return_program_data.append(ProgramSemesterForwardStatus(
+                            program_semester_uid=ps.uid,
+                            program_name=ps.program.name,
+                            program_code=ps.program.code,
+                            study_year=ps.study_year,
+                            forward_status=True if total_forwarded_status == all_program_courses else False,
+                            remark=f"{total_forwarded_status} out of {all_program_courses}"
+                        ))
+
+                    return Response(
+                        status=False,
+                        code=ResponseCode.SUCCESS,
+                        message="Program Semester Retrieved Successfully",
+                        data=return_program_data)
+                    # print(return_program_data)
+            if forward_status == 3:
+                program_semesters = session.query(ProgramSemester).join(Program).filter(
+                    ProgramSemester.academic_year_id == academic_year.id,
+                    ProgramSemester.deleted_at.is_(None),
+                    ProgramSemester.semester == semester,
+                    Program.deleted_at.is_(None)).order_by(Program.name.asc(), ProgramSemester.study_year.asc()).all()
+
+                if program_semesters:
+                    for ps in program_semesters:
+                        all_program_courses = session.query(ProgramCourse) \
+                            .filter(
+                            ProgramCourse.deleted_at.is_(None),
+                            ProgramCourse.program_semester_id == ps.id).count()
+
+                        total_forwarded_status = session.query(ProgramCourse).filter(
+                            ProgramCourse.deleted_at.is_(None), ProgramCourse.program_semester_id == ps.id,
+                                                                ProgramCourse.forward_status >= new_forward_status).count()
+                        return_program_data.append(ProgramSemesterForwardStatus(
+                            program_semester_uid=ps.uid,
+                            program_name=ps.program.name,
+                            program_code=ps.program.code,
+                            study_year=ps.study_year,
+                            forward_status=True if total_forwarded_status == all_program_courses else False,
+                            remark=f"{total_forwarded_status} out of {all_program_courses}"
+                        ))
+
+                    return Response(
+                        status=False,
+                        code=ResponseCode.SUCCESS,
+                        message="Program Semester Retrieved Successfully",
+                        data=return_program_data)
+                    # print(return_program_data)
+
+            return Response(
+                status=False,
+                code=ResponseCode.NO_RECORD_FOUND,
+                message="No Program Semester Record Found",
+                data=None)
+            # return programs
 
     @staticmethod
     def get_program_semester_by_program_id(program_id: int) -> ProgramSemester:

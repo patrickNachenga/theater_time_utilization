@@ -43,7 +43,8 @@ class CourseAllocationQuery:
                 data=CourseAllocationNode(uid=None, program_course_uid=None, program_course=None, staff_uid=None))
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
-    def get_instructor_semester_course_allocation(self, inputs: InstructorSemesterCourseAllocationInputNode, info: Info) -> Response[List[ProgramCourseNode]]:
+    def get_instructor_semester_course_allocation(self, inputs: InstructorSemesterCourseAllocationInputNode,
+                                                  info: Info) -> Response[List[ProgramCourseNode]]:
         try:
             if info.context.user is None:
                 return Response(
@@ -131,7 +132,7 @@ class CourseAllocationMutation:
                             data=CourseAllocationListNode(items=[], total_count=0), )
 
     @strawberry.mutation(extensions=[CustomPermissionExtension(["VIEW_COURSE_ALLOCATIONS_BY_STAFF"])])
-    def forward_instructor_course_result(self, uids: List[str], info:Info) -> Response[None]:
+    def forward_instructor_course_result(self, program_course_uids: List[str], info: Info) -> Response[None]:
         try:
             if info.context.user is None:
                 return Response(
@@ -139,7 +140,7 @@ class CourseAllocationMutation:
                     code=ResponseCode.UNAUTHORIZED,
                     message="Your session has expired please reset your session",
                     data=None)
-            return CourseAllocationService(CourseAllocation).forward_instructor_course_result(uids, info)
+            return CourseAllocationService(CourseAllocation).forward_instructor_course_result(program_course_uids, info)
         except Exception as e:
             print(e)
             return Response(
@@ -173,7 +174,6 @@ class CourseAllocationMutation:
                 message="Failed to Remove Course Allocation",
                 data=None
             )
-
 
     @strawberry.field(extensions=[CustomPermissionExtension(["UPDATE_STAFF_COURSE_ALLOCATION"])])
     def update_course_allocation_staff(self, inputs: CourseAllocationStaffUpdateInput) -> (
