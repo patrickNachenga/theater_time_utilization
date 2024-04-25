@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, String
+from sqlalchemy import Column, Integer, Float, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
 
 from src.models import BaseModel
@@ -14,6 +14,7 @@ class ProgramCourse(BaseModel):
     independent_study_hours: float = Column(Float(4), nullable=True)
     pass_hours: float = Column(Float(4), nullable=True)
     moodle_id: str = Column(String, nullable=True)
+    moodle_check_status: bool = Column(Boolean, unique=False, default=False)
 
     # ___________________________Foreign Keys ____________________________#
     course_category_id: int = Column(Integer, ForeignKey("course_categories.id"), nullable=False)

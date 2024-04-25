@@ -63,7 +63,7 @@ def create_course_to_moodle():
     with session_scope() as session:
         # Get only one at a time
         course = session.query(Course).filter(
-            and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).first()
+            and_(Course.moodle_id.is_(None), (Course.moodle_check_status.is_(False)), Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).first()
         if course:
             """
             Call Department moodle id for uuid
@@ -72,7 +72,10 @@ def create_course_to_moodle():
                 response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}", timeout=5)
                 if response.status_code == 200:
                     responseData = response.json()
-                    if responseData["status"] and responseData["data"]['moodle_id']:
+                    print("===========>",responseData["data"],"\n");
+
+                    if responseData["status"] and responseData["data"]['moodle_id'] is not None:
+                        # update moodle course only if department found
                         moodle = MoodleApi()
                         moodle_unit_id = moodle.createCourse(
                             departmentId=responseData["data"]['moodle_id'],
@@ -82,12 +85,26 @@ def create_course_to_moodle():
                         )
                         if moodle_unit_id != 0:
                             course.moodle_id = moodle_unit_id
-                            session.add(course)
-                            session.commit()
                         else:
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
+                    course.moodle_check_status = True
+                    session.add(course)
+                    session.commit()
             except Exception as e:
                 print('--- Exception Occurred while adding Course to Moodle. course ', str(e))
+        else:
+            """
+            checking leach the end. now reset all course moodle_check_status to False
+            """
+            courses = session.query(Course).filter(
+                and_(Course.moodle_id.is_(None), (Course.moodle_check_status.is_(True)),
+                     Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).all()
+            if courses:
+                for course in courses:
+                    course.moodle_check_status = False
+                    session.add(course)
+                session.commit()
+                print('--- RELOAD: create course to Moodle Service restart again --- ')
 
 
 def create_group_to_moodle():
@@ -103,6 +120,8 @@ def create_group_to_moodle():
             if program_course:
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
+
+                print(program_course.course.__dict__)
 
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
