@@ -22,6 +22,12 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
             return result
 
     @staticmethod
+    def get_active_academic_year_semester() -> List[AcademicYearSemester]:
+        with session_scope() as session:
+            return session.query(AcademicYearSemester).filter(AcademicYearSemester.deleted_at.is_(None),
+                                                              AcademicYearSemester.status == 1).one()
+
+    @staticmethod
     def get_academic_year_semesters_by_uids(uids: List[str]) -> List[AcademicYearSemester]:
         """
         Get Academic Years by uids

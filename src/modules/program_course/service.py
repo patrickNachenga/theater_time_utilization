@@ -439,7 +439,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                             #     "name": info.context.user.full_name
                             # }]
 
-                            # recipient.append(cc_email)
+                            recipient.append(cc_email)
 
                             data_obj = json.dumps({
                                 "title": "Force Forward Staff Course Exam Results",

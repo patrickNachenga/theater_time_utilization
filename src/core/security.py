@@ -626,4 +626,10 @@ permissions: typing.List[Permission] = [
         description="Forward Course Results by HOD",
         service="registration",
     ),
+    Permission(
+        code="GET_UPLOAD_RESULT_DEADLINE",
+        name="Get Upload Result Deadline",
+        description="Get Upload Result Deadline",
+        service="registration",
+    ),
 ]
