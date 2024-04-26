@@ -473,7 +473,7 @@ class ProgramCourseNode:
     independent_study_hours: float
     pass_hours: float
     moodle_id: Optional[str]
-    moodle_check_status: Optional[bool]
+    moodle_check_status: Optional[bool] = False
     program_course_assessments: List[ProgramCourseAssessmentNode]
 
     @strawberry.field
@@ -517,6 +517,10 @@ class CourseAllocationNode:
     program_course_uid: str | None
     program_course: ProgramCourseNode | None
     staff_uid: str | None
+    moodle_course_enrollment_status: Optional[bool] = False
+    moodle_group_enrollment_status: Optional[bool] = False
+    moodle_staff_course_enrollment_status: Optional[bool] = False
+
 
 
 @strawberry.type(description="Program Allocation Assessment paginated Output")

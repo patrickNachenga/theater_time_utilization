@@ -11,8 +11,6 @@ class MoodleApi:
     def sendRequest(self, data, url=None):
         if url is None:
             url = settings.MOODLE_SITE_URL
-            print(f'url: {url}')
-            print(f'data: {data}')
         response = requests.post(url, data=data)
         return response
 
@@ -277,7 +275,6 @@ class MoodleApi:
             'groups[0][visibility]': 1
         }
 
-        print(data)
         response = self.sendRequest(data)
 
         if response is False:
