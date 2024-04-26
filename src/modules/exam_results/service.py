@@ -806,13 +806,10 @@ class ExamResultService:
                     message="Invalid Academic Year Selection",
                     data=None
                 )
-            program_courses = session.query(ProgramCourse.id, ProgramCourse.forward_status).join(ProgramSemester).join(
-                Program).filter(
-                ProgramSemester.academic_year == academic_year.id,
-                ProgramCourse.forward_status == 4,
-                ProgramCourse.deleted_at.is_(None),
-                ProgramSemester.deleted_at.is_(None),
-                Program.deleted_at.is_(None)).all()
+            program_courses = session.query(ProgramCourse).join(ProgramSemester)\
+                .filter(ProgramSemester.academic_year_id == academic_year.id, ProgramCourse.forward_status == 4,
+                        ProgramSemester.semester == semester,ProgramCourse.deleted_at.is_(None), ProgramSemester.deleted_at.is_(None)).all()
+
             if not program_courses:
                 return Response(
                     status=True,
@@ -840,7 +837,7 @@ class ExamResultService:
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
-                message="Program Examination Forwarded Successful",
+                message="Program Examination Unpublished Successful",
                 data=None
             )
 

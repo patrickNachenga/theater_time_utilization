@@ -73,8 +73,7 @@ class ProgramCourseQuery:
                 data=None)
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES_BY_SEMESTER"])])
-    def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[
-        ProgramCourseListNode]:
+    def get_program_course_by_program_semester_uid(self, program_semester_uid: str) -> Response[ProgramCourseListNode]:
         try:
             program_courses = ProgramCourseService.get_program_course_by_program_semester_uid(program_semester_uid)
             if program_courses:
@@ -91,8 +90,7 @@ class ProgramCourseQuery:
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_PROGRAM_COURSES"])])
     def get_hod_forward_exam_course_result_status_by_program_semester_uid(self, program_semester_uid: str,
-                                                                          info: Info) -> Response[
-        List[ProgramCourseNode]]:
+                                                                          info: Info) -> Response[List[ProgramCourseNode]]:
         try:
             if info.context.user is None:
                 return Response(
