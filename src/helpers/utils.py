@@ -155,7 +155,6 @@ def enroll_student_to_moodle_course():
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
                 response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
-
                 response.raise_for_status()
                 if response.status_code == 200:
                     response_data = response.json()
@@ -168,8 +167,8 @@ def enroll_student_to_moodle_course():
                         )
                         if enrollment_status:
                             student_course_registration.moodle_course_enrollment_status = True
-                            print(f'--- Successful Enroll Student : {response_data["user"]["username"]} to Moodle '
-                                  f'Course --- on course_allocation:')
+                            print(
+                                f'--- Successful Enroll Student :{response_data["user"]["username"]} to Moodle Course')
                         else:
                             print('--- Fail to Enroll Student to Moodle Course --- on student_course_registration_uid:',
                                   student_course_registration.uid)
