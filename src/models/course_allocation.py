@@ -9,6 +9,7 @@ class CourseAllocation(BaseModel):
     staff_uid: str = Column(String, nullable=False, unique=False)
     moodle_course_enrollment_status: bool = Column(Boolean, unique=False, default=False)
     moodle_group_enrollment_status: bool = Column(Boolean, unique=False, default=False)
+    moodle_staff_course_enrollment_status: bool = Column(Boolean, unique=False, default=False)
     program_course_id: int = Column(Integer, ForeignKey("program_courses.id"), nullable=False, unique=False)
     # program_course = relationship("ProgramCourse", lazy="subquery", back_populates="course_allocations")
     program_course = relationship("ProgramCourse", lazy="subquery")

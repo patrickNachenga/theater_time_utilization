@@ -63,7 +63,8 @@ def create_course_to_moodle():
     with session_scope() as session:
         # Get only one at a time
         course = session.query(Course).filter(
-            and_(Course.moodle_id.is_(None), Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).first()
+            and_(Course.moodle_id.is_(None), (Course.moodle_check_status.is_(False)),
+                 Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).first()
         if course:
             """
             Call Department moodle id for uuid
@@ -72,7 +73,8 @@ def create_course_to_moodle():
                 response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}", timeout=5)
                 if response.status_code == 200:
                     responseData = response.json()
-                    if responseData["status"] and responseData["data"]['moodle_id']:
+                    if responseData["status"] and responseData["data"]['moodle_id'] is not None:
+                        # update moodle course only if department found
                         moodle = MoodleApi()
                         moodle_unit_id = moodle.createCourse(
                             departmentId=responseData["data"]['moodle_id'],
@@ -83,12 +85,26 @@ def create_course_to_moodle():
                         if moodle_unit_id != 0:
                             print('---- Course succesfully created to moodle:', moodle_unit_id)
                             course.moodle_id = moodle_unit_id
-                            session.add(course)
-                            session.commit()
                         else:
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
+                    course.moodle_check_status = True
+                    session.add(course)
+                    session.commit()
             except Exception as e:
                 print('--- Exception Occurred while adding Course to Moodle. course ', str(e))
+        else:
+            """
+            checking leach the end. now reset all course moodle_check_status to False
+            """
+            courses = session.query(Course).filter(
+                and_(Course.moodle_id.is_(None), (Course.moodle_check_status.is_(True)),
+                     Course.deleted_at.is_(None))).order_by(desc(Course.created_at)).all()
+            if courses:
+                for course in courses:
+                    course.moodle_check_status = False
+                    session.add(course)
+                session.commit()
+                print('--- RELOAD: create course to Moodle Service restart again --- ')
 
 
 def create_group_to_moodle():
@@ -100,7 +116,6 @@ def create_group_to_moodle():
                 .filter(ProgramCourse.course.has(Course.moodle_id.isnot(None))) \
                 .order_by(desc(ProgramCourse.created_at)) \
                 .first()
-
             if program_course:
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
@@ -133,6 +148,7 @@ def enroll_student_to_moodle_course():
             student_course_registration: StudentCourseRegistration = session.query(StudentCourseRegistration).join(
                 ProgramCourse) \
                 .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(False)) \
+                .filter(StudentCourseRegistration.moodle_student_course_enrollment_status.is_(False)) \
                 .filter(StudentCourseRegistration.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(StudentCourseRegistration.created_at)) \
                 .first()
@@ -141,21 +157,47 @@ def enroll_student_to_moodle_course():
                 response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
-                    responseData = response.json()
-                    if responseData and responseData["user"]['moodle_id']:
+                    response_data = response.json()
+                    if response_data and response_data["user"]['moodle_id']:
                         moodle = MoodleApi()
                         enrollment_status: bool = moodle.enroll_user_as_user(
-                            user_id=responseData["user"]['moodle_id'],
+                            user_id=response_data["user"]['moodle_id'],
                             course_id=student_course_registration.program_course.course.moodle_id,
                             role_name="student",
                         )
                         if enrollment_status:
                             student_course_registration.moodle_course_enrollment_status = True
-                            session.add(student_course_registration)
-                            session.commit()
+                            print(
+                                f'--- Successful Enroll Student :{response_data["user"]["username"]} to Moodle Course')
                         else:
                             print('--- Fail to Enroll Student to Moodle Course --- on student_course_registration_uid:',
                                   student_course_registration.uid)
+                    else:
+                        if response_data["user"]:
+                            print(f'--- User Wait to be registered on Moodle  user:{response_data["user"]["username"]}')
+                        else:
+                            print(f'--- User Not Found  -----', params)
+
+                student_course_registration.moodle_student_course_enrollment_status = True
+                session.add(student_course_registration)
+                session.commit()
+            else:
+                """
+                checking leach the end. now reset all moodle_student_course_enrollment_status to False
+                """
+                student_course_registrations = session.query(StudentCourseRegistration).join(
+                    ProgramCourse) \
+                    .filter(StudentCourseRegistration.moodle_course_enrollment_status.is_(False)) \
+                    .filter(StudentCourseRegistration.moodle_student_course_enrollment_status.is_(True)) \
+                    .filter(StudentCourseRegistration.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
+                    .order_by(desc(StudentCourseRegistration.created_at)) \
+                    .all()
+                if student_course_registrations:
+                    for student_course_registration in student_course_registrations:
+                        student_course_registration.moodle_student_course_enrollment_status = False
+                        session.add(student_course_registration)
+                    session.commit()
+                    print('--- RELOAD: Enroll student to Moodle Course  Service restarted Again ---')
         except Exception as e:
             print('--- Exception Occurred while enrolling student to Moodle.  ', str(e))
 
@@ -199,6 +241,7 @@ def enroll_staff_to_moodle_course():
             # Get data that course allocation not on moodle and program course already on moodle
             course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse) \
                 .filter(CourseAllocation.moodle_course_enrollment_status.is_(False)) \
+                .filter(CourseAllocation.moodle_staff_course_enrollment_status.is_(False)) \
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
@@ -213,7 +256,6 @@ def enroll_staff_to_moodle_course():
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
                     .order_by(desc(CourseAllocation.created_at)) \
                     .first()
-
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
                     response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
@@ -231,11 +273,29 @@ def enroll_staff_to_moodle_course():
                             )
                             if enrollment_status:
                                 course_allocation.moodle_course_enrollment_status = True
-                                session.add(course_allocation)
-                                session.commit()
-                        else:
-                            print('--- Fail to Enroll Teacher to Moodle Course --- on course_allocation:',
-                                  course_allocation.uid)
+                                print(f'--- Successful Enroll Teacher : {responseData["user"]["username"]} to Moodle '
+                                      f'Course --- on course_allocation:')
+                            else:
+                                print('--- Fail to Enroll Teacher to Moodle Course --- on course_allocation:',
+                                      course_allocation.uid)
+                course_allocation.moodle_staff_course_enrollment_status = True
+                session.add(course_allocation)
+                session.commit()
+            else:
+                """
+                checking leach the end. now reset all moodle_staff_course_enrollment_status to False
+                """
+                course_allocations = session.query(CourseAllocation).join(ProgramCourse) \
+                    .filter(CourseAllocation.moodle_course_enrollment_status.is_(False)) \
+                    .filter(CourseAllocation.moodle_staff_course_enrollment_status.is_(True)) \
+                    .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
+                    .order_by(desc(CourseAllocation.created_at)).all()
+                if course_allocations:
+                    for course_allocation in course_allocations:
+                        course_allocation.moodle_staff_course_enrollment_status = False
+                        session.add(course_allocation)
+                    session.commit()
+                    print('--- RELOAD: Enroll staff to Moodle Course  Service restarted Again ---')
         except Exception as e:
             print('--- Exception Occurred while enrolling Teacher to Moodle Course.  ', str(e))
 
@@ -268,6 +328,7 @@ def enroll_student_to_moodle_group():
                             student_course_registration.moodle_group_enrollment_status = True
                             session.add(student_course_registration)
                             session.commit()
+                            print(f'--- Successful Enroll Student:{responseData["user"]["username"]} to Moodle Group')
                         else:
                             print('--- Fail to Enroll Student to Moodle Group --- on student_course_registration_uid:',
                                   student_course_registration.uid)
