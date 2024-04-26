@@ -288,6 +288,7 @@ class MoodleApi:
         print("response_data", response_data)
 
         if 'exception' in response_data:
+            print(response_data)
             # Handle the API error condition
             print('API Error:', response_data['message'])
             return False

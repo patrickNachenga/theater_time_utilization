@@ -316,6 +316,7 @@ class CourseInput:
     offered: Optional[int] = 1
     department_uid: str
     moodle_id: Optional[str] = ""
+    moodle_check_status: Optional[bool] = False
 
 
 @strawberry.type(description="Course Output")
@@ -327,6 +328,7 @@ class CourseNode:
     offered: int
     department_uid: str
     moodle_id: Optional[str]
+    moodle_check_status: Optional[bool]
 
 
 @strawberry.input(description="Program Category Input")
@@ -491,6 +493,7 @@ class ProgramCourseInput:
     independent_study_hours: Optional[float] = 0
     pass_hours: Optional[float] = 0.0
     moodle_id: Optional[str] = None
+    moodle_check_status: Optional[bool] = False
 
 
 @strawberry.type(description="Program Course outputs")
@@ -510,6 +513,7 @@ class ProgramCourseNode:
     moodle_id: Optional[str]
     forward_status: int | None
     program_course_assessments: Optional[List[ProgramCourseAssessmentNode]]
+    moodle_check_status: Optional[bool] = False
 
     @strawberry.field
     async def program_course_assessments(self, info) -> list[ProgramCourseAssessmentNode]:
@@ -566,6 +570,10 @@ class CourseAllocationNode:
     program_course_uid: str | None
     program_course: ProgramCourseNode | None
     staff_uid: str | None
+    moodle_course_enrollment_status: Optional[bool] = False
+    moodle_group_enrollment_status: Optional[bool] = False
+    moodle_staff_course_enrollment_status: Optional[bool] = False
+
 
 
 @strawberry.type(description="Forward Result Node")
