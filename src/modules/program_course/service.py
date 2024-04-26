@@ -372,10 +372,13 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             for pc in program_courses:
                 status = pc.forward_status + 1
                 total += 1
+                staff_name = info.context.user.full_name
+                if pc.forward_status == 0:
+                    staff_name = f"{info.context.user.full_name} (Forced)"
                 logs = ExamCourseResultForwardLogs(
                     program_course_id=pc.id,
                     staff_uid=staff_uid,
-                    staff_name=f"{info.context.user.full_name} (Forced)",
+                    staff_name=staff_name,
                     forwarded_from=pc.forward_status,
                     forwarded_to=status
                 )
