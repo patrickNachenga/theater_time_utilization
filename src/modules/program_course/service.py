@@ -113,12 +113,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             # print(result)
 
     @staticmethod
-    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[
-        List[ProgramCourseWithHeadshipListNode]]:
-        """
-        Get Program Course by program semester uid
-        :return:
-        """
+    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
         with (session_scope() as session):
             try:
                 program_semester = ProgramSemesterService.get_program_semester_by_uid(uid)
@@ -380,7 +375,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                 logs = ExamCourseResultForwardLogs(
                     program_course_id=pc.id,
                     staff_uid=staff_uid,
-                    staff_name=info.context.user.full_name,
+                    staff_name=f"{info.context.user.full_name} (Forced)",
                     forwarded_from=pc.forward_status,
                     forwarded_to=status
                 )
@@ -433,9 +428,9 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                             ]
 
                             cc_email = [{
-                                    "email": "kadefue@sua.ac.tz",
-                                    "name": "Kadeghe Fue"
-                                }]
+                                "email": "kadefue@sua.ac.tz",
+                                "name": "Kadeghe Fue"
+                            }]
                             # cc_email = [{
                             #     "email": info.context.user.email,
                             #     "name": info.context.user.full_name
@@ -640,7 +635,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                     return Response(
                         status=True,
                         code=ResponseCode.NO_RECORD_FOUND,
-                        message="Invalid program semsester  selection",
+                        message="Invalid program semester  selection",
                         data=None
                     )
 
