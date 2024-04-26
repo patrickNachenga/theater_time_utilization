@@ -12,6 +12,7 @@ class StudentCourseRegistration(BaseModel):
     student_uid: str = Column(String, nullable=False)
     moodle_course_enrollment_status: bool = Column(Boolean, default=False)
     moodle_group_enrollment_status: bool = Column(Boolean, default=False)
+    moodle_student_course_enrollment_status: bool = Column(Boolean, default=False)
     # core is 1,elective is 2
     core_elective: int = Column(Integer, nullable=False)
 
