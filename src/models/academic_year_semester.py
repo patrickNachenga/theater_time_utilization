@@ -17,6 +17,7 @@ class AcademicYearSemester(BaseModel):
     program_change_end_date: DateTime = Column(DateTime, nullable=True, unique=False)
     exam_ticket_date: DateTime = Column(DateTime, nullable=True, unique=False)
     semester: int = Column(Integer, nullable=False)
+    status: int = Column(Integer, nullable=True)
 
     # ___________________________Foreign Keys ____________________________#
     academic_year_id: int = Column(Integer, ForeignKey("academic_years.id"), nullable=False)

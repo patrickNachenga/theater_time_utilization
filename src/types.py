@@ -97,10 +97,12 @@ class AcademicYearSemesterInput:
     exam_ticket_date: str
     semester: int
     academic_year_uid: str
+    status: int
 
 
 @strawberry.type(description="Academic Year")
 class AcademicYearSemesterNode:
+    status: int
     odd_start_date: str
     odd_end_date: str
     even_start_date: str
@@ -109,6 +111,14 @@ class AcademicYearSemesterNode:
     exam_ticket_date: str
     semester: int
     academic_year: AcademicYearNode
+    uid: Optional[str] = None
+
+
+@strawberry.type(description="Upload Result Deadline")
+class UploadResultDeadlineNode:
+    end_date: str
+    department: str
+    academic_year_semester: AcademicYearSemesterNode
     uid: Optional[str] = None
 
 
@@ -283,6 +293,12 @@ class GroupInput:
     uid: Optional[str] = None
     name: str
     code: str
+
+
+@strawberry.input(description="Result Deadline Input")
+class ResultDeadlineInput:
+    uid: Optional[str] = None
+    end_date: datetime
 
 
 @strawberry.type(description="Staff")
@@ -1554,3 +1570,13 @@ class RegisteredStudentListNode:
 @strawberry.type(description="Get Student Change Program Request")
 class StudentProgramChangeRequestReport:
     items: List[StudentProgramChangeNode]
+
+
+@strawberry.type(description="Exam Course Result Forward Logs")
+class ExamCourseResultForwardLogNode:
+    program_course: ProgramCourseNode
+    staff_uid: str
+    staff_name: str
+    forwarded_from: str
+    forwarded_to: str
+    uid: str

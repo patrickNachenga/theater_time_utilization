@@ -8,6 +8,7 @@ from src.modules.course_allocation.apis import CourseAllocationQuery, CourseAllo
 from src.modules.course_category.apis import CourseCategoryQuery, CourseCategoryMutation
 from src.modules.course_learn_outcome.apis import CourseLearnOutcomeQuery, CourseLearnOutcomeMutation
 from src.modules.exam_category.apis import ExamCategoryQuery, ExamCategoryMutation
+from src.modules.exam_course_result_forwar_logs.apis import ExamCourseResultForwardLogsQuery
 from src.modules.exam_coursework.apis import ExamCourseWorkResultQuery
 # from src.modules.exam_category_groups.apis import ExamCategoryGroupsQuery, ExamCategoryGroupsMutation
 from src.modules.exam_result_summary.apis import ExamResultSummaryQuery, ExamResultSummaryMutation
@@ -34,6 +35,7 @@ from src.modules.student_program_change_status.apis import StudentProgramChangeS
     StudentProgramChangeStatusMutation
 from src.modules.student_seminar.apis import StudentSeminarQuery, StudentSeminarMutation
 from src.modules.transition_metas.apis import TransitionMetaMutation, TransitionMetaQuery
+from src.modules.upload_result_deadline.apis import UploadResultDeadlineQuery, UploadResultDeadlineMutation
 from src.modules.workflows.apis import WorkflowQuery, WorkflowMutation
 
 
@@ -46,7 +48,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
                StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery, SeminarTypeQuery,
                StudentSeminarQuery,ByLawQuery, ExamCourseWorkResultQuery, StudentManuscriptQuery, IntentionToSubmitQuery,
-               IntentionToSubmitRequirementQuery):
+               IntentionToSubmitRequirementQuery, UploadResultDeadlineQuery, ExamCourseResultForwardLogsQuery):
     pass
 
 
@@ -59,5 +61,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
                   WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation,
                   StudentManuscriptMutation, IntentionToSubmitMutation, IntentionToSubmitRequirementMutation,
-                  ExamResultSummaryMutation, ExamResultMutation):
+                  ExamResultSummaryMutation, ExamResultMutation, UploadResultDeadlineMutation):
     pass
