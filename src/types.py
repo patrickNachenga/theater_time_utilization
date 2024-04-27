@@ -97,6 +97,7 @@ class AcademicYearSemesterInput:
     exam_ticket_date: str
     semester: int
     academic_year_uid: str
+    status: int
 
 
 @strawberry.type(description="Academic Year")
