@@ -1,4 +1,6 @@
 import dataclasses
+import datetime
+import json
 import math
 import re
 from typing import List
@@ -14,7 +16,10 @@ from src.core.security import Info
 from src.db.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
     AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult, ProgramCourseAssessment, \
-    ExamResultSummary, ByLaw, Process, State, TransitionMeta
+    ExamResultSummary, ByLaw, Process, State, TransitionMeta, Program
+from src.models.exam_course_result_forward_logs import ExamCourseResultForwardLogs
+from src.models.upload_result_deadline import UploadResultDeadline
+from src.modules.academic_year_semester.service import AcademicYearSemesterService
 from src.modules.by_law.by_law_classes import BYLAW
 from src.modules.by_law.service import ByLawService
 from src.types import UploadResponse, FailedStudent, SuccessStudent
@@ -912,3 +917,226 @@ def to_superscript(string):
     }
 
     return ''.join(superscript_map[char] if char in superscript_map else char for char in string)
+
+
+def check_upload_result_deadline():
+    print("Running check_upload_result_deadline -----")
+    return []
+    with session_scope() as session:
+        # get active year semester
+        academic_year_semester = AcademicYearSemesterService.get_active_academic_year_semester()
+        if academic_year_semester:
+            current_date = datetime.datetime.now().date()
+            # print("Current date:", current_date)
+            # get all department deadline
+            results = session.query(UploadResultDeadline).filter(
+                UploadResultDeadline.end_date < current_date,
+                UploadResultDeadline.academic_year_semester_id == academic_year_semester.id).all()
+            # print(current_date)
+            if results:
+                for result in results:
+                    days_after = result.end_date + datetime.timedelta(days=1)
+                    # print(days_after)
+                    # Get all Departments Courses that have not forwarded the exam result to the HOD
+                    program_courses = session.query(ProgramCourse).join(ProgramSemester).join(Program).filter(
+                        ProgramCourse.forward_status == 0,
+                        ProgramCourse.deleted_at.is_(None),
+                        ProgramSemester.deleted_at.is_(None),
+                        Program.department_uid.in_([result.department_uid]),
+                        Program.deleted_at.is_(None)).all()
+                    forward_logs = []
+                    if program_courses:
+                        for pc in program_courses:
+                            forced_forward_staff_uids = []
+                            staff_allocations = session.query(CourseAllocation.staff_uid) \
+                                .filter(CourseAllocation.program_course_id == pc.id,
+                                        CourseAllocation.deleted_at.is_(None)).all()
+                            if staff_allocations:
+                                forced_forward_staff_uids = [uid for uid, in staff_allocations]
+                            # go to uaa to get student information
+                            data_obj = {
+                                "uids": forced_forward_staff_uids
+                            }
+                            # Set the Content-Type header to indicate that the request body is JSON
+                            headers = {
+                                "Content-Type": "application/json"
+                            }
+                            response = requests.post(settings.UAA_URi + '/get_staffs_by_staff_uids', json=data_obj,
+                                                     headers=headers, timeout=5)
+                            #
+                            response.raise_for_status()
+                            if response.status_code == 200:
+                                response_data = response.json()
+                                if response_data:
+                                    recipient = []
+                                    for data in response_data:
+                                        recipient.append(
+                                            {
+                                                "email": data['email'],
+                                                "name": data['full_name']
+                                            }
+                                        )
+
+                                    recipient = [
+                                        {
+                                            "email": "husseinmkwazu@sua.ac.tz",
+                                            "name": "Hussein Mkwazu"
+                                        },
+                                        {
+                                            "email": "josephat.bakobile@sua.ac.tz",
+                                            "name": "Josephat Bakobile"
+                                        }
+                                    ]
+
+                                    cc_email = {
+                                        "email": "kadefue@sua.ac.tz",
+                                        "name": "Kadeghe Fue"
+                                    }
+                                    # cc_email = {
+                                    #     "email": info.context.user.email,
+                                    #     "name": info.context.user.full_name
+                                    # }
+
+                                    recipient.append(cc_email)
+                                    end_date = result.end_date.strftime("%B %dst, %Y")
+
+                                    data_obj = json.dumps({
+                                        "title": "System Notification: Submission of Exam Results",
+                                        "message": f"Dear Instructor(s), <br>"
+                                                   f"I trust this message finds you well.<br>"
+                                                   f"I wish to inform you that, as per system protocol,"
+                                                   f"the exam results for the <strong>{pc.course.name} "
+                                                   f"({pc.course.code}) </strong> course have been "
+                                                   f"submitted to the Head of Department (HOD) due to "
+                                                   f"the departmental deadline date of {end_date}.<br><br>"
+                                                   f"Thank you for your attention to this matter.",
+                                        "recipient_emails": recipient,
+                                        "cc_emails": [cc_email],
+                                    })
+                                    headers = {
+                                        "Content-Type": "application/json"
+                                    }
+                                    try:
+                                        if days_after == current_date:
+                                            requests.post(settings.UAA_URi + '/send_email', data=data_obj,
+                                                          headers=headers, timeout=5)
+                                    except Exception as e:
+                                        print(e)
+                            forward_logs.append(ExamCourseResultForwardLogs(
+                                program_course_id=pc.id,
+                                staff_uid="-",
+                                staff_name="SUA-ESB (Auto Forward)",
+                                forwarded_from=0,
+                                forwarded_to=1
+                            ))
+                            session.query(ProgramCourse).filter_by(id=pc.id).update({"forward_status": 1})
+                        session.add_all(forward_logs)
+            else:
+                print("No Any Result Ready For Forwarding")
+            session.commit()
+
+
+def check_upload_result_deadline_to_notify():
+    with session_scope() as session:
+        # get active year semester
+        academic_year_semester = AcademicYearSemesterService.get_active_academic_year_semester()
+        if academic_year_semester:
+            current_date = datetime.datetime.now().date()
+            # get all department deadline
+            # Calculate the date three days before the current date
+            days_before = current_date - datetime.timedelta(days=3)
+            # Query where end_date is within three days from today
+            results = session.query(UploadResultDeadline).filter(
+                UploadResultDeadline.end_date > days_before,  # End date is within three days from today
+                UploadResultDeadline.end_date != current_date,  # Exclude today
+                UploadResultDeadline.deleted_at.is_(None),
+                UploadResultDeadline.academic_year_semester_id == academic_year_semester.id
+            ).all()
+            if results:
+                for result in results:
+                    # Get all Departments Courses that have not forwarded the exam result to the HOD
+                    program_courses = session.query(ProgramCourse).join(ProgramSemester).join(Program).filter(
+                        ProgramCourse.forward_status == 0,
+                        ProgramCourse.deleted_at.is_(None),
+                        ProgramSemester.deleted_at.is_(None),
+                        Program.department_uid.in_([result.department_uid]),
+                        Program.deleted_at.is_(None)).all()
+                    if program_courses:
+                        for pc in program_courses:
+                            forced_forward_staff_uids = []
+                            staff_allocations = session.query(CourseAllocation.staff_uid) \
+                                .filter(CourseAllocation.program_course_id == pc.id,
+                                        CourseAllocation.deleted_at.is_(None)).all()
+                            if staff_allocations:
+                                forced_forward_staff_uids = [uid for uid, in staff_allocations]
+                            # go to uaa to get student information
+                            data_obj = {
+                                "uids": forced_forward_staff_uids
+                            }
+                            # Set the Content-Type header to indicate that the request body is JSON
+                            headers = {
+                                "Content-Type": "application/json"
+                            }
+                            response = requests.post(settings.UAA_URi + '/get_staffs_by_staff_uids', json=data_obj,
+                                                     headers=headers, timeout=5)
+                            #
+                            response.raise_for_status()
+                            if response.status_code == 200:
+                                response_data = response.json()
+                                if response_data:
+                                    recipient = []
+                                    for data in response_data:
+                                        recipient.append(
+                                            {
+                                                "email": data['email'],
+                                                "name": data['full_name']
+                                            }
+                                        )
+
+                                    recipient = [
+                                        {
+                                            "email": "husseinmkwazu@sua.ac.tz",
+                                            "name": "Hussein Mkwazu"
+                                        },
+                                        {
+                                            "email": "josephat.bakobile@sua.ac.tz",
+                                            "name": "Josephat Bakobile"
+                                        }
+                                    ]
+
+                                    cc_email = {
+                                        "email": "kadefue@sua.ac.tz",
+                                        "name": "Kadeghe Fue"
+                                    }
+                                    # cc_email = {
+                                    #     "email": info.context.user.email,
+                                    #     "name": info.context.user.full_name
+                                    # }
+
+                                    recipient.append(cc_email)
+                                    end_date = result.end_date.strftime("%B %dst, %Y")
+                                    data_obj = json.dumps({
+                                        "title": "Reminder: Exam Results Submission Deadline Approaching",
+                                        "message": f"Dear Instructor(s), <br> "
+                                                   f"We hope this message finds you well.<br>"
+                                                   f"Please be reminded that the deadline for submitting exam "
+                                                   f"results for the <strong>{pc.course.name} "
+                                                   f"({pc.course.code})</strong> course is approaching"
+                                                   f", Kindly ensure that all exam results for this course are "
+                                                   f"submitted before <strong>{end_date}"
+                                                   f"</strong>.<br><br> Your cooperation is greatly appreciated.",
+                                        "recipient_emails": recipient,
+                                        "cc_emails": [cc_email],
+                                    })
+                                    print(data_obj)
+                                    headers = {
+                                        "Content-Type": "application/json"
+                                    }
+                                    try:
+                                        requests.post(settings.UAA_URi + '/send_email', data=data_obj,
+                                                      headers=headers, timeout=5)
+                                    except Exception as e:
+                                        print(e)
+            else:
+                print("No Any Result Ready For Forwarding")
+            session.commit()

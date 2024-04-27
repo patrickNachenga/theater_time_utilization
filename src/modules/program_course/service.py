@@ -430,14 +430,14 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                                 }
                             ]
 
-                            cc_email = [{
+                            cc_email = {
                                 "email": "kadefue@sua.ac.tz",
                                 "name": "Kadeghe Fue"
-                            }]
-                            # cc_email = [{
+                            }
+                            # cc_email = {
                             #     "email": info.context.user.email,
                             #     "name": info.context.user.full_name
-                            # }]
+                            # }
 
                             recipient.append(cc_email)
 
@@ -451,7 +451,7 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                                            f"in case there is any update, you should contact the "
                                            f"HOD so that to return this exam to your hands",
                                 "recipient_emails": recipient,
-                                "cc_emails": cc_email,
+                                "cc_emails": [cc_email],
                             })
                             headers = {
                                 "Content-Type": "application/json"
