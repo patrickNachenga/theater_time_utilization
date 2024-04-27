@@ -29,6 +29,7 @@ class UploadResultDeadlineQuery:
 
 @strawberry.type
 class UploadResultDeadlineMutation:
+    # @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_UPLOAD_RESULT_DEADLINE"])])
     @strawberry.field()
     def register_upload_result_deadline(self, inputs: ResultDeadlineInput, info: Info) -> Response[None]:
         try:
@@ -43,7 +44,7 @@ class UploadResultDeadlineMutation:
             print(e)
             return Response(status=True, code=ResponseCode.FAILURE, message="Failed to register Groups", data=[])
 
-    @strawberry.mutation(extensions=[CustomPermissionExtension(["REMOVE_COURSE"])])
+    @strawberry.field(extensions=[CustomPermissionExtension(["REMOVE_UPLOAD_RESULT_DEADLINE"])])
     async def remove_upload_result_deadline(self, uid: str) -> Response[None]:
         """
         Remove Course By UID
