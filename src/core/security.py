@@ -632,4 +632,22 @@ permissions: typing.List[Permission] = [
         description="Get Upload Result Deadline",
         service="registration",
     ),
+    Permission(
+        code="REMOVE_UPLOAD_RESULT_DEADLINE",
+        name="Remove Upload Result Deadline",
+        description="Remove Upload Result Deadline",
+        service="registration",
+    ),
+    Permission(
+        code="REGISTER_UPLOAD_RESULT_DEADLINE",
+        name="Register Upload Result Deadline",
+        description="Register Upload Result Deadline",
+        service="registration",
+    ),
+    Permission(
+        code="PRINCIPAL_FORWARD_PROGRAM_SEMESTER_EXAM_RESULTS",
+        name="Forward Program Result By Principal",
+        description="Principal Forward Program Semester Exam Results",
+        service="registration",
+    ),
 ]
