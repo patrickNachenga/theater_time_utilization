@@ -428,7 +428,6 @@ class MoodleApi:
         }
 
         response = self.sendRequest(data)
-        print(response.json())
         if response is False:
             # Handle the error condition
             print('Failed to enroll user.')
