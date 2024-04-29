@@ -401,7 +401,6 @@ class MoodleApi:
             'members[0][userid]': user_id
         }
         response = self.sendRequest(data)
-        print(response.json())
         if response is False:
             # Handle the error condition
             print('cURL Error: Failed to send the request.')
