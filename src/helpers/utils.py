@@ -463,12 +463,13 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                      ExamCoursework.program_course_id == program_course_id,
                      ExamCoursework.exam_category_id == exam_category_id,
                      ExamCoursework.assessment_number == assessment_number).first()
-            score = (score / out_off) * 100
+            # score = (score / out_off) * 100
             if exam_course_work:
                 exam_course_work.score = custom_round(score)
                 exam_course_work.weight = weight
                 exam_course_work.source = source
                 exam_course_work.program_course = program_course
+                exam_course_work.overall_marks = out_off
                 exam_course_work.exam_category = exam_category
                 instance = exam_course_work
             else:
@@ -476,6 +477,7 @@ def insert_course_work(registration_number, first_name, middle_name, last_name, 
                     student_uid=student_uid,
                     program_course_id=program_course_id,
                     exam_category_id=exam_category_id,
+                    overall_marks=out_off,
                     assessment_number=assessment_number,
                     score=custom_round(score),
                     weight=weight,
@@ -516,11 +518,12 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                          ExamResult.program_course_id == program_course_id,
                          ExamResult.exam_category_id == exam_category_id).first()
 
-                score = (score / out_off) * 100
+                # score = (score / out_off) * 100
                 if exam_result:
                     exam_result.score = score
                     exam_result.weight = weight
                     exam_result.source = source
+                    exam_result.overall_marks = out_off
                     # exam_result.program_course = program_course
                     # exam_result.exam_course_work = exam_course_work
                     instance = exam_result
@@ -532,6 +535,7 @@ def insert_exam_result(student_uid, program_course_id, exam_category_id, score, 
                         program_course_id=program_course_id,
                         # program_course=program_course,
                         exam_category_id=exam_category_id,
+                        overall_marks=out_off,
                         score=score,
                         weight=weight,
                         source=source
@@ -603,7 +607,6 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
     success_student = SuccessStudent(reg_number=None)
 
     if students:
-
         matching_item = next(
             (item for item in students if item["registration_number"] == reg_number), None)
         if matching_item:
@@ -615,7 +618,7 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             last_name = matching_item["last_name"]
             gender = matching_item["gender"]
 
-            print("============> " + str(program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ",
+            print("============> SSN: "+str(assessment_number)+" " + str(program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ",
                   out_off)
 
             if not by_law_uid:
