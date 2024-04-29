@@ -83,7 +83,7 @@ def create_course_to_moodle():
                             courseShortName=course.code,
                         )
                         if moodle_unit_id != 0:
-                            print('---- Course succesfully created to moodle:', moodle_unit_id)
+                            print('---- Course successful created to moodle:', moodle_unit_id)
                             course.moodle_id = moodle_unit_id
                         else:
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
@@ -120,10 +120,6 @@ def create_group_to_moodle():
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
 
-                print('program_course.course.moodle_id: ', program_course.course.moodle_id)
-                print('group_description: ', program_course.program_semester.semester)
-                print('group_name: ',
-                      f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}")
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
                     group_name=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
@@ -259,7 +255,6 @@ def enroll_staff_to_moodle_course():
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
                     response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
-                    print("response", params)
                     response.raise_for_status()
                     if response.status_code == 200:
                         responseData = response.json()

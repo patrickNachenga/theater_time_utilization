@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     HOST_PORT: int = int(os.environ.get("HOST_PORT"))
     os.environ["RABBIT_PORT"] = "5672"
     BASE_URL: str = HOST_HTTP + HOST_URL + ":" + str(HOST_PORT)
+
     POSTGRES_USER: str = os.environ.get("POSTGRES_USER", )
     POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD")
     POSTGRES_SERVER: str = os.environ.get("POSTGRES_SERVER")
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
     POSTGRES_UAA_DB: str = os.environ.get("POSTGRES_UAA_DB")
     POSTGRES_ACCOMMODATION_DB: str = os.environ.get("POSTGRES_ACCOMMODATION_DB")
     POSTGRES_REGISTRATION_DB: str = os.environ.get("POSTGRES_REGISTRATION_DB")
+
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
     DATABASE_UAA_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_UAA_DB}"
     DATABASE_ACCOMMODATION_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_ACCOMMODATION_DB}"
@@ -45,9 +47,15 @@ class Settings(BaseSettings):
     UAA_URi: str = os.environ.get("UAA_URi")
     SR2_TOKEN: str = os.environ.get("SR2_TOKEN")
     SR2_SERVICE_URL: str = os.environ.get("SR2_SERVICE_URL")
+
     MOODLE_SITE_URL: str = os.environ.get("MOODLE_SITE_URL")
     MOODLE_SITE_DOMAIN: str = os.environ.get("MOODLE_SITE_DOMAIN")
     MOODLE_TOKEN: str = os.environ.get("MOODLE_TOKEN")
+    MOODLE_DB = os.environ.get("MOODLE_DB")
+    MOODLE_DB_HOST = os.environ.get("MOODLE_DB_HOST")
+    MOODLE_DB_USER = os.environ.get("MOODLE_DB_USER")
+    MOODLE_DB_PASSWORD = os.environ.get("MOODLE_DB_PASSWORD")
+
     RABBIT_HOST: str = os.environ.get("RABBIT_HOST")
     RABBIT_PORT = int(os.environ.get("RABBIT_PORT"))
     RABBIT_USERNAME: str = os.environ.get("RABBIT_USERNAME")
