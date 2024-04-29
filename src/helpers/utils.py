@@ -268,7 +268,7 @@ def enroll_staff_to_moodle_course():
                     response.raise_for_status()
                     if response.status_code == 200:
                         responseData = response.json()
-                        print("responseData : ", responseData)
+                        print("Staff Information:==>", responseData)
                         if responseData and responseData['user']['moodle_id']:
                             moodle = MoodleApi()
                             enrollment_status = moodle.enroll_user_as_user(
