@@ -426,6 +426,8 @@ class MoodleApi:
             'enrolments[0][courseid]': course_id
         }
 
+        print("\n data : ", data, " \n")
+
         response = self.sendRequest(data)
         if response is False:
             # Handle the error condition
