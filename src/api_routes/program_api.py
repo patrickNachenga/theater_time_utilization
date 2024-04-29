@@ -24,7 +24,6 @@ from src.shared.models import StudentPChangeModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 
-
 from pyinstrument import Profiler
 
 program_router = APIRouter()
@@ -64,7 +63,6 @@ async def get_program_data():
     return await ProgramService.api_get_programs()
 
 
-
 @program_router.get("/profiling")
 async def get_profiling(request: Request, call_next):
     # @program_router.middleware("http")
@@ -77,6 +75,7 @@ async def get_profiling(request: Request, call_next):
         return HTMLResponse(profiler.output_html())
     else:
         return await call_next(request)
+
 
 # These will get all programs uid by passed list of department
 @program_router.post("/program/department")
@@ -353,7 +352,6 @@ def generate_course_result_report(allocation_uid: str):
     # Iterate over rows in the worksheet
     for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
         for cell in row:
-
             # lock all cells of the excel sheet
             cell.protection = Protection(locked=True)
             # Check if the current column is the editable column and cell row is not greater than 9
