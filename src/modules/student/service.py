@@ -249,16 +249,19 @@ class StudentService:
                         ExamResult.program_course_id == allocation.program_course.id,
                         ExamResult.exam_category_id == exam_category,
                         ExamResult.number_of_sitting == assessment_number).all()
-                    ue_results_dict = {ue_result.student_uid: ue_result.score for ue_result in ue_results}
+                    ue_results_dict = {ue_result.student_uid: {'score': ue_result.score, 'overall': ue_result.overall_marks} for ue_result in ue_results}
                     # Update the data list with marks from ue_results
                     for item in data['data']:
                         uid = item.get("uid")  # Use item.get to safely retrieve the UID
                         if uid is not None:
                             marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
                             if marks:
-                                item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
-                                if isinstance(item["marks"], (int, float)):
-                                    item["marks"] = round(item["marks"], 1)
+                                if marks["overall"] == out_off:
+                                    item["marks"] = round(marks["score"], 2)  # No conversion needed if old and new out of values are the same
+                                else:
+                                    proportion = marks["score"] / marks['overall']
+                                    new_score = proportion * out_off
+                                    item["marks"] = round(new_score, 2)
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 
@@ -278,7 +281,7 @@ class StudentService:
                     #         if ue_course_work_result.student_uid == item["uid"]:
                     #             item["marks"] = ue_course_work_result.score
                     #             print('marks',item["marks"])
-                    ue_results_dict = {ue_result.student_uid: ue_result.score for ue_result in course_work_results}
+                    ue_results_dict = {cw_result.student_uid: {'score': cw_result.score, 'overall': cw_result.overall_marks} for cw_result in course_work_results}
                     # Update the data list with marks from ue_results
                     for item in data['data']:
                         # print(item)  # Print the entire item to inspect its structure
@@ -286,9 +289,12 @@ class StudentService:
                         if uid is not None:
                             marks = ue_results_dict.get(uid, '')  # Retrieve the marks as a string
                             if marks:
-                                item["marks"] = float(marks) * out_off / 100  # Convert the string to a float
-                                if isinstance(item["marks"], (int, float)):
-                                    item["marks"] = round(item["marks"], 1)
+                                if marks["overall"] == out_off:
+                                    item["marks"] = round(marks["score"], 2)  # No conversion needed if old and new out of values are the same
+                                else:
+                                    proportion = marks["score"] / marks['overall']
+                                    new_score = proportion * out_off
+                                    item["marks"] = round(new_score, 2)
                             else:
                                 item["marks"] = ''  # Set a default value if marks is empty
 

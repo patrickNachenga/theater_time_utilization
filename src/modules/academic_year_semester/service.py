@@ -18,8 +18,14 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
     def get_academic_year_semesters() -> List[AcademicYearSemester]:
         with session_scope() as session:
             result = session.query(AcademicYearSemester).filter(AcademicYearSemester.deleted_at.is_(None)).order_by(
-                desc(AcademicYearSemester.updated_at)).all()
+                desc(AcademicYearSemester.id.desc())).all()
             return result
+
+    @staticmethod
+    def get_active_academic_year_semester() -> List[AcademicYearSemester]:
+        with session_scope() as session:
+            return session.query(AcademicYearSemester).filter(AcademicYearSemester.deleted_at.is_(None),
+                                                              AcademicYearSemester.status == 1).one()
 
     @staticmethod
     def get_academic_year_semesters_by_uids(uids: List[str]) -> List[AcademicYearSemester]:
@@ -107,12 +113,36 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
                     )
 
                 if inputItem.uid is None:
+                    check_semester = session.query(AcademicYearSemester).filter(
+                        AcademicYearSemester.deleted_at.is_(None),
+                        AcademicYearSemester.academic_year_id == academic_year.id,
+                        AcademicYearSemester.semester == inputItem.semester).all()
+                    if check_semester:
+                        return Response(
+                            status=False,
+                            code=ResponseCode.FAILURE,
+                            data=AcademicYearSemesterListNode(items=[], total_count=0),
+                            message="Academic Year Semester is already defined"
+                        )
+                    if inputItem.status == 1:
+                        check_active_semester = session.query(AcademicYearSemester).filter(
+                            AcademicYearSemester.deleted_at.is_(None),
+                            AcademicYearSemester.status == 1).all()
+                        if check_active_semester:
+                            return Response(
+                                status=False,
+                                code=ResponseCode.FAILURE,
+                                data=AcademicYearSemesterListNode(items=[], total_count=0),
+                                message="Active Academic Year Semester is already defined, Please set active semester "
+                                        "as In active to proceed"
+                            )
                     academic_year_semester = AcademicYearSemester(
                         odd_start_date=inputItem.odd_end_date,
                         odd_end_date=inputItem.odd_start_date,
                         even_start_date=inputItem.even_start_date,
                         even_end_date=inputItem.even_end_date,
                         exam_start_date=inputItem.exam_start_date,
+                        status=inputItem.status,
                         exam_ticket_date=inputItem.exam_ticket_date,
                         semester=inputItem.semester,
                         academic_year=academic_year,
@@ -128,16 +158,29 @@ class AcademicYearSemesterService(CRUDBase[AcademicYearSemester, AcademicYearSem
                             inputItem.uid),
                                existed_academic_year_semester), None)
                     if academic_year_semester:
+                        if inputItem.status == 1:
+                            check_active_semester = session.query(AcademicYearSemester).filter(
+                                AcademicYearSemester.deleted_at.is_(None),
+                                AcademicYearSemester.uid != inputItem.uid,
+                                AcademicYearSemester.status == 1).all()
+                            if check_active_semester:
+                                return Response(
+                                    status=False,
+                                    code=ResponseCode.FAILURE,
+                                    data=AcademicYearSemesterListNode(items=[], total_count=0),
+                                    message="Active Academic Year Semester is already defined, "
+                                            "Please set active semester "
+                                            "as In active to proceed"
+                                )
                         obj_data = jsonable_encoder(inputItem)
                         # # Replace referenced uids field with model required ids field
-                        obj_data['academic_year'] = academic_year
+                        obj_data['academic_year_id'] = academic_year.id
                         for key, value in obj_data.items():
                             setattr(academic_year_semester, key, value)
 
-                        local_object = session.merge(academic_year_semester)
-                        session.add(local_object)
+                        session.add(academic_year_semester)
                         session.commit()
-                        academic_year_semester_list.append(local_object)
+                        academic_year_semester_list.append(academic_year_semester)
                 count = session.query(AcademicYearSemester).filter(AcademicYearSemester.deleted_at.is_(None)).count()
                 return Response(status=True, code=ResponseCode.SUCCESS,
                                 data=AcademicYearSemesterListNode(items=academic_year_semester_list, total_count=count),
