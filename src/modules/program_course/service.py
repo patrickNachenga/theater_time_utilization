@@ -418,41 +418,41 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
                                         "name": data['full_name']
                                     }
                                 )
-
-                            recipient = [
-                                {
-                                    "email": "husseinmkwazu@sua.ac.tz",
-                                    "name": "Hussein Mkwazu"
-                                },
-                                {
-                                    "email": "josephat.bakobile@sua.ac.tz",
-                                    "name": "Josephat Bakobile"
-                                }
-                            ]
-
-                            cc_email = {
-                                "email": "kadefue@sua.ac.tz",
-                                "name": "Kadeghe Fue"
-                            }
+                            #
+                            # recipient = [
+                            #     {
+                            #         "email": "husseinmkwazu@sua.ac.tz",
+                            #         "name": "Hussein Mkwazu"
+                            #     },
+                            #     {
+                            #         "email": "josephat.bakobile@sua.ac.tz",
+                            #         "name": "Josephat Bakobile"
+                            #     }
+                            # ]
+                            #
                             # cc_email = {
-                            #     "email": info.context.user.email,
-                            #     "name": info.context.user.full_name
+                            #     "email": "kadefue@sua.ac.tz",
+                            #     "name": "Kadeghe Fue"
                             # }
+                            cc_email = {
+                                "email": info.context.user.email,
+                                "name": info.context.user.full_name
+                            }
 
                             recipient.append(cc_email)
 
                             data_obj = json.dumps({
                                 "title": "Force Forward Staff Course Exam Results",
-                                "message": f"Dear Instructors, <strong>{info.context.user.full_name}"
+                                "message": f"Dear Instructors, <br/><strong>{info.context.user.full_name}"
                                            f"</strong> has forced "
-                                           f"<strong>{pc.course.name} ({pc.course.code})</strong>"
-                                           f" exam to the HOD, You can not do any thing related to "
-                                           f"uploading exam result, ESB provide this notification "
-                                           f"in case there is any update, you should contact the "
-                                           f"HOD so that to return this exam to your hands",
+                                           f"<strong>{pc.course.name} ({pc.course.code})</strong> exam to the HOD, "
+                                           f"You can no longer update or change the results. "
+                                           f"In case you need to change anything related to this course, please reach out the HOD.",
                                 "recipient_emails": recipient,
                                 "cc_emails": [cc_email],
                             })
+
+
                             headers = {
                                 "Content-Type": "application/json"
                             }
