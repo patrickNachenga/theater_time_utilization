@@ -247,38 +247,25 @@ def enroll_staff_to_moodle_course():
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
             if course_allocation:
-                print("course_allocation.program_course.course.id -----> ", course_allocation.program_course.course.id)
-                print("course_allocation.program_course.id -----> ", course_allocation.program_course.id)
-                # check if this staff already enrolled to this moodle course
-                staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \
-                    .join(ProgramCourse).join(Course) \
-                    .filter(CourseAllocation.staff_uid == course_allocation.staff_uid) \
-                    .filter(CourseAllocation.program_course_id != course_allocation.program_course.id) \
-                    .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
-                    .order_by(desc(CourseAllocation.created_at)) \
-                    .first()
-                # .filter(CourseAllocation.program_course.has(Course.id == course_allocation.program_course.course.id))
-
-                if not staff_course_allocation:
-                    params = {"uid": course_allocation.staff_uid}
-                    response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
-                    response.raise_for_status()
-                    if response.status_code == 200:
-                        responseData = response.json()
-                        if responseData and responseData['user']['moodle_id']:
-                            moodle = MoodleApi()
-                            enrollment_status = moodle.enroll_user_as_user(
-                                user_id=responseData['user']['moodle_id'],
-                                course_id=course_allocation.program_course.course.moodle_id,
-                                role_name="editingteacher",
-                            )
-                            if enrollment_status:
-                                course_allocation.moodle_course_enrollment_status = True
-                                print(f'--- Successful Enroll Teacher : {responseData["user"]["username"]} to Moodle '
-                                      f'Course --- on course_allocation:')
-                            else:
-                                print('--- Fail to Enroll Teacher to Moodle Course --- on course_allocation:',
-                                      course_allocation.uid)
+                params = {"uid": course_allocation.staff_uid}
+                response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    responseData = response.json()
+                    if responseData and responseData['user']['moodle_id']:
+                        moodle = MoodleApi()
+                        enrollment_status = moodle.enroll_user_as_user(
+                            user_id=responseData['user']['moodle_id'],
+                            course_id=course_allocation.program_course.course.moodle_id,
+                            role_name="editingteacher",
+                        )
+                        if enrollment_status:
+                            course_allocation.moodle_course_enrollment_status = True
+                            print(f'--- Successful Enroll Teacher : {responseData["user"]["username"]} to Moodle '
+                                  f'Course --- on course_allocation:')
+                        else:
+                            print('--- Fail to Enroll Teacher to Moodle Course --- on course_allocation:',
+                                  course_allocation.uid)
                 course_allocation.moodle_staff_course_enrollment_status = True
                 session.add(course_allocation)
                 session.commit()
