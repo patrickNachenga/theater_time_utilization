@@ -22,7 +22,7 @@ class ProgramCourseStudentAssessmentService(object):
                 StudentCourseRegistration.uid == student_course_registration_uid,
                 StudentCourseRegistration.deleted_at.is_(None)).one()
             if not course_registration:
-                return Response(status=False, code=ResponseCode.FAILURE,
+                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None,
                                 message="Student Course Registration is not registered")
 
@@ -40,7 +40,7 @@ class ProgramCourseStudentAssessmentService(object):
                 StudentCourseRegistration.uid == inputs.student_course_registration_uid,
                 StudentCourseRegistration.deleted_at.is_(None)).all()
             if len(course_registration) == 0:
-                return Response(status=False, code=ResponseCode.FAILURE,
+                return Response(status=False, code=ResponseCode.NO_RECORD_FOUND,
                                 data=None,
                                 message="Student Course Registration is not registered")
             course_registration = course_registration[0]
