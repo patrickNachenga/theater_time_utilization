@@ -248,16 +248,16 @@ def enroll_staff_to_moodle_course():
                 .first()
             if course_allocation:
                 print("course_allocation.program_course.course.id -----> ", course_allocation.program_course.course.id)
+                print("course_allocation.program_course.id -----> ", course_allocation.program_course.id)
                 # check if this staff already enrolled to this moodle course
                 staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \
                     .join(ProgramCourse).join(Course) \
                     .filter(CourseAllocation.staff_uid == course_allocation.staff_uid) \
-                    .filter(
-                    CourseAllocation.program_course.has(Course.id == course_allocation.program_course.course.id)) \
                     .filter(CourseAllocation.program_course_id != course_allocation.program_course.id) \
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
                     .order_by(desc(CourseAllocation.created_at)) \
                     .first()
+                # .filter(CourseAllocation.program_course.has(Course.id == course_allocation.program_course.course.id))
 
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
