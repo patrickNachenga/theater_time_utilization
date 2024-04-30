@@ -238,9 +238,7 @@ def unroll_student_to_moodle_course():
 
 def enroll_staff_to_moodle_course():
     with session_scope() as session:
-        print("\n=======================STAFF ENROLLMENT DEBUGGER =============================\n")
         try:
-
             # Get data that course allocation not on moodle and program course already on moodle
             course_allocation: CourseAllocation = session.query(CourseAllocation).join(ProgramCourse) \
                 .filter(CourseAllocation.moodle_course_enrollment_status.is_(False)) \
@@ -248,8 +246,8 @@ def enroll_staff_to_moodle_course():
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
-            print("IF course_allocation-->", course_allocation)
             if course_allocation:
+                print("course_allocation.program_course.course.id -----> ", course_allocation.program_course.course.id)
                 # check if this staff already enrolled to this moodle course
                 staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \
                     .join(ProgramCourse).join(Course) \
@@ -260,15 +258,13 @@ def enroll_staff_to_moodle_course():
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
                     .order_by(desc(CourseAllocation.created_at)) \
                     .first()
-                print("staff_course_allocation -> ", staff_course_allocation )
+
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
                     response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
-                    print("params : ", params, "\n")
                     response.raise_for_status()
                     if response.status_code == 200:
                         responseData = response.json()
-                        print("Staff Information:==>", responseData)
                         if responseData and responseData['user']['moodle_id']:
                             moodle = MoodleApi()
                             enrollment_status = moodle.enroll_user_as_user(
