@@ -7,6 +7,8 @@ from src.modules.course.apis import CourseQuery, CourseMutation
 from src.modules.course_allocation.apis import CourseAllocationQuery, CourseAllocationMutation
 from src.modules.course_category.apis import CourseCategoryQuery, CourseCategoryMutation
 from src.modules.course_learn_outcome.apis import CourseLearnOutcomeQuery, CourseLearnOutcomeMutation
+from src.modules.course_learn_outcome_student_assessment.apis import CourseLearnOutcomeStudentAssessmentMutation, \
+    CourseLearnOutcomeStudentAssessmentQuery
 from src.modules.exam_category.apis import ExamCategoryQuery, ExamCategoryMutation
 from src.modules.exam_course_result_forwar_logs.apis import ExamCourseResultForwardLogsQuery
 from src.modules.exam_coursework.apis import ExamCourseWorkResultQuery
@@ -51,7 +53,7 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery, SeminarTypeQuery,
                StudentSeminarQuery,ByLawQuery, ExamCourseWorkResultQuery, StudentManuscriptQuery, IntentionToSubmitQuery,
                IntentionToSubmitRequirementQuery, UploadResultDeadlineQuery, ExamCourseResultForwardLogsQuery,
-               ProgramCourseStudentAssessmentQuery):
+               ProgramCourseStudentAssessmentQuery, CourseLearnOutcomeStudentAssessmentQuery):
     pass
 
 
@@ -64,5 +66,6 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
                   WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation,
                   StudentManuscriptMutation, IntentionToSubmitMutation, IntentionToSubmitRequirementMutation,
-                  ExamResultSummaryMutation, ExamResultMutation, UploadResultDeadlineMutation, ProgramCourseStudentAssessmentMutation):
+                  ExamResultSummaryMutation, ExamResultMutation, UploadResultDeadlineMutation,
+                  ProgramCourseStudentAssessmentMutation, CourseLearnOutcomeStudentAssessmentMutation):
     pass

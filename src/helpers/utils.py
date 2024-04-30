@@ -1127,3 +1127,48 @@ def check_upload_result_deadline_to_notify():
             else:
                 print("No Any Result Ready For Forwarding")
             session.commit()
+
+
+def teaching_and_continuous_course_assessment():
+    return [
+        {
+            "id": 1,
+            "type": "radio",
+            "assessment": "The instructor presents his/her lectures in an organized manner",
+        },
+        {
+            "id": 2,
+            "type": "radio",
+            "assessment": "Instructor takes time to synthesize the lecture materials to ensure students understand the subject matter",
+        },
+        {
+            "id": 3,
+            "type": "radio",
+            "assessment": "The instructor is able to express himself/herself in English",
+        },
+        {
+            "id": 4,
+            "type": "radio",
+            "assessment": "The instructor encourages questions and dialogue",
+        },
+        {
+            "id": 5,
+            "type": "radio",
+            "assessment": "The instructor is available for consultation",
+        },
+        {
+            "id": 6,
+            "type": "radio",
+            "assessment": "The instructor provided feedback on assignments, tests, practical reports and other continuous assessment",
+        },
+        {
+            "id": 7,
+            "type": "radio",
+            "assessment": "The instructor provided feedback on assignments, tests, practical reports and other continuous assessment",
+        },
+        {
+            "id": 8,
+            "type": "text",
+            "assessment": "Any other comments regarding; i) teaching; ii) continuous assessment; iii) conduct of practicals and iv) conduct of seminars",
+        }
+    ]

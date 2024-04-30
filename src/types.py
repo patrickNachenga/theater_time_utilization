@@ -1594,3 +1594,46 @@ class StudentCourseAssessmentInput:
     answer: str
     question_no: int
     multiple: Optional[List[str]] = None
+
+
+@strawberry.type(description="Course Leaning Outcome Assessment Node")
+class StudentCourseLearningOutcomeAssessmentNode:
+    uid: Optional[str] = None
+    course_lean_outcome: str
+    course_lean_outcome_uid: str
+    has_answer: bool
+    answer: Optional[int] = None
+
+
+@strawberry.input()
+class StudentCourseLearOutcomeAssessmentAnswerInput:
+    course_lean_outcome_uid: str
+    answer: int
+
+
+@strawberry.input(description="Course Leaning Outcome Assessment Input")
+class StudentCourseLearningOutcomeAssessmentInput:
+    student_course_registration_uid: str
+    answers: List[StudentCourseLearOutcomeAssessmentAnswerInput]
+
+
+@strawberry.type(description="Course Leaning Outcome Assessment Node")
+class StudentTeachingContinuousCourseAssessmentNode:
+    uid: Optional[str] = None
+    assessment_id: int
+    assessment: str
+    type: str
+    has_answer: bool
+    answer: Optional[str] = None
+
+
+@strawberry.input()
+class TeachingContinuousCourseAssessmentAnswerInput:
+    assessment_id: int
+    answer: str
+
+
+@strawberry.input(description="Teaching And Continuous Course Assessment Input")
+class TeachingContinuousCourseAssessmentInput:
+    student_course_registration_uid: str
+    answers: List[TeachingContinuousCourseAssessmentAnswerInput]

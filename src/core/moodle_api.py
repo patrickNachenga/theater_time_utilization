@@ -333,7 +333,7 @@ class MoodleApi:
                     print(f"      ---> Sorry, Course with shortname: {courseShortName} not on Moodle Database ----------")
                     return 0
             else:
-                print('API Error: ' + responseData['message'])
+                print('API Errorsds: ' + responseData['message'])
                 return 0
         else:
             if responseData:
