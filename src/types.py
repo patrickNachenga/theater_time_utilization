@@ -576,7 +576,6 @@ class CourseAllocationNode:
     moodle_staff_course_enrollment_status: Optional[bool] = False
 
 
-
 @strawberry.type(description="Forward Result Node")
 class ExamCourseResultForwardLogsNode:
     uid: str
@@ -1580,3 +1579,18 @@ class ExamCourseResultForwardLogNode:
     forwarded_from: str
     forwarded_to: str
     uid: str
+
+
+@strawberry.type(description="Course Assessment Node")
+class StudentCourseAssessmentNode:
+    answer: str
+    question_no: int
+
+
+@strawberry.input(description="Student Course Assessment Input")
+class StudentCourseAssessmentInput:
+    uid: Optional[str] = None
+    student_course_registration_uid: str
+    answer: str
+    question_no: int
+    multiple: Optional[List[str]] = None

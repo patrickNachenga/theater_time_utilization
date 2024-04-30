@@ -302,24 +302,29 @@ class StudentService:
                             item['marks'] = ''
         return data
 
-    def get_student_course_to_register(self, inputs) -> StudentProgramCourseListNode:
+    def get_student_course_to_register(self, inputs, active_semester) -> StudentProgramCourseListNode:
         with (session_scope() as session):
+
+            active_semester_flag = 0
+            if active_semester.semester == 1:
+                active_semester_flag = 1
+            else:
+                active_semester_flag = 0
             program_courses = session.query(ProgramCourse). \
                 join(ProgramSemester). \
                 join(Program). \
-                join(AcademicYear). \
-                filter(AcademicYear.status == 1). \
                 filter(Program.uid == inputs.program_uid). \
                 filter(ProgramSemester.deleted_at.is_(None)). \
                 filter(Program.deleted_at.is_(None)). \
-                filter(AcademicYear.deleted_at.is_(None)). \
+                filter(ProgramSemester.academic_year_id == active_semester.academic_year_id). \
                 filter(ProgramCourse.deleted_at.is_(None)). \
-                filter(ProgramSemester.semester == inputs.semester). \
+                filter(ProgramSemester.semester % 2 == active_semester_flag). \
                 filter(ProgramSemester.study_year == inputs.study_year).all()
 
             total_count = len(program_courses)
             registered_course = session.query(StudentCourseRegistration). \
-                join(ProgramCourse).join(ProgramSemester).join(AcademicYear).filter(AcademicYear.status == 1). \
+                join(ProgramCourse).join(ProgramSemester).filter(
+                ProgramSemester.academic_year_id == active_semester.academic_year_id). \
                 filter(StudentCourseRegistration.student_uid == inputs.student_uid,
                        StudentCourseRegistration.deleted_at.is_(None)). \
                 filter(ProgramSemester.semester == inputs.semester).all()

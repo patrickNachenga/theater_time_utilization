@@ -27,7 +27,7 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.types import ProgramCourseInput, ProgramCourseListNode, ProgramSemesterListNode, ProgramSemesterInput, \
     ProgramCourseNode, InnerStudentProgramSemester, RequestProgramSemester, CourseNode, \
-    ProgramCourseWithHeadshipListNode
+    ProgramCourseWithHeadshipListNode, StudentCourseAssessmentNode
 
 
 class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCourseInput]):
@@ -113,7 +113,8 @@ class ProgramCourseService(CRUDBase[ProgramCourse, ProgramCourseInput, ProgramCo
             # print(result)
 
     @staticmethod
-    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[List[ProgramCourseWithHeadshipListNode]]:
+    def get_program_course_by_program_semester_uid_with_headship(uid, info: Info) -> Response[
+        List[ProgramCourseWithHeadshipListNode]]:
         with (session_scope() as session):
             try:
                 program_semester = ProgramSemesterService.get_program_semester_by_uid(uid)
