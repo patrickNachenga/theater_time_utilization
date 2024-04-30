@@ -286,7 +286,6 @@ def enroll_staff_to_moodle_course():
                 """
                 checking leach the end. now reset all moodle_staff_course_enrollment_status to False
                 """
-                print("ELSE course_allocation-->", course_allocation)
                 course_allocations = session.query(CourseAllocation).join(ProgramCourse) \
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(False)) \
                     .filter(CourseAllocation.moodle_staff_course_enrollment_status.is_(True)) \
@@ -300,7 +299,6 @@ def enroll_staff_to_moodle_course():
                     print('--- RELOAD: Enroll staff to Moodle Course  Service restarted Again ---')
         except Exception as e:
             print('--- Exception Occurred while enrolling Teacher to Moodle Course.  ', str(e))
-        print("\n\n=======================END  STAFF ENROLLMENT DEBUGGER =============================\n")
 
 
 def enroll_student_to_moodle_group():
