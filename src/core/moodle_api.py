@@ -1,6 +1,6 @@
 # -------------------------  Version 3 -------------------------
 # -------------------------  Version 3 -------------------------
-
+import psycopg2
 import requests
 
 from src.core.config import settings
@@ -87,6 +87,80 @@ class MoodleApi:
                     return 0
             else:
                 return 0
+
+    @staticmethod
+    def connect_moodle_db():
+        # Assuming connection details are specified here
+        return psycopg2.connect(
+            dbname=settings.MOODLE_DB,
+            user=settings.MOODLE_DB_USER,
+            password=settings.MOODLE_DB_PASSWORD,
+            host=settings.MOODLE_DB_HOST
+        )
+
+    def get_moodle_course_db(self, shortname: str):
+        try:
+            with self.connect_moodle_db() as connection:
+                with connection.cursor() as cursor:
+                    query = """
+                            SELECT id
+                            FROM mdl_course
+                            WHERE shortname = %s
+                        """
+                    cursor.execute(query, (shortname,))
+                    moodle_db_data = cursor.fetchone()
+                    if moodle_db_data:
+                        return {
+                            "status": True,
+                            "message": "Course found on moodle",
+                            "moodle_id": int(moodle_db_data[0])
+                        }
+                    else:
+                        return {
+                            "status": False,
+                            "message": f"Course with short_name '{shortname}' not found in the database.",
+                            "moodle_id": None
+                        }
+
+        except (Exception, psycopg2.Error) as err:
+            print(f"Error connecting to Moodle Postgres SQL database: {err}")
+            return {
+                "status": False,
+                "message": f"Error connecting to Moodle Postgres SQL database",
+                "moodle_id": None
+            }
+
+    def get_moodle_group_db(self, group_name: str, course_id:str):
+        try:
+            with self.connect_moodle_db() as connection:
+                with connection.cursor() as cursor:
+                    query = """
+                            SELECT id
+                            FROM mdl_groups
+                            WHERE name = %s and courseid = %s LIMIT 1
+                        """
+                    cursor.execute(query, (group_name, course_id, ))
+                    moodle_db_data = cursor.fetchone()
+                    if moodle_db_data:
+                        return {
+                            "status": True,
+                            "message": "Course found on moodle",
+                            "moodle_id": int(moodle_db_data[0])
+                        }
+                    else:
+                        return {
+                            "status": False,
+                            "message": f"Course with group_name '{group_name}' not found in the database.",
+                            "moodle_id": None
+                        }
+
+        except (Exception, psycopg2.Error) as err:
+            print(f"Error connecting to Moodle Postgres SQL database: {err}")
+            return {
+                "status": False,
+                "message": f"Error connecting to Moodle Postgres SQL database",
+                "moodle_id": None
+            }
 
     def updateDepartment(self, departmentId, newName, newDescription):
         data = {
@@ -243,16 +317,24 @@ class MoodleApi:
         }
 
         response = self.sendRequest(data)
-
         if response is False:
             print('cURL Error: Failed to send the request.')
             return 0
-
         responseData = response.json()
 
         if 'exception' in responseData:
-            print('API Error:', responseData['message'])
-            return 0
+            if responseData['errorcode'] == "shortnametaken":
+                # Possibly data is on moodle. try getting moodle id
+                print("   ---> Try To Get Moodle ID From Moodle DB ----------")
+                moodle_db_response = self.get_moodle_course_db(shortname=courseShortName)
+                if moodle_db_response['status'] and (moodle_db_response['moodle_id'] != 0):
+                    return moodle_db_response['moodle_id']
+                else:
+                    print(f"      ---> Sorry, Course with shortname: {courseShortName} not on Moodle Database ----------")
+                    return 0
+            else:
+                print('API Error: ' + responseData['message'])
+                return 0
         else:
             if responseData:
                 if 'id' in responseData[0]:
@@ -275,8 +357,6 @@ class MoodleApi:
             'groups[0][visibility]': 1
         }
 
-
-        print("data: ", data)
         response = self.sendRequest(data)
 
         if response is False:
@@ -285,13 +365,21 @@ class MoodleApi:
             return False
 
         response_data = response.json()
-        print("response_data", response_data)
 
         if 'exception' in response_data:
-            print(response_data)
-            # Handle the API error condition
-            print('API Error:', response_data['message'])
-            return False
+            if response_data['errorcode'] == "invalidparameter":
+                # response_data data is on moodle. try getting moodle id
+                print("   ---> Try To Get Moodle ID From Moodle DB ----------")
+                moodle_db_response = self.get_moodle_group_db(group_name=group_name, course_id=course_id)
+                if moodle_db_response['status'] and (moodle_db_response['moodle_id'] != 0):
+                    return moodle_db_response['moodle_id']
+                else:
+                    print(
+                        f"      ---> Sorry, Course with group_name: {group_name} not on Moodle Database ----------")
+                    return False
+            else:
+                print('API Error: ' + response_data['message'])
+                return False
         else:
             if response_data:
                 # Check if the response contains the group ID
@@ -313,7 +401,6 @@ class MoodleApi:
             'members[0][userid]': user_id
         }
         response = self.sendRequest(data)
-        print(response.json())
         if response is False:
             # Handle the error condition
             print('cURL Error: Failed to send the request.')
@@ -340,7 +427,6 @@ class MoodleApi:
         }
 
         response = self.sendRequest(data)
-        print(response.json())
         if response is False:
             # Handle the error condition
             print('Failed to enroll user.')
@@ -637,6 +723,9 @@ class MoodleApi:
             return False
         else:
             return True
+
+
+
 
 # moodle_api = MoodleApi()
 # login_url = moodle_api.getloginurl("admin")

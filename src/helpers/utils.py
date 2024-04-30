@@ -88,7 +88,7 @@ def create_course_to_moodle():
                             courseShortName=course.code,
                         )
                         if moodle_unit_id != 0:
-                            print('---- Course succesfully created to moodle:', moodle_unit_id)
+                            print('---- Course successful created to moodle:', moodle_unit_id)
                             course.moodle_id = moodle_unit_id
                         else:
                             print('--- Failure to create course to Moodle --- ', moodle_unit_id)
@@ -125,10 +125,6 @@ def create_group_to_moodle():
                 # Attempt to create_group to moodle
                 moodle = MoodleApi()
 
-                print('program_course.course.moodle_id: ', program_course.course.moodle_id)
-                print('group_description: ', program_course.program_semester.semester)
-                print('group_name: ',
-                      f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}")
                 moodle_unit_id = moodle.create_group(
                     course_id=program_course.course.moodle_id,
                     group_name=f"{program_course.program_semester.program.code} {program_course.course.code} {program_course.program_semester.academic_year.name} Semester {program_course.program_semester.semester}",
@@ -251,6 +247,7 @@ def enroll_staff_to_moodle_course():
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
             if course_allocation:
+                print("course_allocation.program_course.course.id -----> ", course_allocation.program_course.course.id)
                 # check if this staff already enrolled to this moodle course
                 staff_course_allocation: CourseAllocation = session.query(CourseAllocation) \
                     .join(ProgramCourse).join(Course) \
@@ -261,14 +258,13 @@ def enroll_staff_to_moodle_course():
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(True)) \
                     .order_by(desc(CourseAllocation.created_at)) \
                     .first()
+
                 if not staff_course_allocation:
                     params = {"uid": course_allocation.staff_uid}
                     response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
-                    print("response", params)
                     response.raise_for_status()
                     if response.status_code == 200:
                         responseData = response.json()
-                        print("responeData", responseData)
                         if responseData and responseData['user']['moodle_id']:
                             moodle = MoodleApi()
                             enrollment_status = moodle.enroll_user_as_user(
@@ -290,6 +286,7 @@ def enroll_staff_to_moodle_course():
                 """
                 checking leach the end. now reset all moodle_staff_course_enrollment_status to False
                 """
+                print("ELSE course_allocation-->", course_allocation)
                 course_allocations = session.query(CourseAllocation).join(ProgramCourse) \
                     .filter(CourseAllocation.moodle_course_enrollment_status.is_(False)) \
                     .filter(CourseAllocation.moodle_staff_course_enrollment_status.is_(True)) \
@@ -303,6 +300,7 @@ def enroll_staff_to_moodle_course():
                     print('--- RELOAD: Enroll staff to Moodle Course  Service restarted Again ---')
         except Exception as e:
             print('--- Exception Occurred while enrolling Teacher to Moodle Course.  ', str(e))
+        print("\n\n=======================END  STAFF ENROLLMENT DEBUGGER =============================\n")
 
 
 def enroll_student_to_moodle_group():
