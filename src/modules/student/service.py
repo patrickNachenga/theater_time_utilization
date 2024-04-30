@@ -327,7 +327,7 @@ class StudentService:
                 ProgramSemester.academic_year_id == active_semester.academic_year_id). \
                 filter(StudentCourseRegistration.student_uid == inputs.student_uid,
                        StudentCourseRegistration.deleted_at.is_(None)). \
-                filter(ProgramSemester.semester == inputs.semester).all()
+                filter(ProgramSemester.semester % 2 == active_semester_flag).all()
             return StudentProgramCourseListNode(course_to_register=program_courses, total_count=total_count,
                                                 course_registered=registered_course)
         pass
