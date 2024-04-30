@@ -304,8 +304,6 @@ class StudentService:
 
     def get_student_course_to_register(self, inputs, active_semester) -> StudentProgramCourseListNode:
         with (session_scope() as session):
-
-            active_semester_flag = 0
             if active_semester.semester == 1:
                 active_semester_flag = 1
             else:
