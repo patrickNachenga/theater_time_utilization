@@ -165,7 +165,6 @@ class ProgramCourseQuery:
                 message="Unable to retrieve student program courses",
                 data=[])
 
-
 @strawberry.type
 class ProgramCourseMutation:
     @strawberry.mutation()

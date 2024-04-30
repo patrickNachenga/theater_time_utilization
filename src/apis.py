@@ -22,6 +22,8 @@ from src.modules.program_capacity.apis import ProgramCapacityMutation, ProgramCa
 from src.modules.program_category.apis import ProgramCategoryQuery, ProgramCategoryMutation
 from src.modules.program_course.apis import ProgramCourseQuery, ProgramCourseMutation
 from src.modules.program_course_assessment.apis import ProgramCourseAssessmentQuery, ProgramCourseAssessmentMutation
+from src.modules.program_course_student_assessment.apis import ProgramCourseStudentAssessmentQuery, \
+    ProgramCourseStudentAssessmentMutation
 from src.modules.program_semester.apis import ProgramSemesterQuery, ProgramSemesterMutation
 from src.modules.programs.apis import ProgramQuery, ProgramMutation
 from src.modules.semester_registration.apis import SemesterRegistrationQuery
@@ -48,7 +50,8 @@ class ApiQuery(StudentQuery, ProgramCategoryQuery, CourseQuery, CourseAllocation
                AcademicYearSemesterQuery, MoodleApiCallQuery, StudentProgramChangeCourseQuery,
                StudentProgramChangeStatusQuery, WorkflowQuery, StateQuery, TransitionMetaQuery, SeminarTypeQuery,
                StudentSeminarQuery,ByLawQuery, ExamCourseWorkResultQuery, StudentManuscriptQuery, IntentionToSubmitQuery,
-               IntentionToSubmitRequirementQuery, UploadResultDeadlineQuery, ExamCourseResultForwardLogsQuery):
+               IntentionToSubmitRequirementQuery, UploadResultDeadlineQuery, ExamCourseResultForwardLogsQuery,
+               ProgramCourseStudentAssessmentQuery):
     pass
 
 
@@ -61,5 +64,5 @@ class ApiMutation(ProgramCategoryMutation, CourseMutation, CourseAllocationMutat
                   AcademicYearSemesterMutation, StudentProgramChangeMutation, StudentProgramChangeStatusMutation,
                   WorkflowMutation, StateMutation, TransitionMetaMutation, SeminarTypeMutation, StudentSeminarMutation, ByLawMutation,
                   StudentManuscriptMutation, IntentionToSubmitMutation, IntentionToSubmitRequirementMutation,
-                  ExamResultSummaryMutation, ExamResultMutation, UploadResultDeadlineMutation):
+                  ExamResultSummaryMutation, ExamResultMutation, UploadResultDeadlineMutation, ProgramCourseStudentAssessmentMutation):
     pass

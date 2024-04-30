@@ -614,7 +614,8 @@ def general_upload(students=None, program_course_id=None, exam_category_id=None,
             last_name = matching_item["last_name"]
             gender = matching_item["gender"]
 
-            print("============> SSN: "+str(assessment_number)+" " + str(program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ",
+            print("============> SSN: " + str(assessment_number) + " " + str(
+                program_course_id) + ": " + course_code + ": ", reg_number, ": ", score, ": ",
                   out_off)
 
             if not by_law_uid:

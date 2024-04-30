@@ -18,7 +18,8 @@ from src.db.session import session_scope
 from src.helpers.utils import get_current_academic_year, get_student_from_uaa, get_student_from_uaa_by_reg_numbers, \
     insert_exam_result, insert_course_work, \
     general_upload
-from src.models import ExamCategory, ProgramCourse
+from src.models import ExamCategory, ProgramCourse, AcademicYearSemester
+from src.modules.academic_year_semester.service import AcademicYearSemesterService
 from src.modules.student.service import StudentService
 from src.modules.exam_category.service import ExamCategoryService
 from src.shared.response import Response
@@ -35,7 +36,15 @@ class StudentQuery:
     @strawberry.field(extensions=[LoginRequiredExtension()])
     def get_student_course_to_register(self, inputs: CourseRegisterInputNode) -> Response[StudentProgramCourseListNode]:
         try:
-            result = StudentService().get_student_course_to_register(inputs)
+            # get Active Academic Year Semester
+            active_semester = AcademicYearSemesterService.get_active_academic_year_semester()
+            if not active_semester:
+                return Response(
+                    status=False,
+                    code=ResponseCode.NO_RECORD_FOUND,
+                    message="Active Semester Is Not Defined Yet.",
+                    data=None)
+            result = StudentService().get_student_course_to_register(inputs, active_semester)
             # print(result)
             return Response(
                 status=True,
