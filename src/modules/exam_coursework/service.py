@@ -523,6 +523,7 @@ class ExamCourseworkService:
                                 ExamCoursework.student_uid == item['student_uid'],
                                 ExamCoursework.assessment_number == ass['number'],
                                 ExamCoursework.exam_category_id == header['id']).first()
+                            print("ass_score", ass_score)
                             if ass_score:
                                 # value = ass_score.score
                                 value = (ass_score.score / overall_marks) * 100
@@ -573,6 +574,7 @@ class ExamCourseworkService:
                                 ExamResult.student_uid == item['student_uid'],
                                 ExamResult.number_of_sitting == 1,
                                 ExamResult.exam_category_id == header['id']).first()
+                            print("ue_score", ue_score)
                             if ue_score:
                                 # value = ue_score.score
                                 value = (ue_score.score / ue_score.overall_marks) * 100
