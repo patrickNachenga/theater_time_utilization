@@ -526,10 +526,10 @@ class ExamCourseworkService:
                             print("ass_score", ass_score)
                             if ass_score:
                                 # value = ass_score.score
-                                value = (ass_score.score / overall_marks) * 100
+                                value = (ass_score.score / ass_score.overall_marks) * 100
                                 no_of_scores += 1
                                 # total_score += ass_score.score
-                                total_score += (ass_score.score / overall_marks) * 100
+                                total_score += (ass_score.score / ass_score.overall_marks) * 100
                             # print(f"{item['registration_number']} - {ass['sn']} - {ass_score}")
                         text = worksheet.cell(row=row, column=col_no, value=value)
                         text.alignment = Alignment(horizontal='center')
