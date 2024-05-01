@@ -518,15 +518,17 @@ class ExamCourseworkService:
                         value = '-'
                         # Check Scores
                         if header['type'] == 'theory':
-                            ass_score = session.query(ExamCoursework.score).filter(
+                            ass_score = session.query(ExamCoursework.score, ExamCoursework.overall_marks).filter(
                                 ExamCoursework.program_course_id == program_course.id,
                                 ExamCoursework.student_uid == item['student_uid'],
                                 ExamCoursework.assessment_number == ass['number'],
                                 ExamCoursework.exam_category_id == header['id']).first()
                             if ass_score:
-                                value = ass_score.score
+                                # value = ass_score.score
+                                value = (ass_score.score / overall_marks) * 100
                                 no_of_scores += 1
-                                total_score += ass_score.score
+                                # total_score += ass_score.score
+                                total_score += (ass_score.score / overall_marks) * 100
                             # print(f"{item['registration_number']} - {ass['sn']} - {ass_score}")
                         text = worksheet.cell(row=row, column=col_no, value=value)
                         text.alignment = Alignment(horizontal='center')
@@ -566,15 +568,17 @@ class ExamCourseworkService:
                         value = '-'
                         # Check Scores
                         if header['type'] == 'ue':
-                            ue_score = session.query(ExamResult.score).filter(
+                            ue_score = session.query(ExamResult.score, ExamResult.overall_marks).filter(
                                 ExamResult.program_course_id == program_course.id,
                                 ExamResult.student_uid == item['student_uid'],
                                 ExamResult.number_of_sitting == 1,
                                 ExamResult.exam_category_id == header['id']).first()
                             if ue_score:
-                                value = ue_score.score
+                                # value = ue_score.score
+                                value = (ue_score.score / ue_score.overall_marks) * 100
                                 no_of_scores += 1
-                                total_score += ue_score.score
+                                # total_score += ue_score.score
+                                total_score += (ue_score.score / ue_score.overall_marks) * 100
                         text = worksheet.cell(row=row, column=col_no, value=value)
                         text.alignment = Alignment(horizontal='center')
                         text.font = small_font
