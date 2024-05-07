@@ -1173,3 +1173,14 @@ def teaching_and_continuous_course_assessment():
             "assessment": "Any other comments regarding; i) teaching; ii) continuous assessment; iii) conduct of practicals and iv) conduct of seminars",
         }
     ]
+
+
+def find_single_entry_in_array(array, value, key):
+    for item in array:
+        if item.get(key) == value:
+            return item
+    return None
+
+
+def format_amount(amount):
+    return "{:,.0f}".format(float(amount))
