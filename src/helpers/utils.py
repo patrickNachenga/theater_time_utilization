@@ -246,7 +246,6 @@ def enroll_staff_to_moodle_course():
                 .filter(CourseAllocation.program_course.has(ProgramCourse.moodle_id.isnot(None))) \
                 .order_by(desc(CourseAllocation.created_at)) \
                 .first()
-
             if course_allocation:
                 params = {"uid": course_allocation.staff_uid}
                 response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
