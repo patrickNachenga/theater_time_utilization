@@ -131,7 +131,7 @@ class CourseLearnOutcomeStudentAssessmentService(object):
                                 data=None,
                                 message="Student Course Registration is not registered")
             course_registration = course_registration[0]
-            for result in inputs.answer:
+            for result in inputs.answers:
                 lean_outcome = session.query(CourseLearnOutcome).filter(
                     CourseLearnOutcome.uid == result.course_lean_outcome_uid).one()
                 check_assessment_result = session.query(CourseLearnOutcomeStudentAssessments).filter(
