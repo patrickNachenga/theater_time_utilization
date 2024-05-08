@@ -1021,7 +1021,7 @@ class ExamCourseworkService:
                                 scoreData = []
                                 for mark in scores:
                                     s = {
-                                        "score": (mark.score / mark.overall_marks) * 100,
+                                        "score": round((mark.score / mark.overall_marks) * 100, 2),
                                         # "overall_marks": mark.overall_marks,
                                         "overall_marks": "100",
                                         "assessment_number": mark.assessment_number
