@@ -1608,7 +1608,7 @@ class StudentCourseLearningOutcomeAssessmentNode:
 @strawberry.input()
 class StudentCourseLearOutcomeAssessmentAnswerInput:
     course_lean_outcome_uid: str
-    answer: int
+    answer: str
 
 
 @strawberry.input(description="Course Leaning Outcome Assessment Input")
