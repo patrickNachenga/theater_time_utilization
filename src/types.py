@@ -1591,7 +1591,7 @@ class StudentCourseAssessmentNode:
 class StudentCourseAssessmentInput:
     uid: Optional[str] = None
     student_course_registration_uid: str
-    answer: str
+    answer: int
     question_no: int
     multiple: Optional[List[str]] = None
 
