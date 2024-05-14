@@ -6,7 +6,7 @@ from src.core.security import CustomPermissionExtension, Info
 from src.modules.program_course_student_assessment.service import ProgramCourseStudentAssessmentService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import StudentCourseAssessmentNode, StudentCourseAssessmentInput
+from src.types import StudentCourseAssessmentNode, StudentCourseAssessmentInput, StudentAssessmentNode
 
 
 @strawberry.type
@@ -15,17 +15,32 @@ class ProgramCourseStudentAssessmentQuery:
     # @strawberry.field(extensions=[CustomPermissionExtension(["GET_UPLOAD_RESULT_DEADLINE"])])
     def get_student_program_course_assessment_result(self, student_course_registration_uid: str, question_no: int,  info: Info) -> Response[StudentCourseAssessmentNode]:
         try:
-            return ProgramCourseStudentAssessmentService \
-                .get_student_program_course_assessment_result(student_course_registration_uid, question_no)
+            if question_no != 5:
+                return ProgramCourseStudentAssessmentService \
+                    .get_student_program_course_assessment_result(student_course_registration_uid, question_no)
         except Exception as e:
             print(e)
-            return Response(
-                status=False,
-                code=ResponseCode.FAILURE,
-                message="Failed to retrieve student program course assessment",
-                data=None)
+        return Response(
+            status=False,
+            code=ResponseCode.FAILURE,
+            message="Failed to retrieve student program course assessment",
+            data=None)
 
-
+    @strawberry.field()
+    # @strawberry.field(extensions=[CustomPermissionExtension(["GET_UPLOAD_RESULT_DEADLINE"])])
+    def get_student_program_course_assessment_qn5_result(self, student_course_registration_uid: str, question_no: int,
+                                                     info: Info) -> Response[List[StudentAssessmentNode]]:
+        try:
+            if question_no == 5:
+                return ProgramCourseStudentAssessmentService \
+                    .get_student_program_course_assessment_qn5_result(student_course_registration_uid)
+        except Exception as e:
+            print(e)
+        return Response(
+            status=False,
+            code=ResponseCode.FAILURE,
+            message="Failed to retrieve student program course assessment",
+            data=None)
 @strawberry.type
 class ProgramCourseStudentAssessmentMutation:
     @strawberry.field()

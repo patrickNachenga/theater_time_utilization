@@ -1627,6 +1627,16 @@ class StudentTeachingContinuousCourseAssessmentNode:
     answer: Optional[str] = None
 
 
+@strawberry.type(description="Course Leaning Outcome Assessment Node")
+class StudentAssessmentNode:
+    uid: Optional[str] = None
+    item_id: int
+    item: str
+    type: str
+    has_answer: bool
+    answer: Optional[str] = None
+
+
 @strawberry.input()
 class TeachingContinuousCourseAssessmentAnswerInput:
     assessment_id: int

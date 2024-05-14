@@ -1174,6 +1174,61 @@ def teaching_and_continuous_course_assessment():
     ]
 
 
+def qn5_student_program_course_assessment():
+    return [
+        {
+            "id": 51,
+            "type": "check",
+            "item": "Provided his/her teaching notes",
+        },
+        {
+            "id": 52,
+            "type": "check",
+            "item": "Provided handouts",
+        },
+        {
+            "id": 53,
+            "type": "check",
+            "item": "Provided articles/book chapters",
+        },
+        {
+            "id": 54,
+            "type": "check",
+            "item": "Provided titles of reference materials",
+        },
+        {
+            "id": 55,
+            "type": "check",
+            "item": "Placed important references on “Special Reserve” desk in the Library",
+        },
+        {
+            "id": 56,
+            "type": "check",
+            "item": "Gave assignments",
+        },
+        {
+            "id": 57,
+            "type": "check",
+            "item": "Complemented lectures with practicals (if applicable)",
+        },
+        {
+            "id": 58,
+            "type": "check",
+            "item": "Assigned seminar topics",
+        },
+        {
+            "id": 59,
+            "type": "check",
+            "item": "Gave written and/or oral tests as required",
+        },
+        {
+            "id": 60,
+            "type": "text",
+            "item": "Used other means (specify)",
+        },
+    ]
+
+
 def find_single_entry_in_array(array, value, key):
     for item in array:
         if item.get(key) == value:
