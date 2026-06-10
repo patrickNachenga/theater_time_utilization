@@ -7,13 +7,13 @@ from src.models import AcademicYear
 from src.modules.academic_year.service import AcademicYearService, AcademicYearCrud
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, PaginationInput, AcademicYearListNode, AcademicYearNode
+from src.types import PaginationInput
+from src.modules.academic_year.types import AcademicYearInput, AcademicYearNode, AcademicYearListNode
 
 
 @strawberry.type
 class AcademicYearQuery:
-    # @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
-    @strawberry.field()
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_ACADEMIC_YEARS"])])
     def get_academic_years(self, pagination: PaginationInput) -> Response[AcademicYearListNode]:
         try:
             result = AcademicYearCrud.get_multi_paginated(pagination, ['name', 'status', 'start_date', 'end_date'],
@@ -73,7 +73,7 @@ class AcademicYearQuery:
 
 @strawberry.type
 class AcademicYearMutation:
-    @strawberry.field()
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_ACADEMIC_YEARS"])])
     def register_academic_year(self, inputs: List[AcademicYearInput]) -> Response[AcademicYearListNode]:
         try:
             return AcademicYearService(AcademicYear).register_academic_year(inputs)

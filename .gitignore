@@ -1,4 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Alembic (versions will be tracked, but compiled files not)
+alembic/versions/*.pyc
+
+# Docker
+.docker/
+
+# Coverage
+coverage/
+.coverage
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+# Pytest
+.pytest_cache/
+
+
+
+
 .idea
+
+
+
 .ipynb_checkpoints
 .mypy_cache
 .vscode

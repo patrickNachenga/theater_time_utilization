@@ -7,8 +7,9 @@ from src.models.academic_year_semester import AcademicYearSemester
 from src.modules.academic_year_semester.service import AcademicYearSemesterCrud, AcademicYearSemesterService
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import PaginationInput, \
-    AcademicYearSemesterListNode, AcademicYearSemesterInput, AcademicYearSemesterNode
+from src.types import PaginationInput
+from src.modules.academic_year_semester.types import AcademicYearSemesterInput, AcademicYearSemesterNode, \
+    AcademicYearSemesterListNode
 
 
 @strawberry.type

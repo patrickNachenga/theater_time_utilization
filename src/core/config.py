@@ -14,69 +14,55 @@ load_dotenv(os.path.join(BASEDIR, '.env'))
 
 
 class Settings(BaseSettings):
-    PROJECT_TITLE: str = "Registration App"
-    SYSTEM_DEBUG_MODE: bool = os.environ.get("SYSTEM_DEBUG_MODE")
+    PROJECT_TITLE: str = os.environ.get("APP_NAME", "theatre_time_utilization")
+    SYSTEM_DEBUG_MODE: bool = os.environ.get("SYSTEM_DEBUG_MODE", "false").lower() in ("1", "true", "yes")
     PROJECT_VERSION: str = "0.0.1"
     HOST_HTTP: str = os.environ.get("HOST_HTTP", "http://")
-    HOST_URL: str = os.environ.get("HOST_URL")
-    HOST_PORT: int = int(os.environ.get("HOST_PORT"))
-    os.environ["RABBIT_PORT"] = "5672"
+    HOST_URL: str = os.environ.get("HOST_URL", "localhost")
+    HOST_PORT: int = int(os.environ.get("HOST_PORT", 8000))
     BASE_URL: str = HOST_HTTP + HOST_URL + ":" + str(HOST_PORT)
 
-    POSTGRES_USER: str = os.environ.get("POSTGRES_USER", )
-    POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD")
-    POSTGRES_SERVER: str = os.environ.get("POSTGRES_SERVER")
+    POSTGRES_USER: str = os.environ.get("POSTGRES_USER", "postgres")
+    POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD", "")
+    POSTGRES_SERVER: str = os.environ.get("POSTGRES_SERVER", "localhost")
     POSTGRES_PORT: int = int(os.environ.get("POSTGRES_PORT", 5432))
-    POSTGRES_DB: str = os.environ.get("POSTGRES_DB")
-    POSTGRES_UAA_DB: str = os.environ.get("POSTGRES_UAA_DB")
-    POSTGRES_ACCOMMODATION_DB: str = os.environ.get("POSTGRES_ACCOMMODATION_DB")
-    POSTGRES_REGISTRATION_DB: str = os.environ.get("POSTGRES_REGISTRATION_DB")
-
+    POSTGRES_DB: str = os.environ.get("POSTGRES_DB", "postgres")
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    DATABASE_UAA_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_UAA_DB}"
-    DATABASE_ACCOMMODATION_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_ACCOMMODATION_DB}"
 
-    JWT_ALGORITHM = 'HS256'
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
-    JWT_REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 6
-    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
-    REDIS_HOST = os.environ.get("REDIS_HOST")
-    REDIS_PORT = os.environ.get("REDIS_PORT")
-    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+    JWT_PUBLIC_KEY_PATH =  os.environ.get("JWT_PUBLIC_KEY_PATH", "public.pem")
+    JWT_ALGORITHM =  os.environ.get("JWT_ALGORITHM", "RS256")
+    JWT_ISSUER =  os.environ.get("JWT_ISSUER", "mnh-auth-service")
+    JWT_AUDIENCE =  os.environ.get("JWT_AUDIENCE", "mnh-services")
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 15))
+    JWT_REFRESH_TOKEN_EXPIRE_MINUTES = int(os.environ.get("JWT_REFRESH_TOKEN_EXPIRE_MINUTES", 60 * 24 * 7))
+
+    REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+    REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
+    REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
     LOGGING_FILE_NAME = 'logs'
-    UAA_URi: str = os.environ.get("UAA_URi")
-    SR2_TOKEN: str = os.environ.get("SR2_TOKEN")
-    SR2_SERVICE_URL: str = os.environ.get("SR2_SERVICE_URL")
 
-    MOODLE_SITE_URL: str = os.environ.get("MOODLE_SITE_URL")
-    MOODLE_SITE_DOMAIN: str = os.environ.get("MOODLE_SITE_DOMAIN")
-    MOODLE_TOKEN: str = os.environ.get("MOODLE_TOKEN")
-    MOODLE_DB = os.environ.get("MOODLE_DB")
-    MOODLE_DB_HOST = os.environ.get("MOODLE_DB_HOST")
-    MOODLE_DB_USER = os.environ.get("MOODLE_DB_USER")
-    MOODLE_DB_PASSWORD = os.environ.get("MOODLE_DB_PASSWORD")
+    RABBIT_HOST: str = os.environ.get("RABBIT_HOST", "localhost")
+    RABBIT_PORT = int(os.environ.get("RABBIT_PORT", 5672))
+    RABBIT_USERNAME: str = os.environ.get("RABBIT_USERNAME", "guest")
+    RABBIT_PASSWORD: str = os.environ.get("RABBIT_PASSWORD", "guest")
 
-    RABBIT_HOST: str = os.environ.get("RABBIT_HOST")
-    RABBIT_PORT = int(os.environ.get("RABBIT_PORT"))
-    RABBIT_USERNAME: str = os.environ.get("RABBIT_USERNAME")
-    RABBIT_PASSWORD: str = os.environ.get("RABBIT_PASSWORD")
-
+    MAIN_SERVICE_BASE_URL: str = os.environ.get("MAIN_SERVICE_BASE_URL", "http://localhost:8000")
 
 settings = Settings()
 
 QUEUES = [
-    {
-        "name": "sua-esb-permission-queue",
-        "exchange": "sua-esb-permission-exchange",
-        "routing_key": "sua-esb-permission-routing-key",
-        "type": "fanout"
-    },
-    {
-        "name": "sua-esb-audit-log-queue",
-        "exchange": "sua-esb-audit-log-exchange",
-        "routing_key": "sua-esb-audit-log-routing-key",
-        "type": "fanout"
-    },
+    # {
+    #     "name": "mnh-connect-permission-queue",
+    #     "exchange": "mnh-connect-permission-exchange",
+    #     "routing_key": "mnh-connect-permission-routing-key",
+    #     "type": "fanout"
+    # },
+    # {
+    #     "name": "mnh-connect-audit-log-queue",
+    #     "exchange": "mnh-connect-audit-log-exchange",
+    #     "routing_key": "mnh-connect-audit-log-routing-key",
+    #     "type": "fanout"
+    # },
 ]
 
 

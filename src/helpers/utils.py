@@ -75,7 +75,7 @@ def create_course_to_moodle():
             Call Department moodle id for uuid
             """
             try:
-                response = requests.get(settings.UAA_URi + f"/department/{course.department_uid}", timeout=5)
+                response = requests.get(settings.MAIN_SERVICE_BASE_URL + f"/department/{course.department_uid}", timeout=5)
                 if response.status_code == 200:
                     responseData = response.json()
                     if responseData["status"] and responseData["data"]['moodle_id'] is not None:
@@ -155,7 +155,7 @@ def enroll_student_to_moodle_course():
                 .first()
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
+                response = requests.get(settings.MAIN_SERVICE_BASE_URL + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     response_data = response.json()
@@ -214,7 +214,7 @@ def unroll_student_to_moodle_course():
                 .first()
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
+                response = requests.get(settings.MAIN_SERVICE_BASE_URL + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -248,7 +248,7 @@ def enroll_staff_to_moodle_course():
                 .first()
             if course_allocation:
                 params = {"uid": course_allocation.staff_uid}
-                response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
+                response = requests.get(settings.MAIN_SERVICE_BASE_URL + f'/users/staff', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -302,7 +302,7 @@ def enroll_student_to_moodle_group():
 
             if student_course_registration:
                 params = {"uid": student_course_registration.student_uid}
-                response = requests.get(settings.UAA_URi + f'/users/student', params=params, timeout=5)
+                response = requests.get(settings.MAIN_SERVICE_BASE_URL + f'/users/student', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -337,7 +337,7 @@ def enroll_staff_to_moodle_group():
 
             if staff_course_allocation:
                 params = {"uid": staff_course_allocation.staff_uid}
-                response = requests.get(settings.UAA_URi + f'/users/staff', params=params, timeout=5)
+                response = requests.get(settings.MAIN_SERVICE_BASE_URL + f'/users/staff', params=params, timeout=5)
                 response.raise_for_status()
                 if response.status_code == 200:
                     responseData = response.json()
@@ -384,7 +384,7 @@ def get_user_unit_department_headship(info: Info):
     u_list = []
     if len(info.context.user.unit_headships) > 0:
         try:
-            url = f"{settings.UAA_URi}/departments/units"
+            url = f"{settings.MAIN_SERVICE_BASE_URL}/departments/units"
             # url = "http://127.0.0.1:8000/departments/units"
             response = requests.post(url, json=info.context.user.unit_headships, timeout=5)
             u_list = response.json()
@@ -399,7 +399,7 @@ def get_user_departments_headship(info: Info):
     d_list = []
     if len(info.context.user.campus_headships) > 0:
         try:
-            url = f"{settings.UAA_URi}/departments/campuses"
+            url = f"{settings.MAIN_SERVICE_BASE_URL}/departments/campuses"
             # url = "http://127.0.0.1:8000/departments/campuses"
             response = requests.post(url, json=info.context.user.campus_headships, timeout=5)
             c_list = response.json()
@@ -408,7 +408,7 @@ def get_user_departments_headship(info: Info):
             print(e)
     if len(info.context.user.unit_headships) > 0:
         try:
-            url = f"{settings.UAA_URi}/departments/units"
+            url = f"{settings.MAIN_SERVICE_BASE_URL}/departments/units"
             # url = "http://127.0.0.1:8000/departments/units"
             response = requests.post(url, json=info.context.user.unit_headships, timeout=5)
             u_list = response.json()
@@ -546,7 +546,7 @@ def get_student_from_uaa():
             "Content-Type": "application/json"
         }
 
-        response = requests.get(settings.UAA_URi + '/users/students', headers=headers, timeout=5)
+        response = requests.get(settings.MAIN_SERVICE_BASE_URL + '/users/students', headers=headers, timeout=5)
 
     except Exception as e:
         print('exception occurred', e)
@@ -569,7 +569,7 @@ def get_student_from_uaa_by_reg_numbers(reg_numbers):
         }
 
         print("kabla uaa: ")
-        response = requests.post(settings.UAA_URi + '/users/students_by_reg_numbers', json=payload, headers=headers,
+        response = requests.post(settings.MAIN_SERVICE_BASE_URL + '/users/students_by_reg_numbers', json=payload, headers=headers,
                                  timeout=5)
         print("baada uaa: ")
     except Exception as e:
@@ -948,7 +948,7 @@ def check_upload_result_deadline():
                             headers = {
                                 "Content-Type": "application/json"
                             }
-                            response = requests.post(settings.UAA_URi + '/get_staffs_by_staff_uids', json=data_obj,
+                            response = requests.post(settings.MAIN_SERVICE_BASE_URL + '/get_staffs_by_staff_uids', json=data_obj,
                                                      headers=headers, timeout=5)
                             #
                             response.raise_for_status()
@@ -1005,7 +1005,7 @@ def check_upload_result_deadline():
                                     }
                                     try:
                                         if days_after == current_date:
-                                            requests.post(settings.UAA_URi + '/send_email', data=data_obj,
+                                            requests.post(settings.MAIN_SERVICE_BASE_URL + '/send_email', data=data_obj,
                                                           headers=headers, timeout=5)
                                     except Exception as e:
                                         print(e)
@@ -1064,7 +1064,7 @@ def check_upload_result_deadline_to_notify():
                             headers = {
                                 "Content-Type": "application/json"
                             }
-                            response = requests.post(settings.UAA_URi + '/get_staffs_by_staff_uids', json=data_obj,
+                            response = requests.post(settings.MAIN_SERVICE_BASE_URL + '/get_staffs_by_staff_uids', json=data_obj,
                                                      headers=headers, timeout=5)
                             #
                             response.raise_for_status()
@@ -1120,7 +1120,7 @@ def check_upload_result_deadline_to_notify():
                                         "Content-Type": "application/json"
                                     }
                                     try:
-                                        requests.post(settings.UAA_URi + '/send_email', data=data_obj,
+                                        requests.post(settings.MAIN_SERVICE_BASE_URL + '/send_email', data=data_obj,
                                                       headers=headers, timeout=5)
                                     except Exception as e:
                                         print(e)

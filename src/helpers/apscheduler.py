@@ -8,16 +8,17 @@ from src.helpers.utils import create_course_to_moodle, create_group_to_moodle, e
 scheduler = BackgroundScheduler()
 
 # add required operation on job
-scheduler.add_job(create_course_to_moodle, 'interval', seconds=10)
-scheduler.add_job(create_group_to_moodle, 'interval', seconds=15)
+# scheduler.add_job(create_course_to_moodle, 'interval', seconds=20)
+# scheduler.add_job(create_group_to_moodle, 'interval', seconds=25)
+#
+# scheduler.add_job(enroll_staff_to_moodle_course, 'interval', seconds=10)
+# scheduler.add_job(enroll_student_to_moodle_course, 'interval', seconds=35)
+#
+# scheduler.add_job(enroll_student_to_moodle_group, 'interval', seconds=20)
+# scheduler.add_job(enroll_staff_to_moodle_group, 'interval', seconds=20)
+#
+# scheduler.add_job(unroll_student_to_moodle_course, 'interval', seconds=100)
+#
+# scheduler.add_job(check_upload_result_deadline, 'cron', hour=0, minute=0, second=0)
+# scheduler.add_job(check_upload_result_deadline_to_notify, 'cron', hour=7, minute=0, second=0)
 
-scheduler.add_job(enroll_staff_to_moodle_course, 'interval', seconds=15)
-scheduler.add_job(enroll_student_to_moodle_course, 'interval', seconds=15)
-
-scheduler.add_job(enroll_student_to_moodle_group, 'interval', seconds=20)
-scheduler.add_job(enroll_staff_to_moodle_group, 'interval', seconds=20)
-
-scheduler.add_job(unroll_student_to_moodle_course, 'interval', seconds=100)
-
-scheduler.add_job(check_upload_result_deadline, 'cron', hour=0, minute=0, second=0)
-scheduler.add_job(check_upload_result_deadline_to_notify, 'cron', hour=7, minute=0, second=0)

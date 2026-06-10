@@ -16,7 +16,7 @@ from src.core.security import get_context, permissions
 from src.core.security import get_context
 
 
-class RegistrationApp(FastAPI):
+class MainServiceApp(FastAPI):
 
 
     def __init__(self, *args, **kwargs):

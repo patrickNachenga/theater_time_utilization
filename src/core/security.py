@@ -20,29 +20,29 @@ from src.shared.response_code import ResponseCode
 route = APIRouter()
 
 
-# def fetch_user(token: str) -> UserAuthenticatedModel | None:
-#     """
-#         Fetch User By Token
-#     :param token:
-#     :return:
-#     """
-#     resp = requests.get(
-#         f"{settings.UAA_URi}/uaa/user",
-#         headers={"Authorization": f"Bearer {token}"}
-#     )
-#     # resp = requests.get(
-#     #     "http://127.0.0.1:8000/uaa/user",
-#     #     headers={"Authorization": f"Bearer {token}"},
-#     # )
-#
-#     if resp.status_code == 200 and resp.json():
-#         user_dict = {
-#             "authorities": resp.json()["authorities"],
-#             "profile": resp.json()["user"],
-#             "headships": UserHeadshipsModel(**resp.json()['headships'])
-#         }
-#         return UserAuthenticatedModel(**user_dict)
-#     return None
+def fetch_user(token: str) -> UserAuthenticatedModel | None:
+    """
+        Fetch User By Token
+    :param token:
+    :return:
+    """
+    resp = requests.get(
+        f"{settings.UAA_URi}/uaa/user",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    # resp = requests.get(
+    #     "http://127.0.0.1:8000/uaa/user",
+    #     headers={"Authorization": f"Bearer {token}"},
+    # )
+
+    if resp.status_code == 200 and resp.json():
+        user_dict = {
+            "authorities": resp.json()["authorities"],
+            "profile": resp.json()["user"],
+            "headships": UserHeadshipsModel(**resp.json()['headships'])
+        }
+        return UserAuthenticatedModel(**user_dict)
+    return None
 
 
 class IsAuthenticated(BasePermission):
@@ -121,533 +121,54 @@ permissions: typing.List[Permission] = [
         code="VIEW_ACADEMIC_YEARS",
         name="View Academic Years",
         description="Can View Academic Years",
-        service="registration",
+        service="mnh_theatre_time",
     ),
     Permission(
         code="VIEW_ACTIVE_ACADEMIC_YEARS",
         name="View View Academic Years",
         description="Can View Active Academic Years",
-        service="registration",
+        service="mnh_theatre_time",
     ),
-    Permission(
-        code="REGISTER_ACADEMIC_YEARS",
-        name="Register Academic Years",
-        description="Can Register Academic Years",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_ACADEMIC_YEAR",
-        name="Remove Academic Years",
-        description="Can Remove Academic Years",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_ACADEMIC_YEAR_SEMESTERS",
-        name="View Academic Year Semesters",
-        description="Can View Academic Year Semesters",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_ACADEMIC_YEAR_SEMESTER_BY_ACADEMIC_YEAR",
-        name="View Academic Year Semeter By Academic YEar",
-        description="Can View Academic Year Semeter By using Academic Year",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_ACADEMIC_YEAR_SEMESTERS",
-        name="Register Academic Year Semesters",
-        description="Can Register Academic Year Semesters",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_ACADEMIC_YEAR_SEMESTER",
-        name="Remove Academic Year Semeter",
-        description="Can Remove Academic Year Semeter",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_CATEGORIES",
-        name="View Exam Categories",
-        description="Can View Exam Categories",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_EXAM_CATEGORIES",
-        name="Register Exam Categories",
-        description="Can Register Exam Categories",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_CATEGORY",
-        name="Remove Exam Category",
-        description="Can Remove Exam Category",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_CATEGORY_GROUPS",
-        name="View Exam Category Groups",
-        description="Can View Exam Category Groups",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_EXAM_CATEGORY_GROUPS",
-        name="Register Exam Category Groups",
-        description="Can Register Exam Category Groups",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_CATEGORY_GROUP",
-        name="Remove Exam Category Group",
-        description="Can Remove Exam Category Group",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_COURSEWORK",
-        name="View Exam Coursework",
-        description="Can View Exam Coursework",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_EXAM_COURSEWORK",
-        name="Register Exam Coursework",
-        description="Can Register Exam Coursework",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_COURSEWORK",
-        name="Remove Exam Coursework",
-        description="Can Remove Exam Coursework",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_RESULTS",
-        name="View Exam Results",
-        description="Can View Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_EXAM_RESULTS",
-        name="Register Exam Results",
-        description="Can Register Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_RESULT",
-        name="Remove Exam Result",
-        description="Can Remove Exam Result",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_COURSES",
-        name="View Course",
-        description="Can View Course",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_COURSES",
-        name="Register Courses",
-        description="Can Register Courses",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_COURSE",
-        name="Remove Exam Results",
-        description="Can Delete Course",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_COURSE_ALLOCATIONS",
-        name="View Course allocations",
-        description="Can View Course allocations",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_STAFF_COURSE_ALLOCATION_BY_ACADEMIC_YEAR",
-        name="View Staff Course allocation By Academic Year",
-        description="Can View Staff Course allocation By Year",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_COURSE_ALLOCATION_BY_PROGRAM_COURSE",
-        name="View Staff Course allocation By Program Course",
-        description="Can View Staff  Allocation By Program Course",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_COURSE_ALLOCATIONS_BY_STAFF",
-        name="View Course allocations By Staff",
-        description="Can View Course allocations By Staff",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_COURSE_ALLOCATIONS",
-        name="Register Course allocations",
-        description="Can Register Course allocations",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_COURSE_ALLOCATION",
-        name="Remove Course Allocation",
-        description="Can Delete Course allocation",
-        service="registration",
-    ),
-    Permission(
-        code="UPDATE_STAFF_COURSE_ALLOCATION",
-        name="Update Staff Course Allocation",
-        description="Can Update Staff Course allocation",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_COURSE_CATEGORIES",
-        name="View Course Categories",
-        description="Can View Course Categories",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_COURSE_CATEGORIES",
-        name="Register Course Categories",
-        description="Can Register Course Categories",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_COURSE_CATEGORY",
-        name="Remove Course Category",
-        description="Can Delete Course category",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAM_COURSE_ASSESSMENTS",
-        name="VIEW Program Course Assessments",
-        description="Can View Program Course Assessments",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_PROGRAM_COURSE_ASSESSMENTS",
-        name="Register Program Course Assessments",
-        description="Can register Program Course Assessments",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_PROGRAM_COURSE_ASSESSMENT",
-        name="Remove Program Course Assessment",
-        description="Can Delete Program Course Assessment",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_ALL_PROGRAMS",
-        name="View All Programs",
-        description="Can View All  Programs",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAMS",
-        name="View Programs",
-        description="Can View Programs",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_PROGRAMS",
-        name="Register Programs",
-        description="Can Register Programs",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_PROGRAM",
-        name="Remove Program",
-        description="Can Delete Program",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAM_SEMESTERS",
-        name="View Program Semesters",
-        description="Can View Program Semesters",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_PROGRAM_SEMESTERS",
-        name="Register Program Semesters",
-        description="Can Register Program Semesters",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_PROGRAM_SEMESTER",
-        name="Remove Program Semester",
-        description="Can Delete Program Semester",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAM_COURSES",
-        name="View Program Courses",
-        description="Can View Program Courses",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAM_COURSES_BY_SEMESTER",
-        name="View Program Courses By Semester",
-        description="Can View Program Courses By Selected Semester",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_PROGRAM_COURSES",
-        name="Register Program Courses",
-        description="Can Register Program Courses",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_PROGRAM_COURSE",
-        name="REMOVE Program Course",
-        description="Can Delete Program Course",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAM_CATEGORIES",
-        name="View Program Categories",
-        description="Can View Program Categories",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_PROGRAM_CATEGORIES",
-        name="Register Program Categories",
-        description="Can Register Program Categories",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_PROGRAM_CATEGORY",
-        name="REMOVE Program Category",
-        description="Can Delete Program Category",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_PROGRAM_CAPACITIES",
-        name="View Program Capacities",
-        description="Can View Program Capacities",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_PROGRAM_CAPACITIES",
-        name="Register Program Capacities",
-        description="Can Register Program Capacities",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_PROGRAM_CAPACITY",
-        name="REMOVE Program Capacity",
-        description="Can Delete Program Capacity",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_COURSE_LEARN_OUTCOMES",
-        name="View Course Learning Outcomes",
-        description="Can View Course  Learning Outcomes",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_COURSE_LEARN_OUTCOMES",
-        name="Register Course Learning Outcomes",
-        description="Can Register Course Learning Outcomes",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_COURSE_LEARN_OUTCOME",
-        name="Remove Course Learning Outcome",
-        description="Can Delete Course Learning Outcome",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_RESULT_SUMMARIES",
-        name="View Exam Result Summaries",
-        description="Can View Exam Result Summaries",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_EXAM_RESULT_SUMMARIES",
-        name="Register Exam Result Summaries",
-        description="Can Register Exam Result Summaries",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_RESULT_SUMMARY",
-        name="Remove Exam Result Summary",
-        description="Can Delete Exam Result Summary",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_STUDENT_SEMESTER_REGISTRATIONS",
-        name="View Student Semester Registrations",
-        description="Can View Student Semester Registrations",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_EXAM_RESULTS",
-        name="View Exam Results",
-        description="Can View Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_EXAM_RESULTS",
-        name="Register Exam Results",
-        description="Can Register Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_EXAM_RESULT",
-        name="Remove Exam Result",
-        description="Can Delete Exam Result",
-        service="registration",
-    ),
+    # Theatre time utilization permissions
+    Permission(code="VIEW_PROCEDURE_DELAY_CATEGORIES", name="View Procedure Delay Categories", description="Can view procedure delay categories", service="mnh_theatre_time"),
+    Permission(code="REGISTER_PROCEDURE_DELAY_CATEGORIES", name="Register Procedure Delay Categories", description="Can register procedure delay categories", service="mnh_theatre_time"),
 
-    Permission(
-        code="VIEW_STUDENT_COURSE_REGISTRATIONS",
-        name="View Student Course Registrations",
-        description="Can View Student Course Registrations",
-        service="registration",
-    ),
-    Permission(
-        code="VIEW_STUDENT_CURRENT_COURSE_REGISTRATIONS",
-        name="View Student current Course Registrations",
-        description="Can View current Student Course Registrations",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_STUDENT_COURSES",
-        name="Register Student Courses",
-        description="Can Register Student Courses",
-        service="registration",
-    ),
+    Permission(code="VIEW_PROCEDURE_DELAY_CAUSES", name="View Procedure Delay Causes", description="Can view procedure delay causes", service="mnh_theatre_time"),
+    Permission(code="REGISTER_PROCEDURE_DELAY_CAUSES", name="Register Procedure Delay Causes", description="Can register procedure delay causes", service="mnh_theatre_time"),
 
-    Permission(
-        code="VIEW_WORKFLOWS",
-        name="View Workflows",
-        description="Can View Workflows",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_WORKFLOWS",
-        name="Register Workflows",
-        description="Can Register Workflows",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_WORKFLOW",
-        name="Remove Workflows",
-        description="Can Delete Workflows",
-        service="registration",
-    ),
+    Permission(code="VIEW_PROCEDURES", name="View Procedures", description="Can view procedures", service="mnh_theatre_time"),
+    Permission(code="REGISTER_PROCEDURES", name="Register Procedures", description="Can register procedures", service="mnh_theatre_time"),
 
-    Permission(
-        code="VIEW_STATES",
-        name="View States",
-        description="Can View States",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_STATES",
-        name="Register States",
-        description="Can Register States",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_STATE",
-        name="Remove States",
-        description="Can Delete States",
-        service="registration",
-    ),
+    Permission(code="VIEW_THEATRE_ROLES", name="View Theatre Roles", description="Can view theatre roles", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_ROLES", name="Register Theatre Roles", description="Can register theatre roles", service="mnh_theatre_time"),
 
-    Permission(
-        code="VIEW_TRANSITION_METAS",
-        name="View Transition Metas",
-        description="Can View Transition Metas",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_TRANSITION_METAS",
-        name="Register Transition Metas",
-        description="Can Register Transition Metas",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_TRANSITION_META",
-        name="Remove Transition Meta",
-        description="Can Delete Transition Meta",
-        service="registration",
-    ),
+    Permission(code="VIEW_THEATRE_MEMBERS", name="View Theatre Members", description="Can view theatre members", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_MEMBERS", name="Register Theatre Members", description="Can register theatre members", service="mnh_theatre_time"),
 
-    Permission(
-        code="VIEW_SEMINAR_TYPES",
-        name="View Seminar Types",
-        description="Can View Seminar Types",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_SEMINAR_TYPES",
-        name="Register Seminar Types",
-        description="Can Register Seminar Types",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_SEMINAR_TYPE",
-        name="Remove Seminar Type",
-        description="Can Delete Seminar Type",
-        service="registration",
-    ),
-    Permission(
-        code="PUBLISH_EXAM_RESULTS",
-        name="Publish Exam Results",
-        description="Publish Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="FORWARD_COURSE_EXAM_RESULTS",
-        name="Forward Course Exam Results",
-        description="Forward Course Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="UN_PUBLISH_EXAM_RESULTS",
-        name="Un publish Exam Results Exam Results",
-        description="Un publish Exam Results Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="RETURN_EXAM_COURSE_RESULTS",
-        name="Return Exam Course Results Exam",
-        description="Return Exam Course Results",
-        service="registration",
-    ),
-    Permission(
-        code="HOD_FORWARD_COURSE_EXAM_RESULTS",
-        name="Hod Forward Course Exam Results",
-        description="HOD Forward Course Exam Results",
-        service="registration",
-    ),
-    Permission(
-        code="FORWARD_COURSE_RESULTS_BY_HOD",
-        name="Forward Course Results by HOD",
-        description="Forward Course Results by HOD",
-        service="registration",
-    ),
-    Permission(
-        code="GET_UPLOAD_RESULT_DEADLINE",
-        name="Get Upload Result Deadline",
-        description="Get Upload Result Deadline",
-        service="registration",
-    ),
-    Permission(
-        code="REMOVE_UPLOAD_RESULT_DEADLINE",
-        name="Remove Upload Result Deadline",
-        description="Remove Upload Result Deadline",
-        service="registration",
-    ),
-    Permission(
-        code="REGISTER_UPLOAD_RESULT_DEADLINE",
-        name="Register Upload Result Deadline",
-        description="Register Upload Result Deadline",
-        service="registration",
-    ),
-    Permission(
-        code="PRINCIPAL_FORWARD_PROGRAM_SEMESTER_EXAM_RESULTS",
-        name="Forward Program Result By Principal",
-        description="Principal Forward Program Semester Exam Results",
-        service="registration",
-    ),
+    Permission(code="VIEW_THEATRE_MEMBER_ROLES", name="View Theatre Member Roles", description="Can view theatre member roles", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_MEMBER_ROLES", name="Register Theatre Member Roles", description="Can register theatre member roles", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_REGIONS", name="View Regions", description="Can view regions", service="mnh_theatre_time"),
+    Permission(code="REGISTER_REGIONS", name="Register Regions", description="Can register regions", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_INTERNAL_SOURCES", name="View Internal Sources", description="Can view internal sources", service="mnh_theatre_time"),
+    Permission(code="REGISTER_INTERNAL_SOURCES", name="Register Internal Sources", description="Can register internal sources", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_EXTERNAL_SOURCES", name="View External Sources", description="Can view external sources", service="mnh_theatre_time"),
+    Permission(code="REGISTER_EXTERNAL_SOURCES", name="Register External Sources", description="Can register external sources", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_THEATRE_UNITS", name="View Theatre Units", description="Can view theatre units", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_UNITS", name="Register Theatre Units", description="Can register theatre units", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_DEATH_REASONS", name="View Death Reasons", description="Can view death reasons", service="mnh_theatre_time"),
+    Permission(code="REGISTER_DEATH_REASONS", name="Register Death Reasons", description="Can register death reasons", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_THEATRE_TIME_RECORDS", name="View Theatre Time Records", description="Can view theatre time records", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_TIME_RECORDS", name="Register Theatre Time Records", description="Can register theatre time records", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_THEATRE_RECORD_TEAM_MEMBERS", name="View Theatre Record Team Members", description="Can view theatre record team members", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_RECORD_TEAM_MEMBERS", name="Register Theatre Record Team Members", description="Can register theatre record team members", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_THEATRE_RECORD_DELAYS", name="View Theatre Record Delays", description="Can view theatre record delays", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_RECORD_DELAYS", name="Register Theatre Record Delays", description="Can register theatre record delays", service="mnh_theatre_time"),
 ]

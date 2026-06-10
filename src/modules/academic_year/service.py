@@ -10,7 +10,7 @@ from src.models import AcademicYear, AcademicYearSemester
 from src.modules import CRUDBase
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
-from src.types import AcademicYearInput, AcademicYearListNode, AcademicYearNode
+from src.modules.academic_year.types import AcademicYearInput, AcademicYearNode, AcademicYearListNode
 
 
 class AcademicYearService(CRUDBase[AcademicYear, AcademicYearInput, AcademicYearInput]):

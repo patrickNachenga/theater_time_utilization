@@ -19,40 +19,22 @@ class BaseModel(Base):
     created_by = Column(Integer, nullable=True)
 
 
-from .program_category import ProgramCategory
-from .course import Course
-from .course_learn_outcome import CourseLearnOutcome
-# from .exam_category_group import ExamCategoryGroup
-from .program import Program
-from .group import Group
-from .program_semester import ProgramSemester
-from .course_category import CourseCategory
-from .program_course import ProgramCourse
-from .exam_category import ExamCategory
-from .academic_year import AcademicYear
-from .program_course_assessment import ProgramCourseAssessment
-from .course_allocation import CourseAllocation
-from .program_capacity import ProgramCapacity
-from .semester_registration import SemesterRegistration
-from .student_course_registration import StudentCourseRegistration
-from .student_exam_registration import StudentExamRegistration
-# from .exam_category_group import ExamCategoryGroup
-from .exam_category import ExamCategory
-from .exam_coursework import ExamCoursework
-from .exam_result import ExamResult
-from .exam_result_summary import ExamResultSummary
 from .academic_year_semester import AcademicYearSemester
-from .student_program_change import StudentProgramChange
-from .exam_failure import StudentExamFailure
-from .student_exam_postponement import StudentExamPostponement
-from .student_program_change_status import StudentProgramChangeStatus
-from .workflow import Workflow, State, TransitionMeta, Process, ProcessFlow
-from .seminar_types import SeminarType
-from .student_seminar import StudentSeminar
-from .by_law import ByLaw
-from .student_manuscript import StudentManuscript
-from .intention_to_submit import IntentionToSubmit
-from .intention_to_submit_requirement import IntentionToSubmitRequirement
-# from .student_study_postponement import StudentStudyPostponement
-# from .student_postponement_approval_status import StudentPostponementApprovalStatus
-# from .student_postponement_reasons import StudentPostponementReason
+from .academic_year import AcademicYear
+
+# theatre models
+from .procedure_delay_category import ProcedureDelayCategory
+from .procedure_delay_cause import ProcedureDelayCause
+from .procedure import Procedure
+from .theatre_role import TheatreRole
+from .theatre_member import TheatreMember
+from .theatre_member_role import TheatreMemberRole
+from .region import Region
+from .internal_source import InternalSource
+from .external_source import ExternalSource
+from .theatre_unit import TheatreUnit
+from .death_reason import DeathReason
+from .theatre_time_record import TheatreTimeRecord
+from .theatre_record_team_member import TheatreRecordTeamMember
+from .theatre_record_delay import TheatreRecordDelay
+
