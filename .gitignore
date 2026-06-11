@@ -49,33 +49,3 @@ htmlcov/
 
 # Pytest
 .pytest_cache/
-
-
-
-
-.idea
-
-
-
-.ipynb_checkpoints
-.mypy_cache
-.vscode
-__pycache__
-.pytest_cache
-env
-.env
-*.http
-*.py[cod]
-*$py.class
-*.pyc
-.ideal/
-.idea/
-src/core/.env
-regenv
-.gitttt
-/alembic
-alembic.ini
-docker-compose.yml
-Dockerfile
-/venv
-run.sh
