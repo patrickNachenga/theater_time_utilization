@@ -17,10 +17,7 @@ class BaseModel(Base):
     deleted_at = Column(DateTime, nullable=True)
     deleted_by = Column(Integer, nullable=True)
     created_by = Column(Integer, nullable=True)
-
-
-from .academic_year_semester import AcademicYearSemester
-from .academic_year import AcademicYear
+    updated_by = Column(Integer, nullable=True)
 
 # theatre models
 from .procedure_delay_category import ProcedureDelayCategory

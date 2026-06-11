@@ -13,7 +13,7 @@ from sqlalchemy.orm import aliased
 from src.core.config import settings
 from src.core.moodle_api import MoodleApi
 from src.core.security import Info
-from src.db.session import session_scope
+from src.database.session import session_scope
 from src.models import Course, ProgramCourse, ProgramSemester, StudentCourseRegistration, CourseAllocation, \
     AcademicYear, AcademicYearSemester, ExamCoursework, ExamCategory, ExamResult, ProgramCourseAssessment, \
     ExamResultSummary, ByLaw, Process, State, TransitionMeta, Program

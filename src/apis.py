@@ -14,8 +14,7 @@ from src.modules.death_reason.apis import DeathReasonQuery, DeathReasonMutation
 from src.modules.theatre_time_record.apis import TheatreTimeRecordQuery, TheatreTimeRecordMutation
 from src.modules.theatre_record_team_member.apis import TheatreRecordTeamMemberQuery, TheatreRecordTeamMemberMutation
 from src.modules.theatre_record_delay.apis import TheatreRecordDelayQuery, TheatreRecordDelayMutation
-from src.modules.academic_year.apis import AcademicYearQuery, AcademicYearMutation
-from src.modules.academic_year_semester.apis import AcademicYearSemesterQuery, AcademicYearSemesterMutation
+
 
 
 @strawberry.type
@@ -33,8 +32,7 @@ class ApiQuery(ProcedureDelayCategoryQuery,
                TheatreTimeRecordQuery,
                TheatreRecordTeamMemberQuery,
                TheatreRecordDelayQuery,
-               AcademicYearQuery,
-               AcademicYearSemesterQuery):
+               ):
     pass
 
 
@@ -53,6 +51,5 @@ class ApiMutation(ProcedureDelayCategoryMutation,
                   TheatreTimeRecordMutation,
                   TheatreRecordTeamMemberMutation,
                   TheatreRecordDelayMutation,
-                  AcademicYearMutation,
-                  AcademicYearSemesterMutation):
+                  ):
     pass

@@ -6,7 +6,7 @@ from sqlalchemy import select, insert, inspect, or_, and_, cast, String
 from sqlalchemy.orm import joinedload
 
 from src.core.security import Info
-from src.db.session import session_scope
+from src.database.session import session_scope
 from src.models import Base, BaseModel
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -33,6 +33,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
         self.session = session_scope()
 
+    def _get_user_id(self, info: Optional[Info]) -> Optional[int]:
+        """Extract user ID from Strawberry context (current_user.id)."""
+        if info is None:
+            return None
+        try:
+            current_user = info.context.current_user
+            if current_user:
+                # Try id first, then fallback to uid/guid
+                return current_user.id or current_user.uid or current_user.guid
+        except Exception:
+            return None
+        return None
+
     def get(self, uid: Any) -> Optional[ModelType]:
         if uid == '':
             uid = None
@@ -40,17 +53,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             stmt = select(self.model).where((self.model.uid == uid) & (self.model.deleted_at.is_(None)))
             result = session.scalars(stmt)
             return result.first()
-
-    # def get_multi_paginated(self, filter_field, pagination: Pagination) -> List[ModelType]:
-    #     # return db.query(self.model).offset(skip).limit(limit).all()
-    #     model_field = getattr(self.model, filter_field)
-    #     with session_scope() as session:
-    #         if pagination.search:
-    #             return session.query(self.model).where(
-    #                 (model_field.ilike(f"%{pagination.search}%")) & (self.model.deleted_at.is_(None))).offset(
-    #                 pagination.page).limit(pagination.limit).all()
-    #         return session.query(self.model).where(self.model.deleted_at.is_(None)).offset(pagination.page).limit(
-    #             pagination.limit).all()
 
     def get_multi(self) -> List[ModelType]:
         with session_scope() as session:
@@ -63,9 +65,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             stmt = session.query(self.model).filter(model_field.in_(attrs) & (self.model.deleted_at.is_(None)))
             return stmt.all()
 
-    def create_or_update(self, input_unique_field, inputs: List[CreateSchemaType], search_node) -> \
-            Response[SearchOutput]:
+    def create_or_update(self, input_unique_field, inputs: List[CreateSchemaType], search_node,
+                          info: Optional[Info] = None) -> Response[SearchOutput]:
         db_obj_list = []
+        user_id = self._get_user_id(info)
+
         with session_scope() as session:
             count = session.query(self.model).count()
             # Check if Db Obj already exist using attr
@@ -85,6 +89,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                         obj_in_data = jsonable_encoder(input1)
                         obj_in_data.pop("uid")
                         db_obj = self.model(**obj_in_data)  # type: ignore
+                        # Set created_by for new records
+                        if user_id and hasattr(db_obj, 'created_by'):
+                            db_obj.created_by = user_id
                         db_obj_list.append(db_obj)
 
                     else:
@@ -94,6 +101,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                             obj_data.pop("uid")
                             for key, value in obj_data.items():
                                 setattr(db_obj, key, value)
+                            # Set updated_by for existing records
+                            if user_id and hasattr(db_obj, 'updated_by'):
+                                db_obj.updated_by = user_id
                             db_obj_list.append(db_obj)
                 session.add_all(db_obj_list)
                 session.commit()
@@ -108,29 +118,51 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     @staticmethod
     def update(db_obj: ModelType,
-               input_obj: UpdateSchemaType
+               input_obj: UpdateSchemaType,
+               info: Optional[Info] = None
                ) -> ModelType:
         with session_scope() as session:
             obj_data = jsonable_encoder(db_obj)
             for key, value in input_obj.items():
                 setattr(obj_data, key, value)
+            # Set updated_by if user context available
+            if info:
+                try:
+                    current_user = info.context.current_user
+                    if current_user and hasattr(obj_data, 'updated_by'):
+                        user_id = current_user.id or current_user.uid or current_user.guid
+                        obj_data.updated_by = user_id
+                except Exception:
+                    pass
             session.add(obj_data)
             session.commit()
             session.refresh(obj_data)
             return obj_data
 
-    def remove(self, uid: str) -> ModelType:
+    def remove(self, uid: str,
+               info: Optional[Info] = None) -> ModelType:
         with session_scope() as session:
             obj = session.query(self.model).filter_by(uid=uid)
             if not obj.first():
                 msg = "%s object not found with uid %s" % (self.model, uid)
                 raise Exception(msg)
-            obj.update({self.model.deleted_at: pendulum.now()})
+            update_data = {self.model.deleted_at: pendulum.now()}
+            # Set deleted_by if user context available
+            if info:
+                try:
+                    current_user = info.context.current_user
+                    if current_user:
+                        user_id = current_user.id or current_user.uid or current_user.guid
+                        if user_id:
+                            update_data[self.model.deleted_by] = user_id
+                except Exception:
+                    pass
+            obj.update(update_data)
             session.commit()
             return obj
 
     def remove_check_relations(self, uid: str, parent_id, child_models: List[RelatedModelType],
-                               info: Info) -> ModelType:
+                                info: Info) -> ModelType:
         with session_scope() as session:
             """
             Remove object by restriction on related tables if has entries
@@ -150,7 +182,20 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             if child_entries_exist:
                 msg = "Cannot delete. Entry in use."
                 raise ValueError(msg)
-            obj.update({self.model.deleted_at: pendulum.now(), self.model.deleted_by: info.context.user.profile.id})
+
+            # Set deleted_by from current user context
+            user_id = None
+            try:
+                current_user = info.context.current_user
+                if current_user:
+                    user_id = current_user.id or current_user.uid or current_user.guid
+            except Exception:
+                pass
+
+            update_data = {self.model.deleted_at: pendulum.now()}
+            if user_id:
+                update_data[self.model.deleted_by] = user_id
+            obj.update(update_data)
             session.commit()
             return obj
 

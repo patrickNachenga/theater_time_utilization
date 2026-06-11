@@ -21,22 +21,24 @@ class MainServiceApp(FastAPI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(settings.PROJECT_TITLE)
+
+        # Sets up logging
+        self.logger = logging.getLogger(settings.APP_NAME)
         self.logger.setLevel(logging.DEBUG)
 
         # create console handler with a higher log level
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-
         ch.setFormatter(CustomFormatter())
+
         self.logger.addHandler(ch)
         self.initialize_graphql()
-        self.title = settings.PROJECT_TITLE
+        self.title = settings.APP_NAME
         # self.rabbit_client = RabbitMQ(self.log_incoming_message)
-        self.rabbit_client = RabbitMQ()
+        # self.rabbit_client = RabbitMQ()
 
     async def initialize_async(self):
-        await self.rabbit_client.setup()
+        # await self.rabbit_client.setup()
         await self.permissions()
 
     def log_incoming_message(self, message):
@@ -48,14 +50,14 @@ class MainServiceApp(FastAPI):
         self.log_incoming_message("Initializing GraphQL")
         # client_ip = request.state.client_ip
         schema = strawberry.Schema(ApiQuery, mutation=ApiMutation)
-        graphql_app = GraphQLRouter(schema, debug=self.debug | False, context_getter=get_context)
+        graphql_app = GraphQLRouter(schema, context_getter=get_context)
         self.include_router(graphql_app, prefix="/graphql", tags=["graphql"], include_in_schema=False)
         gui_app = GraphQL(schema)
         self.add_route("/gui", gui_app, methods=["GET"])
 
     async def permissions(self):
         self.log_incoming_message("Publishing Permissions")
-        await self.rabbit_client.publish(
-            "sua-esb-permission-exchange", "sua-esb-permission-routing-key",
-            json.dumps(permissions, cls=EnhancedJSONEncoder)
-        )
+        # await self.rabbit_client.publish(
+        #     "sua-esb-permission-exchange", "sua-esb-permission-routing-key",
+        #     json.dumps(permissions, cls=EnhancedJSONEncoder)
+        # )
