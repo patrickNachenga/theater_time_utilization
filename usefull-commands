@@ -1,1 +1,5 @@
-alembic revision --autogenerate -m "first migration"
+ ****************SERVICE************
+ uvicorn main:app --port=8001 --reload
+
+ ****************MIGRATIONS************
+ alembic revision --autogenerate -m "first migration"
