@@ -31,7 +31,7 @@ from .internal_source import InternalSource
 from .external_source import ExternalSource
 from .theatre_unit import TheatreUnit
 from .death_reason import DeathReason
-from .theatre_time_record import TheatreTimeRecord
+from .theatre_procedure_record import TheatreProcedureRecord
 from .theatre_record_team_member import TheatreRecordTeamMember
 from .theatre_record_delay import TheatreRecordDelay
 

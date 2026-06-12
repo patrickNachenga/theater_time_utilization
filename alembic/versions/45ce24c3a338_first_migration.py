@@ -1,8 +1,8 @@
 """first migration
 
-Revision ID: 09bd630eae6e
+Revision ID: 45ce24c3a338
 Revises: 
-Create Date: 2026-06-10 20:16:45.146186
+Create Date: 2026-06-12 11:10:41.119185
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '09bd630eae6e'
+revision: str = '45ce24c3a338'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,6 +30,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_death_reasons_id'), 'death_reasons', ['id'], unique=False)
@@ -44,6 +45,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_internal_sources_id'), 'internal_sources', ['id'], unique=False)
@@ -51,7 +53,6 @@ def upgrade() -> None:
     op.create_table('procedure_delay_categories',
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('code', sa.String(length=50), nullable=True),
-    sa.Column('description', sa.Text(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -59,7 +60,9 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('updated_by', sa.Integer(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
     op.create_index(op.f('ix_procedure_delay_categories_id'), 'procedure_delay_categories', ['id'], unique=False)
     op.create_index(op.f('ix_procedure_delay_categories_uid'), 'procedure_delay_categories', ['uid'], unique=True)
@@ -74,6 +77,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_procedures_id'), 'procedures', ['id'], unique=False)
@@ -88,16 +92,17 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_regions_id'), 'regions', ['id'], unique=False)
     op.create_index(op.f('ix_regions_uid'), 'regions', ['uid'], unique=True)
     op.create_table('theatre_members',
-    sa.Column('user_uid', sa.UUID(), nullable=True),
-    sa.Column('first_name', sa.String(length=255), nullable=True),
-    sa.Column('middle_name', sa.String(length=255), nullable=True),
-    sa.Column('last_name', sa.String(length=255), nullable=True),
-    sa.Column('pf_number', sa.String(length=50), nullable=True),
+    sa.Column('user_uid', sa.UUID(), nullable=False),
+    sa.Column('first_name', sa.String(length=255), nullable=False),
+    sa.Column('middle_name', sa.String(length=255), nullable=False),
+    sa.Column('last_name', sa.String(length=255), nullable=False),
+    sa.Column('pf_number', sa.String(length=50), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -105,9 +110,11 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_theatre_members_id'), 'theatre_members', ['id'], unique=False)
+    op.create_index(op.f('ix_theatre_members_pf_number'), 'theatre_members', ['pf_number'], unique=False)
     op.create_index(op.f('ix_theatre_members_uid'), 'theatre_members', ['uid'], unique=True)
     op.create_table('theatre_roles',
     sa.Column('name', sa.String(length=255), nullable=False),
@@ -119,6 +126,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_theatre_roles_id'), 'theatre_roles', ['id'], unique=False)
@@ -134,6 +142,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_theatre_units_id'), 'theatre_units', ['id'], unique=False)
@@ -149,6 +158,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['region_uid'], ['regions.uid'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -158,7 +168,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('code', sa.String(length=50), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('procedure_delay_category_uid', sa.UUID(), nullable=False),
+    sa.Column('procedure_delay_category_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -166,10 +176,12 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['procedure_delay_category_uid'], ['procedure_delay_categories.uid'], ),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['procedure_delay_category_id'], ['procedure_delay_categories.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_procedure_delay_causes_id'), 'procedure_delay_causes', ['id'], unique=False)
+    op.create_index(op.f('ix_procedure_delay_causes_procedure_delay_category_id'), 'procedure_delay_causes', ['procedure_delay_category_id'], unique=False)
     op.create_index(op.f('ix_procedure_delay_causes_uid'), 'procedure_delay_causes', ['uid'], unique=True)
     op.create_table('theatre_member_roles',
     sa.Column('member_uid', sa.UUID(), nullable=False),
@@ -181,66 +193,39 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['member_uid'], ['theatre_members.uid'], ),
     sa.ForeignKeyConstraint(['role_uid'], ['theatre_roles.uid'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_theatre_member_roles_id'), 'theatre_member_roles', ['id'], unique=False)
     op.create_index(op.f('ix_theatre_member_roles_uid'), 'theatre_member_roles', ['uid'], unique=True)
-    op.create_table('theatre_time_records',
+    op.create_table('theatre_procedure_records',
     sa.Column('patient_mrn', sa.String(length=100), nullable=True),
     sa.Column('patient_dob', sa.Date(), nullable=True),
     sa.Column('patient_sex', sa.String(length=10), nullable=True),
-    sa.Column('patient_region_uid', sa.UUID(), nullable=True),
-    sa.Column('patient_type', sa.String(length=20), nullable=True),
-    sa.Column('patient_source_type', sa.String(length=20), nullable=True),
-    sa.Column('internal_source_uid', sa.UUID(), nullable=True),
-    sa.Column('external_source_uid', sa.UUID(), nullable=True),
-    sa.Column('theatre_unit_uid', sa.UUID(), nullable=True),
-    sa.Column('procedure_uid', sa.UUID(), nullable=True),
-    sa.Column('procedure_date', sa.Date(), nullable=True),
-    sa.Column('procedure_start_time', sa.Time(), nullable=True),
-    sa.Column('procedure_end_time', sa.Time(), nullable=True),
-    sa.Column('duration_minutes', sa.Integer(), nullable=True),
-    sa.Column('estimated_procedure_minutes', sa.Integer(), nullable=True),
-    sa.Column('time_variance_minutes', sa.Integer(), nullable=True),
-    sa.Column('surgery_met_time_between_cases', sa.String(length=10), nullable=True),
-    sa.Column('was_there_delay', sa.String(length=10), nullable=True),
-    sa.Column('surgery_beyond_theatre_time', sa.String(length=10), nullable=True),
-    sa.Column('delay_cause_between_cases', sa.Text(), nullable=True),
-    sa.Column('patient_outcome', sa.String(length=20), nullable=True),
-    sa.Column('discharge_destination', sa.String(length=20), nullable=True),
-    sa.Column('discharge_internal_source_uid', sa.UUID(), nullable=True),
-    sa.Column('death_reason_uid', sa.UUID(), nullable=True),
+    sa.Column('patient_region', sa.UUID(), nullable=True),
+    sa.Column('patient_type', sa.Enum('ELECTIVE', 'EMERGENCY', name='patienttype'), nullable=False),
+    sa.Column('patient_source_type', sa.Enum('INTERNAL', 'EXTERNAL', name='sourcetype'), nullable=False),
+    sa.Column('internal_source_id', sa.Integer(), nullable=True),
+    sa.Column('external_source_id', sa.Integer(), nullable=True),
+    sa.Column('theatre_unit_id', sa.Integer(), nullable=False),
+    sa.Column('procedure_id', sa.Integer(), nullable=False),
+    sa.Column('procedure_date', sa.Date(), nullable=False),
+    sa.Column('procedure_start_time', sa.Time(), nullable=False),
+    sa.Column('procedure_end_time', sa.Time(), nullable=False),
+    sa.Column('duration_minutes', sa.Integer(), nullable=False),
+    sa.Column('estimated_duration_minutes', sa.Integer(), nullable=True),
+    sa.Column('variance_minutes', sa.Integer(), nullable=True),
+    sa.Column('met_turnaround_target', sa.Boolean(), nullable=True),
+    sa.Column('had_delay', sa.Boolean(), nullable=False),
+    sa.Column('surgery_beyond_theatre_time', sa.Boolean(), nullable=True),
+    sa.Column('surgery_met_time_between_cases', sa.Boolean(), nullable=True),
+    sa.Column('outcome', sa.Enum('DEATH', 'DISCHARGED', name='patientoutcome'), nullable=False),
+    sa.Column('discharge_direction', sa.Enum('INTERNAL', 'HOME', name='dischargedirection'), nullable=True),
+    sa.Column('discharge_destination_id', sa.Integer(), nullable=True),
+    sa.Column('death_reason_id', sa.Integer(), nullable=True),
     sa.Column('death_description', sa.Text(), nullable=True),
-    sa.Column('surgeon_name', sa.Text(), nullable=True),
-    sa.Column('anesthetist_name', sa.Text(), nullable=True),
-    sa.Column('scrub_nurse_name', sa.Text(), nullable=True),
-    sa.Column('runner_nurse_name', sa.Text(), nullable=True),
-    sa.Column('created_by', sa.UUID(), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('uid', sa.UUID(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('deleted_at', sa.DateTime(), nullable=True),
-    sa.Column('deleted_by', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['death_reason_uid'], ['death_reasons.uid'], ),
-    sa.ForeignKeyConstraint(['discharge_internal_source_uid'], ['internal_sources.uid'], ),
-    sa.ForeignKeyConstraint(['external_source_uid'], ['external_sources.uid'], ),
-    sa.ForeignKeyConstraint(['internal_source_uid'], ['internal_sources.uid'], ),
-    sa.ForeignKeyConstraint(['patient_region_uid'], ['regions.uid'], ),
-    sa.ForeignKeyConstraint(['procedure_uid'], ['procedures.uid'], ),
-    sa.ForeignKeyConstraint(['theatre_unit_uid'], ['theatre_units.uid'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_theatre_time_records_id'), 'theatre_time_records', ['id'], unique=False)
-    op.create_index(op.f('ix_theatre_time_records_uid'), 'theatre_time_records', ['uid'], unique=True)
-    op.create_table('theatre_record_delays',
-    sa.Column('record_uid', sa.UUID(), nullable=False),
-    sa.Column('procedure_delay_category_uid', sa.UUID(), nullable=True),
-    sa.Column('delay_cause_uid', sa.UUID(), nullable=True),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('sort_order', sa.Integer(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -248,17 +233,51 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['delay_cause_uid'], ['procedure_delay_causes.uid'], ),
-    sa.ForeignKeyConstraint(['procedure_delay_category_uid'], ['procedure_delay_categories.uid'], ),
-    sa.ForeignKeyConstraint(['record_uid'], ['theatre_time_records.uid'], ),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['death_reason_id'], ['death_reasons.id'], ),
+    sa.ForeignKeyConstraint(['discharge_destination_id'], ['internal_sources.id'], ),
+    sa.ForeignKeyConstraint(['external_source_id'], ['external_sources.id'], ),
+    sa.ForeignKeyConstraint(['internal_source_id'], ['internal_sources.id'], ),
+    sa.ForeignKeyConstraint(['patient_region'], ['regions.uid'], ),
+    sa.ForeignKeyConstraint(['procedure_id'], ['procedures.id'], ),
+    sa.ForeignKeyConstraint(['theatre_unit_id'], ['theatre_units.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_theatre_procedure_records_discharge_direction'), 'theatre_procedure_records', ['discharge_direction'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_had_delay'), 'theatre_procedure_records', ['had_delay'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_id'), 'theatre_procedure_records', ['id'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_outcome'), 'theatre_procedure_records', ['outcome'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_patient_region'), 'theatre_procedure_records', ['patient_region'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_patient_type'), 'theatre_procedure_records', ['patient_type'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_procedure_date'), 'theatre_procedure_records', ['procedure_date'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_procedure_id'), 'theatre_procedure_records', ['procedure_id'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_theatre_unit_id'), 'theatre_procedure_records', ['theatre_unit_id'], unique=False)
+    op.create_index(op.f('ix_theatre_procedure_records_uid'), 'theatre_procedure_records', ['uid'], unique=True)
+    op.create_table('theatre_record_delays',
+    sa.Column('record_id', sa.Integer(), nullable=False),
+    sa.Column('category_id', sa.Integer(), nullable=False),
+    sa.Column('cause_id', sa.Integer(), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('uid', sa.UUID(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('deleted_by', sa.Integer(), nullable=True),
+    sa.Column('created_by', sa.Integer(), nullable=True),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['category_id'], ['procedure_delay_categories.id'], ),
+    sa.ForeignKeyConstraint(['cause_id'], ['procedure_delay_causes.id'], ),
+    sa.ForeignKeyConstraint(['record_id'], ['theatre_procedure_records.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_theatre_record_delays_id'), 'theatre_record_delays', ['id'], unique=False)
+    op.create_index(op.f('ix_theatre_record_delays_record_id'), 'theatre_record_delays', ['record_id'], unique=False)
     op.create_index(op.f('ix_theatre_record_delays_uid'), 'theatre_record_delays', ['uid'], unique=True)
     op.create_table('theatre_record_team_members',
-    sa.Column('record_uid', sa.UUID(), nullable=False),
-    sa.Column('member_uid', sa.UUID(), nullable=False),
-    sa.Column('role_uid', sa.UUID(), nullable=False),
+    sa.Column('record_id', sa.Integer(), nullable=False),
+    sa.Column('theatre_member_id', sa.Integer(), nullable=False),
+    sa.Column('role', sa.Enum('SURGEON', 'ANESTHETIST', 'SCRUB_NURSE', 'RUNNER_NURSE', name='teamrole'), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -266,12 +285,15 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_by', sa.Integer(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['member_uid'], ['theatre_members.uid'], ),
-    sa.ForeignKeyConstraint(['record_uid'], ['theatre_time_records.uid'], ),
-    sa.ForeignKeyConstraint(['role_uid'], ['theatre_roles.uid'], ),
+    sa.Column('updated_by', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['record_id'], ['theatre_procedure_records.id'], ),
+    sa.ForeignKeyConstraint(['theatre_member_id'], ['theatre_members.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_theatre_record_team_members_id'), 'theatre_record_team_members', ['id'], unique=False)
+    op.create_index(op.f('ix_theatre_record_team_members_record_id'), 'theatre_record_team_members', ['record_id'], unique=False)
+    op.create_index(op.f('ix_theatre_record_team_members_role'), 'theatre_record_team_members', ['role'], unique=False)
+    op.create_index(op.f('ix_theatre_record_team_members_theatre_member_id'), 'theatre_record_team_members', ['theatre_member_id'], unique=False)
     op.create_index(op.f('ix_theatre_record_team_members_uid'), 'theatre_record_team_members', ['uid'], unique=True)
     # ### end Alembic commands ###
 
@@ -279,18 +301,31 @@ def upgrade() -> None:
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_index(op.f('ix_theatre_record_team_members_uid'), table_name='theatre_record_team_members')
+    op.drop_index(op.f('ix_theatre_record_team_members_theatre_member_id'), table_name='theatre_record_team_members')
+    op.drop_index(op.f('ix_theatre_record_team_members_role'), table_name='theatre_record_team_members')
+    op.drop_index(op.f('ix_theatre_record_team_members_record_id'), table_name='theatre_record_team_members')
     op.drop_index(op.f('ix_theatre_record_team_members_id'), table_name='theatre_record_team_members')
     op.drop_table('theatre_record_team_members')
     op.drop_index(op.f('ix_theatre_record_delays_uid'), table_name='theatre_record_delays')
+    op.drop_index(op.f('ix_theatre_record_delays_record_id'), table_name='theatre_record_delays')
     op.drop_index(op.f('ix_theatre_record_delays_id'), table_name='theatre_record_delays')
     op.drop_table('theatre_record_delays')
-    op.drop_index(op.f('ix_theatre_time_records_uid'), table_name='theatre_time_records')
-    op.drop_index(op.f('ix_theatre_time_records_id'), table_name='theatre_time_records')
-    op.drop_table('theatre_time_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_uid'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_theatre_unit_id'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_procedure_id'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_procedure_date'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_patient_type'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_patient_region'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_outcome'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_id'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_had_delay'), table_name='theatre_procedure_records')
+    op.drop_index(op.f('ix_theatre_procedure_records_discharge_direction'), table_name='theatre_procedure_records')
+    op.drop_table('theatre_procedure_records')
     op.drop_index(op.f('ix_theatre_member_roles_uid'), table_name='theatre_member_roles')
     op.drop_index(op.f('ix_theatre_member_roles_id'), table_name='theatre_member_roles')
     op.drop_table('theatre_member_roles')
     op.drop_index(op.f('ix_procedure_delay_causes_uid'), table_name='procedure_delay_causes')
+    op.drop_index(op.f('ix_procedure_delay_causes_procedure_delay_category_id'), table_name='procedure_delay_causes')
     op.drop_index(op.f('ix_procedure_delay_causes_id'), table_name='procedure_delay_causes')
     op.drop_table('procedure_delay_causes')
     op.drop_index(op.f('ix_external_sources_uid'), table_name='external_sources')
@@ -303,6 +338,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_theatre_roles_id'), table_name='theatre_roles')
     op.drop_table('theatre_roles')
     op.drop_index(op.f('ix_theatre_members_uid'), table_name='theatre_members')
+    op.drop_index(op.f('ix_theatre_members_pf_number'), table_name='theatre_members')
     op.drop_index(op.f('ix_theatre_members_id'), table_name='theatre_members')
     op.drop_table('theatre_members')
     op.drop_index(op.f('ix_regions_uid'), table_name='regions')

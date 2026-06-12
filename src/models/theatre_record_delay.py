@@ -1,13 +1,18 @@
 from sqlalchemy import Column, ForeignKey, Integer, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+
 from src.models import BaseModel
 
 
 class TheatreRecordDelay(BaseModel):
     __tablename__ = "theatre_record_delays"
-    record_uid = Column(UUID(as_uuid=True), ForeignKey('theatre_time_records.uid'), nullable=False)
-    procedure_delay_category_uid = Column(UUID(as_uuid=True), ForeignKey('procedure_delay_categories.uid'), nullable=True)
-    delay_cause_uid = Column(UUID(as_uuid=True), ForeignKey('procedure_delay_causes.uid'), nullable=True)
-    description = Column(Text, nullable=True)
-    sort_order = Column(Integer, nullable=True)
 
+    record_id = Column(ForeignKey("theatre_procedure_records.id"), nullable=False, index=True)
+    category_id = Column(ForeignKey("procedure_delay_categories.id"), nullable=False)
+    cause_id = Column(ForeignKey("procedure_delay_causes.id"), nullable=False)
+    description = Column(Text)
+
+    #  RELATIONSHIP
+    record = relationship("TheatreProcedureRecord", back_populates="delay_courses")
+    category = relationship("ProcedureDelayCategory")
+    cause = relationship("ProcedureDelayCause")

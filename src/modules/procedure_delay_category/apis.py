@@ -18,7 +18,6 @@ class ProcedureDelayCategoryQuery:
             result = ProcedureDelayCategoryCrud.get_multi_paginated(pagination, ['name', 'code', 'description'], ProcedureDelayCategoryListNode)
             return Response(status=True, code=ResponseCode.SUCCESS, message="Retrieved", data=result)
         except Exception as e:
-            print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=ProcedureDelayCategoryListNode(items=[], total_count=0))
 
 

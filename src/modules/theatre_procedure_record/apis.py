@@ -1,8 +1,8 @@
 import strawberry
 from typing import List
 
-from src.modules.theatre_time_record.service import TheatreTimeRecordService, TheatreTimeRecordCrud
-from src.modules.theatre_time_record.types import TheatreTimeRecordInput, TheatreTimeRecordListNode
+from src.modules.theatre_procedure_record.service import TheatreTimeRecordService, TheatreTimeRecordCrud
+from src.modules.theatre_procedure_record.types import TheatreTimeRecordInput, TheatreTimeRecordListNode
 from src.types import PaginationInput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
