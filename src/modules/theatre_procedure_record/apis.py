@@ -2,7 +2,7 @@ import strawberry
 from typing import List
 
 from src.modules.theatre_procedure_record.service import TheatreTimeRecordService, TheatreTimeRecordCrud
-from src.modules.theatre_procedure_record.types import TheatreTimeRecordInput, TheatreTimeRecordListNode
+from src.modules.theatre_procedure_record.types import TheatreProcedureRecordInput, TheatreTimeRecordListNode
 from src.types import PaginationInput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -25,7 +25,7 @@ class TheatreTimeRecordQuery:
 @strawberry.type
 class TheatreTimeRecordMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_THEATRE_TIME_RECORDS"])])
-    def register_theatre_time_records(self, inputs: List[TheatreTimeRecordInput]) -> Response[TheatreTimeRecordListNode]:
+    def register_theatre_time_records(self, inputs: List[TheatreProcedureRecordInput]) -> Response[TheatreTimeRecordListNode]:
         try:
             return TheatreTimeRecordService(TheatreTimeRecordCrud.model).register(inputs)
         except Exception as e:

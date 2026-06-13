@@ -10,6 +10,5 @@ class ProcedureDelayCategory(BaseModel):
     code = Column(String(50), unique=True)
     causes = relationship(
         "ProcedureDelayCause",
-        back_populates="category"
+        back_populates="procedure_delay_category"
     )
-

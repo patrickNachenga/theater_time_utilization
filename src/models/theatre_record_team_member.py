@@ -14,5 +14,5 @@ class TheatreRecordTeamMember(BaseModel):
     role = Column( SQLEnum(TeamRole),nullable=False, index=True )
 
     # RELATIONSHIPS
-    record = relationship("TheatreTimeRecord",  back_populates="team_members" )
+    record = relationship("TheatreProcedureRecord",  back_populates="team_members" )
     theatre_member = relationship(  "TheatreMember"  )
