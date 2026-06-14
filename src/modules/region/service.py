@@ -55,5 +55,20 @@ class RegionService(CRUDBase[Region, RegionInput, RegionInput]):
             return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to generate template: {e}",
                             data=Base64ExcelOutput(file_name="", base64_data=""))
 
+    def get_by_code(self, field: str, attrs: List[str]) -> Response[RegionListNode]:
+        """
+        Fetches regions by a list of codes.
+        Assumes 'code' is a unique field.
+        """
+        try:
+            regions = self.db.query(self.model).filter(getattr(self.model, field).in_(attrs)).all()
+            return Response(status=True, code=ResponseCode.SUCCESS, message="Regions fetched successfully",
+                            data=RegionListNode(items=regions, total_count=len(regions)))
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE,
+                            message=f"Failed to fetch regions by code: {e}",
+                            data=RegionListNode(items=[], total_count=0))
+
 
 RegionCrud = RegionService(Region)

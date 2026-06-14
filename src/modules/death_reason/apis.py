@@ -6,6 +6,7 @@ from src.modules.death_reason.types import DeathReasonInput, DeathReasonListNode
 from src.types import PaginationInput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
+from src.shared.excel_types import Base64ExcelOutput, Base64ExcelInput
 
 
 from src.core.security import CustomPermissionExtension
@@ -21,6 +22,15 @@ class DeathReasonQuery:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=DeathReasonListNode(items=[], total_count=0))
 
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_DEATH_REASONS"])])
+    def download_death_reason_template(self) -> Response[Base64ExcelOutput]:
+        try:
+            return DeathReasonCrud.download_template()
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to download template: {e}",
+                            data=Base64ExcelOutput(file_name="", base64_data=""))
+
 
 @strawberry.type
 class DeathReasonMutation:
@@ -31,3 +41,12 @@ class DeathReasonMutation:
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=DeathReasonListNode(items=[], total_count=0))
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_DEATH_REASONS"])])
+    def import_death_reasons_from_excel(self, file_input: Base64ExcelInput) -> Response[DeathReasonListNode]:
+        try:
+            return DeathReasonCrud.import_from_excel(file_input.base64_data)
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to import: {e}",
+                            data=DeathReasonListNode(items=[], total_count=0))

@@ -3,6 +3,7 @@ from typing import List
 
 from src.modules.procedure.service import ProcedureService, ProcedureCrud
 from src.modules.procedure.types import ProcedureInput, ProcedureListNode
+from src.shared.excel_types import Base64ExcelOutput, Base64ExcelInput
 from src.types import PaginationInput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -21,6 +22,15 @@ class ProcedureQuery:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=ProcedureListNode(items=[], total_count=0))
 
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROCEDURES"])])
+    def download_procedure_template(self) -> Response[Base64ExcelOutput]:
+        try:
+            return ProcedureCrud.download_template()
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to download template: {e}",
+                            data=Base64ExcelOutput(file_name="", base64_data=""))
+
 
 @strawberry.type
 class ProcedureMutation:
@@ -31,3 +41,14 @@ class ProcedureMutation:
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=ProcedureListNode(items=[], total_count=0))
+
+
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_PROCEDURES"])])
+    def import_procedure_from_excel(self, file_input: Base64ExcelInput) -> Response[ProcedureListNode]:
+        try:
+            return ProcedureCrud.import_from_excel(file_input.base64_data)
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to import: {e}",
+                            data=ProcedureListNode(items=[], total_count=0))

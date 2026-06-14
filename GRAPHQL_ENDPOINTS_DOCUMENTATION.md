@@ -67,7 +67,9 @@ Each field is protected by **`CustomPermissionExtension`** which checks:
 
 ---
 
-## Pagination (Shared Across All Query Endpoints)
+## Shared Types
+
+### Pagination
 
 Every `get_*` query accepts the same `PaginationInput`:
 
@@ -90,9 +92,7 @@ type *ListNode {
 
 **Server-side search** is performed against a list of searchable fields specified per module (see each module below). The search is case-insensitive, matching partial strings anywhere in the field value (SQL `ILIKE '%search%'`).
 
----
-
-## Common Response Envelope
+### Common Response Envelope
 
 All fields return a `Response<T>` envelope:
 
@@ -104,6 +104,23 @@ type Response {
   data: T  # The actual payload (node or list node)
 }
 ```
+
+### Base64 Excel Input/Output (for Import/Download Template)
+
+```graphql
+input Base64ExcelInput {
+  file_name: String!
+  base64_data: String!       # Base64-encoded Excel file content
+}
+
+type Base64ExcelOutput {
+  file_name: String!
+  base64_data: String!       # Base64-encoded Excel file content
+}
+```
+
+All download template queries return `Response[Base64ExcelOutput]`.  
+All import from Excel mutations return `Response[*ListNode]` (the same list node returned by the corresponding `get*` query).
 
 ---
 
@@ -149,6 +166,32 @@ query GetProcedureDelayCategories($pagination: PaginationInput!) {
 | code        | String?  | Short code                        |
 | description | String?  | Description                       |
 
+### Query: `downloadProcedureDelayCategoryTemplate`
+
+```graphql
+query DownloadProcedureDelayCategoryTemplate {
+  downloadProcedureDelayCategoryTemplate {
+    status
+    code
+    message
+    data {
+      file_name
+      base64_data
+    }
+  }
+}
+```
+
+**Required Permission:** `VIEW_PROCEDURE_DELAY_CATEGORIES`  
+**Returns:** `Response[Base64ExcelOutput]` — A base64-encoded `.xlsx` file with columns: `name`, `code`, `description`.  
+**Template columns:**
+
+| Column      | Width | Example                                               |
+|-------------|-------|-------------------------------------------------------|
+| name        | 40    | Equipment Failure                                     |
+| code        | 20    | PDC01                                                 |
+| description | 50    | Delay due to equipment malfunction or unavailability  |
+
 ### Mutation: `registerProcedureDelayCategories`
 
 ```graphql
@@ -184,6 +227,31 @@ input ProcedureDelayCategoryInput {
 
 **Usage:** Pass a **list** of inputs. Supports **batch create/update**. If `uid` is provided, it updates the existing record. If omitted, a new record is created. Returns the full list of resulting records.
 
+### Mutation: `importProcedureDelayCategoriesFromExcel`
+
+```graphql
+mutation ImportProcedureDelayCategoriesFromExcel($fileInput: Base64ExcelInput!) {
+  importProcedureDelayCategoriesFromExcel(fileInput: $fileInput) {
+    status
+    code
+    message
+    data {
+      items {
+        uid
+        name
+        code
+        description
+      }
+      totalCount
+    }
+  }
+}
+```
+
+**Required Permission:** `REGISTER_PROCEDURE_DELAY_CATEGORIES`  
+**Input:** `fileInput: Base64ExcelInput!` — A base64-encoded Excel file matching the template columns (`name`, `code`, `description`).  
+**Returns:** `Response[ProcedureDelayCategoryListNode]` — The same list node returned by `getProcedureDelayCategories`.
+
 ---
 
 ## 2. Procedure Delay Causes
@@ -211,7 +279,7 @@ query GetProcedureDelayCauses($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_PROCEDURE_DELAY_CAUSES`  
-**Searchable fields:** `name`, `code`, `description`  
+**Searchable fields:** `name`, `code`, `description`
 
 **`ProcedureDelayCauseNode` fields:**
 
@@ -236,7 +304,7 @@ mutation RegisterProcedureDelayCauses($inputs: [ProcedureDelayCauseInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_PROCEDURE_DELAY_CAUSES`  
+**Required Permission:** `REGISTER_PROCEDURE_DELAY_CAUSES`
 
 ```graphql
 input ProcedureDelayCauseInput {
@@ -274,7 +342,7 @@ query GetProcedures($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_PROCEDURES`  
-**Searchable fields:** `name`, `code`  
+**Searchable fields:** `name`, `code`
 
 **`ProcedureNode` fields:**
 
@@ -293,7 +361,7 @@ mutation RegisterProcedures($inputs: [ProcedureInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_PROCEDURES`  
+**Required Permission:** `REGISTER_PROCEDURES`
 
 ```graphql
 input ProcedureInput {
@@ -329,7 +397,7 @@ query GetTheatreRoles($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_ROLES`  
-**Searchable fields:** `name`, `description`  
+**Searchable fields:** `name`, `description`
 
 **`TheatreRoleNode` fields:**
 
@@ -347,7 +415,7 @@ mutation RegisterTheatreRoles($inputs: [TheatreRoleInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_THEATRE_ROLES`  
+**Required Permission:** `REGISTER_THEATRE_ROLES`
 
 ```graphql
 input TheatreRoleInput {
@@ -385,7 +453,7 @@ query GetTheatreMembers($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_MEMBERS`  
-**Searchable fields:** `first_name`, `last_name`, `pf_number`  
+**Searchable fields:** `first_name`, `last_name`, `pf_number`
 
 **`TheatreMemberNode` fields:**
 
@@ -406,7 +474,7 @@ mutation RegisterTheatreMembers($inputs: [TheatreMemberInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_THEATRE_MEMBERS`  
+**Required Permission:** `REGISTER_THEATRE_MEMBERS`
 
 ```graphql
 input TheatreMemberInput {
@@ -446,7 +514,7 @@ query GetTheatreMemberRoles($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_MEMBER_ROLES`  
-**Searchable fields:** `member_uid`, `role_uid`  
+**Searchable fields:** `member_uid`, `role_uid`
 
 **`TheatreMemberRoleNode` fields:**
 
@@ -464,7 +532,7 @@ mutation RegisterTheatreMemberRoles($inputs: [TheatreMemberRoleInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_THEATRE_MEMBER_ROLES`  
+**Required Permission:** `REGISTER_THEATRE_MEMBER_ROLES`
 
 ```graphql
 input TheatreMemberRoleInput {
@@ -499,7 +567,7 @@ query GetRegions($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_REGIONS`  
-**Searchable fields:** `name`, `code`  
+**Searchable fields:** `name`, `code`
 
 **`RegionNode` fields:**
 
@@ -508,6 +576,25 @@ query GetRegions($pagination: PaginationInput!) {
 | uid   | String!  | Unique identifier         |
 | name  | String!  | Region name               |
 | code  | String?  | Region code               |
+
+### Query: `downloadRegionTemplate`
+
+```graphql
+query DownloadRegionTemplate {
+  downloadRegionTemplate {
+    status
+    code
+    message
+    data {
+      file_name
+      base64_data
+    }
+  }
+}
+```
+
+**Required Permission:** `VIEW_REGIONS`  
+**Returns:** A base64-encoded `.xlsx` file (wrapped in `Response` envelope) with columns: `name`, `code`.
 
 ### Mutation: `registerRegions`
 
@@ -524,6 +611,26 @@ input RegionInput {
   code: String
 }
 ```
+
+### Mutation: `importRegionsFromExcel`
+
+```graphql
+mutation ImportRegionsFromExcel($fileInput: Base64ExcelInput!) {
+  importRegionsFromExcel(fileInput: $fileInput) {
+    status
+    code
+    message
+    data {
+      items { uid name code }
+      totalCount
+    }
+  }
+}
+```
+
+**Required Permission:** `REGISTER_REGIONS`  
+**Input:** A `Base64ExcelInput` containing a base64-encoded Excel file matching the region template columns (`name`, `code`).  
+**Note:** Returns `Response[RegionListNode]` (legacy pattern).
 
 ---
 
@@ -550,7 +657,7 @@ query GetInternalSources($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_INTERNAL_SOURCES`  
-**Searchable fields:** `name`, `code`  
+**Searchable fields:** `name`, `code`
 
 **`InternalSourceNode` fields:**
 
@@ -559,6 +666,31 @@ query GetInternalSources($pagination: PaginationInput!) {
 | uid   | String!  | Unique identifier         |
 | name  | String!  | Source name               |
 | code  | String?  | Source code               |
+
+### Query: `downloadInternalSourceTemplate`
+
+```graphql
+query DownloadInternalSourceTemplate {
+  downloadInternalSourceTemplate {
+    status
+    code
+    message
+    data {
+      file_name
+      base64_data
+    }
+  }
+}
+```
+
+**Required Permission:** `VIEW_INTERNAL_SOURCES`  
+**Returns:** `Response[Base64ExcelOutput]` — A base64-encoded `.xlsx` file with columns: `name`, `code`.  
+**Template columns:**
+
+| Column | Width | Example           |
+|--------|-------|-------------------|
+| name   | 40    | Theatre Register  |
+| code   | 20    | IS01              |
 
 ### Mutation: `registerInternalSources`
 
@@ -575,6 +707,30 @@ input InternalSourceInput {
   code: String
 }
 ```
+
+### Mutation: `importInternalSourcesFromExcel`
+
+```graphql
+mutation ImportInternalSourcesFromExcel($fileInput: Base64ExcelInput!) {
+  importInternalSourcesFromExcel(fileInput: $fileInput) {
+    status
+    code
+    message
+    data {
+      items {
+        uid
+        name
+        code
+      }
+      totalCount
+    }
+  }
+}
+```
+
+**Required Permission:** `REGISTER_INTERNAL_SOURCES`  
+**Input:** `fileInput: Base64ExcelInput!` — A base64-encoded Excel file matching the template columns (`name`, `code`).  
+**Returns:** `Response[InternalSourceListNode]` — The same list node returned by `getInternalSources`.
 
 ---
 
@@ -602,7 +758,7 @@ query GetExternalSources($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_EXTERNAL_SOURCES`  
-**Searchable fields:** `name`, `code`  
+**Searchable fields:** `name`, `code`
 
 **`ExternalSourceNode` fields:**
 
@@ -612,6 +768,32 @@ query GetExternalSources($pagination: PaginationInput!) {
 | name      | String!  | Source name                   |
 | code      | String?  | Source code                   |
 | regionUid | String?  | FK to Region                  |
+
+### Query: `downloadExternalSourceTemplate`
+
+```graphql
+query DownloadExternalSourceTemplate {
+  downloadExternalSourceTemplate {
+    status
+    code
+    message
+    data {
+      file_name
+      base64_data
+    }
+  }
+}
+```
+
+**Required Permission:** `VIEW_EXTERNAL_SOURCES`  
+**Returns:** `Response[Base64ExcelOutput]` — A base64-encoded `.xlsx` file with columns: `name`, `code`, `region_uid`.  
+**Template columns:**
+
+| Column    | Width | Example               |
+|-----------|-------|-----------------------|
+| name      | 40    | Regional Hospital     |
+| code      | 20    | ES01                  |
+| region_uid| 36    | \<region-uuid-here\> |
 
 ### Mutation: `registerExternalSources`
 
@@ -629,6 +811,31 @@ input ExternalSourceInput {
   regionUid: String
 }
 ```
+
+### Mutation: `importExternalSourcesFromExcel`
+
+```graphql
+mutation ImportExternalSourcesFromExcel($fileInput: Base64ExcelInput!) {
+  importExternalSourcesFromExcel(fileInput: $fileInput) {
+    status
+    code
+    message
+    data {
+      items {
+        uid
+        name
+        code
+        regionUid
+      }
+      totalCount
+    }
+  }
+}
+```
+
+**Required Permission:** `REGISTER_EXTERNAL_SOURCES`  
+**Input:** `fileInput: Base64ExcelInput!` — A base64-encoded Excel file matching the template columns (`name`, `code`, `region_uid`).  
+**Returns:** `Response[ExternalSourceListNode]` — The same list node returned by `getExternalSources`.
 
 ---
 
@@ -656,7 +863,7 @@ query GetTheatreUnits($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_UNITS`  
-**Searchable fields:** `name`, `code`, `location`  
+**Searchable fields:** `name`, `code`, `location`
 
 **`TheatreUnitNode` fields:**
 
@@ -666,6 +873,32 @@ query GetTheatreUnits($pagination: PaginationInput!) {
 | name     | String!  | Unit name                 |
 | code     | String?  | Unit code                 |
 | location | String?  | Physical location         |
+
+### Query: `downloadTheatreUnitTemplate`
+
+```graphql
+query DownloadTheatreUnitTemplate {
+  downloadTheatreUnitTemplate {
+    status
+    code
+    message
+    data {
+      file_name
+      base64_data
+    }
+  }
+}
+```
+
+**Required Permission:** `VIEW_THEATRE_UNITS`  
+**Returns:** `Response[Base64ExcelOutput]` — A base64-encoded `.xlsx` file with columns: `name`, `code`, `location`.  
+**Template columns:**
+
+| Column   | Width | Example                    |
+|----------|-------|----------------------------|
+| name     | 40    | Main Operating Theatre     |
+| code     | 20    | TU01                       |
+| location | 30    | Block A, Floor 2           |
 
 ### Mutation: `registerTheatreUnits`
 
@@ -683,6 +916,31 @@ input TheatreUnitInput {
   location: String
 }
 ```
+
+### Mutation: `importTheatreUnitsFromExcel`
+
+```graphql
+mutation ImportTheatreUnitsFromExcel($fileInput: Base64ExcelInput!) {
+  importTheatreUnitsFromExcel(fileInput: $fileInput) {
+    status
+    code
+    message
+    data {
+      items {
+        uid
+        name
+        code
+        location
+      }
+      totalCount
+    }
+  }
+}
+```
+
+**Required Permission:** `REGISTER_THEATRE_UNITS`  
+**Input:** `fileInput: Base64ExcelInput!` — A base64-encoded Excel file matching the template columns (`name`, `code`, `location`).  
+**Returns:** `Response[TheatreUnitListNode]` — The same list node returned by `getTheatreUnits`.
 
 ---
 
@@ -709,7 +967,7 @@ query GetDeathReasons($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_DEATH_REASONS`  
-**Searchable fields:** `name`, `code`  
+**Searchable fields:** `name`, `code`
 
 **`DeathReasonNode` fields:**
 
@@ -718,6 +976,31 @@ query GetDeathReasons($pagination: PaginationInput!) {
 | uid   | String!  | Unique identifier         |
 | name  | String!  | Reason name               |
 | code  | String?  | Reason code               |
+
+### Query: `downloadDeathReasonTemplate`
+
+```graphql
+query DownloadDeathReasonTemplate {
+  downloadDeathReasonTemplate {
+    status
+    code
+    message
+    data {
+      file_name
+      base64_data
+    }
+  }
+}
+```
+
+**Required Permission:** `VIEW_DEATH_REASONS`  
+**Returns:** `Response[Base64ExcelOutput]` — A base64-encoded `.xlsx` file with columns: `name`, `code`.  
+**Template columns:**
+
+| Column | Width | Example      |
+|--------|-------|--------------|
+| name   | 40    | Haemorrhage  |
+| code   | 20    | DR01         |
 
 ### Mutation: `registerDeathReasons`
 
@@ -734,6 +1017,30 @@ input DeathReasonInput {
   code: String
 }
 ```
+
+### Mutation: `importDeathReasonsFromExcel`
+
+```graphql
+mutation ImportDeathReasonsFromExcel($fileInput: Base64ExcelInput!) {
+  importDeathReasonsFromExcel(fileInput: $fileInput) {
+    status
+    code
+    message
+    data {
+      items {
+        uid
+        name
+        code
+      }
+      totalCount
+    }
+  }
+}
+```
+
+**Required Permission:** `REGISTER_DEATH_REASONS`  
+**Input:** `fileInput: Base64ExcelInput!` — A base64-encoded Excel file matching the template columns (`name`, `code`).  
+**Returns:** `Response[DeathReasonListNode]` — The same list node returned by `getDeathReasons`.
 
 ---
 
@@ -760,7 +1067,7 @@ query GetTheatreTimeRecords($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_TIME_RECORDS`  
-**Searchable fields:** `patient_mrn`, `patient_type`  
+**Searchable fields:** `patient_mrn`, `patient_type`
 
 **`TheatreTimeRecordNode` fields (note: currently only minimal fields exposed):**
 
@@ -780,7 +1087,7 @@ mutation RegisterTheatreTimeRecords($inputs: [TheatreTimeRecordInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_THEATRE_TIME_RECORDS`  
+**Required Permission:** `REGISTER_THEATRE_TIME_RECORDS`
 
 ```graphql
 input TheatreTimeRecordInput {
@@ -851,7 +1158,7 @@ query GetTheatreRecordTeamMembers($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_RECORD_TEAM_MEMBERS`  
-**Searchable fields:** `record_uid`  
+**Searchable fields:** `record_uid`
 
 **`TheatreRecordTeamMemberNode` fields:**
 
@@ -870,7 +1177,7 @@ mutation RegisterTheatreRecordTeamMembers($inputs: [TheatreRecordTeamMemberInput
 }
 ```
 
-**Required Permission:** `REGISTER_THEATRE_RECORD_TEAM_MEMBERS`  
+**Required Permission:** `REGISTER_THEATRE_RECORD_TEAM_MEMBERS`
 
 ```graphql
 input TheatreRecordTeamMemberInput {
@@ -909,7 +1216,7 @@ query GetTheatreRecordDelays($pagination: PaginationInput!) {
 ```
 
 **Required Permission:** `VIEW_THEATRE_RECORD_DELAYS`  
-**Searchable fields:** `description`  
+**Searchable fields:** `description`
 
 **`TheatreRecordDelayNode` fields:**
 
@@ -930,7 +1237,7 @@ mutation RegisterTheatreRecordDelays($inputs: [TheatreRecordDelayInput!]!) {
 }
 ```
 
-**Required Permission:** `REGISTER_THEATRE_RECORD_DELAYS`  
+**Required Permission:** `REGISTER_THEATRE_RECORD_DELAYS`
 
 ```graphql
 input TheatreRecordDelayInput {
@@ -1096,23 +1403,76 @@ The backend validates JWT tokens. If a 401 is returned (UNAUTHORIZED - code 8003
 2. Retry the original request with the new token
 3. If refresh fails, redirect to login
 
+### 8. Downloading an Import Template
+
+```javascript
+const DOWNLOAD_TEMPLATE = gql`
+  query DownloadTemplate {
+    downloadDeathReasonTemplate {
+      file_name
+      base64_data
+    }
+  }
+`;
+
+// Decode and download the file
+const response = await client.query({ query: DOWNLOAD_TEMPLATE });
+const { file_name, base64_data } = response.data.downloadDeathReasonTemplate;
+const binary = atob(base64_data);
+const array = new Uint8Array(binary.length);
+for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+const blob = new Blob([array], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = file_name;
+a.click();
+```
+
+### 9. Importing from Excel
+
+```javascript
+// Read a file, encode to base64, then send
+const file = fileInput.files[0];
+const reader = new FileReader();
+reader.onload = () => {
+  const base64 = reader.result.split(",")[1]; // Remove data:...;base64, prefix
+  const variables = {
+    input: {
+      file_name: file.name,
+      base64_data: base64
+    }
+  };
+  client.mutate({
+    mutation: IMPORT_MUTATION,
+    variables
+  }).then(result => {
+    const { imported, duplicates, failed, details } = result.data.importDeathReasonsFromExcel;
+    console.log(`Imported: ${imported}, Duplicates: ${duplicates}, Failed: ${failed}`);
+  });
+};
+reader.readAsDataURL(file);
+```
+
 ---
 
 ## Summary: Complete Field List by Module
 
-| Module                    | Query Field                         | Mutation Field                              |
-|---------------------------|-------------------------------------|---------------------------------------------|
-| ProcedureDelayCategories  | `getProcedureDelayCategories`       | `registerProcedureDelayCategories`          |
-| ProcedureDelayCauses      | `getProcedureDelayCauses`           | `registerProcedureDelayCauses`              |
-| Procedures                | `getProcedures`                     | `registerProcedures`                        |
-| TheatreRoles              | `getTheatreRoles`                   | `registerTheatreRoles`                      |
-| TheatreMembers            | `getTheatreMembers`                 | `registerTheatreMembers`                    |
-| TheatreMemberRoles        | `getTheatreMemberRoles`             | `registerTheatreMemberRoles`                |
-| Regions                   | `getRegions`                        | `registerRegions`                           |
-| InternalSources           | `getInternalSources`                | `registerInternalSources`                   |
-| ExternalSources           | `getExternalSources`                | `registerExternalSources`                   |
-| TheatreUnits              | `getTheatreUnits`                   | `registerTheatreUnits`                      |
-| DeathReasons              | `getDeathReasons`                   | `registerDeathReasons`                      |
-| TheatreTimeRecords        | `getTheatreTimeRecords`             | `registerTheatreTimeRecords`                |
-| TheatreRecordTeamMembers  | `getTheatreRecordTeamMembers`       | `registerTheatreRecordTeamMembers`          |
-| TheatreRecordDelays       | `getTheatreRecordDelays`            | `registerTheatreRecordDelays`               |
+| Module                    | Query Field                                | Mutation Field                                      | Download Template                                   | Import from Excel                                    |
+|---------------------------|--------------------------------------------|-----------------------------------------------------|-----------------------------------------------------|------------------------------------------------------|
+| ProcedureDelayCategories  | `getProcedureDelayCategories`              | `registerProcedureDelayCategories`                  | `downloadProcedureDelayCategoryTemplate`            | `importProcedureDelayCategoriesFromExcel`            |
+| ProcedureDelayCauses      | `getProcedureDelayCauses`                  | `registerProcedureDelayCauses`                      | —                                                   | —                                                    |
+| Procedures                | `getProcedures`                            | `registerProcedures`                                | —                                                   | —                                                    |
+| TheatreRoles              | `getTheatreRoles`                          | `registerTheatreRoles`                              | —                                                   | —                                                    |
+| TheatreMembers            | `getTheatreMembers`                        | `registerTheatreMembers`                            | —                                                   | —                                                    |
+| TheatreMemberRoles        | `getTheatreMemberRoles`                    | `registerTheatreMemberRoles`                        | —                                                   | —                                                    |
+| Regions                   | `getRegions`                               | `registerRegions`                                   | `downloadRegionTemplate`                            | `importRegionsFromExcel`                             |
+| InternalSources           | `getInternalSources`                       | `registerInternalSources`                           | `downloadInternalSourceTemplate`                    | `importInternalSourcesFromExcel`                     |
+| ExternalSources           | `getExternalSources`                       | `registerExternalSources`                           | `downloadExternalSourceTemplate`                    | `importExternalSourcesFromExcel`                     |
+| TheatreUnits              | `getTheatreUnits`                          | `registerTheatreUnits`                              | `downloadTheatreUnitTemplate`                       | `importTheatreUnitsFromExcel`                        |
+| DeathReasons              | `getDeathReasons`                          | `registerDeathReasons`                              | `downloadDeathReasonTemplate`                       | `importDeathReasonsFromExcel`                        |
+| TheatreTimeRecords        | `getTheatreTimeRecords`                    | `registerTheatreTimeRecords`                        | —                                                   | —                                                    |
+| TheatreRecordTeamMembers  | `getTheatreRecordTeamMembers`              | `registerTheatreRecordTeamMembers`                  | —                                                   | —                                                    |
+| TheatreRecordDelays       | `getTheatreRecordDelays`                   | `registerTheatreRecordDelays`                       | —                                                   | —                                                    |
+
+> **Legend:** `—` means the module does **not** have a download-template or import-from-excel endpoint (typically used for entities with complex FK relationships or non-bulk operations).

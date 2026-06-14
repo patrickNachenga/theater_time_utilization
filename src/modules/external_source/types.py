@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import strawberry
 from typing import List, Optional
 from ..region.types import RegionNode
@@ -9,7 +11,7 @@ class ExternalSourceInput:
     name: str
     code: Optional[str] = None
     region_uid: Optional[str] = None
-    region_id: Optional[int] = None
+    region_code: Optional[str] = None
 
 
 @strawberry.type
@@ -24,3 +26,11 @@ class ExternalSourceNode:
 class ExternalSourceListNode:
     items: List[ExternalSourceNode]
     total_count: int
+
+
+@dataclass
+class ExternalSourceDTO:
+    uid: Optional[str]
+    name: str
+    code: Optional[str]
+    region_id: Optional[str]

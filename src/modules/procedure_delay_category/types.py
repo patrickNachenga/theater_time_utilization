@@ -6,8 +6,7 @@ from typing import List, Optional
 class ProcedureDelayCategoryInput:
     uid: Optional[str] = None
     name: str
-    code: Optional[str] = None
-    description: Optional[str] = None
+    code: str
 
 
 @strawberry.type
@@ -15,7 +14,6 @@ class ProcedureDelayCategoryNode:
     uid: str
     name: str
     code: Optional[str]
-    description: Optional[str]
 
 
 @strawberry.type

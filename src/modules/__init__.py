@@ -38,6 +38,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if info is None:
             return None
         try:
+
             current_user = info.context.current_user
             if current_user:
                 # Try id first, then fallback to uid/guid
@@ -108,7 +109,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 session.add_all(db_obj_list)
                 session.commit()
                 return Response(status=True, code=ResponseCode.SUCCESS,
-                                data=search_node(items=db_obj_list, total_count=count),
+                                data=search_node(items=[], total_count=count),
                                 message="Successfully Submitted")
             except Exception as e:
                 print(e)
