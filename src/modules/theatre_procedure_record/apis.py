@@ -25,7 +25,7 @@ class TheatreTimeRecordQuery:
 @strawberry.type
 class TheatreTimeRecordMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_THEATRE_TIME_RECORDS"])])
-    def register_theatre_time_records(self, inputs: List[TheatreProcedureRecordInput]) -> Response[TheatreTimeRecordListNode]:
+    def register_theatre_time_records(self, inputs: TheatreProcedureRecordInput) -> Response[TheatreTimeRecordListNode]:
         try:
             return TheatreTimeRecordService(TheatreTimeRecordCrud.model).register(inputs)
         except Exception as e:

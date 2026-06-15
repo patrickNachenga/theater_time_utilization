@@ -19,8 +19,8 @@ class TeamRole(str, Enum):
 @strawberry.input
 class TheatreRecordTeamMemberInput:
     uid: Optional[str] = None
-    record_uid: str
     member_uid: str
+    rank: Optional[int] = None
     role: TeamRole
 
 @strawberry.type
@@ -28,6 +28,7 @@ class TheatreRecordTeamMemberNode:
     uid: str
     member: TheatreMemberNode
     role: TeamRole
+    rank: Optional[int]
 
 
 @strawberry.type

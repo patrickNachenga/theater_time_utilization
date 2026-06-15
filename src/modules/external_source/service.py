@@ -118,7 +118,7 @@ class ExternalSourceService(CRUDBase[ExternalSource, ExternalSourceInput, Extern
                 )
 
             # --- Step 3: Bulk create-or-update in a single commit ---
-            result = self.create_or_update(
+            self.create_or_update(
                 "name", processed_inputs, ExternalSourceListNode
             )
             return Response(

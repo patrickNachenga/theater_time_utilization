@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import strawberry
 from typing import List, Optional
 from enum import Enum
@@ -71,6 +73,35 @@ class TheatreProcedureRecordInput:
     team_members: Optional[List[TheatreRecordTeamMemberInput]] = None
     delay_courses: Optional[List[TheatreRecordDelayInput]] = None
 
+
+@dataclass
+class TheatreProcedureRecordDTO:
+    uid: str
+    patient_mrn: str
+    patient_dob: str
+    patient_sex: str
+    patient_region_id: int
+    patient_type: PatientType
+    patient_source_type: SourceType
+    internal_source_id: Optional[int]
+    external_source_id: Optional[int]
+    theatre_unit_id: int
+    procedure_id: int
+    procedure_date: str
+    procedure_start_time: str
+    procedure_end_time: str
+    duration_minutes: int
+    estimated_duration_minutes: int
+    variance_minutes: int
+    met_turnaround_target: bool
+    had_delay: bool
+    surgery_beyond_theatre_time: Optional[bool]
+    surgery_met_time_between_cases: Optional[bool]
+    outcome: PatientOutcome
+    discharge_direction: Optional[DischargeDirection]
+    discharge_destination_id: Optional[int]
+    death_reason_id: Optional[int]
+    death_description: Optional[str]
 
 @strawberry.type
 class TheatreProcedureRecordNode:

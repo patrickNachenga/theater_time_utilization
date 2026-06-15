@@ -46,7 +46,7 @@ class TheatreProcedureRecord(BaseModel):
     patient_mrn = Column(String(100), nullable=True)
     patient_dob = Column(Date, nullable=True)
     patient_sex = Column(String(10), nullable=True)
-    patient_region = Column(UUID(as_uuid=True), ForeignKey("regions.uid"), index=True)
+    patient_region_id = Column(ForeignKey("regions.id"), index=True)
     patient_type = Column(SQLEnum(PatientType), nullable=False, index=True)
     # Patient source.
     patient_source_type = Column(SQLEnum(SourceType), nullable=False)
@@ -76,7 +76,7 @@ class TheatreProcedureRecord(BaseModel):
     # ==========================
     # RELATIONSHIPS
     # ==========================
-    region = relationship("Region")
+    patient_region = relationship("Region")
     theatre_unit = relationship("TheatreUnit")
     procedure = relationship("Procedure")
     internal_source = relationship("InternalSource", foreign_keys=[internal_source_id])

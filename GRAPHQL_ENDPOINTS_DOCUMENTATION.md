@@ -1,4 +1,4 @@
-# Theatre Time Utilization — GraphQL Endpoints Documentation
+# Theatre Time Utilization Microservice
 
 ## Overview
 

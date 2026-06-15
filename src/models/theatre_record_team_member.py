@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship
 
@@ -12,6 +12,7 @@ class TheatreRecordTeamMember(BaseModel):
     record_id = Column( ForeignKey("theatre_procedure_records.id"),nullable=False, index=True)
     theatre_member_id = Column( ForeignKey("theatre_members.id"),nullable=False,  index=True )
     role = Column( SQLEnum(TeamRole),nullable=False, index=True )
+    rank =  Column(Integer, nullable=True, index=True)
 
     # RELATIONSHIPS
     record = relationship("TheatreProcedureRecord",  back_populates="team_members" )
