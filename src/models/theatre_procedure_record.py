@@ -63,6 +63,7 @@ class TheatreProcedureRecord(BaseModel):
     variance_minutes = Column(Integer, nullable=True)
     met_turnaround_target = Column(Boolean, nullable=True)
     had_delay = Column(Boolean, nullable=False, default=False, index=True)
+    delay_reason = Column(Text, nullable=True)
     surgery_beyond_theatre_time = Column(Boolean, nullable=True)
     surgery_met_time_between_cases = Column(Boolean, nullable=True)
 

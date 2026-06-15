@@ -61,6 +61,7 @@ class TheatreProcedureRecordInput:
     variance_minutes: Optional[int] = None
     met_turnaround_target: Optional[bool] = None
     had_delay: Optional[bool] = None
+    delay_reason: Optional[str] = ""
     surgery_beyond_theatre_time: Optional[bool] = None
     surgery_met_time_between_cases: Optional[bool] = None
     outcome: Optional[PatientOutcome] = None
@@ -95,6 +96,7 @@ class TheatreProcedureRecordDTO:
     variance_minutes: int
     met_turnaround_target: bool
     had_delay: bool
+    delay_reason: Optional[str]
     surgery_beyond_theatre_time: Optional[bool]
     surgery_met_time_between_cases: Optional[bool]
     outcome: PatientOutcome
@@ -124,6 +126,7 @@ class TheatreProcedureRecordNode:
     variance_minutes: Optional[int]
     met_turnaround_target: Optional[bool]
     had_delay: Optional[bool]
+    delay_reason: Optional[str]
     surgery_beyond_theatre_time: Optional[bool]
     surgery_met_time_between_cases: Optional[bool]
     outcome: Optional[PatientOutcome]
