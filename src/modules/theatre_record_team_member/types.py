@@ -26,9 +26,12 @@ class TheatreRecordTeamMemberInput:
 @strawberry.type
 class TheatreRecordTeamMemberNode:
     uid: str
-    member: TheatreMemberNode
     role: TeamRole
     rank: Optional[int]
+
+    @strawberry.field
+    def member(self) -> TheatreMemberNode:
+        return self.theatre_member
 
 
 @strawberry.type

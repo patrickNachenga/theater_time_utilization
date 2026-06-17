@@ -1,16 +1,19 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm.strategies import SelectInLoader
 
 from src.core.security import Info
 from src.database.session import session_scope
 from src.modules import CRUDBase
-from src.models import TheatreProcedureRecord, TheatreRecordDelay, TheatreRecordTeamMember
+from src.models import TheatreProcedureRecord, TheatreRecordDelay, TheatreRecordTeamMember, ExternalSource, \
+    ProcedureDelayCause
 from src.modules.death_reason.service import DeathReasonCrud
 from src.modules.procedure_delay_cause.service import ProcedureDelayCauseCrud
 from src.modules.theatre_member.service import TheatreMemberCrud
 from src.modules.theatre_procedure_record.types import TheatreProcedureRecordInput, TheatreTimeRecordListNode, \
-    TheatreProcedureRecordDTO
+    TheatreProcedureRecordDTO, TheatreProcedureRecordNode
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.modules.region.service import RegionCrud
@@ -23,6 +26,67 @@ from dataclasses import fields
 
 class TheatreTimeRecordService(
     CRUDBase[TheatreProcedureRecord, TheatreProcedureRecordInput, TheatreProcedureRecordInput]):
+    from sqlalchemy.orm import joinedload, selectinload
+
+    from sqlalchemy.orm import joinedload, selectinload
+
+    @staticmethod
+    async def get_by_uid(uid: str) -> Response[TheatreProcedureRecordNode]:
+        """
+        Get Theatre Procedure Record by UID with all related data.
+        """
+        with session_scope() as session:
+            try:
+                record = (
+                    session.query(TheatreProcedureRecord)
+                    .options(
+                        # Direct relationships
+                        joinedload(TheatreProcedureRecord.patient_region),
+                        joinedload(TheatreProcedureRecord.internal_source),
+                        joinedload(TheatreProcedureRecord.external_source)
+                        .joinedload(ExternalSource.region),
+                        joinedload(TheatreProcedureRecord.theatre_unit),
+                        joinedload(TheatreProcedureRecord.procedure),
+                        joinedload(TheatreProcedureRecord.discharge_destination),
+                        joinedload(TheatreProcedureRecord.death_reason),
+
+                        # Team members -> theatre member
+                        selectinload(TheatreProcedureRecord.team_members)
+                        .joinedload(TheatreRecordTeamMember.theatre_member),
+
+                        # Delay records -> cause -> category
+                        selectinload(TheatreProcedureRecord.delay_courses)
+                        .joinedload(TheatreRecordDelay.cause)
+                        .joinedload(ProcedureDelayCause.procedure_delay_category),
+                    )
+                    .filter(TheatreProcedureRecord.uid == uid)
+                    .first()
+                )
+
+                if not record:
+                    return Response(
+                        status=False,
+                        code=ResponseCode.NO_RECORD_FOUND,
+                        message="Theatre Procedure Record not found",
+                        data=None,
+                    )
+
+                return Response(
+                    status=True,
+                    code=ResponseCode.SUCCESS,
+                    message="Theatre Procedure Record retrieved successfully",
+                    data=record,
+                )
+
+            except Exception as e:
+                print(e)
+                return Response(
+                    status=False,
+                    code=ResponseCode.FAILURE,
+                    message="Unable to retrieve record",
+                    data=None,
+                )
+
     def register(self, inputs: TheatreProcedureRecordInput, info: Optional[Info] = None) -> Response[TheatreTimeRecordListNode]:
         with session_scope() as session:
             try:

@@ -201,7 +201,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             return obj
 
     def get_multi_paginated(self, pagination: PaginationInput, search_columns: List[str], search_node,
-                            relationships_to_join: List[str] = None, unique_search: List[dict] = None) -> SearchOutput:
+                            relationships_to_join: List[str] = None, unique_search: List[dict] = None, chain_relationship: List[str] = None) -> SearchOutput:
         with session_scope() as session:
             query = session.query(self.model).filter(self.model.deleted_at.is_(None))
             search_q = pagination.search if pagination.search else ''
@@ -232,6 +232,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             if relationships_to_join and len(relationships_to_join) > 0:
                 for relationship_name in relationships_to_join:
                     query = query.options(joinedload(relationship_name))
+
+            # Fetch chain relationship
+            if chain_relationship and len(chain_relationship) > 0:
+                query = query.options(*chain_relationship)
             items = query.all()
             session.close()
 

@@ -85,5 +85,5 @@ class TheatreProcedureRecord(BaseModel):
     discharge_destination = relationship("InternalSource", foreign_keys=[discharge_destination_id])
     death_reason = relationship("DeathReason")
     delay_courses = relationship("TheatreRecordDelay", back_populates="record", cascade="all, delete-orphan")
-    team_members = relationship("TheatreRecordTeamMember", back_populates="record",
+    team_members = relationship("TheatreRecordTeamMember", back_populates="team_member",
                                 cascade="all, delete-orphan")

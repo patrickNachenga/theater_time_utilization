@@ -15,5 +15,5 @@ class TheatreRecordTeamMember(BaseModel):
     rank =  Column(Integer, nullable=True, index=True)
 
     # RELATIONSHIPS
-    record = relationship("TheatreProcedureRecord",  back_populates="team_members" )
-    theatre_member = relationship(  "TheatreMember"  )
+    team_member = relationship("TheatreProcedureRecord",  back_populates="team_members" )
+    theatre_member = relationship(  "TheatreMember",  )

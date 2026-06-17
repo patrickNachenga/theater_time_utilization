@@ -44,14 +44,14 @@ COPY . .
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8093
+EXPOSE 8095
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8093/api/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8095/api/health')" || exit 1
 
 CMD ["gunicorn", "app.main:app", \
     "--worker-class", "uvicorn.workers.UvicornWorker", \
-    "--bind", "0.0.0.0:8093", \
+    "--bind", "0.0.0.0:8095", \
     "--workers", "2", \
     "--timeout", "120", \
     "--max-requests", "1000", \

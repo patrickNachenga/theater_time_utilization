@@ -37,7 +37,7 @@ class MainServiceClient:
             response.raise_for_status()
 
             resp = response.json()
-            # print(resp.get("data"))
+            print(resp.get("data"))
 
             # Check the status code from the response body
             resp_status = resp.get("status")
@@ -57,6 +57,7 @@ class MainServiceClient:
             return PermissionResponse(**data)
 
         except httpx.HTTPStatusError as e:
+            print(e)
             logger.error(
                 f"Auth Service HTTP error for user {user_guid}: "
                 f"Status {e.response.status_code} - {e.response.text[:500]}"

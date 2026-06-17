@@ -15,10 +15,8 @@ class TheatreRecordDelayInput:
 @strawberry.type
 class TheatreRecordDelayNode:
     uid: str
-    procedure_delay_category: Optional[ProcedureDelayCategoryNode]
-    delay_cause: Optional[ProcedureDelayCauseNode]
+    cause: Optional[ProcedureDelayCauseNode]
     description: Optional[str]
-    sort_order: Optional[int]
 
 
 @strawberry.type

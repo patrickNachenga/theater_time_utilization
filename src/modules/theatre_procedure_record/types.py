@@ -139,6 +139,25 @@ class TheatreProcedureRecordNode:
 
 
 @strawberry.type
+class TheatreProcedureRecordSimpleNode:
+    uid: str
+    patient_mrn: Optional[str]
+    patient_dob: Optional[str]
+    patient_sex: Optional[str]
+    patient_type: Optional[PatientType]
+    procedure_date: Optional[str]
+    procedure_start_time: Optional[str]
+    procedure_end_time: Optional[str]
+    duration_minutes: Optional[int]
+    had_delay: Optional[bool]
+    outcome: Optional[PatientOutcome]
+    created_by: Optional[int]
+    patient_region: Optional[RegionNode]
+    procedure: Optional[ProcedureNode]
+    theatre_unit: Optional[TheatreUnitNode]
+
+
+@strawberry.type
 class TheatreTimeRecordListNode:
-    items: List[TheatreProcedureRecordNode]
+    items: List[TheatreProcedureRecordSimpleNode]
     total_count: int
