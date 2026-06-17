@@ -14,6 +14,7 @@ from src.modules.death_reason.apis import DeathReasonQuery, DeathReasonMutation
 from src.modules.theatre_procedure_record.apis import TheatreTimeRecordQuery, TheatreTimeRecordMutation
 from src.modules.theatre_record_team_member.apis import TheatreRecordTeamMemberQuery, TheatreRecordTeamMemberMutation
 from src.modules.theatre_record_delay.apis import TheatreRecordDelayQuery, TheatreRecordDelayMutation
+from src.modules.dashboard.apis import DashboardQuery
 
 
 
@@ -32,6 +33,7 @@ class ApiQuery(ProcedureDelayCategoryQuery,
                TheatreTimeRecordQuery,
                TheatreRecordTeamMemberQuery,
                TheatreRecordDelayQuery,
+               DashboardQuery,
                ):
     pass
 

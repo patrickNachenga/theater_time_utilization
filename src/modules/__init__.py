@@ -227,7 +227,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             total_count = query.count()
 
             # Apply pagination
-            query = query.limit(pagination.limit).offset(pagination.offset * pagination.limit)
+            query = query.order_by(self.model.created_at.desc()).limit(pagination.limit).offset(pagination.offset * pagination.limit)
             # Fetch items and total count
             if relationships_to_join and len(relationships_to_join) > 0:
                 for relationship_name in relationships_to_join:
