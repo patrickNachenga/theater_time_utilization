@@ -121,7 +121,7 @@ class DashboardService:
                 )
 
     @staticmethod
-    def get_delay_distribution() -> Response[DelayDistributionListNode]:
+    async def get_delay_distribution() -> Response[DelayDistributionListNode]:
         """
         Get delay distribution grouped by delay category.
         Returns count of records for each delay category, plus a "No Delay" count.
@@ -154,16 +154,27 @@ class DashboardService:
                         ProcedureDelayCategory.name,
                         func.count(func.distinct(TheatreProcedureRecord.id)).label("count"),
                     )
-                    .select_from(TheatreProcedureRecord)
-                    .join(TheatreRecordDelay, TheatreRecordDelay.record_id == TheatreProcedureRecord.id)
-                    .join(ProcedureDelayCause, ProcedureDelayCause.id == TheatreRecordDelay.cause_id)
-                    .join(ProcedureDelayCategory, ProcedureDelayCategory.id == ProcedureDelayCause.procedure_delay_category_id)
+                    .join(
+                        TheatreRecordDelay,
+                        TheatreRecordDelay.record_id == TheatreProcedureRecord.id,
+                    )
+                    .join(
+                        ProcedureDelayCause,
+                        ProcedureDelayCause.id == TheatreRecordDelay.cause_id,
+                    )
+                    .join(
+                        ProcedureDelayCategory,
+                        ProcedureDelayCategory.id
+                        == ProcedureDelayCause.procedure_delay_category_id,
+                    )
                     .filter(
                         TheatreProcedureRecord.deleted_at.is_(None),
                         TheatreProcedureRecord.had_delay.is_(True),
                     )
                     .group_by(ProcedureDelayCategory.name)
-                    .order_by(func.count(func.distinct(TheatreProcedureRecord.id)).desc())
+                    .order_by(
+                        func.count(func.distinct(TheatreProcedureRecord.id)).desc()
+                    )
                     .all()
                 )
 
@@ -196,7 +207,6 @@ class DashboardService:
                 )
 
             except Exception as e:
-                print(e)
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,
@@ -218,8 +228,10 @@ class DashboardService:
                         TheatreUnit.name,
                         func.count(TheatreProcedureRecord.id).label("count"),
                     )
-                    .select_from(TheatreProcedureRecord)
-                    .join(TheatreUnit, TheatreUnit.id == TheatreProcedureRecord.theatre_unit_id)
+                    .join(
+                        TheatreUnit,
+                        TheatreUnit.id == TheatreProcedureRecord.theatre_unit_id,
+                    )
                     .filter(
                         TheatreProcedureRecord.deleted_at.is_(None),
                     )
@@ -245,7 +257,7 @@ class DashboardService:
                 )
 
             except Exception as e:
-                print(e)
+                print("=============================================>",e)
                 return Response(
                     status=False,
                     code=ResponseCode.FAILURE,

@@ -15,6 +15,7 @@ from src.modules.theatre_procedure_record.apis import TheatreTimeRecordQuery, Th
 from src.modules.theatre_record_team_member.apis import TheatreRecordTeamMemberQuery, TheatreRecordTeamMemberMutation
 from src.modules.theatre_record_delay.apis import TheatreRecordDelayQuery, TheatreRecordDelayMutation
 from src.modules.dashboard.apis import DashboardQuery
+from src.modules.analytics.apis import AnalyticsQuery
 
 
 
@@ -33,8 +34,9 @@ class ApiQuery(ProcedureDelayCategoryQuery,
                TheatreTimeRecordQuery,
                TheatreRecordTeamMemberQuery,
                TheatreRecordDelayQuery,
-               DashboardQuery,
-               ):
+                DashboardQuery,
+                AnalyticsQuery,
+                ):
     pass
 
 

@@ -23,9 +23,9 @@ class DashboardQuery:
             )
 
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_THEATRE_TIME_RECORDS"])])
-    def get_delay_distribution(self) -> Response[DelayDistributionListNode]:
+    async  def get_delay_distribution(self) -> Response[DelayDistributionListNode]:
         try:
-            return DashboardCrud.get_delay_distribution()
+            return await DashboardCrud.get_delay_distribution()
         except Exception as e:
             print(e)
             return Response(
