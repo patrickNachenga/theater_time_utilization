@@ -10,4 +10,6 @@ class TheatreMember(BaseModel):
     middle_name: str = Column(String(255), nullable=False)
     last_name: str = Column(String(255), nullable=False)
     pf_number: str = Column(String(50), nullable=False,  index=True)
+    phone_number: str = Column(String(50), nullable=True, index=True)
+    email: str = Column(String(255), nullable=True, index=True)
 

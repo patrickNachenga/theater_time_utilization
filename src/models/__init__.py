@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer
+from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -15,9 +15,9 @@ class BaseModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = Column(DateTime, nullable=True)
-    deleted_by = Column(Integer, nullable=True)
-    created_by = Column(Integer, nullable=True)
-    updated_by = Column(Integer, nullable=True)
+    deleted_by = Column(String, nullable=True)
+    created_by = Column(String, nullable=True)
+    updated_by = Column(String, nullable=True)
 
 # theatre models
 from .procedure_delay_category import ProcedureDelayCategory
