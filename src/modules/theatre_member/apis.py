@@ -2,7 +2,7 @@ import strawberry
 from typing import List
 
 from src.modules.theatre_member.service import TheatreMemberService, TheatreMemberCrud
-from src.modules.theatre_member.types import TheatreMemberInput, TheatreMemberListNode
+from src.modules.theatre_member.types import TheatreMemberInput, TheatreMemberListNode, ImportResultNode
 from src.shared.excel_types import Base64ExcelOutput, Base64ExcelInput
 from src.types import PaginationInput
 from src.shared.response import Response
@@ -37,19 +37,24 @@ class TheatreMemberQuery:
 @strawberry.type
 class TheatreMemberMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_THEATRE_MEMBERS"])])
-    def register_theatre_members(self, inputs: List[TheatreMemberInput]) -> Response[TheatreMemberListNode]:
+    def register_theatre_members(self, inputs: List[TheatreMemberInput],  info: Info) -> Response[TheatreMemberListNode]:
         try:
-            return TheatreMemberService(TheatreMemberCrud.model).register(inputs)
+            return TheatreMemberService(TheatreMemberCrud.model).register(inputs, info=info)
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=TheatreMemberListNode(items=[], total_count=0))
 
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_THEATRE_MEMBERS"])])
-    def import_theatre_members_from_excel(self, file_input: Base64ExcelInput, info: Info) -> Response[TheatreMemberListNode]:
+    async def import_theatre_members_from_excel(self, file_input: Base64ExcelInput, info: Info) -> Response[ImportResultNode]:
         try:
-            print("importing theatre members from excel", info.context.current_user)
-            return TheatreMemberCrud.import_from_excel(file_input.base64_data, info)
+            data = TheatreMemberCrud.import_from_excel(file_input.base64_data, info)
+            return Response(
+                status=True,
+                code=ResponseCode.SUCCESS,
+                message=f"Import Process completed:",
+                data=data
+            )
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to import: {e}",
-                            data=TheatreMemberListNode(items=[], total_count=0))
+                            data=ImportResultNode(successful_count=0, failed_count=0, failed_records_file=None))

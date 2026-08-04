@@ -1,8 +1,8 @@
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
+from typing import Any, Generic, List, Optional, Type, TypeVar, Union, Tuple, Dict
 
 import pendulum
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, insert, inspect, or_, and_, cast, String
+from sqlalchemy import select, insert, inspect, or_, and_, cast, String, false, func, desc, asc, Row
 from sqlalchemy.orm import joinedload
 
 from src.core.security import Info
@@ -47,6 +47,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             return None
         return None
 
+    def _get_user_name(self, info: Optional[Info]) -> Optional[str]:
+        """Extract user name from Strawberry context (current_user.name)."""
+        if info is None:
+            return None
+        try:
+
+            current_user = info.context.current_user
+            if current_user:
+                return current_user.username or None
+        except Exception:
+            return None
+        return None
+
     def get(self, uid: Any) -> Optional[ModelType]:
         if uid == '':
             uid = None
@@ -69,7 +82,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def create_or_update(self, input_unique_field, inputs: List[CreateSchemaType], search_node,
                           info: Optional[Info] = None) -> Response[SearchOutput]:
         db_obj_list = []
-        user_id = self._get_user_id(info)
+        user_id = self._get_user_name(info)
 
         with session_scope() as session:
             count = session.query(self.model).count()
@@ -199,6 +212,64 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             obj.update(update_data)
             session.commit()
             return obj
+
+    async def is_exist(
+            self,
+            query: Dict[str, Any],
+            return_one: bool = True,
+            fields: Optional[List[str]] = None,  # Added: allow selective columns
+            sort_by: Optional[Union[str, Tuple[str, str]]] = None,
+            limit: Optional[int] = None,
+            offset: Optional[int] = None,
+            logical_operator: str = "AND",
+    ) -> Union[Optional[ModelType], List[ModelType], List[Row]]:
+
+        if not query:
+            raise ValueError("A query dictionary must be provided.")
+
+        # 1. Handle Selective Loading vs. Select All
+        if fields:
+            # Map string names to actual model columns
+            selection = [getattr(self.model, field) for field in fields]
+            stmt = select(*selection)
+        else:
+            stmt = select(self.model)
+
+        async with session_scope() as session:
+            filters = []
+            for key, value in query.items():
+                column = getattr(self.model, key)
+
+                if isinstance(value, (list, tuple, set)):
+                    filters.append(column.in_(value)) if value else filters.append(false())
+                elif isinstance(value, str):
+                    filters.append(func.lower(column) == value.lower())
+                else:
+                    filters.append(column == value)
+
+            # 2. Apply Filters
+            filter_condition = or_(*filters) if logical_operator.upper() == "OR" else and_(*filters)
+            stmt = stmt.where(filter_condition, self.model.is_deleted == False)
+
+            # 3. Sorting & Pagination
+            if sort_by:
+                field, order = sort_by if isinstance(sort_by, tuple) else (sort_by, "asc")
+                order_func = desc if order.lower() == "desc" else asc
+                stmt = stmt.order_by(order_func(getattr(self.model, field)))
+
+            if limit: stmt = stmt.limit(limit)
+            if offset: stmt = stmt.offset(offset)
+
+            # 4. Execution
+            result = await session.execute(stmt)
+
+            # If specific fields were requested, scalars() might not be appropriate
+            # depending on if you want objects or rows.
+            results = result.scalars().all() if not fields else result.all()
+
+            if not results:
+                return None
+            return results[0] if return_one else results
 
     def get_multi_paginated(self, pagination: PaginationInput, search_columns: List[str], search_node,
                             relationships_to_join: List[str] = None, unique_search: List[dict] = None, chain_relationship: List[str] = None) -> SearchOutput:
