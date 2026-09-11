@@ -144,8 +144,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 try:
                     current_user = info.context.current_user
                     if current_user and hasattr(obj_data, 'updated_by'):
-                        user_id = current_user.id or current_user.uid or current_user.guid
-                        obj_data.updated_by = user_id
+                        username = current_user.username or current_user.guid
+                        obj_data.updated_by = username
                 except Exception:
                     pass
             session.add(obj_data)
@@ -166,9 +166,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 try:
                     current_user = info.context.current_user
                     if current_user:
-                        user_id = current_user.id or current_user.uid or current_user.guid
-                        if user_id:
-                            update_data[self.model.deleted_by] = user_id
+                        username = current_user.username or current_user.guid
+                        if username:
+                            update_data[self.model.deleted_by] = username
                 except Exception:
                     pass
             obj.update(update_data)
@@ -198,17 +198,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 raise ValueError(msg)
 
             # Set deleted_by from current user context
-            user_id = None
+            username = None
             try:
                 current_user = info.context.current_user
                 if current_user:
-                    user_id = current_user.id or current_user.uid or current_user.guid
+                    username = current_user.username or current_user.guid
             except Exception:
                 pass
 
             update_data = {self.model.deleted_at: pendulum.now()}
-            if user_id:
-                update_data[self.model.deleted_by] = user_id
+            if username:
+                update_data[self.model.deleted_by] = username
             obj.update(update_data)
             session.commit()
             return obj

@@ -6,7 +6,6 @@ import strawberry
 from typing import List, Optional
 
 from ..theatre_member.types import TheatreMemberNode
-from ..theatre_role.types import TheatreRoleNode
 
 @strawberry.enum
 class TeamRole(str, Enum):

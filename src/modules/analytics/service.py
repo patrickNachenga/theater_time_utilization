@@ -14,7 +14,6 @@ from src.models import (
     Region,
     TheatreRecordTeamMember,
     TheatreMember,
-    TheatreRole,
 )
 from src.models.theatre_procedure_record import PatientOutcome, PatientType
 from src.modules.analytics.types import (

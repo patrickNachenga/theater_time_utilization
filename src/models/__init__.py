@@ -23,7 +23,6 @@ class BaseModel(Base):
 from .procedure_delay_category import ProcedureDelayCategory
 from .procedure_delay_cause import ProcedureDelayCause
 from .procedure import Procedure
-from .theatre_role import TheatreRole
 from .theatre_member import TheatreMember
 from .theatre_member_role import TheatreMemberRole
 from .region import Region
@@ -34,4 +33,5 @@ from .death_reason import DeathReason
 from .theatre_procedure_record import TheatreProcedureRecord
 from .theatre_record_team_member import TheatreRecordTeamMember
 from .theatre_record_delay import TheatreRecordDelay
+from .theatre_time_setting import TheatreTimeSetting
 

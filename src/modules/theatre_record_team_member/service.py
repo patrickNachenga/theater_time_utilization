@@ -6,7 +6,6 @@ from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 from src.modules.theatre_procedure_record.service import TheatreTimeRecordCrud
 from src.modules.theatre_member.service import TheatreMemberCrud
-from src.modules.theatre_role.service import TheatreRoleCrud
 
 
 class TheatreRecordTeamMemberService(CRUDBase[TheatreRecordTeamMember, TheatreRecordTeamMemberInput, TheatreRecordTeamMemberInput]):
@@ -33,15 +32,6 @@ class TheatreRecordTeamMemberService(CRUDBase[TheatreRecordTeamMember, TheatreRe
                                         data=TheatreRecordTeamMemberListNode(items=[], total_count=0))
                     new_input_obj.member_id = member.id
                     new_input_obj.member_uid = None
-
-                if new_input_obj.role_uid:
-                    role = TheatreRoleCrud.get(new_input_obj.role_uid)
-                    if not role:
-                        return Response(status=False, code=ResponseCode.VALIDATION_ERROR,
-                                        message=f"Theatre Role with UID {new_input_obj.role_uid} not found.",
-                                        data=TheatreRecordTeamMemberListNode(items=[], total_count=0))
-                    new_input_obj.role_id = role.id
-                    new_input_obj.role_uid = None
 
                 processed_inputs.append(new_input_obj)
 

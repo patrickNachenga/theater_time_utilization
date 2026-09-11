@@ -361,8 +361,6 @@ permissions: typing.List[Permission] = [
     Permission(code="VIEW_PROCEDURES", name="View Procedures", description="Can view procedures", service="mnh_theatre_time"),
     Permission(code="REGISTER_PROCEDURES", name="Register Procedures", description="Can register procedures", service="mnh_theatre_time"),
 
-    Permission(code="VIEW_THEATRE_ROLES", name="View Theatre Roles", description="Can view theatre roles", service="mnh_theatre_time"),
-    Permission(code="REGISTER_THEATRE_ROLES", name="Register Theatre Roles", description="Can register theatre roles", service="mnh_theatre_time"),
 
     Permission(code="VIEW_THEATRE_MEMBERS", name="View Theatre Members", description="Can view theatre members", service="mnh_theatre_time"),
     Permission(code="REGISTER_THEATRE_MEMBERS", name="Register Theatre Members", description="Can register theatre members", service="mnh_theatre_time"),
@@ -393,4 +391,7 @@ permissions: typing.List[Permission] = [
 
     Permission(code="VIEW_THEATRE_RECORD_DELAYS", name="View Theatre Record Delays", description="Can view theatre record delays", service="mnh_theatre_time"),
     Permission(code="REGISTER_THEATRE_RECORD_DELAYS", name="Register Theatre Record Delays", description="Can register theatre record delays", service="mnh_theatre_time"),
+
+    Permission(code="VIEW_THEATRE_TIME_SETTINGS", name="View Theatre Time Settings", description="Can view theatre time settings", service="mnh_theatre_time"),
+    Permission(code="REGISTER_THEATRE_TIME_SETTINGS", name="Register Theatre Time Settings", description="Can register theatre time settings", service="mnh_theatre_time"),
 ]

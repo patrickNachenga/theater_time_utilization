@@ -65,7 +65,15 @@ class TheatreProcedureRecord(BaseModel):
     had_delay = Column(Boolean, nullable=False, default=False, index=True)
     delay_reason = Column(Text, nullable=True)
     surgery_beyond_theatre_time = Column(Boolean, nullable=True)
+    # Only meaningful when is_first_case_of_day is False: answers "was there a
+    # delay between the previous procedure and this one?" (YES => there was a delay).
     surgery_met_time_between_cases = Column(Boolean, nullable=True)
+    # Team & Time tab: did the surgery run longer than the procedure's estimated duration?
+    surgery_exceeded_estimated_time = Column(Boolean, nullable=True)
+    surgery_exceeded_time_description = Column(Text, nullable=True)
+    # Delay & Outcome tab: is this the opening case of the day (first case after
+    # the theatre's scheduled start-cutting time)? Drives how had_delay is derived.
+    is_first_case_of_day = Column(Boolean, nullable=True, default=False)
 
     # OUTCOME of Procedure
     outcome = Column(SQLEnum(PatientOutcome), nullable=False, index=True)

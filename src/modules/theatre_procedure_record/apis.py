@@ -11,7 +11,7 @@ from src.types import PaginationInput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
 
-from src.core.security import CustomPermissionExtension
+from src.core.security import CustomPermissionExtension, Info
 
 
 @strawberry.type
@@ -48,9 +48,9 @@ class TheatreTimeRecordQuery:
 @strawberry.type
 class TheatreTimeRecordMutation:
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_THEATRE_TIME_RECORDS"])])
-    def register_theatre_time_records(self, inputs: TheatreProcedureRecordInput) -> Response[TheatreTimeRecordListNode]:
+    def register_theatre_time_records(self, inputs: TheatreProcedureRecordInput, info: Info) -> Response[TheatreTimeRecordListNode]:
         try:
-            return TheatreTimeRecordService(TheatreTimeRecordCrud.model).register(inputs)
+            return TheatreTimeRecordService(TheatreTimeRecordCrud.model).register(inputs, info=info)
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed",

@@ -3,7 +3,6 @@ import strawberry
 from src.modules.procedure_delay_category.apis import ProcedureDelayCategoryQuery, ProcedureDelayCategoryMutation
 from src.modules.procedure_delay_cause.apis import ProcedureDelayCauseQuery, ProcedureDelayCauseMutation
 from src.modules.procedure.apis import ProcedureQuery, ProcedureMutation
-from src.modules.theatre_role.apis import TheatreRoleQuery, TheatreRoleMutation
 from src.modules.theatre_member.apis import TheatreMemberQuery, TheatreMemberMutation
 from src.modules.theatre_member_role.apis import TheatreMemberRoleQuery, TheatreMemberRoleMutation
 from src.modules.region.apis import RegionQuery, RegionMutation
@@ -14,6 +13,7 @@ from src.modules.death_reason.apis import DeathReasonQuery, DeathReasonMutation
 from src.modules.theatre_procedure_record.apis import TheatreTimeRecordQuery, TheatreTimeRecordMutation
 from src.modules.theatre_record_team_member.apis import TheatreRecordTeamMemberQuery, TheatreRecordTeamMemberMutation
 from src.modules.theatre_record_delay.apis import TheatreRecordDelayQuery, TheatreRecordDelayMutation
+from src.modules.theatre_time_setting.apis import TheatreTimeSettingQuery, TheatreTimeSettingMutation
 from src.modules.dashboard.apis import DashboardQuery
 from src.modules.analytics.apis import AnalyticsQuery
 
@@ -23,7 +23,6 @@ from src.modules.analytics.apis import AnalyticsQuery
 class ApiQuery(ProcedureDelayCategoryQuery,
                ProcedureDelayCauseQuery,
                ProcedureQuery,
-               TheatreRoleQuery,
                TheatreMemberQuery,
                TheatreMemberRoleQuery,
                RegionQuery,
@@ -34,6 +33,7 @@ class ApiQuery(ProcedureDelayCategoryQuery,
                TheatreTimeRecordQuery,
                TheatreRecordTeamMemberQuery,
                TheatreRecordDelayQuery,
+                TheatreTimeSettingQuery,
                 DashboardQuery,
                 AnalyticsQuery,
                 ):
@@ -44,7 +44,6 @@ class ApiQuery(ProcedureDelayCategoryQuery,
 class ApiMutation(ProcedureDelayCategoryMutation,
                   ProcedureDelayCauseMutation,
                   ProcedureMutation,
-                  TheatreRoleMutation,
                   TheatreMemberMutation,
                   TheatreMemberRoleMutation,
                   RegionMutation,
@@ -55,5 +54,6 @@ class ApiMutation(ProcedureDelayCategoryMutation,
                   TheatreTimeRecordMutation,
                   TheatreRecordTeamMemberMutation,
                   TheatreRecordDelayMutation,
+                  TheatreTimeSettingMutation,
                   ):
     pass

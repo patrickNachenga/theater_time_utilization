@@ -63,7 +63,10 @@ class TheatreProcedureRecordInput:
     had_delay: Optional[bool] = None
     delay_reason: Optional[str] = ""
     surgery_beyond_theatre_time: Optional[bool] = None
+    is_first_case_of_day: Optional[bool] = None
     surgery_met_time_between_cases: Optional[bool] = None
+    surgery_exceeded_estimated_time: Optional[bool] = None
+    surgery_exceeded_time_description: Optional[str] = None
     outcome: Optional[PatientOutcome] = None
     discharge_direction: Optional[DischargeDirection] = None
     discharge_destination_uid: Optional[str] = None
@@ -98,7 +101,10 @@ class TheatreProcedureRecordDTO:
     had_delay: bool
     delay_reason: Optional[str]
     surgery_beyond_theatre_time: Optional[bool]
+    is_first_case_of_day: Optional[bool]
     surgery_met_time_between_cases: Optional[bool]
+    surgery_exceeded_estimated_time: Optional[bool]
+    surgery_exceeded_time_description: Optional[str]
     outcome: PatientOutcome
     discharge_direction: Optional[DischargeDirection]
     discharge_destination_id: Optional[int]
@@ -128,7 +134,10 @@ class TheatreProcedureRecordNode:
     had_delay: Optional[bool]
     delay_reason: Optional[str]
     surgery_beyond_theatre_time: Optional[bool]
+    is_first_case_of_day: Optional[bool]
     surgery_met_time_between_cases: Optional[bool]
+    surgery_exceeded_estimated_time: Optional[bool]
+    surgery_exceeded_time_description: Optional[str]
     outcome: Optional[PatientOutcome]
     discharge_direction: Optional[DischargeDirection]
     discharge_destination: Optional[InternalSourceNode]
@@ -151,7 +160,7 @@ class TheatreProcedureRecordSimpleNode:
     duration_minutes: Optional[int]
     had_delay: Optional[bool]
     outcome: Optional[PatientOutcome]
-    created_by: Optional[int]
+    created_by: Optional[str]
     patient_region: Optional[RegionNode]
     procedure: Optional[ProcedureNode]
     theatre_unit: Optional[TheatreUnitNode]

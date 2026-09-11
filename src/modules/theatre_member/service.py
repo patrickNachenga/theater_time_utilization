@@ -4,15 +4,19 @@ import uuid
 from uuid import UUID
 
 import pandas as pd
-from typing import List
+from typing import List, Optional
+
+from sqlalchemy import String, cast, or_
 
 from src.core.security import Info
+from src.database.session import session_scope
 from src.modules import CRUDBase
-from src.models import TheatreMember
+from src.models import TheatreMember, TheatreMemberRole
 from src.modules.theatre_member.types import TheatreMemberInput, TheatreMemberListNode, ImportResultNode
 from src.shared.excel_types import Base64ExcelOutput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
+from src.types import PaginationInput
 
 
 class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMemberInput]):
@@ -23,6 +27,42 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=TheatreMemberListNode(items=[], total_count=0))
+
+    def get_multi_paginated_by_role(
+        self,
+        pagination: PaginationInput,
+        role: Optional[str] = None,
+    ) -> TheatreMemberListNode:
+        """
+        Same shape as CRUDBase.get_multi_paginated, but can additionally
+        restrict results to members tagged with a given MemberRole.
+        """
+        with session_scope() as session:
+            query = session.query(TheatreMember).filter(TheatreMember.deleted_at.is_(None))
+
+            if role:
+                query = (
+                    query.join(TheatreMemberRole, TheatreMemberRole.member_id == TheatreMember.id)
+                    .filter(TheatreMemberRole.role == role, TheatreMemberRole.deleted_at.is_(None))
+                )
+
+            search_q = pagination.search or ""
+            if search_q:
+                search_columns = ["first_name", "middle_name", "last_name", "pf_number"]
+                query = query.filter(
+                    or_(*[cast(getattr(TheatreMember, col), String).ilike(f"%{search_q}%") for col in search_columns])
+                )
+
+            total_count = query.count()
+            query = (
+                query.order_by(TheatreMember.created_at.desc())
+                .limit(pagination.limit)
+                .offset(pagination.offset * pagination.limit)
+            )
+            items = query.all()
+            session.close()
+
+            return TheatreMemberListNode(items=items, total_count=total_count)
 
 
     def import_from_excel(self, base64_data: str, info: Info) -> ImportResultNode:

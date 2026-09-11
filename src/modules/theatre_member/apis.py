@@ -1,8 +1,9 @@
 import strawberry
-from typing import List
+from typing import List, Optional
 
 from src.modules.theatre_member.service import TheatreMemberService, TheatreMemberCrud
 from src.modules.theatre_member.types import TheatreMemberInput, TheatreMemberListNode, ImportResultNode
+from src.modules.theatre_member_role.types import MemberRole
 from src.shared.excel_types import Base64ExcelOutput, Base64ExcelInput
 from src.types import PaginationInput
 from src.shared.response import Response
@@ -15,9 +16,9 @@ from src.core.security import CustomPermissionExtension, Info
 @strawberry.type
 class TheatreMemberQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_THEATRE_MEMBERS"])])
-    def get_theatre_members(self, pagination: PaginationInput) -> Response[TheatreMemberListNode]:
+    def get_theatre_members(self, pagination: PaginationInput, role: Optional[MemberRole] = None) -> Response[TheatreMemberListNode]:
         try:
-            result = TheatreMemberCrud.get_multi_paginated(pagination, ['first_name', 'last_name', 'pf_number'], TheatreMemberListNode)
+            result = TheatreMemberCrud.get_multi_paginated_by_role(pagination, role)
             return Response(status=True, code=ResponseCode.SUCCESS, message="Retrieved", data=result)
         except Exception as e:
             print(e)

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
@@ -21,7 +22,12 @@ from src.modules.internal_source.service import InternalSourceCrud
 from src.modules.external_source.service import ExternalSourceCrud
 from src.modules.theatre_unit.service import TheatreUnitCrud
 from src.modules.procedure.service import ProcedureCrud
+from src.modules.theatre_time_setting.service import TheatreTimeSettingCrud
 from dataclasses import fields
+
+
+def _time_to_minutes(t) -> int:
+    return t.hour * 60 + t.minute
 
 
 class TheatreTimeRecordService(
@@ -29,6 +35,39 @@ class TheatreTimeRecordService(
     from sqlalchemy.orm import joinedload, selectinload
 
     from sqlalchemy.orm import joinedload, selectinload
+
+    @staticmethod
+    def _compute_had_delay(inputs: TheatreProcedureRecordInput) -> bool:
+        """
+        'Was there any delay?' is never answered directly by the user — it is
+        derived from the Delay & Outcome branch the user is in:
+
+        - First case of the day: delay is inferred from the timing setup —
+          the case is late if (procedure_start_time - room_preparation_minutes
+          - patient_induction_minutes) falls after the configured
+          start_cutting_time.
+        - Any other case: delay mirrors "Did the surgery meet the time
+          between cases?" (surgery_met_time_between_cases == True means a
+          delay occurred relative to the previous case).
+        """
+        if inputs.is_first_case_of_day:
+            setting = TheatreTimeSettingCrud.get_current()
+            if not setting or not inputs.procedure_start_time:
+                return False
+            try:
+                start = datetime.strptime(inputs.procedure_start_time, "%H:%M")
+            except ValueError:
+                return False
+
+            ready_minutes = (
+                start.hour * 60 + start.minute
+                - (setting.room_preparation_minutes or 0)
+                - (setting.patient_induction_minutes or 0)
+            )
+            cutting_minutes = _time_to_minutes(setting.start_cutting_time)
+            return ready_minutes > cutting_minutes
+
+        return bool(inputs.surgery_met_time_between_cases)
 
     @staticmethod
     async def get_by_uid(uid: str) -> Response[TheatreProcedureRecordNode]:
@@ -90,7 +129,8 @@ class TheatreTimeRecordService(
     def register(self, inputs: TheatreProcedureRecordInput, info: Optional[Info] = None) -> Response[TheatreTimeRecordListNode]:
         with session_scope() as session:
             try:
-                user_id = self._get_user_id(info)
+                username = self._get_user_name(info)
+                computed_had_delay = self._compute_had_delay(inputs)
 
                 if inputs.uid is not None:
                     procedure_record = self.get(inputs.uid)
@@ -103,7 +143,8 @@ class TheatreTimeRecordService(
                     obj_data.pop("uid")
                     for key, value in obj_data.items():
                         setattr(procedure_record, key, value)
-                    procedure_record.updated_by = user_id
+                    procedure_record.had_delay = computed_had_delay
+                    procedure_record.updated_by = username
                 else:
                     dto_fields = {f.name for f in fields(TheatreProcedureRecordDTO)}
                     procedure_record = TheatreProcedureRecord(
@@ -113,7 +154,8 @@ class TheatreTimeRecordService(
                             if field_name in dto_fields
                         }
                     )
-                    procedure_record.created_by = user_id
+                    procedure_record.had_delay = computed_had_delay
+                    procedure_record.created_by = username
 
 
 
@@ -196,14 +238,17 @@ class TheatreTimeRecordService(
                             TheatreRecordTeamMember(
                                 theatre_member_id=member.id,
                                 role=member_input.role,
-                                created_by=user_id,
-                                updated_by=user_id
+                                created_by=username,
+                                updated_by=username
                             )
                         )
 
-                # Delay Causes
-                if inputs.delay_courses:
+                # Delay Causes — only meaningful when had_delay is actually true.
+                # If the recomputed answer is "no delay", drop any previously
+                # attached delay causes (e.g. an edit that flips the answer).
+                if inputs.delay_courses is not None or not computed_had_delay:
                     procedure_record.delay_courses.clear()
+                if computed_had_delay and inputs.delay_courses:
                     for delay_input in inputs.delay_courses:
                         procedure_delay_cause = ProcedureDelayCauseCrud.get(delay_input.delay_cause_uid)
                         if not procedure_delay_cause:
@@ -214,8 +259,8 @@ class TheatreTimeRecordService(
                             TheatreRecordDelay(
                                 cause_id=procedure_delay_cause.id,
                                 description=delay_input.description,
-                                created_by=user_id,
-                                updated_by = user_id
+                                created_by=username,
+                                updated_by = username
                             )
                         )
                 session.commit()
