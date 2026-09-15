@@ -36,6 +36,8 @@ logs/
 
 # Alembic (versions will be tracked, but compiled files not)
 alembic/versions/*.pyc
+alembic/versions/
+
 
 # Docker
 .docker/
