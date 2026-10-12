@@ -46,9 +46,9 @@ class TheatreMemberMutation:
             return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=TheatreMemberListNode(items=[], total_count=0))
 
     @strawberry.field(extensions=[CustomPermissionExtension(["REGISTER_THEATRE_MEMBERS"])])
-    async def import_theatre_members_from_excel(self, file_input: Base64ExcelInput, info: Info) -> Response[ImportResultNode]:
+    async def import_theatre_members_from_excel(self, file_input: Base64ExcelInput, info: Info, update_existing: bool = False) -> Response[ImportResultNode]:
         try:
-            data = TheatreMemberCrud.import_from_excel(file_input.base64_data, info)
+            data = TheatreMemberCrud.import_from_excel(file_input.base64_data, info, update_existing=update_existing)
             return Response(
                 status=True,
                 code=ResponseCode.SUCCESS,
@@ -58,4 +58,4 @@ class TheatreMemberMutation:
         except Exception as e:
             print(e)
             return Response(status=False, code=ResponseCode.FAILURE, message=f"Failed to import: {e}",
-                            data=ImportResultNode(successful_count=0, failed_count=0, failed_records_file=None))
+                            data=ImportResultNode(successful_count=0, failed_count=0, updated_count=0, failed_records_file=None))

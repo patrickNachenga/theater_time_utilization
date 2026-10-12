@@ -13,6 +13,7 @@ from src.database.session import session_scope
 from src.modules import CRUDBase
 from src.models import TheatreMember, TheatreMemberRole
 from src.modules.theatre_member.types import TheatreMemberInput, TheatreMemberListNode, ImportResultNode
+from src.modules.theatre_member_role.types import MemberRole
 from src.shared.excel_types import Base64ExcelOutput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -65,20 +66,32 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
             return TheatreMemberListNode(items=items, total_count=total_count)
 
 
-    def import_from_excel(self, base64_data: str, info: Info) -> ImportResultNode:
+    def import_from_excel(self, base64_data: str, info: Info, update_existing: bool = False) -> ImportResultNode:
         try:
             decoded_data = base64.b64decode(base64_data)
             df = pd.read_excel(io.BytesIO(decoded_data))
-            
+
             successful_records = []
             failed_records = []
+            updated_count = 0
+            pending_roles = []  # (pf_number, email, MemberRole) for rows that specified a role
 
             from src.database.session import session_scope
-            
+
             with session_scope() as session:
                 for index, row in df.iterrows():
                     pf_number = str(row.get('pf_number')).strip() if pd.notna(row.get('pf_number')) else None
                     email = str(row.get('email')).strip() if pd.notna(row.get('email')) else None
+
+                    raw_role = row.get('role')
+                    role_value = str(raw_role).strip().upper() if pd.notna(raw_role) and str(raw_role).strip() else None
+                    if role_value and role_value not in MemberRole.__members__:
+                        failed_row = row.to_dict()
+                        failed_row['fail_reason'] = (
+                            f"Invalid role '{role_value}' - must be one of {', '.join(MemberRole.__members__)}"
+                        )
+                        failed_records.append(failed_row)
+                        continue
 
                     # Check if record exists by pf_number or email
                     existing_record = None
@@ -92,7 +105,11 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
                             TheatreMember.email == email
                         ).first()
 
-                    if existing_record:
+                    if existing_record and update_existing and role_value:
+                        # Member was uploaded before roles existed - just attach the role, don't fail the row.
+                        pending_roles.append((pf_number, email, MemberRole(role_value)))
+                        updated_count += 1
+                    elif existing_record:
                         # Record exists, add to failed
                         failed_row = row.to_dict()
                         if pf_number and email:
@@ -114,10 +131,47 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
                             phone_number=str(row.get('phone_number')).strip() if pd.notna(row.get('phone_number')) else None
                         )
                         successful_records.append(input_data)
+                        if role_value:
+                            pending_roles.append((pf_number, email, MemberRole(role_value)))
             # Save successful records
             failed_file_base64 = None
             if successful_records:
                 self.register(successful_records, info=info)
+
+            # Assign roles for rows that specified one, now that the members exist
+            if pending_roles:
+                from src.modules.theatre_member_role.service import TheatreMemberRoleCrud
+                from src.modules.theatre_member_role.types import TheatreMemberRoleInput
+
+                with session_scope() as session:
+                    seen_member_roles = set()
+                    role_inputs = []
+                    for pf_number, email, role in pending_roles:
+                        member = None
+                        if pf_number:
+                            member = session.query(TheatreMember).filter(TheatreMember.pf_number == pf_number).first()
+                        if not member and email:
+                            member = session.query(TheatreMember).filter(TheatreMember.email == email).first()
+                        if member:
+                            # Excel rows can repeat the same member+role (data entry duplicates) -
+                            # collapse here since TheatreMemberRoleCrud.register's dedup check can't
+                            # see not-yet-flushed inserts from earlier in the same batch.
+                            dedup_key = (member.uid, role)
+                            if dedup_key in seen_member_roles:
+                                continue
+                            seen_member_roles.add(dedup_key)
+                            role_inputs.append(TheatreMemberRoleInput(member_uid=member.uid, role=role))
+
+                role_assignment_failed = False
+                if role_inputs:
+                    role_result = TheatreMemberRoleCrud.register(role_inputs, info=info)
+                    if getattr(role_result, "status", True) is False:
+                        role_assignment_failed = True
+
+                if role_assignment_failed:
+                    # Roles didn't actually get saved (e.g. the whole batch rolled back) -
+                    # don't report these rows as updated.
+                    updated_count = 0
 
             # Generate failed records Excel file if there are failures
             if failed_records:
@@ -136,6 +190,7 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
             return ImportResultNode(
                     successful_count=len(successful_records),
                     failed_count=len(failed_records),
+                    updated_count=updated_count,
                     failed_records_file=failed_file_base64
                 )
         except Exception as e:
@@ -144,7 +199,7 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
                 status=False,
                 code=ResponseCode.FAILURE,
                 message=f"Failed to import theatre members from excel: {e}",
-                data=ImportResultNode(successful_count=0, failed_count=0, failed_records_file=None)
+                data=ImportResultNode(successful_count=0, failed_count=0, updated_count=0, failed_records_file=None)
             )
 
 
@@ -157,11 +212,19 @@ class TheatreMemberService(CRUDBase[TheatreMember, TheatreMemberInput, TheatreMe
                 'pf_number': [],
                 'email': [],
                 'phone_number': [],
+                'role': [],
             }
             df = pd.DataFrame(template_data)
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 df.to_excel(writer, index=False, sheet_name='Theatre Team Members')
+                worksheet = writer.sheets['Theatre Team Members']
+                role_col = list(template_data.keys()).index('role')
+                worksheet.write_comment(0, role_col, "Optional. Must be one of: NURSES, ANAESTHETISTS, SURGEONS")
+                worksheet.data_validation(1, role_col, 1000, role_col, {
+                    'validate': 'list',
+                    'source': ['NURSES', 'ANAESTHETISTS', 'SURGEONS'],
+                })
             output.seek(0)
             encoded_data = base64.b64encode(output.read()).decode('utf-8')
             return Response(status=True, code=ResponseCode.SUCCESS, message="Template generated",

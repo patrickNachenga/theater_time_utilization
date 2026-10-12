@@ -36,4 +36,5 @@ class TheatreMemberListNode:
 class ImportResultNode:
     successful_count: int
     failed_count: int
+    updated_count: int = 0
     failed_records_file: Optional[str] = None

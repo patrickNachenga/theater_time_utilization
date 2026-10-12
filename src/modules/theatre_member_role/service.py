@@ -20,6 +20,7 @@ class TheatreMemberRoleService(CRUDBase[TheatreMemberRole, TheatreMemberRoleInpu
         """
         try:
             username = self._get_user_name(info)
+            seen_in_batch = set()
 
             with session_scope() as session:
                 for input_obj in inputs:
@@ -31,6 +32,15 @@ class TheatreMemberRoleService(CRUDBase[TheatreMemberRole, TheatreMemberRoleInpu
                             message=f"Theatre Member with UID {input_obj.member_uid} not found.",
                             data=TheatreMemberRoleListNode(items=[], total_count=0),
                         )
+
+                    # The session has autoflush disabled, so a not-yet-flushed insert added
+                    # earlier in this same batch is invisible to this query - a repeated
+                    # member+role pair within one call would otherwise be inserted twice and
+                    # hit the DB's unique constraint, rolling back the whole batch.
+                    batch_key = (member.id, input_obj.role)
+                    if batch_key in seen_in_batch:
+                        continue
+                    seen_in_batch.add(batch_key)
 
                     existing = (
                         session.query(TheatreMemberRole)
