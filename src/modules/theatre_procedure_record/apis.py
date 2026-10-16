@@ -3,10 +3,12 @@ from typing import List
 
 from sqlalchemy.orm import selectinload
 
-from src.models import TheatreProcedureRecord, TheatreRecordTeamMember
+from typing import Optional
+
+from src.models import TheatreProcedureRecord, TheatreRecordTeamMember, TheatreProcedureRecordProcedure
 from src.modules.theatre_procedure_record.service import TheatreTimeRecordService, TheatreTimeRecordCrud
 from src.modules.theatre_procedure_record.types import TheatreProcedureRecordInput, TheatreTimeRecordListNode, \
-    TheatreProcedureRecordNode
+    TheatreProcedureRecordNode, PreviousCaseGapNode
 from src.types import PaginationInput
 from src.shared.response import Response
 from src.shared.response_code import ResponseCode
@@ -27,12 +29,12 @@ class TheatreTimeRecordQuery:
                     TheatreProcedureRecord.patient_region,
                     TheatreProcedureRecord.procedure,
                     TheatreProcedureRecord.theatre_unit,
+                    TheatreProcedureRecord.theatre_room,
+                ],
+                chain_relationship=[
+                    selectinload(TheatreProcedureRecord.procedures)
+                    .joinedload(TheatreProcedureRecordProcedure.procedure)
                 ]
-
-                # chain_relationship=[
-                #     selectinload(TheatreProcedureRecord.team_members)
-                #     .joinedload(TheatreRecordTeamMember.theatre_member)
-                # ]
             )
             return Response(status=True, code=ResponseCode.SUCCESS, message="Retrieved", data=result)
         except Exception as e:
@@ -43,6 +45,18 @@ class TheatreTimeRecordQuery:
     @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_THEATRE_TIME_RECORDS"])])
     async def get_theatre_time_record_by_uid(self, uid: str) -> Response[TheatreProcedureRecordNode]:
         return await TheatreTimeRecordService(TheatreTimeRecordCrud.model).get_by_uid(uid)
+
+    @strawberry.field(extensions=[CustomPermissionExtension(["VIEW_THEATRE_TIME_RECORDS"])])
+    def get_previous_case_gap(self, theatre_unit_uid: str, theatre_room_uid: str, procedure_date: str,
+                              procedure_start_time: str, exclude_uid: Optional[str] = None) -> Response[PreviousCaseGapNode]:
+        try:
+            data = TheatreTimeRecordService(TheatreTimeRecordCrud.model).get_previous_case_gap(
+                theatre_unit_uid, theatre_room_uid, procedure_date, procedure_start_time, exclude_uid,
+            )
+            return Response(status=True, code=ResponseCode.SUCCESS, message="Retrieved", data=data)
+        except Exception as e:
+            print(e)
+            return Response(status=False, code=ResponseCode.FAILURE, message="Failed", data=None)
 
 
 @strawberry.type

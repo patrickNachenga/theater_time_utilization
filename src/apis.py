@@ -9,6 +9,7 @@ from src.modules.region.apis import RegionQuery, RegionMutation
 from src.modules.internal_source.apis import InternalSourceQuery, InternalSourceMutation
 from src.modules.external_source.apis import ExternalSourceQuery, ExternalSourceMutation
 from src.modules.theatre_unit.apis import TheatreUnitQuery, TheatreUnitMutation
+from src.modules.theatre_room.apis import TheatreRoomQuery, TheatreRoomMutation
 from src.modules.death_reason.apis import DeathReasonQuery, DeathReasonMutation
 from src.modules.theatre_procedure_record.apis import TheatreTimeRecordQuery, TheatreTimeRecordMutation
 from src.modules.theatre_record_team_member.apis import TheatreRecordTeamMemberQuery, TheatreRecordTeamMemberMutation
@@ -29,6 +30,7 @@ class ApiQuery(ProcedureDelayCategoryQuery,
                InternalSourceQuery,
                ExternalSourceQuery,
                TheatreUnitQuery,
+               TheatreRoomQuery,
                DeathReasonQuery,
                TheatreTimeRecordQuery,
                TheatreRecordTeamMemberQuery,
@@ -50,6 +52,7 @@ class ApiMutation(ProcedureDelayCategoryMutation,
                   InternalSourceMutation,
                   ExternalSourceMutation,
                   TheatreUnitMutation,
+                  TheatreRoomMutation,
                   DeathReasonMutation,
                   TheatreTimeRecordMutation,
                   TheatreRecordTeamMemberMutation,

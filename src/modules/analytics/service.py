@@ -11,6 +11,7 @@ from src.models import (
     ProcedureDelayCategory,
     TheatreUnit,
     Procedure,
+    TheatreProcedureRecordProcedure,
     Region,
     TheatreRecordTeamMember,
     TheatreMember,
@@ -119,6 +120,19 @@ def _apply_procedure_filter(query, procedure_uid=None):
     if procedure_uid:
         query = query.filter(Procedure.uid == procedure_uid)
     return query
+
+
+def _join_procedures(query):
+    """
+    Joins a case to ALL of its procedures (via the junction table), not just
+    its derived primary one, so filtering/grouping by procedure_uid matches
+    any procedure performed in a multi-procedure case.
+    """
+    return query.join(
+        TheatreProcedureRecordProcedure, TheatreProcedureRecordProcedure.record_id == TheatreProcedureRecord.id
+    ).join(
+        Procedure, Procedure.id == TheatreProcedureRecordProcedure.procedure_id
+    )
 
 
 class AnalyticsService:
@@ -261,9 +275,10 @@ class AnalyticsService:
 
                 query = _apply_date_range_filter(query, date_range)
 
-                if theatre_unit_uid or procedure_uid:
-                    query = query.join(Procedure, Procedure.id == TheatreProcedureRecord.procedure_id)
+                if theatre_unit_uid:
                     query = query.join(TheatreUnit, TheatreUnit.id == TheatreProcedureRecord.theatre_unit_id)
+                if procedure_uid:
+                    query = _join_procedures(query)
 
                 query = _apply_theatre_unit_filter(query, theatre_unit_uid)
                 query = _apply_procedure_filter(query, procedure_uid)
@@ -481,9 +496,8 @@ class AnalyticsService:
                     Procedure.name,
                     func.coalesce(func.avg(TheatreProcedureRecord.estimated_duration_minutes), 0).label("estimated"),
                     func.coalesce(func.avg(TheatreProcedureRecord.duration_minutes), 0).label("actual"),
-                ).select_from(TheatreProcedureRecord).join(
-                    Procedure, Procedure.id == TheatreProcedureRecord.procedure_id
-                ).filter(
+                ).select_from(TheatreProcedureRecord)
+                query = _join_procedures(query).filter(
                     TheatreProcedureRecord.deleted_at.is_(None),
                     TheatreProcedureRecord.estimated_duration_minutes.isnot(None),
                 )
@@ -543,9 +557,10 @@ class AnalyticsService:
 
                 on_time_query = _apply_date_range_filter(on_time_query, date_range)
 
-                if theatre_unit_uid or procedure_uid:
-                    on_time_query = on_time_query.join(Procedure, Procedure.id == TheatreProcedureRecord.procedure_id)
+                if theatre_unit_uid:
                     on_time_query = on_time_query.join(TheatreUnit, TheatreUnit.id == TheatreProcedureRecord.theatre_unit_id)
+                if procedure_uid:
+                    on_time_query = _join_procedures(on_time_query)
 
                 on_time_query = _apply_theatre_unit_filter(on_time_query, theatre_unit_uid)
                 on_time_query = _apply_procedure_filter(on_time_query, procedure_uid)
@@ -566,9 +581,10 @@ class AnalyticsService:
 
                 delayed_query = _apply_date_range_filter(delayed_query, date_range)
 
-                if theatre_unit_uid or procedure_uid:
-                    delayed_query = delayed_query.join(Procedure, Procedure.id == TheatreProcedureRecord.procedure_id)
+                if theatre_unit_uid:
                     delayed_query = delayed_query.join(TheatreUnit, TheatreUnit.id == TheatreProcedureRecord.theatre_unit_id)
+                if procedure_uid:
+                    delayed_query = _join_procedures(delayed_query)
 
                 delayed_query = _apply_theatre_unit_filter(delayed_query, theatre_unit_uid)
                 delayed_query = _apply_procedure_filter(delayed_query, procedure_uid)

@@ -8,10 +8,35 @@ from ..region.types import RegionNode
 from ..internal_source.types import InternalSourceNode
 from ..external_source.types import ExternalSourceNode
 from ..theatre_unit.types import TheatreUnitNode
+from ..theatre_room.types import TheatreRoomNode
 from ..procedure.types import ProcedureNode
 from ..death_reason.types import DeathReasonNode
 from ..theatre_record_team_member.types import TheatreRecordTeamMemberInput, TheatreRecordTeamMemberNode
 from ..theatre_record_delay.types import TheatreRecordDelayInput, TheatreRecordDelayNode
+
+
+@strawberry.input
+class TheatreProcedureRecordProcedureInput:
+    procedure_uid: str
+    estimated_minutes: Optional[int] = None
+
+
+@strawberry.type
+class TheatreProcedureRecordProcedureNode:
+    uid: str
+    procedure: Optional[ProcedureNode]
+    estimated_minutes: Optional[int]
+    rank: Optional[int]
+
+
+@strawberry.type
+class PreviousCaseGapNode:
+    found: bool
+    previous_end_time: Optional[str]
+    previous_procedure_names: Optional[str]
+    gap_minutes: Optional[int]
+    required_minutes: Optional[int]
+    suggested_had_delay: Optional[bool]
 
 
 @strawberry.enum
@@ -51,9 +76,11 @@ class TheatreProcedureRecordInput:
     external_source_id: Optional[int] = None
     theatre_unit_uid: Optional[str] = None
     theatre_unit_id: Optional[int] = None
-    procedure_uid: Optional[str] = None
-    procedure_id: Optional[int] = None
+    theatre_room_uid: Optional[str] = None
+    theatre_room_id: Optional[int] = None
+    procedures: Optional[List[TheatreProcedureRecordProcedureInput]] = None
     procedure_date: Optional[str] = None
+    patient_induction_start_time: Optional[str] = None
     procedure_start_time: Optional[str] = None
     procedure_end_time: Optional[str] = None
     duration_minutes: Optional[int] = None
@@ -90,8 +117,9 @@ class TheatreProcedureRecordDTO:
     internal_source_id: Optional[int]
     external_source_id: Optional[int]
     theatre_unit_id: int
-    procedure_id: int
+    theatre_room_id: Optional[int]
     procedure_date: str
+    patient_induction_start_time: Optional[str]
     procedure_start_time: str
     procedure_end_time: str
     duration_minutes: int
@@ -123,8 +151,11 @@ class TheatreProcedureRecordNode:
     internal_source: Optional[InternalSourceNode]
     external_source: Optional[ExternalSourceNode]
     theatre_unit: Optional[TheatreUnitNode]
+    theatre_room: Optional[TheatreRoomNode]
     procedure: Optional[ProcedureNode]
+    procedures: Optional[List[TheatreProcedureRecordProcedureNode]]
     procedure_date: Optional[str]
+    patient_induction_start_time: Optional[str]
     procedure_start_time: Optional[str]
     procedure_end_time: Optional[str]
     duration_minutes: Optional[int]
@@ -163,7 +194,9 @@ class TheatreProcedureRecordSimpleNode:
     created_by: Optional[str]
     patient_region: Optional[RegionNode]
     procedure: Optional[ProcedureNode]
+    procedures: Optional[List[TheatreProcedureRecordProcedureNode]]
     theatre_unit: Optional[TheatreUnitNode]
+    theatre_room: Optional[TheatreRoomNode]
 
 
 @strawberry.type

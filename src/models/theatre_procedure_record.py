@@ -54,8 +54,14 @@ class TheatreProcedureRecord(BaseModel):
     external_source_id = Column(ForeignKey("external_sources.id"), nullable=True)
     # Theatre and Procedure
     theatre_unit_id = Column(ForeignKey("theatre_units.id"), nullable=False, index=True)
-    procedure_id = Column(ForeignKey("procedures.id"), nullable=False, index=True)
+    theatre_room_id = Column(ForeignKey("theatre_rooms.id"), nullable=True, index=True)
+    # Derived "primary" procedure (first of `procedures` below) - kept so
+    # existing single-procedure displays/analytics joins keep working
+    # unchanged. The authoritative list of procedures performed in this
+    # case lives in the `procedures` relationship (TheatreProcedureRecordProcedure).
+    procedure_id = Column(ForeignKey("procedures.id"), nullable=True, index=True)
     procedure_date = Column(Date, nullable=False, index=True)
+    patient_induction_start_time = Column(Time, nullable=True)
     procedure_start_time = Column(Time, nullable=False)
     procedure_end_time = Column(Time, nullable=False)
     duration_minutes = Column(Integer, nullable=False)
@@ -87,7 +93,10 @@ class TheatreProcedureRecord(BaseModel):
     # ==========================
     patient_region = relationship("Region")
     theatre_unit = relationship("TheatreUnit")
+    theatre_room = relationship("TheatreRoom")
     procedure = relationship("Procedure")
+    procedures = relationship("TheatreProcedureRecordProcedure", back_populates="record",
+                              cascade="all, delete-orphan", order_by="TheatreProcedureRecordProcedure.rank")
     internal_source = relationship("InternalSource", foreign_keys=[internal_source_id])
     external_source = relationship("ExternalSource", foreign_keys=[external_source_id])
     discharge_destination = relationship("InternalSource", foreign_keys=[discharge_destination_id])
